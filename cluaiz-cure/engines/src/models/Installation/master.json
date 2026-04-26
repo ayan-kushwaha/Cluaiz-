@@ -1,0 +1,7 @@
+{
+  "registry_name": "Sovereign Asset Master",
+  "version": "1.0",
+  "active_families": ["Gemma", "Persona", "Bonsai"],
+  "base_path": "models/",
+  "prefer_instruct": true
+}

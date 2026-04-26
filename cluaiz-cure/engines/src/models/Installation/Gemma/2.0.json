@@ -1,0 +1,98 @@
+{
+  "family": "Gemma 2.0",
+  "models": [
+    {
+      "id": "gemma-2-2b-it",
+      "name": "Gemma 2 2B",
+      "architecture": "Gemma 2",
+      "parameters": "2B",
+      "training_tokens": "High Efficiency",
+      "bit_depth": "4.0",
+      "ram_required_gb": 1.6,
+      "download_size_gb": 1.5,
+      "huggingface_repo": "google/gemma-2-2b-it",
+      "download_url": "https://huggingface.co/unsloth/gemma-2-2b-it-GGUF/resolve/main/gemma-2-2b-it-Q4_K_M.gguf",
+      "description": "Gemma 2 2B is an ultra-efficient model featuring a state-of-the-art distillation process for high instruction following at small scale.",
+      "is_cloud_api": false,
+      "requires_gpu": false,
+      "context_window": "8k",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/unsloth/gemma-2-2b-it/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/unsloth/gemma-2-2b-it/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/unsloth/gemma-2-2b-it/resolve/main/tokenizer_config.json"
+        }
+      ]
+    },
+    {
+      "id": "gemma-2-9b-it",
+      "name": "Gemma 2 9B",
+      "architecture": "Gemma 2",
+      "parameters": "9B",
+      "training_tokens": "Deep Reasoning",
+      "bit_depth": "4.0",
+      "ram_required_gb": 6.8,
+      "download_size_gb": 5.4,
+      "huggingface_repo": "google/gemma-2-9b-it",
+      "download_url": "https://huggingface.co/unsloth/gemma-2-9b-it-GGUF/resolve/main/gemma-2-9b-it-Q4_K_M.gguf",
+      "description": "The 9B variant of Gemma 2 offers deep reasoning and complex logic, outperforming many models twice its size.",
+      "is_cloud_api": false,
+      "requires_gpu": true,
+      "context_window": "8k",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/unsloth/gemma-2-9b-it/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/unsloth/gemma-2-9b-it/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/unsloth/gemma-2-9b-it/resolve/main/tokenizer_config.json"
+        }
+      ]
+    },
+    {
+      "id": "gemma-2-27b-it",
+      "name": "Gemma 2 27B",
+      "architecture": "Gemma 2",
+      "parameters": "27B",
+      "training_tokens": "Superior Cognition",
+      "bit_depth": "4.0",
+      "ram_required_gb": 18.5,
+      "download_size_gb": 16.2,
+      "huggingface_repo": "google/gemma-2-27b-it",
+      "download_url": "https://huggingface.co/unsloth/gemma-2-27b-it-GGUF/resolve/main/gemma-2-27b-it-Q4_K_M.gguf",
+      "description": "Gemma 2 27B is the elite heavyweight of the family, providing near-frontier performance for the most demanding cognitive tasks.",
+      "is_cloud_api": false,
+      "requires_gpu": true,
+      "context_window": "8k",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/unsloth/gemma-2-27b-it/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/unsloth/gemma-2-27b-it/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/unsloth/gemma-2-27b-it/resolve/main/tokenizer_config.json"
+        }
+      ]
+    }
+  ]
+}

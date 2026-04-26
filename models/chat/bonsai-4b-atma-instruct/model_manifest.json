@@ -1,0 +1,41 @@
+{
+  "id": "bonsai-4b-atma-instruct",
+  "name": "Bonsai 4B (1-bit)",
+  "architecture": "Bonsai (1-bit)",
+  "parameters": "4.0B",
+  "training_tokens": "36.0 Trillion",
+  "bit_depth": 1.0,
+  "ram_required_gb": 0.6,
+  "download_size_gb": 0.58,
+  "huggingface_repo": "prism-ml/Bonsai-4B-gguf",
+  "huggingface_filename": "Bonsai-4B.gguf",
+  "download_url": "https://huggingface.co/prism-ml/Bonsai-4B-gguf/resolve/main/Bonsai-4B.gguf",
+  "description": "A 1-bit quantized 4B parameter model from PrismML. Designed for lightweight edge deployment and chat-driven interactions with ultra-low resource consumption.",
+  "is_cloud_api": false,
+  "requires_gpu": false,
+  "is_free_tier": true,
+  "input_modality": "Text",
+  "context_window": "64k",
+  "family": "bonsai",
+  "category": "chat",
+  "assets": [
+    {
+      "name": "tokenizer.json",
+      "url": "https://huggingface.co/prism-ml/Bonsai-4B-unpacked/resolve/main/tokenizer.json"
+    },
+    {
+      "name": "config.json",
+      "url": "https://huggingface.co/prism-ml/Bonsai-4B-unpacked/resolve/main/config.json"
+    },
+    {
+      "name": "tokenizer_config.json",
+      "url": "https://huggingface.co/prism-ml/Bonsai-4B-unpacked/resolve/main/tokenizer_config.json"
+    }
+  ],
+  "local_path": null,
+  "dna_path": null,
+  "has_vision": false,
+  "has_audio": false,
+  "expert_count": null,
+  "experts_per_token": null
+}

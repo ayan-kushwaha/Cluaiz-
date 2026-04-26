@@ -1,0 +1,41 @@
+{
+  "id": "bonsai-1.7b-prism-instruct",
+  "name": "Bonsai 1.7B (1-bit)",
+  "architecture": "Bonsai (1-bit)",
+  "parameters": "1.7B",
+  "training_tokens": "36.0 Trillion",
+  "bit_depth": "1-bit (Q1_0)",
+  "ram_required_gb": 0.35,
+  "download_size_gb": 0.33,
+  "huggingface_repo": "prism-ml/Bonsai-1.7B-gguf",
+  "huggingface_filename": "Bonsai-1.7B.gguf",
+  "download_url": "https://huggingface.co/prism-ml/Bonsai-1.7B-gguf/resolve/main/Bonsai-1.7B.gguf",
+  "description": "A 1.7B parameter 1-bit quantized model from PrismML. The smallest variant in the Bonsai cluster, providing high-speed inference for real-time chat applications on mobile or embedded devices.",
+  "is_cloud_api": false,
+  "requires_gpu": false,
+  "is_free_tier": true,
+  "input_modality": "Text",
+  "context_window": "32k",
+  "family": "bonsai",
+  "category": "chat",
+  "assets": [
+    {
+      "name": "tokenizer.json",
+      "url": "https://huggingface.co/prism-ml/Bonsai-1.7B-unpacked/resolve/main/tokenizer.json"
+    },
+    {
+      "name": "config.json",
+      "url": "https://huggingface.co/prism-ml/Bonsai-1.7B-unpacked/resolve/main/config.json"
+    },
+    {
+      "name": "tokenizer_config.json",
+      "url": "https://huggingface.co/prism-ml/Bonsai-1.7B-unpacked/resolve/main/tokenizer_config.json"
+    }
+  ],
+  "local_path": null,
+  "dna_path": null,
+  "has_vision": false,
+  "has_audio": false,
+  "expert_count": null,
+  "experts_per_token": null
+}

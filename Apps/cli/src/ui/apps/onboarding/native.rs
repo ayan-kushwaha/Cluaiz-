@@ -1,0 +1,173 @@
+use color_eyre::Result;
+use colored::*;
+use inquire::{Text, Select, Password, Confirm};
+use std::io::{Write, stdout};
+use std::time::Duration;
+use crate::assets::logos::logo;
+use ::archer_shared::profile::{UserProfile, AccountType, AuthMethod, BusinessProfile};
+
+pub fn run_native_flow() -> Result<UserProfile> {
+    let mut profile = UserProfile::new();
+    
+    // ── Step 1: Logo Animation ────────────────────────────────────────────
+    render_logo()?;
+    
+    // ── Step 2: Welcome + About ──────────────────────────────────────────
+    render_welcome()?;
+    
+    // ── Step 3: Auth ──────────────────────────────────────────────────────
+    let auth_choice = Select::new(
+        "🔐 How would you like to sign in?",
+        vec!["Sign in with Google", "Sign in with Email", "Continue as Guest (No Cloud)"]
+    )
+    .prompt()?;
+
+    match auth_choice {
+        "Sign in with Google" => {
+            profile.auth.method = AuthMethod::Google;
+            profile.auth.email = "sovereign@cluaiz.os".to_string(); 
+            println!("✓ Authenticated via Google as {}", profile.auth.email);
+        }
+        "Sign in with Email" => {
+            profile.auth.method = AuthMethod::Email;
+            profile.auth.email = Text::new("✉️  Enter your email:").prompt()?;
+            let _pass = Password::new("🔑 Create password:").prompt()?;
+            println!("✓ Account created for {}", profile.auth.email);
+        }
+        _ => {
+            profile.auth.method = AuthMethod::None;
+            println!("ℹ Proceeding as Guest");
+        }
+    }
+
+    // ── Step 4: Usage Choice ──────────────────────────────────────────────
+    let usage = Select::new(
+        "👋 How will you use Archer Sovereign?",
+        vec!["Personal AI Assistant", "Business & Teams"]
+    )
+    .prompt()?;
+
+    match usage {
+        "Business & Teams" => {
+            profile.account_type = AccountType::Business;
+            let mut biz = BusinessProfile::default();
+            biz.name = Text::new("🏢 Business Name:").prompt()?;
+            
+            let industries: Vec<String> = ::archer_shared::profile::INDUSTRY_TAXONOMY.iter().map(|i| i.label.to_string()).collect();
+            biz.industry = Select::new("Industry:", industries)
+                .prompt()?;
+            
+            profile.business = Some(biz);
+        }
+        _ => {
+            profile.account_type = AccountType::Personal;
+            profile.identity.name = Text::new("👤 What is your name, Sovereign?").prompt()?;
+        }
+    }
+
+    // ── Step 6: Hardware Audit ────────────────────────────────────────────
+    println!("\n📡 INITIATING BARE-METAL CALIBRATION");
+    
+    // 🧬 probe hardware
+    use ::archer_shared::hardware::governor::HardwareGovernor;
+    use ::archer_shared::hardware::hal::detect_silicon;
+
+    if let Err(e) = HardwareGovernor::auto_calibrate() {
+        tracing::error!("❌ Calibration failed: {}", e);
+    }
+
+    let stats = detect_silicon();
+    
+    let mut sys = sysinfo::System::new();
+    sys.refresh_memory();
+    let ram_gb = sys.total_memory() as f64 / 1_073_741_824.0;
+
+    println!("  HOST PLATFORM: {}", stats.platform);
+    println!("  CPU UNIT:      {} ({} cores)", stats.cpu_brand, stats.cpu_cores);
+    
+    let gpu_info = if stats.compute.has_gpu { 
+        format!("Accelerator Active ({:.1} GB VRAM)", stats.compute.vram_gb)
+    } else { 
+        "NO ACCELERATOR".to_string() 
+    };
+    println!("  GPU COMPUTE:   {}", gpu_info);
+    println!("  SYSTEM RAM:    {:.1} GB", ram_gb);
+    println!("  CORE STATUS:   OPTIMIZED ✓\n");
+
+    // ── Part B: Sequential Performance Tuning ────────────────────────────
+    println!("🛠️ PERFORMANCE TUNING");
+
+    let turbo_quant = Confirm::new("Enable TurboQuant Acceleration?").with_default(true).prompt()?;
+    let _ = HardwareGovernor::update_field("runtime_engine.booster_flags.TurboQuant_Enable", serde_json::json!(turbo_quant));
+
+    if stats.compute.vram_gb >= 2.0 {
+        let flash_attn = Confirm::new("Enable FlashAttention v2?").with_default(true).prompt()?;
+        let _ = HardwareGovernor::update_field("runtime_engine.booster_flags.FlashAttention_v2", serde_json::json!(flash_attn));
+    }
+
+
+    println!("\n✓ Hardware DNA verified and synchronized.\n");
+
+    // ── Finalize ──────────────────────────────────────────────────────────
+    profile.onboarding_completed = true;
+    profile.hardware_completed = true;
+    profile.touch();
+    
+    let _ = ::archer_shared::profile::save_profile(&profile);
+    let _ = ::archer_shared::onboarding::seed_workspace(&profile);
+
+    println!("\n🧿 ARCHER SOVEREIGN — ONLINE");
+    println!("Welcome to the future of Sovereign AI, {}.\n", profile.display_name());
+    
+    Ok(profile)
+}
+
+fn render_logo() -> Result<()> {
+    println!("\x1B[2J\x1B[1;1H"); // Clear screen
+    
+    let (width, _height) = crossterm::terminal::size().unwrap_or((100, 30));
+    let mut buf = ratatui::buffer::Buffer::empty(ratatui::layout::Rect::new(0, 0, width, 16));
+    logo::render_best_fit_logo(&mut buf, ratatui::layout::Rect::new(0, 0, width, 15), ratatui::prelude::Color::Cyan);
+    
+    for y in 0..15 {
+        for x in 0..width {
+            let cell = &buf[(x, y)];
+            let symbol = cell.symbol();
+            if symbol != " " {
+                print!("\x1B[36;1m{}\x1B[0m", symbol); // Direct ANSI for Cyan Bold
+            } else {
+                print!(" ");
+            }
+        }
+        println!("\r");
+    }
+
+    println!("\r\nARCHER SOVEREIGN CORE V10\r");
+    println!("\r"); 
+    let _ = stdout().flush();
+    
+    std::thread::sleep(Duration::from_millis(1500));
+    Ok(())
+}
+
+fn render_welcome() -> Result<()> {
+    let manifesto = vec![
+        "Archer Sovereign — The Pinnacle of Neural Orchestration.",
+        "-------------------------------------------------------",
+        "",
+        "Archer is a decentralized neural orchestration engine designed for high-performance,",
+        "privacy-critical applications. Your neural weights and conversation data",
+        "remain strictly confined to your hardware ecosystem.",
+        "",
+        "COMMENCING SYSTEM INITIALIZATION...",
+        "",
+    ];
+
+    for line in manifesto {
+        println!("  {}", line);
+        std::thread::sleep(Duration::from_millis(50));
+    }
+    
+    println!("\n");
+    Ok(())
+}

@@ -1,0 +1,371 @@
+use crate::app_enums::Tab;
+use ratatui::widgets::{TableState, ListState};
+use std::sync::Arc;
+
+// ── Re-export shared types for CLI use ──
+pub use ::archer_shared::onboarding::OnboardingStep;
+pub use ::archer_shared::profile::UserProfile;
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum OsState {
+    Onboarding(OnboardingStep),
+    Dashboard,
+}
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum AuthMode {
+    Google,
+    Email,
+}
+
+impl Default for AuthMode {
+    fn default() -> Self {
+        AuthMode::Email
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum MenuApp {
+    None,
+    Roster,
+    Settings,
+    Help,
+}
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum RosterView {
+    List,
+    Details,
+}
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum SettingsTab {
+    Main,
+}
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum AppMode {
+    Normal,
+    CommandPalette, // Triggered by /
+    ContextPalette, // Triggered by @
+}
+
+#[derive(Clone)]
+pub struct NeuralEngine {
+    pub router: Arc<tokio::sync::Mutex<engines::NeuralRouter>>,
+    pub is_loaded: bool,
+}
+
+impl NeuralEngine {
+    pub fn new() -> Self {
+        Self { 
+            router: Arc::new(tokio::sync::Mutex::new(engines::NeuralRouter::new())),
+            is_loaded: false,
+        }
+    }
+
+    pub async fn load_model(&mut self, path: std::path::PathBuf) -> Result<(), String> {
+        let device = candle_core::Device::Cpu;
+        let backend = engines::BackendType::RuntimeB;
+        
+        match engines::NeuralRouter::load_model(path, backend, &device).await {
+            Ok(router) => {
+                let mut lock = self.router.lock().await;
+                *lock = router;
+                self.is_loaded = true;
+                Ok(())
+            }
+            Err(e) => Err(e),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub enum ActivityBlock {
+    // ── Frozen History Records (permanent, compact) ──
+    SystemLog(String),
+    MenuOpened(String),
+    ModelSelected { name: String, ctx: String, status: String },
+    DownloadStarted(String),
+    DownloadComplete(String),
+    DownloadFailed(String, String),
+    ModelMounted(String),
+    Chat(String, String),
+
+    // ── Live Interactive Blocks (only one active at a time) ──
+    ActiveRoster,
+    ActiveDetails,
+}
+
+impl ActivityBlock {
+    pub fn is_live(&self) -> bool {
+        matches!(self, ActivityBlock::ActiveRoster | ActivityBlock::ActiveDetails)
+    }
+
+    pub fn get_frozen_height(&self, width: u16) -> u16 {
+        match self {
+            ActivityBlock::SystemLog(_) => 1,
+            ActivityBlock::MenuOpened(_) => 1,
+            ActivityBlock::ModelSelected { .. } => 1,
+            ActivityBlock::DownloadStarted(_) => 1,
+            ActivityBlock::DownloadComplete(_) => 1,
+            ActivityBlock::DownloadFailed(_, _) => 1,
+            ActivityBlock::ModelMounted(_) => 1,
+            ActivityBlock::Chat(sender, msg) => {
+                let prefix_len = if sender == "USER" { 7 } else { 4 }; // "👤 USER " vs "🤖  "
+                let total_len = prefix_len + msg.len();
+                let w = width.saturating_sub(2); // Margin
+                if w == 0 { return 1; }
+                ((total_len as f32 / w as f32).ceil()) as u16
+            }
+            // Live blocks have 0 frozen height — they use active_block_h in layout
+            ActivityBlock::ActiveRoster | ActivityBlock::ActiveDetails => 0,
+        }
+    }
+}
+
+pub struct AppState {
+    pub os_state: OsState,
+    pub username: String,
+    pub frame_counter: u64,
+    pub _active_tab: Tab,
+    pub active_app: MenuApp,
+    pub _menu_app: MenuApp,
+    pub hardware: ::archer_shared::hardware::schema::profiles::SovereignProfile,
+    pub ram_gb: f64,
+    pub sorted_models: Vec<engines::ModelRecommendation>,
+    pub roster_state: TableState,
+    pub menu_state: ListState,
+    pub roster_h_scroll: u16,
+    pub details_btn_idx: u16,
+    pub delete_confirm_idx: u16,
+    pub settings_state: ListState,
+    pub roster_view: RosterView,
+    pub settings_tab: SettingsTab,
+    pub show_download_confirm: bool,
+    pub is_deleting: bool,
+    pub downloading_id: Option<String>,
+    pub download_progress: f64,
+    pub download_total_bytes: u64,
+    pub download_current_bytes: u64,
+    pub download_bytes_per_sec: f64,
+    pub download_eta_seconds: u64,
+    pub download_start_time: Option<std::time::Instant>,
+    pub neural_engine: NeuralEngine,
+    pub _purpose: String,
+    pub _active_model_id: Option<String>,
+    pub _chat_history: Vec<(String, String)>,
+    pub _chat_input: String,
+    pub _chat_scroll: u16,
+    pub _is_setup_complete: bool,
+    pub _generation_tps: f64,
+    pub cpu_usage: f32,
+    pub mem_usage_gb: f32,
+
+    // ── Shared Profile ──
+    pub user_profile: UserProfile,
+
+    // ── Onboarding UI State ──
+    pub completed_steps: Vec<OnboardingStep>,
+    pub auth_mode: AuthMode,
+    pub auth_sub_step: u8,
+    pub auth_email_input: String,
+    pub auth_password_input: String,
+    pub _auth_focused_field: u8,
+    pub typing_char_index: usize,
+    pub profile_field_index: usize,
+    pub _model_category_index: usize,
+    pub scroll_offset: u16,
+    pub business_name_input: String,
+    pub personal_name_input: String,
+    pub is_dirty: bool,
+    pub printed_logo: bool,
+    pub rendered_actions_count: usize,
+    pub stream_scroll_offset: u16,
+    pub last_rendered_height: u16,
+    pub current_block_id: String,
+    pub interaction_mode: AppMode,
+    pub palette_state: ListState,
+    pub context_palette_state: ListState,
+    pub input_buffer: String,
+    pub chat_paste_buffer: Vec<String>,
+    pub last_input_time: std::time::Instant,
+    pub logo_index: usize,
+    pub activity_stream: Vec<ActivityBlock>,
+    pub onboarding_status: String,
+}
+
+
+impl AppState {
+    pub fn mark_dirty(&mut self) {
+        self.is_dirty = true;
+    }
+
+    pub fn clean(&mut self) {
+        self.is_dirty = false;
+    }
+
+    // ── 🌊 STREAM HELPERS ─────────────────────────────────────────────────
+
+    pub fn purge_live_blocks(&mut self) {
+        self.activity_stream.retain(|b| !b.is_live());
+    }
+
+    /// Opens the Model List as a live interactive block in the stream.
+    pub fn open_registry(&mut self) {
+        self.purge_live_blocks();
+        self.activity_stream.push(ActivityBlock::MenuOpened("Model List".to_string()));
+        self.activity_stream.push(ActivityBlock::ActiveRoster);
+        self.active_app = MenuApp::Roster;
+        self.roster_view = RosterView::List;
+    }
+
+    /// Opens Model Details for the currently selected roster item.
+    pub fn open_details(&mut self) {
+        // Remove any existing details block
+        self.activity_stream.retain(|b| !matches!(b, ActivityBlock::ActiveDetails));
+
+        if let Some(idx) = self.roster_state.selected() {
+            if let Some(model) = self.sorted_models.get(idx) {
+                let name = model.manifest.name.clone();
+                let ctx  = model.manifest.context_window.clone();
+                let stat = model.status.clone();
+                self.activity_stream.push(ActivityBlock::ModelSelected {
+                    name, ctx, status: stat,
+                });
+            }
+        }
+        self.activity_stream.push(ActivityBlock::ActiveDetails);
+        self.roster_view = RosterView::Details;
+    }
+
+    /// Collapses the live block and returns to parent (Details → List, List → None).
+    /// Optionally appends a frozen record (e.g. DownloadStarted).
+    pub fn close_active_block(&mut self, extra_record: Option<ActivityBlock>) {
+        match self.roster_view {
+            RosterView::Details => {
+                // ESC from Details → go back to List (restore ActiveRoster)
+                self.activity_stream.retain(|b| !matches!(b, ActivityBlock::ActiveDetails));
+                self.activity_stream.push(ActivityBlock::ActiveRoster);
+                self.roster_view = RosterView::List;
+            }
+            RosterView::List => {
+                // ESC from List → close registry entirely
+                self.purge_live_blocks();
+                self.active_app = MenuApp::None;
+                self.roster_view = RosterView::List;
+            }
+        }
+        if let Some(record) = extra_record {
+            self.activity_stream.push(record);
+        }
+    }
+
+    /// True if there is any live interactive block active right now.
+    pub fn has_active_block(&self) -> bool {
+        self.activity_stream.iter().any(|b| b.is_live())
+    }
+
+    /// Returns the current live block type (for height calculation).
+    pub fn live_block_type(&self) -> Option<&ActivityBlock> {
+        self.activity_stream.iter().rev().find(|b| b.is_live())
+    }
+
+    pub fn new(profile_override: Option<::archer_shared::profile::UserProfile>) -> Self {
+        let hardware = ::archer_shared::hardware::hal::detect_silicon();
+
+        let mut sys = sysinfo::System::new();
+        sys.refresh_memory();
+        let ram_gb = sys.total_memory() as f64 / 1_073_741_824.0;
+        
+        let mut roster_state = TableState::default();
+        roster_state.select(Some(0));
+        let mut menu_state = ListState::default();
+        menu_state.select(Some(0));
+        let mut settings_state = ListState::default();
+        settings_state.select(Some(0));
+
+        // Check if onboarding already completed or override provided
+        let (os_state, user_profile) = if let Some(p) = profile_override {
+            (OsState::Dashboard, p)
+        } else if ::archer_shared::onboarding::should_skip_onboarding() {
+            let profile = ::archer_shared::profile::load_profile()
+                .ok()
+                .flatten()
+                .unwrap_or_else(UserProfile::new);
+            (OsState::Dashboard, profile)
+        } else {
+            (OsState::Onboarding(OnboardingStep::LogoAnimation), UserProfile::new())
+        };
+
+        Self {
+            os_state,
+            username: "Sovereign".to_string(),
+            frame_counter: 0,
+            _active_tab: Tab::All,
+            active_app: MenuApp::None,
+            _menu_app: MenuApp::None,
+            hardware,
+            ram_gb,
+            sorted_models: Vec::new(),
+            roster_state,
+            menu_state,
+            settings_state,
+            roster_view: RosterView::List,
+            settings_tab: SettingsTab::Main,
+            roster_h_scroll: 0,
+            details_btn_idx: 0,
+            delete_confirm_idx: 0,
+            show_download_confirm: false,
+            is_deleting: false,
+            downloading_id: None,
+            download_progress: 0.0,
+            download_total_bytes: 0,
+            download_current_bytes: 0,
+            download_bytes_per_sec: 0.0,
+            download_eta_seconds: 0,
+            download_start_time: None,
+            neural_engine: NeuralEngine::new(),
+            _purpose: String::new(),
+            _active_model_id: None,
+            _chat_history: Vec::new(),
+            _chat_input: String::new(),
+            _chat_scroll: 0,
+            _is_setup_complete: false,
+            _generation_tps: 0.0,
+            cpu_usage: 0.0,
+            mem_usage_gb: 0.0,
+
+            user_profile,
+
+            completed_steps: Vec::new(),
+            auth_mode: AuthMode::default(),
+            auth_sub_step: 0,
+            auth_email_input: String::new(),
+            auth_password_input: String::new(),
+            _auth_focused_field: 0,
+            typing_char_index: 0,
+            profile_field_index: 0,
+            _model_category_index: 0,
+            scroll_offset: 0,
+            business_name_input: String::new(),
+            personal_name_input: String::new(),
+            is_dirty: true,
+            printed_logo: false,
+            rendered_actions_count: 0,
+            stream_scroll_offset: 0,
+            last_rendered_height: 0,
+            current_block_id: "BOOT".to_string(),
+            interaction_mode: AppMode::Normal,
+            palette_state: ListState::default(),
+            context_palette_state: ListState::default(),
+            input_buffer: String::new(),
+            chat_paste_buffer: Vec::new(),
+            last_input_time: std::time::Instant::now(),
+            logo_index: crate::assets::logos::logo_gallery::LOGO_VARIANTS.len() - 1,
+            activity_stream: Vec::new(),
+            onboarding_status: "OPTIMIZED ✓".to_string(),
+        }
+    }
+}
+

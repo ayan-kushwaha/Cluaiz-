@@ -1,0 +1,36 @@
+[package]
+name = "cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+# ── Root Architecture ──
+engines = { path = "../../cluaiz-cure/engines" }
+archer_shared = { package = "archer-shared", path = "../../cluaiz-cure/engines/archer-shared" }
+archer_llama = { package = "archer-llama", path = "../../cluaiz-cure/engines/llama" }
+
+
+# ── Powerhouse Ratatui Framework ──
+ratatui = "0.30.0"
+tachyonfx = "0.7"
+crossterm = { version = "0.28", features = ["event-stream"] }
+tokio = { version = "1", features = ["full"] }
+tokio-stream = "0.1"
+clap = { version = "4", features = ["derive"] }
+inquire = "0.7"
+indicatif = "0.17"
+colored = "2.1"
+sysinfo = "0.30"
+figlet-rs = "1.0.0"
+strum = { version = "0.26", features = ["derive"] }
+itertools = "0.13"
+color-eyre = "0.6"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = "0.4"
+tracing-subscriber = "0.3"
+tracing = "0.1"
+candle-core = { git = "https://github.com/huggingface/candle.git" }
+rand = "0.8"
+unicode-width = "0.1"

@@ -1,0 +1,98 @@
+{
+  "family": "Gemma 4.0",
+  "models": [
+    {
+      "id": "gemma-4-E2B-it",
+      "name": "Gemma 4 E2B",
+      "architecture": "Gemma 4",
+      "parameters": "Effective 2B",
+      "training_tokens": "Professional Grade",
+      "bit_depth": "4.0",
+      "ram_required_gb": 2.1,
+      "download_size_gb": 1.6,
+      "huggingface_repo": "google/gemma-4-E2B-it",
+      "download_url": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/main/gemma-4-E2B-it-Q4_K_M.gguf",
+      "description": "Gemma 4 E2B Instruct is Google's state-of-the-art dense model for low-latency reasoning. It features hybrid-thinking capabilities and supports a 256K context window for professional edge deployment.",
+      "is_cloud_api": false,
+      "requires_gpu": false,
+      "context_window": "256k",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/unsloth/gemma-4-E2B-it/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/unsloth/gemma-4-E2B-it/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/unsloth/gemma-4-E2B-it/resolve/main/tokenizer_config.json"
+        }
+      ]
+    },
+    {
+      "id": "gemma-4-E4B-it",
+      "name": "Gemma 4 E4B",
+      "architecture": "Gemma 4",
+      "parameters": "Effective 4B",
+      "training_tokens": "High Cognitive",
+      "bit_depth": "4.0",
+      "ram_required_gb": 3.8,
+      "download_size_gb": 2.9,
+      "huggingface_repo": "google/gemma-4-E4B-it",
+      "download_url": "https://huggingface.co/unsloth/gemma-4-E4B-it-GGUF/resolve/main/gemma-4-E4B-it-Q4_K_M.gguf",
+      "description": "The Effective 4B variant of Gemma 4. It offers increased cognitive depth compared to the E2B model, designed for complex instruction following and professional assistance with a 256K context window.",
+      "is_cloud_api": false,
+      "requires_gpu": true,
+      "context_window": "256k",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/unsloth/gemma-4-E4B-it/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/unsloth/gemma-4-E4B-it/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/unsloth/gemma-4-E4B-it/resolve/main/tokenizer_config.json"
+        }
+      ]
+    },
+    {
+      "id": "gemma-4-26B-A4B-it",
+      "name": "Gemma 4 26B-A4B MoE",
+      "architecture": "Gemma 4 (MoE)",
+      "parameters": "26B Total / 4B Active",
+      "training_tokens": "Hybrid Reasoning",
+      "bit_depth": "4.0",
+      "ram_required_gb": 18.5,
+      "download_size_gb": 14.2,
+      "huggingface_repo": "google/gemma-4-26B-A4B-it",
+      "download_url": "https://huggingface.co/unsloth/gemma-4-26B-A4B-it-GGUF/resolve/main/gemma-4-26B-A4B-it-Q4_K_M.gguf",
+      "description": "A high-performance Mixture of Experts (MoE) model that balances massive parameter knowledge with efficient compute. Designed for enterprise-grade reasoning and complex multi-step planning.",
+      "is_cloud_api": false,
+      "requires_gpu": true,
+      "context_window": "256k",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/unsloth/gemma-4-26B-A4B-it/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/unsloth/gemma-4-26B-A4B-it/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/unsloth/gemma-4-26B-A4B-it/resolve/main/tokenizer_config.json"
+        }
+      ]
+    }
+  ]
+}

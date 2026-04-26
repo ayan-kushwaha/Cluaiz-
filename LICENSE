@@ -1,0 +1,53 @@
+# CSL LICENSE
+
+Copyright (c) 2026 Cluaiz. All Rights Reserved.
+
+## 1. PREAMBLE
+The Cluaiz Systems License (CSL) is designed to foster a high-performance, collaborative ecosystem. It ensures that the **Cluaiz Infrastructure** remains accessible to individuals and contributors while requiring fair commercial participation from large-scale entities.
+
+---
+
+## 2. THE THREE-TIER USAGE MODEL
+
+### 1. Free Individual Usage
+- **Eligibility**: Individuals, students, researchers, and entities with an annual revenue/valuation below **$1,000,000 USD**.
+- **Rights**: Free use, modification, and integration into your projects (including commercial apps).
+- **Requirement**: Must include the original Cluaiz copyright notice.
+
+### 2. Contributor Commercial Waiver
+- **Eligibility**: Active core contributors to the Cluaiz ecosystem.
+- **The Waiver**: Validated contributors are granted a **Full Commercial Waiver**, bypassing the $1M threshold for profit-based use of the core infrastructure.
+- **Requirement**: Contributions must be merged into the official repository.
+
+### 3. Enterprise Commercial Mandate
+- **Eligibility**: Entities or parent companies with revenue/valuation exceeding **$1,000,000 USD**.
+- **Requirement**: Must obtain a separate Commercial Agreement or fulfill the requirement through strategic partnerships (compute, funding, or hardware access).
+
+---
+
+## 3. PROTECTIVE COVENANTS (THE LOCK & INSTA-KILL)
+- **Trade Secret Status**: The **AtmaSteer Protocol**, **Engine C Mathematical Logic**, and **Silicon Probing Signatures** are hereby defined as **Trade Secrets** of Cluaiz Technologies. Protection extends beyond copyright into intellectual property and proprietary mathematical logic.
+- **No Architectural Cloning**: Copying, reverse-engineering, or reimplementing the **3-Tier Silicon-First** architecture for competing works is strictly prohibited.
+- **The "Insta-Kill" Clause**: Any violation of these covenants results in the **Automatic and Immediate Termination** of all rights granted under this license. Unauthorized use post-termination shall be prosecuted to the fullest extent of the law.
+- **No Unauthorized SaaS**: Managed service or API offerings of Cluaiz that compete with official offerings require an Enterprise Agreement.
+
+---
+
+## 4. AUDIT & COMPLIANCE
+Cluaiz reserves the right to request a self-declaration of revenue or usage audits from commercial entities to ensure compliance with the $1M USD threshold.
+
+---
+
+## 5. NO WARRANTY & LIMITATION OF LIABILITY
+The software is provided "as is". Cluaiz is not liable for any damages arising from the use of this engine.
+
+---
+
+## 6. GOVERNING LAW, ARBITRATION & JURISDICTION
+- **Governing Law**: This license shall be governed by the laws of **India**.
+- **International Arbitration**: All disputes arising from this license shall be settled by binding **Arbitration in New Delhi, India**, conducted in accordance with the Arbitration and Conciliation Act, 1996.
+- **Final Legal Venue**: While arbitration is the primary dispute resolution mechanism, the **Final Legal Jurisdiction** remains exclusively with the courts in **Prayagraj, Uttar Pradesh, India**.
+
+---
+
+**"Architecture is Sovereignty. Logic is a Trade Secret."**

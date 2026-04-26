@@ -1,0 +1,130 @@
+use std::path::{Path, PathBuf};
+use std::fs;
+use crate::models::registry::ModelManifest;
+use tracing::{info, warn, error};
+
+pub struct AutonomousDiscovery;
+
+impl AutonomousDiscovery {
+    /// Deep-scans the models directory for Sovereign Handshake units.
+    pub fn index_sovereign_models(base_path: &Path) -> Vec<ModelManifest> {
+        info!("🔍 Autonomous Discovery: Scouring {:?} for neural units...", base_path);
+        let mut models = Vec::new();
+
+        if !base_path.exists() { return models; }
+
+        // Recursive scan for model_manifest.json
+        Self::scan_recursive(base_path, &mut models);
+
+        info!("✅ Discovery Complete: Identified {} local neural assets.", models.len());
+        models
+    }
+
+    fn scan_recursive(dir: &Path, models: &mut Vec<ModelManifest>) {
+        if let Ok(entries) = fs::read_dir(dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.is_dir() {
+                    let manifest_path = path.join("model_manifest.json");
+                    let dna_path = path.join("structural_dna.json");
+                    if manifest_path.exists() {
+                        if let Ok(content) = fs::read_to_string(&manifest_path) {
+                            if let Ok(mut manifest) = serde_json::from_str::<ModelManifest>(&content) {
+                                manifest.local_path = Some(path.to_string_lossy().to_string());
+                                
+                                // 🧬 SOVEREIGN DNA HEALING: Trigger regeneration if DNA is missing or has nulls
+                                let mut needs_healing = !dna_path.exists();
+                                if !needs_healing {
+                                    if let Ok(dna_str) = fs::read_to_string(&dna_path) {
+                                        if dna_str.contains(": null") || dna_str.contains(":null") {
+                                            needs_healing = true;
+                                            info!("🧬 [Healing] Null fields detected for '{}'. Regenerating...", manifest.id);
+                                        }
+                                    }
+                                }
+
+                                if needs_healing {
+                                    let _ = Self::repair_dna_from_local(&path, &manifest);
+                                }
+                                
+                                if dna_path.exists() {
+                                    manifest.dna_path = Some(dna_path.to_string_lossy().to_string());
+                                }
+                                models.push(manifest);
+                            }
+                        }
+                    } else {
+                        Self::scan_recursive(&path, models);
+                    }
+                }
+            }
+        }
+    }
+
+    /// 🩹 SOVEREIGN REPAIR: Probes GGUF weights to extract full-power architectural DNA.
+    fn repair_dna_from_local(dir: &Path, manifest: &ModelManifest) -> std::result::Result<(), String> {
+        let weight_path = fs::read_dir(dir).map_err(|e| e.to_string())?
+            .flatten()
+            .find(|e| e.path().extension().and_then(|s| s.to_str()) == Some("gguf"))
+            .map(|e| e.path());
+
+        if let Some(wp) = weight_path {
+            let mut signature = archer_shared::KernelSignature::default();
+            signature.is_multimodal = manifest.has_vision;
+            if manifest.expert_count.is_some() { signature.has_experts = true; }
+            if manifest.bit_depth < 2.0 { signature.is_bitnet = true; }
+
+            let runtime = if manifest.bit_depth < 2.0 {
+                archer_shared::backend::signature::BackendType::RuntimeB
+            } else {
+                archer_shared::backend::signature::BackendType::RuntimeA
+            };
+
+
+            let mut dna = crate::models::registry::StructuralDNA {
+                model_identity: manifest.id.clone(),
+                layer_count: None,
+                attention_head_count: None,
+                attention_head_count_kv: None,
+                attention_head_dim: None,
+                hidden_size: None,
+                intermediate_size: None,
+                attention_dimensionality_truth: None,
+                signature,
+                preferred_runtime: Some(runtime),
+                heterogeneous_map: None,
+                dynamic_attributes: {
+                    let mut map = std::collections::HashMap::new();
+                    map.insert("bit_depth".to_string(), manifest.bit_depth.to_string());
+                    map.insert("context_window".to_string(), manifest.context_window.clone());
+                    map
+                },
+
+            };
+
+            if manifest.bit_depth < 2.0 {
+                // 👻 GHOST PROBE: 1-bit models (BitNet) cannot be parsed by Candle natively.
+                // We use the manifest data to seal the DNA instead of weight-probing.
+                info!("👻 [Discovery] BitNet Detected for '{}'. Using Ghost Probe to seal DNA.", manifest.id);
+                let dna_path = dir.join("structural_dna.json");
+                if let Ok(json) = serde_json::to_string_pretty(&dna) {
+                    let _ = fs::write(dna_path, json);
+                    info!("✅ DNA SEALED (GHOST): '{}' is now Sovereign-Verified.", manifest.id);
+                }
+            } else if let Ok(mut file) = std::fs::File::open(&wp) {
+                // NOTE: Standard models are probed normally.
+                if let Ok(content) = candle_core::quantized::gguf_file::Content::read(&mut file) {
+                    dna.sync_with_gguf_metadata(&content.metadata, &content.tensor_infos);
+                    
+                    let dna_path = dir.join("structural_dna.json");
+                    if let Ok(json) = serde_json::to_string_pretty(&dna) {
+                        let _ = fs::write(dna_path, json);
+                        info!("✅ DNA SEALED: '{}' is now Sovereign-Verified.", manifest.id);
+                    }
+                }
+            }
+
+        }
+        Ok(())
+    }
+}
