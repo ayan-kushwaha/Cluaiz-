@@ -50,5 +50,20 @@ pub fn render_stream(app: &AppState, area: Rect, buf: &mut Buffer) {
         Span::styled(if is_loading { "Initializing Neural Weights..." } else { &app._chat_input }, Style::default().fg(if is_loading { Color::DarkGray } else { Color::White })),
     ]);
 
-    Paragraph::new(prompt_line).render(Rect::new(area.x + left_margin, area.bottom().saturating_sub(1), view_width, 1), buf);
+    // Render Input
+    Paragraph::new(prompt_line).render(Rect::new(area.x + left_margin, area.bottom().saturating_sub(2), view_width, 1), buf);
+
+    // ── LIVE PULSE BAR ───────────────────────────────────────────────
+    if let Ok(pulse) = app.live_pulse.pulse.read() {
+        let pulse_line = Line::from(vec![
+            Span::styled("  ⚡ SOVEREIGN PULSE  ", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
+            Span::styled("│ CPU: ", Style::default().fg(Color::DarkGray)),
+            Span::styled(format!("{:>4.1}% {:>4.1}°C", pulse.cpu.utilization_pct, pulse.cpu.temperature_c), Style::default().fg(Color::Cyan)),
+            Span::styled(" │ RAM: ", Style::default().fg(Color::DarkGray)),
+            Span::styled(format!("{:>4.1} GB", pulse.ram.used_gb), Style::default().fg(Color::Magenta)),
+            Span::styled(" │ GPU: ", Style::default().fg(Color::DarkGray)),
+            Span::styled(format!("{:>4.1}% {:>4.1}°C {:>4.1}W", pulse.gpu.utilization_pct, pulse.gpu.temperature_c, pulse.gpu.power_draw_watts), Style::default().fg(Color::Green)),
+        ]);
+        Paragraph::new(pulse_line).render(Rect::new(area.x + left_margin, area.bottom().saturating_sub(1), view_width, 1), buf);
+    }
 }

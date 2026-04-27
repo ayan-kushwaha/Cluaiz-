@@ -37,3 +37,4 @@ pub fn elevate_process_priority() -> Result<(), &'static str> {
         Err("Process elevation not supported on this architecture")
     }
 }
+

@@ -1,0 +1,67 @@
+{
+  "family": "Gemma 1.1",
+  "models": [
+    {
+      "id": "gemma-1.1-2b-it",
+      "name": "Gemma 1.1 2B",
+      "architecture": "Gemma 1.1",
+      "parameters": "2B",
+      "training_tokens": "Professional Grade",
+      "bit_depth": 4.0,
+      "ram_required_gb": 1.6,
+      "download_size_gb": 1.5,
+      "huggingface_repo": "google/gemma-1.1-2b-it",
+      "download_url": "https://huggingface.co/unsloth/gemma-1.1-2b-it-GGUF/resolve/main/gemma-1.1-2b-it-Q4_K_M.gguf",
+      "description": "Gemma 1.1 2B is an optimized version of the original Gemma architecture, featuring improved instruction following and safety guardrails.",
+      "is_cloud_api": false,
+      "requires_gpu": false,
+      "context_window": "8k",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/unsloth/gemma-1.1-2b-it/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/unsloth/gemma-1.1-2b-it/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/unsloth/gemma-1.1-2b-it/resolve/main/tokenizer_config.json"
+        }
+      ]
+    },
+    {
+      "id": "gemma-1.1-7b-it",
+      "name": "Gemma 1.1 7B",
+      "architecture": "Gemma 1.1",
+      "parameters": "7B",
+      "training_tokens": "High Cognitive",
+      "bit_depth": 4.0,
+      "ram_required_gb": 5.5,
+      "download_size_gb": 4.8,
+      "huggingface_repo": "google/gemma-1.1-7b-it",
+      "download_url": "https://huggingface.co/unsloth/gemma-1.1-7b-it-GGUF/resolve/main/gemma-1.1-7b-it-Q4_K_M.gguf",
+      "description": "Gemma 1.1 7B provides professional-grade cognitive depth for complex reasoning and technical creative generation tasks.",
+      "is_cloud_api": false,
+      "requires_gpu": true,
+      "context_window": "8k",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/unsloth/gemma-1.1-7b-it/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/unsloth/gemma-1.1-7b-it/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/unsloth/gemma-1.1-7b-it/resolve/main/tokenizer_config.json"
+        }
+      ]
+    }
+  ]
+}

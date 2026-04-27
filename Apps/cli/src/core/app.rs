@@ -70,7 +70,7 @@ impl App {
 
                     // ── 2. Background Event Processing ──
                     while let Ok(event) = self.rx.try_recv() {
-                        self.handle_kernel_event(event);
+                        self.handle_kernel_event(event).await;
                     }
                     crate::ui::apps::stream::commit_to_stdout(&mut self.state);
 
@@ -82,7 +82,7 @@ impl App {
         Ok(())
     }
 
-    fn handle_kernel_event(&mut self, event: DownloadEvent) {
+    async fn handle_kernel_event(&mut self, event: DownloadEvent) {
         match event {
             DownloadEvent::Progress(prog, _current, _total, _speed, _eta) => {
                 self.state.download_progress = prog as f64;
@@ -90,7 +90,7 @@ impl App {
             DownloadEvent::Complete(id) => {
                 if id == "INITIAL_LOAD" {
                     self.state.sorted_models = engines::NeuralRoster::get_recommendations(
-                        &self.state.hardware, self.state.ram_gb
+                        &self.state.hardware.to_silicon_truth(), self.state.ram_gb
                     );
                 } else if self.state.downloading_id.as_ref() == Some(&id) {
                     let name = self.state.sorted_models.iter()
@@ -101,7 +101,7 @@ impl App {
                     self.state.downloading_id = None;
                     self.state.activity_stream.push(ActivityBlock::DownloadComplete(name));
                     self.state.sorted_models = engines::NeuralRoster::get_recommendations(
-                        &self.state.hardware, self.state.ram_gb
+                        &self.state.hardware.to_silicon_truth(), self.state.ram_gb
                     );
                 }
             }

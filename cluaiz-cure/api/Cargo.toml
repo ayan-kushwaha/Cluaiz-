@@ -6,7 +6,7 @@ authors.workspace = true
 
 [dependencies]
 # ── CURE Internal Crates ──
-storage = { path = "../storage" }
+storage = { path = "../../brain/storage" }
 engines = { path = "../engines" }
 
 # ── Web Server (The Gateway) ──

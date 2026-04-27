@@ -465,10 +465,11 @@ fn render_hardware_step(state: &mut AppState, area: Rect, buf: &mut Buffer) {
         .style(Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD))
         .render(Rect::new(area.x + lm, area.y + 1, area.width, 1), buf);
 
-    let cpu_brand = &state.hardware.cpu_brand;
-    let cpu_cores = state.hardware.cpu_cores;
-    let gpu_display = if state.hardware.compute.has_gpu {
-        format!("Accelerator Active ({:.1} GB VRAM)", state.hardware.compute.vram_gb)
+    let cpu_brand = &state.hardware.cpu.brand;
+    let cpu_cores = state.hardware.cpu.physical_cores;
+    let has_gpu = !state.hardware.accelerators.gpus.is_empty();
+    let gpu_display = if has_gpu {
+        format!("Accelerator Active ({:.1} GB VRAM)", state.hardware.accelerators.gpus[0].vram_total_gb)
     } else {
         "NO ACCELERATOR DETECTED".to_string()
     };
@@ -477,7 +478,7 @@ fn render_hardware_step(state: &mut AppState, area: Rect, buf: &mut Buffer) {
     let specs: Vec<Line> = vec![
         Line::from(vec![
             Span::styled("  HOST PLATFORM: ", Style::default().fg(Color::DarkGray)),
-            Span::styled(state.hardware.platform.clone(), Style::default().fg(Color::White)),
+            Span::styled(state.hardware.compute_architecture_type.clone().unwrap_or_default(), Style::default().fg(Color::White)),
         ]),
         Line::from(vec![
             Span::styled("  CPU UNIT:      ", Style::default().fg(Color::DarkGray)),
@@ -485,7 +486,7 @@ fn render_hardware_step(state: &mut AppState, area: Rect, buf: &mut Buffer) {
         ]),
         Line::from(vec![
             Span::styled("  GPU COMPUTE:   ", Style::default().fg(Color::DarkGray)),
-            Span::styled(gpu_display, Style::default().fg(if state.hardware.compute.has_gpu { Color::Cyan } else { Color::Yellow })),
+            Span::styled(gpu_display, Style::default().fg(if has_gpu { Color::Cyan } else { Color::Yellow })),
         ]),
 
         Line::from(vec![

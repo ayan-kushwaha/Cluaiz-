@@ -43,28 +43,28 @@ impl SiliconOrchestrator {
         let target_signature = &sovereign_context.dna.signature;
 
         // 🤖 SOVEREIGN MANAGER LOGIC: Hardware-Aware Engine Override
-        // We probe the primary vendor to decide the preferred runtime
         let preferred_engine = if target_signature.is_bitnet {
             tracing::info!("🔩 [Manager] BitNet Signature Detected. Routing to Engine C (Native).");
             BackendType::RuntimeC
         } else {
-            match profile.compute.primary_vendor {
-            Some(archer_shared::hardware::schema::HardwareVendor::NVIDIA) => {
-                tracing::info!("🔩 [Manager] NVIDIA Detected. Routing to Llama (Nitro/CUDA).");
-                BackendType::RuntimeB
-            },
-            Some(archer_shared::hardware::schema::HardwareVendor::Intel) => {
-                tracing::info!("🔩 [Manager] Intel Silicon Detected. Routing to Llama (OpenVINO/SYCL).");
-                BackendType::RuntimeB
-            },
-            Some(archer_shared::hardware::schema::HardwareVendor::Apple) => {
-                tracing::info!("🔩 [Manager] Apple Silicon Detected. Routing to Candle (Metal).");
-                BackendType::RuntimeA
-            },
-
-
-            _ => {
-                sovereign_context.dna.preferred_runtime.clone().unwrap_or(BackendType::RuntimeA)
+            let vendor = profile.accelerators.gpus.first().map(|g| g.vendor.as_str()).unwrap_or("CPU");
+            match vendor {
+                "NVIDIA" => {
+                    tracing::info!("🔩 [Manager] NVIDIA Detected. Routing to Llama (Nitro/CUDA).");
+                    BackendType::RuntimeB
+                },
+                "Intel" => {
+                    tracing::info!("🔩 [Manager] Intel Silicon Detected. Routing to Llama (OpenVINO/SYCL).");
+                    BackendType::RuntimeB
+                },
+                "Apple" => {
+                    tracing::info!("🔩 [Manager] Apple Silicon Detected. Routing to Candle (Metal).");
+                    BackendType::RuntimeA
+                },
+                _ => {
+                    tracing::info!("🔩 [Manager] Generic Silicon. Routing to Candle (CPU).");
+                    BackendType::RuntimeA
+                }
             }
         };
 
@@ -89,10 +89,9 @@ impl SiliconOrchestrator {
             let mut model = (constructor_ref)(model_load_path, sovereign_context)?;
 
             // 🧠 [Persistence] Neural Signal Stitching
-            // Check if we have a persistent signal for this model identity
-            if let Some(signal) = SESSION_CACHE.get(&Uuid::nil()) {
-                 tracing::info!("🧬 [Stitching] Recalling neural signals for session continuity...");
-                 let _ = model.inject_signal(signal.clone());
+            if let Some(signal_ref) = SESSION_CACHE.get(&Uuid::nil()) {
+                tracing::info!("🧬 [Stitching] Recalling neural signals for session continuity...");
+                let _ = model.inject_signal(signal_ref.value().clone());
             }
 
             return Ok(model);

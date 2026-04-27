@@ -1,6 +1,6 @@
 use crate::metadata::dna::StructuralDNA;
 
-use crate::hardware::governor::HardwareGovernor;
+use crate::hardware::HardwareGovernor;
 use crate::prompting::templater::TemplateManager;
 
 

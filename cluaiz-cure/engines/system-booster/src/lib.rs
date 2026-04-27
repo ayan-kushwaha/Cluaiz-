@@ -1,9 +1,6 @@
 //! ═══════════════════════════════════════════════════════════════════════
 //!  CURE External Crate: System Booster (Bare Metal Isolator)
 //! ═══════════════════════════════════════════════════════════════════════
-//! This crate contains highly experimental, low-level (Assembly/Shell) 
-//! hardware optimizations. It is isolated from the main engine so compile 
-//! failures on unsupported OS architectures do not break the core system.
 
 pub mod turbo_quant;
 pub mod flash_attn;
@@ -12,3 +9,9 @@ pub mod auto_round;
 pub mod os_tuning;
 pub mod telemetry;
 pub mod neural_core;
+pub mod system_booster;
+
+// 🏛️ Reusing the Unified Architecture from archer-shared
+pub use archer_shared::hardware::governor::HardwareGovernor;
+pub use archer_shared::hardware::schema::booster::{BoosterControl, FeatureState};
+pub use system_booster::SystemBooster;

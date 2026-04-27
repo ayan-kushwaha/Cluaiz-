@@ -1,0 +1,36 @@
+{
+  "family": "Llama 3.3",
+  "models": [
+    {
+      "id": "llama-3.3-70b-it",
+      "name": "Llama 3.3 70B",
+      "architecture": "Llama 3.3",
+      "parameters": "70.6 Billion",
+      "training_tokens": "15.0 Trillion+",
+      "bit_depth": 4.0,
+      "ram_required_gb": 45.0,
+      "download_size_gb": 38.8,
+      "huggingface_repo": "meta-llama/Llama-3.3-70B-Instruct",
+      "download_url": "https://huggingface.co/unsloth/Llama-3.3-70B-Instruct-GGUF/resolve/main/Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+      "description": "Llama 3.3 70B Instruct is Meta's most advanced text-only unit to date. By distilling the knowledge of massive frontier models into a high-performance 70B backbone, it achieves reasoning accuracy previously reserved for 400B+ models. Specifically optimized for complex instruction following, mathematical synthesis, and advanced software planning, it is the 'Strategic Engine' of Archer OS. Featuring a native 128K context window and the improved Llama 3.x architecture, it offers the ultimate balance between heavy-duty intelligence and localized hardware compatibility. It is the definitive choice for professional multi-agent orchestration and technical deep-dives.",
+      "is_cloud_api": false,
+      "requires_gpu": true,
+      "context_window": "128k",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct/resolve/main/tokenizer_config.json"
+        }
+      ]
+    }
+  ]
+}

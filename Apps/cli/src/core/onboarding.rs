@@ -1,9 +1,9 @@
+use crate::app_enums::Mode;
+use crate::core::state::{AppState, AuthMode, OnboardingStep, OsState};
+use ::archer_shared::profile::AccountType;
 use color_eyre::Result;
 use crossterm::event::{KeyCode, KeyEvent};
-use ::archer_shared::profile::AccountType;
-use crate::core::state::{AppState, OsState, OnboardingStep, AuthMode};
-use crate::app_enums::{Mode};
-use tracing::info;
+use colored::Colorize;
 
 pub struct OnboardingEngine;
 
@@ -55,15 +55,13 @@ impl OnboardingEngine {
                     let binary_path = archer_llama::router::BinaryRouter::resolve_binary();
 
                     if !binary_path.exists() {
-                        info!("⏳ [Onboarding] Neural Core still forging. Holding transition until Silicon is ready...");
+                        println!("  {} [Onboarding] Neural Core still forging. Holding transition until Silicon is ready...", "⏳".yellow());
                         state.onboarding_status = "SYNCING NEURAL CORE...".to_string();
                         // We stay on the Complete step until the next tick/input
                         return;
                     } else {
                         state.onboarding_status = "OPTIMIZED ✓".to_string();
                     }
-
-
 
                     // Complete! Save profile + seed workspace + go to dashboard
                     state.user_profile.onboarding_completed = true;
@@ -73,12 +71,16 @@ impl OnboardingEngine {
                     state.username = state.user_profile.display_name().to_string();
                     state.os_state = OsState::Dashboard;
                 }
-
             }
         }
     }
 
-    pub fn handle_key(state: &mut AppState, step: OnboardingStep, key: KeyEvent, mode: &mut Mode) -> Result<()> {
+    pub fn handle_key(
+        state: &mut AppState,
+        step: OnboardingStep,
+        key: KeyEvent,
+        mode: &mut Mode,
+    ) -> Result<()> {
         // Global: ESC to go back
         if key.code == KeyCode::Esc {
             if let Some(prev) = ::archer_shared::onboarding::prev_step(step) {
@@ -103,161 +105,197 @@ impl OnboardingEngine {
 
         match step {
             OnboardingStep::LogoAnimation => {
-                if key.code == KeyCode::Enter { Self::advance(state); }
+                if key.code == KeyCode::Enter {
+                    Self::advance(state);
+                }
             }
             OnboardingStep::WelcomeAbout => {
-                if key.code == KeyCode::Enter { Self::advance(state); }
-            }
-            OnboardingStep::Auth => {
-                match state.auth_sub_step {
-                    0 => {
-                        match key.code {
-                            KeyCode::Up | KeyCode::Down => {
-                                state.auth_mode = match state.auth_mode {
-                                    AuthMode::Google => AuthMode::Email,
-                                    AuthMode::Email => AuthMode::Google,
-                                };
-                            }
-                            KeyCode::Enter => {
-                                match state.auth_mode {
-                                    AuthMode::Google => {
-                                        state.user_profile.auth = ::archer_shared::auth::dummy_google_auth("sovereign@cluaiz.os", "Sovereign User");
-                                        Self::advance(state);
-                                    }
-                                    AuthMode::Email => { state.auth_sub_step = 1; }
-                                }
-                            }
-                            _ => {}
-                        }
-                    }
-                    1 => {
-                        match key.code {
-                            KeyCode::Char(c) => state.auth_email_input.push(c),
-                            KeyCode::Backspace => { state.auth_email_input.pop(); }
-                            KeyCode::Enter => { if !state.auth_email_input.is_empty() { state.auth_sub_step = 2; } }
-                            _ => {}
-                        }
-                    }
-                    2 => {
-                        match key.code {
-                            KeyCode::Char(c) => state.auth_password_input.push(c),
-                            KeyCode::Backspace => { state.auth_password_input.pop(); }
-                            KeyCode::Enter => {
-                                if !state.auth_password_input.is_empty() {
-                                    state.user_profile.auth = ::archer_shared::auth::dummy_email_auth(&state.auth_email_input, &state.auth_password_input);
-                                    Self::advance(state);
-                                }
-                            }
-                            _ => {}
-                        }
-                    }
-                    _ => {}
+                if key.code == KeyCode::Enter {
+                    Self::advance(state);
                 }
             }
-            OnboardingStep::UsageChoice => {
-                match key.code {
+            OnboardingStep::Auth => match state.auth_sub_step {
+                0 => match key.code {
                     KeyCode::Up | KeyCode::Down => {
-                        let current = state.menu_state.selected().unwrap_or(0);
-                        let next = if current == 0 { 1 } else { 0 };
-                        state.menu_state.select(Some(next));
+                        state.auth_mode = match state.auth_mode {
+                            AuthMode::Google => AuthMode::Email,
+                            AuthMode::Email => AuthMode::Google,
+                        };
+                    }
+                    KeyCode::Enter => match state.auth_mode {
+                        AuthMode::Google => {
+                            state.user_profile.auth = ::archer_shared::auth::dummy_google_auth(
+                                "sovereign@cluaiz.os",
+                                "Sovereign User",
+                            );
+                            Self::advance(state);
+                        }
+                        AuthMode::Email => {
+                            state.auth_sub_step = 1;
+                        }
+                    },
+                    _ => {}
+                },
+                1 => match key.code {
+                    KeyCode::Char(c) => state.auth_email_input.push(c),
+                    KeyCode::Backspace => {
+                        state.auth_email_input.pop();
                     }
                     KeyCode::Enter => {
-                        let selected = state.menu_state.selected().unwrap_or(0);
-                        state.user_profile.account_type = match selected {
-                            0 => AccountType::Personal,
-                            _ => AccountType::Business,
-                        };
-                        Self::advance(state);
+                        if !state.auth_email_input.is_empty() {
+                            state.auth_sub_step = 2;
+                        }
                     }
                     _ => {}
+                },
+                2 => match key.code {
+                    KeyCode::Char(c) => state.auth_password_input.push(c),
+                    KeyCode::Backspace => {
+                        state.auth_password_input.pop();
+                    }
+                    KeyCode::Enter => {
+                        if !state.auth_password_input.is_empty() {
+                            state.user_profile.auth = ::archer_shared::auth::dummy_email_auth(
+                                &state.auth_email_input,
+                                &state.auth_password_input,
+                            );
+                            Self::advance(state);
+                        }
+                    }
+                    _ => {}
+                },
+                _ => {}
+            },
+            OnboardingStep::UsageChoice => match key.code {
+                KeyCode::Up | KeyCode::Down => {
+                    let current = state.menu_state.selected().unwrap_or(0);
+                    let next = if current == 0 { 1 } else { 0 };
+                    state.menu_state.select(Some(next));
                 }
-            }
-            OnboardingStep::ProfileInfo => {
-                match state.user_profile.account_type {
-                    AccountType::Personal => {
-                        match key.code {
-                            KeyCode::Char(c) => state.personal_name_input.push(c),
-                            KeyCode::Backspace => { state.personal_name_input.pop(); }
-                            KeyCode::Enter => {
-                                if !state.personal_name_input.is_empty() {
-                                    state.user_profile.identity.name = state.personal_name_input.clone();
-                                    state.username = state.personal_name_input.clone();
+                KeyCode::Enter => {
+                    let selected = state.menu_state.selected().unwrap_or(0);
+                    state.user_profile.account_type = match selected {
+                        0 => AccountType::Personal,
+                        _ => AccountType::Business,
+                    };
+                    Self::advance(state);
+                }
+                _ => {}
+            },
+            OnboardingStep::ProfileInfo => match state.user_profile.account_type {
+                AccountType::Personal => match key.code {
+                    KeyCode::Char(c) => state.personal_name_input.push(c),
+                    KeyCode::Backspace => {
+                        state.personal_name_input.pop();
+                    }
+                    KeyCode::Enter => {
+                        if !state.personal_name_input.is_empty() {
+                            state.user_profile.identity.name = state.personal_name_input.clone();
+                            state.username = state.personal_name_input.clone();
+                            Self::advance(state);
+                        }
+                    }
+                    _ => {}
+                },
+                AccountType::Business => {
+                    let field_idx = state.profile_field_index;
+                    match key.code {
+                        KeyCode::Char(c) => {
+                            if field_idx == 0 {
+                                state.business_name_input.push(c);
+                            }
+                        }
+                        KeyCode::Backspace => {
+                            if field_idx == 0 {
+                                state.business_name_input.pop();
+                            }
+                        }
+                        KeyCode::Up => {
+                            if field_idx == 0 {
+                                let current = state.menu_state.selected().unwrap_or(0);
+                                if current > 0 {
+                                    state.menu_state.select(Some(current - 1));
+                                }
+                            }
+                        }
+                        KeyCode::Down => {
+                            if field_idx == 0 {
+                                let current = state.menu_state.selected().unwrap_or(0);
+                                state.menu_state.select(Some(current + 1));
+                            }
+                        }
+                        KeyCode::Tab => {
+                            state.profile_field_index = (field_idx + 1).min(6);
+                            state.menu_state.select(Some(0));
+                        }
+                        KeyCode::Enter => {
+                            let biz = state
+                                .user_profile
+                                .business
+                                .get_or_insert_with(Default::default);
+                            match field_idx {
+                                0 => {
+                                    if !state.business_name_input.is_empty() {
+                                        biz.name = state.business_name_input.clone();
+                                        state.user_profile.identity.name =
+                                            state.business_name_input.clone();
+                                        state.profile_field_index = 1;
+                                        state.menu_state.select(Some(0));
+                                    }
+                                }
+                                1 => {
+                                    let sel = state.menu_state.selected().unwrap_or(0);
+                                    if sel < ::archer_shared::profile::INDUSTRY_TAXONOMY.len() {
+                                        biz.industry = ::archer_shared::profile::INDUSTRY_TAXONOMY
+                                            [sel]
+                                            .id
+                                            .to_string();
+                                        state.profile_field_index = 2;
+                                        state.menu_state.select(Some(0));
+                                    }
+                                }
+                                2 => {
+                                    let subs =
+                                        ::archer_shared::profile::get_sub_categories(&biz.industry);
+                                    let sel = state.menu_state.selected().unwrap_or(0);
+                                    if sel < subs.len() {
+                                        biz.sub_category = subs[sel].id.to_string();
+                                        state.profile_field_index = 3;
+                                        state.menu_state.select(Some(0));
+                                    }
+                                }
+                                _ => {
                                     Self::advance(state);
                                 }
                             }
-                            _ => {}
                         }
-                    }
-                    AccountType::Business => {
-                        let field_idx = state.profile_field_index;
-                        match key.code {
-                            KeyCode::Char(c) => { if field_idx == 0 { state.business_name_input.push(c); } }
-                            KeyCode::Backspace => { if field_idx == 0 { state.business_name_input.pop(); } }
-                            KeyCode::Up => {
-                                if field_idx == 0 {
-                                    let current = state.menu_state.selected().unwrap_or(0);
-                                    if current > 0 { state.menu_state.select(Some(current - 1)); }
-                                }
-                            }
-                            KeyCode::Down => {
-                                if field_idx == 0 {
-                                    let current = state.menu_state.selected().unwrap_or(0);
-                                    state.menu_state.select(Some(current + 1));
-                                }
-                            }
-                            KeyCode::Tab => {
-                                state.profile_field_index = (field_idx + 1).min(6);
-                                state.menu_state.select(Some(0));
-                            }
-                            KeyCode::Enter => {
-                                let biz = state.user_profile.business.get_or_insert_with(Default::default);
-                                match field_idx {
-                                    0 => {
-                                        if !state.business_name_input.is_empty() {
-                                            biz.name = state.business_name_input.clone();
-                                            state.user_profile.identity.name = state.business_name_input.clone();
-                                            state.profile_field_index = 1;
-                                            state.menu_state.select(Some(0));
-                                        }
-                                    }
-                                    1 => {
-                                        let sel = state.menu_state.selected().unwrap_or(0);
-                                        if sel < ::archer_shared::profile::INDUSTRY_TAXONOMY.len() {
-                                            biz.industry = ::archer_shared::profile::INDUSTRY_TAXONOMY[sel].id.to_string();
-                                            state.profile_field_index = 2;
-                                            state.menu_state.select(Some(0));
-                                        }
-                                    }
-                                    2 => {
-                                        let subs = ::archer_shared::profile::get_sub_categories(&biz.industry);
-                                        let sel = state.menu_state.selected().unwrap_or(0);
-                                        if sel < subs.len() {
-                                            biz.sub_category = subs[sel].id.to_string();
-                                            state.profile_field_index = 3;
-                                            state.menu_state.select(Some(0));
-                                        }
-                                    }
-                                    _ => { Self::advance(state); }
-                                }
-                            }
-                            _ => {}
-                        }
+                        _ => {}
                     }
                 }
-            }
+            },
             OnboardingStep::HardwareAudit => {
                 if key.code == KeyCode::Enter {
                     state.user_profile.hardware_completed = true;
-                    
+
                     // 🚀 NEURAL IGNITION: Trigger Background Provisioning
                     let os = if cfg!(windows) { "windows" } else { "linux" };
-                    let driver = state.hardware.compute.primary_driver.clone()
-                        .unwrap_or(archer_shared::hardware::schema::BackendDriver::CPU);
+                    let driver = if let Some(d) = state.hardware.active_drivers.get(0) {
+                        match d.driver_id.as_str() {
+                            "CUDA" => archer_shared::hardware::schema::BackendDriver::CUDA,
+                            "METAL" => archer_shared::hardware::schema::BackendDriver::METAL,
+                            _ => archer_shared::hardware::schema::BackendDriver::CPU,
+                        }
+                    } else {
+                        archer_shared::hardware::schema::BackendDriver::CPU
+                    };
                     let binary_path = archer_llama::router::BinaryRouter::resolve_binary();
 
+                    println!(
+                        "  {} [Onboarding] Igniting Neural Core Provisioner for [{:?}]...",
+                        "🔥".red(),
+                        driver
+                    );
 
-                    info!("🔥 [Onboarding] Igniting Neural Core Provisioner for [{:?}]...", driver);
-                    
                     // Fire-and-forget background task
                     tokio::spawn(async move {
                         let _ = engines::runtime::execution::provisioner::BinaryProvisioner::ensure_binary(os, &driver, &binary_path).await;
@@ -267,14 +305,20 @@ impl OnboardingEngine {
                 }
             }
 
-            _ => { if key.code == KeyCode::Enter { Self::advance(state); } }
+            _ => {
+                if key.code == KeyCode::Enter {
+                    Self::advance(state);
+                }
+            }
         }
         Ok(())
     }
 }
 
 pub fn textwrap(text: &str, width: usize) -> String {
-    if width == 0 { return text.to_string(); }
+    if width == 0 {
+        return text.to_string();
+    }
     let mut result = String::new();
     let mut col = 0;
     for word in text.split_whitespace() {

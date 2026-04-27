@@ -3,11 +3,13 @@
 
 use archer_shared::hardware::telemetry;
 use std::io::{stdout, Write};
-use std::sync::atomic::Ordering;
 use std::thread;
 use std::time::Duration;
 
 fn main() -> anyhow::Result<()> {
+    // 🏛️ Initialize the Sovereign Governor (Triggers Calibration if JSON is missing)
+    let _governor = archer_shared::HardwareGovernor::start();
+    
     let sensor = telemetry::get_pulse();
     let mut stdout = stdout();
 
@@ -17,13 +19,10 @@ fn main() -> anyhow::Result<()> {
 
     loop {
         // 1. Data Collection
-        let per_core_readings: Vec<u32> = sensor
-            .per_core_usage
-            .iter()
-            .map(|c| c.load(Ordering::Relaxed))
-            .collect();
-        let vram_usage = sensor.vram_pressure_pct.load(Ordering::Relaxed);
-        let reading_celsius = sensor.relay_latency_ms.load(Ordering::Relaxed); // Simplified for diagnostic
+        let pulse = sensor.pulse.read().unwrap();
+        let per_core_readings = pulse.per_core_usage.clone();
+        let vram_usage = pulse.vram_pressure_pct;
+        let reading_celsius = pulse.cpu.temperature_c;
 
         // 2. Render UI (ANSI Express)
         print!("\x1B[H"); // Move to top
@@ -33,10 +32,10 @@ fn main() -> anyhow::Result<()> {
         // CPU Grid (Per-Core Audit)
         println!("\n[CPU CORE AUDIT]");
         for (core_index, usage_reading) in per_core_readings.iter().enumerate() {
-            let usage_bar = render_bar(*usage_reading as u32, 20);
+            let usage_bar = render_bar(*usage_reading, 20);
             print!(
                 " Core {:02} [{}] {:.1}%   ",
-                core_index, usage_bar, usage_reading
+                core_index, usage_bar, *usage_reading as f32
             );
             if (core_index + 1) % 2 == 0 {
                 println!();
@@ -47,13 +46,13 @@ fn main() -> anyhow::Result<()> {
         println!("\n\n[SILICON DIODES]");
         let vram_bar = render_bar(vram_usage, 40);
         println!(" VRAM Pressure: [{}] {}%", vram_bar, vram_usage);
-        println!(" CPU Thermal:   {}°C", reading_celsius);
+        println!(" CPU Thermal:   {:.1}°C", reading_celsius);
 
-        // Neural Metrics (Placeholder for Engine Link)
+        // Neural Metrics
         println!("\n[NEURAL KERNEL METRICS]");
-        println!(" Relay Latency:  -- ms  (Waiting for Engine Pulse...)");
-        println!(" context Cache:  -- MB  (Waiting for Engine Pulse...)");
-        println!(" Disk Load:      -- MB/s (Waiting for Engine Pulse...)");
+        println!(" Relay Latency:  {} ms", pulse.relay_latency_ms);
+        println!(" context Cache:  {} MB", pulse.kv_cache_footprint_mb);
+        println!(" Disk Load:      {} MB/s", pulse.storage_throughput_mbps);
 
         println!("\n══════════════════════════════════════════════════════════");
         println!(" [Ctrl+C] to exit 'Ghost Mode'");

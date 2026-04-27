@@ -1,0 +1,129 @@
+{
+  "family": "Llama 3.2 (Multimodal Edge Cluster)",
+  "models": [
+    {
+      "id": "llama-3.2-1b-it",
+      "name": "Llama 3.2 1B",
+      "architecture": "Llama 3.2",
+      "parameters": "1.23 Billion",
+      "training_tokens": "9.0 Trillion",
+      "bit_depth": 4.0,
+      "ram_required_gb": 1.5,
+      "download_size_gb": 0.7,
+      "huggingface_repo": "meta-llama/Llama-3.2-1B-Instruct",
+      "download_url": "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.gguf",
+      "description": "Llama 3.2 1B Instruct is the pinnacle of the ultra-lightweight Llama series. Optimized for edge deployment and localized mobile neural engines, it brings advanced instruction following to devices with extremely limited compute. Featuring the massive 128K context window found across the v3.2 family, it is surprisingly capable of long-document summarization and basic logic tasks. Despite its small size, it was trained on 9 trillion tokens, ensuring it retains the core reasoning capabilities of its larger siblings. Ideal for Archer OS's ambient intelligence layer, acting as a high-speed sentinel for immediate text processing.",
+      "is_cloud_api": false,
+      "requires_gpu": false,
+      "context_window": "128k",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct/resolve/main/tokenizer_config.json"
+        }
+      ]
+    },
+    {
+      "id": "llama-3.2-3b-it",
+      "name": "Llama 3.2 3B",
+      "architecture": "Llama 3.2",
+      "parameters": "3.21 Billion",
+      "training_tokens": "9.0 Trillion",
+      "bit_depth": 4.0,
+      "ram_required_gb": 3.5,
+      "download_size_gb": 1.9,
+      "huggingface_repo": "meta-llama/Llama-3.2-3B-Instruct",
+      "download_url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_M.gguf",
+      "description": "The 3.21B model is the balanced agile unit of the Llama 3.2 family. It strikes an elite equilibrium between parameter depth and localized execution efficiency. With a 128K context window and 9 trillion tokens of training, it excels at complex instruction following, multilingual dialogue, and high-accuracy summarization. In the Archer ecosystem, this unit is designed for standard desktop LLM experiences, providing deep intelligence with a sub-4GB RAM footprint. Its optimized attention mechanism ensures butter-smooth inference on modern CPUs and GPUs alike, making it the most versatile unit for day-to-day creative and technical assistance.",
+      "is_cloud_api": false,
+      "requires_gpu": false,
+      "context_window": "128k",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct/resolve/main/tokenizer_config.json"
+        }
+      ]
+    },
+    {
+      "id": "llama-3.2-11b-vision-it",
+      "name": "Llama 3.2 11B Vision",
+      "architecture": "Llama 3.2 (Multimodal)",
+      "parameters": "11.1 Billion",
+      "training_tokens": "9T Text + 6B Image Pairs",
+      "bit_depth": 4.0,
+      "ram_required_gb": 10.0,
+      "download_size_gb": 6.3,
+      "huggingface_repo": "meta-llama/Llama-3.2-11B-Vision-Instruct",
+      "download_url": "https://huggingface.co/bartowski/Llama-3.2-11B-Vision-Instruct-GGUF/resolve/main/Llama-3.2-11B-Vision-Instruct-Q4_K_M.gguf",
+      "description": "Llama 3.2 11B Vision is the first natively multimodal unit in the collection, combining the reasoning power of an 8B text core with a specialized vision adapter. Designed to understand images, charts, and diagrams with high precision, it brings 'Sovereign Sight' to localized environments. It features a massive 128K context window and is capable of visual grounding and complex scene analysis. In Archer OS, this model is the 'Visual Analyst', bridging the gap between raw optical data and semantic reasoning. Its 10GB RAM requirement ensures it can run on mid-range consumer GPUs with full multimodal capability intact.",
+      "is_cloud_api": false,
+      "requires_gpu": true,
+      "context_window": "128k",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct/resolve/main/tokenizer_config.json"
+        }
+      ]
+    },
+    {
+      "id": "llama-3.2-90b-vision-it",
+      "name": "Llama 3.2 90B Vision",
+      "architecture": "Llama 3.2 (Multimodal)",
+      "parameters": "92.1 Billion",
+      "training_tokens": "9T Text + 6B Image Pairs",
+      "bit_depth": 4.0,
+      "ram_required_gb": 60.0,
+      "download_size_gb": 48.2,
+      "huggingface_repo": "meta-llama/Llama-3.2-90B-Vision-Instruct",
+      "download_url": "https://huggingface.co/bartowski/Llama-3.2-90B-Vision-Instruct-GGUF/resolve/main/Llama-3.2-90B-Vision-Instruct-Q4_K_M.gguf",
+      "description": "The 90B Vision Instruct model is the pinnacle of the Llama 3.2 Multimodal cluster. Designed for deep cognitive synthesis, image understanding, and extremely complex technical reasoning, it is the most capable unit in the v3.2 family. It utilizes a similar vision adapter architecture as the 11B model but with the massive knowledge depth of a 70B+ text core. Capable of handling document analysis at enterprise levels and visual grounding with human-like precision. In the Archer ecosystem, this model acts as the 'Primary Sovereign Core' for multimodal research and high-stakes decision making, requiring professional hardware (60GB+ VRAM) for peak performance.",
+      "is_cloud_api": false,
+      "requires_gpu": true,
+      "context_window": "128k",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/meta-llama/Llama-3.2-90B-Vision-Instruct/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-3.2-90B-Vision-Instruct/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-3.2-90B-Vision-Instruct/resolve/main/tokenizer_config.json"
+        }
+      ]
+    }
+  ]
+}

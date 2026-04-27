@@ -10,9 +10,13 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 # ── Native BitNet Backend ──
-bitnet-llm = "1.0.3"
+bitnet-llm = { version = "1.0.3", optional = true }
 candle-core = { git = "https://github.com/huggingface/candle.git", features = ["cuda"] }
 anyhow = "1.0.102"
 tracing = "0.1"
 # We need to link back to shared types manually since we are excluded
 archer-shared = { path = "../archer-shared" }
+
+[features]
+default = []
+bitnet = ["dep:bitnet-llm"]

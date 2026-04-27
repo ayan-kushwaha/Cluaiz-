@@ -1,37 +1,58 @@
 //! 🏛️ Sovereign Silicon Kernel: The Architectural Heart
-//! Enforces a strict 7-tier domain-driven model for hardware Agnosticism.
-//! 
-//! Structure:
-//! 1. sensors        - OS Ground Truth logic (Direct OS Probing)
-//! 2. hal            - The Bridge (Trait contracts & OS Routing)
-//! 3. accelerators   - Hardware Units (CPU/GPU/NPU API wrappers)
-//! 4. memory         - Resource Allocation (Paged Allocator/Monitor)
-//! 5. bare_metal     - Deep Probes (Inline Assembly ISA checks)
-//! 6. intelligence   - The Brain (Math, Goals, Telemetry, Scheduling)
-//! 7. schema         - The Data (Pure Structs/Profiles)
+//! Unified single-file orchestration for hardware Agnosticism.
 
-pub mod schema;
-pub mod sensors;
-pub mod hal;
-pub mod accelerators;
 pub mod memory;
-pub mod bare_metal;
-pub mod intelligence;
+pub mod schema;
+pub mod system_control;
+pub mod lookup;
+pub mod system_performance_live;
+pub mod governor;
+pub mod speed_checker;
 
-// ── Re-exports for Zero-Latency Orchestration ──
-pub use hal::{get_provider, SiliconProvider};
-pub use schema::{SovereignProfile, SiliconMetrics, MemorySnapshot};
-pub use intelligence::{GhostObserver, HardwareGovernor, GrandOrchestrator};
-pub use intelligence::governor;
-pub use intelligence::telemetry;
-pub use intelligence::scheduler;
-pub use intelligence::speed_checker;
+// ── Re-exports for clean API ──
+pub use system_control::HardwareOrchestrator;
+pub use system_performance_live::LivePulse;
+pub use governor::HardwareGovernor;
 
-/// 🏛️ The One-Call System State Facade
-pub fn get_silicon_state() -> SovereignProfile {
-    hal::detect_silicon()
+/// 📡 Helper: Quick access to the Sovereign Silicon Truth.
+pub fn get_silicon_state() -> schema::profiles::SiliconTruth {
+    system_control::HardwareOrchestrator::start()
+        .map(|sc| sc.silicon_truth)
+        .unwrap_or_default()
 }
 
-pub fn get_live_metrics() -> SiliconMetrics {
-    hal::capture_metrics()
+pub fn get_sovereign_profile() -> schema::profiles::SovereignProfile {
+    let truth = get_silicon_state();
+    schema::profiles::SovereignProfile {
+        platform: truth.compute_architecture_type.clone().unwrap_or_default(),
+        compute_architecture_type: truth.compute_architecture_type.clone(),
+        cpu_brand: truth.cpu.brand.clone(),
+        cpu_cores: truth.cpu.physical_cores,
+        cpu: truth.cpu.clone(),
+        accelerators: truth.accelerators.clone(),
+        active_drivers: truth.active_drivers.clone(),
+        compute: schema::profiles::LegacyCompute {
+            has_gpu: !truth.accelerators.gpus.is_empty(),
+            vram_gb: if !truth.accelerators.gpus.is_empty() { truth.accelerators.gpus[0].vram_total_gb } else { 0.0 },
+            primary_driver: if !truth.accelerators.gpus.is_empty() { schema::profiles::BackendDriver::CUDA } else { schema::profiles::BackendDriver::CPU },
+        }
+    }
+}
+
+impl schema::profiles::SovereignProfile {
+    pub fn to_silicon_truth(&self) -> schema::profiles::SiliconTruth {
+        schema::profiles::SiliconTruth {
+            compute_architecture_type: self.compute_architecture_type.clone(),
+            cpu: self.cpu.clone(),
+            memory: schema::profiles::MemorySubsystem::default(),
+            storage: Vec::new(),
+            accelerators: self.accelerators.clone(),
+            active_drivers: self.active_drivers.clone(),
+        }
+    }
+}
+
+// ── Backward Compatibility ──
+pub mod telemetry {
+    pub use crate::hardware::system_performance_live::*;
 }

@@ -14,7 +14,7 @@ pub struct RegistryApp;
 impl RegistryApp {
     pub fn show(state: &mut AppState, tx: &mpsc::Sender<DownloadEvent>) -> Result<()> {
         if state.sorted_models.is_empty() {
-            state.sorted_models = engines::NeuralRoster::get_recommendations(&state.hardware, state.ram_gb);
+            state.sorted_models = engines::NeuralRoster::get_recommendations(&state.hardware.to_silicon_truth(), state.ram_gb);
         }
 
         let total_ram = state.ram_gb;
@@ -97,7 +97,7 @@ impl RegistryApp {
                         let action = details::show_details(idx, rec, total_ram, &base_path, tx)?;
 
                         // ── 🔄 STATE SYNC: Refresh model list after returning from details ──
-                        state.sorted_models = engines::NeuralRoster::get_recommendations(&state.hardware, state.ram_gb);
+                        state.sorted_models = engines::NeuralRoster::get_recommendations(&state.hardware.to_silicon_truth(), state.ram_gb);
                         state.sorted_models.sort_by(|a, b| {
                             let (_, score_a, _) = RegistryTable::calculate_health(a, &state.hardware);
                             let (_, score_b, _) = RegistryTable::calculate_health(b, &state.hardware);

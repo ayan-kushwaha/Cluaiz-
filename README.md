@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" width="350" alt="Cluaiz Logo">
+  <img src="assets/logo.png" width="300" alt="Cluaiz Logo">
 </p>
 
 <h1 align="center">Cluaiz: High-Performance Inference Infrastructure</h1>

@@ -1,37 +1,37 @@
-use crate::hardware::{SovereignProfile, StorageProfile};
+use crate::hardware::{SiliconTruth, StorageSubsystem};
 use sysinfo::System;
 
 pub struct SovereignHealthChecker;
 
 impl SovereignHealthChecker {
     /// Conducts a macro-benchmark of the entire system on first boot
-    pub fn execute_initial_diagnostic(mut profile: SovereignProfile) -> SovereignProfile {
+    pub fn execute_initial_diagnostic(mut profile: SiliconTruth) -> SiliconTruth {
         println!("🩺 [Sovereign Health] Initiating Deep Profiling Sequence...");
 
         // 1. RAM Profiling via sysinfo (Lightweight)
         let mut sys = System::new();
         sys.refresh_memory();
         let total_ram_gb = sys.total_memory() as f64 / 1_073_741_824.0;
-        let free_ram_gb = sys.free_memory() as f64 / 1_073_741_824.0;
         
-        profile.memory.total_ram_gb = total_ram_gb;
-        profile.memory.free_ram_gb = free_ram_gb;
+        profile.memory.total_capacity_gb = total_ram_gb;
         
-        println!("📊 [Memory] Total: {:.1} GB | Available: {:.1} GB", total_ram_gb, free_ram_gb);
+        println!("📊 [Memory] Total: {:.1} GB Detected.", total_ram_gb);
 
         // 2. Storage Profiling (Lightweight Metadata Read)
         let storage_speed = Self::estimate_disk_io();
-        let is_hdd = storage_speed < 200.0;
         let is_nvme = storage_speed > 1000.0;
         
-        profile.storage = StorageProfile {
-            sequential_read_mbps: storage_speed,
-            is_hdd,
-            is_nvme,
-        };
+        profile.storage = vec![StorageSubsystem {
+            drive_letter: "C".to_string(),
+            drive_type: if is_nvme { "NVMe (High-Performance)".into() } else { "SSD".into() },
+            read_speed_mbps: storage_speed,
+            total_gb: 512.0, // Base estimate
+            free_gb: 256.0,
+            ..Default::default()
+        }];
 
         println!("💾 [Storage] Speed Estimate: {:.1} MB/s | Type: {}", 
-                 storage_speed, if is_hdd { "HDD (Warning)" } else if is_nvme { "NVMe (Optimal)" } else { "SATA SSD" });
+                 storage_speed, if is_nvme { "NVMe (Optimal)" } else { "SATA SSD" });
 
         profile
     }

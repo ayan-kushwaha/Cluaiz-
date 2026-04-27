@@ -161,6 +161,7 @@ pub struct AppState {
     pub _generation_tps: f64,
     pub cpu_usage: f32,
     pub mem_usage_gb: f32,
+    pub live_pulse: Arc<::archer_shared::hardware::telemetry::ObservableHardwareState>,
 
     // ── Shared Profile ──
     pub user_profile: UserProfile,
@@ -272,7 +273,7 @@ impl AppState {
     }
 
     pub fn new(profile_override: Option<::archer_shared::profile::UserProfile>) -> Self {
-        let hardware = ::archer_shared::hardware::hal::detect_silicon();
+        let hardware = ::archer_shared::hardware::get_sovereign_profile();
 
         let mut sys = sysinfo::System::new();
         sys.refresh_memory();
@@ -297,6 +298,8 @@ impl AppState {
         } else {
             (OsState::Onboarding(OnboardingStep::LogoAnimation), UserProfile::new())
         };
+
+        let live_pulse = ::archer_shared::hardware::telemetry::get_pulse();
 
         Self {
             os_state,
@@ -335,6 +338,7 @@ impl AppState {
             _generation_tps: 0.0,
             cpu_usage: 0.0,
             mem_usage_gb: 0.0,
+            live_pulse,
 
             user_profile,
 

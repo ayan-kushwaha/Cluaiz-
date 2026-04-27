@@ -1,4 +1,4 @@
-extern crate shared;
+// extern crate shared;
 extern crate archer_shared;
 
 use color_eyre::Result;
@@ -64,7 +64,7 @@ async fn main() -> Result<()> {
     // 🧠 Background Initialization: Load recommendations asynchronously
     spawn(async move {
         let _models = tokio::task::spawn_blocking(move || {
-            engines::NeuralRoster::get_recommendations(&hardware, ram)
+            engines::NeuralRoster::get_recommendations(&hardware.to_silicon_truth(), ram)
         }).await.unwrap_or_default();
         
         let _ = tx.send(DownloadEvent::Complete("INITIAL_LOAD".to_string())).await;

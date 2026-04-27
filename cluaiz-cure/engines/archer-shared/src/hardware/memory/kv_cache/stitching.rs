@@ -1,6 +1,7 @@
 use candle_core::{Result as CandleResult, Tensor};
 
 /// 🧪 SovereignSignal: A pack of pre-encoded neural states (Frozen History).
+#[derive(Clone)]
 pub struct SovereignSignal {
     pub k: Tensor,
     pub v: Tensor,

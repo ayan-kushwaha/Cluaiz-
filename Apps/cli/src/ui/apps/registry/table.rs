@@ -159,17 +159,18 @@ impl RegistryTable {
         model: &ModelRecommendation,
         hardware: &archer_shared::hardware::schema::profiles::SovereignProfile,
     ) -> (colored::ColoredString, i32, String) {
-        
         let report = archer_shared::hardware::speed_checker::predict_performance(
             &model.manifest.parameters,
             model.manifest.bit_depth,
             &model.manifest.context_window,
             model.manifest.requires_gpu,
-            hardware
+            hardware,
         );
 
         let tps_str = if model.is_cached {
-            format!("{:.1} T/s", report.expected_tps).green().to_string()
+            format!("{:.1} T/s", report.expected_tps)
+                .green()
+                .to_string()
         } else {
             format!("{:.1} T/s", report.expected_tps)
         };
@@ -179,7 +180,7 @@ impl RegistryTable {
         }
 
         if model.is_cached {
-            return ("✔ ".green().bold(), 8, tps_str); 
+            return ("✔ ".green().bold(), 8, tps_str);
         }
 
         use archer_shared::hardware::speed_checker::HealthStatus;
@@ -188,7 +189,7 @@ impl RegistryTable {
             HealthStatus::HyperSpeed => ("🔵 ".blue(), 6, tps_str),
             HealthStatus::Instant => ("🟢 ".green(), 5, tps_str),
             HealthStatus::Moderate => ("🟡 ".yellow(), 4, tps_str),
-            HealthStatus::Lagging => ("🟠 ".truecolor(255,165,0), 3, tps_str),
+            HealthStatus::Lagging => ("🟠 ".truecolor(255, 165, 0), 3, tps_str),
             HealthStatus::Critical => ("🔴 ".red(), 2, tps_str),
             HealthStatus::Panic => ("⚫ ".black(), 0, tps_str),
         }

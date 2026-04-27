@@ -1,4 +1,3 @@
-use crate::app_enums::Mode;
 use crate::core::state::{ActivityBlock, AppState};
 use color_eyre::Result;
 use colored::Colorize;
@@ -8,9 +7,7 @@ use inquire::{
     ui::{Attributes, Color, RenderConfig, Styled},
     Select, Text,
 };
-use rand::seq::SliceRandom;
 use std::io::{stdout, Write};
-use std::time::Duration;
 use tokio::sync::mpsc;
 
 // ── 📦 MODULAR APPS ──
@@ -23,45 +20,159 @@ impl DashboardEngine {
     pub fn run_native(
         state: &mut AppState,
         tx: &mpsc::Sender<DownloadEvent>,
-        mode: &mut Mode,
+        mode: &mut crate::app_enums::Mode,
     ) -> Result<()> {
         // ── 🔒 SOVEREIGN RENDER CONFIG ──
         let config = RenderConfig::default()
-            .with_prompt_prefix(Styled::new(">").with_fg(Color::LightCyan).with_attr(Attributes::BOLD))
+            .with_prompt_prefix(
+                Styled::new(">")
+                    .with_fg(Color::LightCyan)
+                    .with_attr(Attributes::BOLD),
+            )
             .with_answered_prompt_prefix(Styled::new(">").with_fg(Color::LightCyan));
 
         // ── 🧬 ATOMIC NEURAL DISCOVERY (Sovereign Startup Scan) ──
         if state.sorted_models.is_empty() {
-             println!("  {} Scanning Neural Sanctum...", "🧬".cyan());
-             state.sorted_models = engines::NeuralRoster::get_recommendations(&state.hardware, state.ram_gb);
-             println!("  {} Discovery Complete: Found {} neural assets.", "✅".green(), state.sorted_models.len());
+            println!("  {} Scanning Neural Sanctum...", "🧬".cyan());
+            state.sorted_models = engines::NeuralRoster::get_recommendations(
+                &state.hardware.to_silicon_truth(),
+                state.ram_gb,
+            );
+            println!(
+                "  {} Discovery Complete: Found {} neural assets.",
+                "✅".green(),
+                state.sorted_models.len()
+            );
         }
 
-        loop {
-            let pulse = archer_shared::hardware::telemetry::get_pulse();
-            let cpu = pulse.cpu_usage_pct.load(std::sync::atomic::Ordering::Relaxed);
-            let ram = pulse.ram_usage_mb.load(std::sync::atomic::Ordering::Relaxed) as f64 / 1024.0;
-            let vram = pulse.vram_pressure_pct.load(std::sync::atomic::Ordering::Relaxed);
-            let tps = pulse.current_tps.load(std::sync::atomic::Ordering::Relaxed) as f64 / 10.0;
-            let kv = pulse.kv_cache_footprint_mb.load(std::sync::atomic::Ordering::Relaxed);
-            
-            let telemetry_bar = format!(
-                "{} {} │ {} {} │ {} {} │ {} {} │ {} {} ",
-                "⏱️ CPU:".dimmed(), format!("{:>2}%", cpu).cyan(),
-                "RAM:".dimmed(), format!("{:>4.1}GB", ram).cyan(),
-                "VRAM:".dimmed(), format!("{:>2}%", vram).cyan(),
-                "TPS:".dimmed(), format!("{:>4.1}", tps).yellow(),
-                "KV:".dimmed(), format!("{:>3}MB", kv).magenta(),
-            );
+        // ── 📡 SOVEREIGN TELEMETRY IGNITION (Ghost Observer Singleton) ──
+        let state_pulse = archer_shared::hardware::telemetry::get_pulse();
+        let pulse_ref = state_pulse.clone();
+        let start_time = std::time::Instant::now();
 
+        // 📡 SOVEREIGN PULSE CONTROL: Visibility gate to prevent chat history bleeding
+        let show_dashboard = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(true));
+        let show_ref = show_dashboard.clone();
+ 
+        std::thread::spawn(move || {
+            use crossterm::{
+                cursor, execute,
+                style::{self, Stylize},
+                terminal,
+            };
+            let mut stdout = std::io::stdout();
+            loop {
+                // 🛑 ATOMIC GATE: Skip rendering during bot inference phases
+                if !show_ref.load(std::sync::atomic::Ordering::SeqCst) {
+                    std::thread::sleep(std::time::Duration::from_millis(50));
+                    continue;
+                }
+                // 🧪 MICRO-LOCKING: Copy data and drop lock immediately to unblock background updates
+                let (
+                    cpu,
+                    cpu_temp,
+                    cpu_ghz,
+                    ram_used,
+                    ram_pct,
+                    vram_used,
+                    vram_total,
+                    vram_pct,
+                    gpu_temp,
+                    tps,
+                ) = {
+                    let pulse_lock = pulse_ref.pulse.read().unwrap();
+                    (
+                        pulse_lock.cpu.utilization_pct,
+                        pulse_lock.cpu.temperature_c,
+                        pulse_lock.cpu.clock_ghz,
+                        pulse_lock.ram.used_gb,
+                        pulse_lock.ram.utilization_pct,
+                        pulse_lock.vram_used_gb,
+                        pulse_lock.vram_total_gb,
+                        pulse_lock.vram_pressure_pct,
+                        pulse_lock.gpu.temperature_c,
+                        pulse_lock.relay_latency_ms as f64 / 10.0,
+                    )
+                };
+
+                let uptime = start_time.elapsed().as_millis() / 500;
+                let is_blink_on = uptime % 2 == 0;
+
+                // 🚦 Status Dot Logic
+                let status_dot = if is_blink_on { "●" } else { " " };
+                let cpu_color = if cpu < 50.0 { style::Color::Green } else if cpu < 80.0 { style::Color::Yellow } else { style::Color::Red };
+                let gpu_color = if (vram_pct as f32) < 50.0 { style::Color::Green } else if (vram_pct as f32) < 80.0 { style::Color::Yellow } else { style::Color::Red };
+                let ram_color = if ram_pct < 50.0 { style::Color::Green } else if ram_pct < 80.0 { style::Color::Yellow } else { style::Color::Red };
+                let status_color = if cpu < 50.0 && (vram_pct as f32) < 50.0 { style::Color::Green } else if cpu < 80.0 || (vram_pct as f32) < 80.0 { style::Color::Yellow } else { style::Color::Red };
+
+                // Surgical Overwrite: Force-inject metrics into the prompt's footprint (Y+1)
+                if let Ok((_x, mut y)) = cursor::position() {
+                    let (_cols, rows) = terminal::size().unwrap_or((80, 24));
+                    
+                    if y + 1 >= rows {
+                        // 🚀 NEURAL SCROLL: Force a scroll up to keep prompt and dashboard separated
+                        let _ = execute!(stdout, terminal::ScrollUp(1), cursor::MoveUp(1));
+                        y -= 1; 
+                    }
+
+                    let _ = execute!(
+                        stdout,
+                        cursor::SavePosition,
+                        cursor::MoveTo(0, y + 1),
+                        terminal::Clear(terminal::ClearType::CurrentLine),
+                        style::Print(Stylize::bold(Stylize::dim("[ "))),
+                        style::Print(Stylize::bold(status_dot.with(status_color))),
+                        style::Print(Stylize::bold(Stylize::dim(" LIVE │ "))),
+                        
+                        // CPU Pulse: Thermal & Load Sync
+                        style::Print(Stylize::dim("CPU: ")),
+                        style::Print(Stylize::dim(format!("{:.0}°C ({:.0}%)", cpu_temp, cpu))),
+                        style::Print(Stylize::dim(format!(" │ {:.1}GHz", cpu_ghz))),
+                        style::Print(Stylize::dim(") │ ")),
+
+                        // GPU Pulse: Silicon Pressure Audit
+                        style::Print(Stylize::dim("GPU: ")),
+                        style::Print(Stylize::dim(format!("{:.0}°C ({:.0}%)", gpu_temp, vram_pct))),
+                        style::Print(Stylize::dim(format!(" │ {:.1}/{:.0}GB", vram_used, vram_total))),
+                        style::Print(Stylize::dim(") │ ")),
+
+                        // RAM Pulse: Neural Buffer Load
+                        style::Print(Stylize::dim("RAM: ")),
+                        style::Print(Stylize::dim(format!("{:.1}GB ({:.0}%)", ram_used, ram_pct))),
+                        style::Print(Stylize::dim(") │ ")),
+
+                        // TPS Pulse: Relay Latency Audit
+                        style::Print(Stylize::dim("TPS: ")),
+                        style::Print(Stylize::dim(format!("{:.1}", tps))),
+                        style::Print(Stylize::bold(Stylize::dim(" ]"))),
+
+                        cursor::RestorePosition
+                    );
+                    let _ = stdout.flush();
+                }
+
+                std::thread::sleep(std::time::Duration::from_millis(100));
+            }
+        });
+
+        loop {
+            show_dashboard.store(true, std::sync::atomic::Ordering::SeqCst);
+            println!(); // 🧿 SOVEREIGN BUFFER: Create space for surgical anchor
             let input = Text::new("")
                 .with_placeholder("Type your message or @ & / for menu")
-                .with_help_message(&telemetry_bar)
-                .with_render_config(config)
+                .with_render_config(config.clone())
                 .prompt();
             
+            // 🛑 ATOMIC PURGE: Immediately silence dashboard and clear its line before chat output
+            show_dashboard.store(false, std::sync::atomic::Ordering::SeqCst);
+            if let Ok((_x, y)) = crossterm::cursor::position() {
+                let mut stdout = std::io::stdout();
+                let _ = crossterm::execute!(stdout, crossterm::cursor::MoveTo(0, y + 1), crossterm::terminal::Clear(crossterm::terminal::ClearType::CurrentLine));
+                let _ = stdout.flush();
+            }
+
             if input.is_ok() {
-                print!("\x1B[1A\x1B[2K"); 
+                print!("\x1B[1A\x1B[2K");
                 stdout().flush()?;
             }
 
@@ -97,13 +208,16 @@ impl DashboardEngine {
 
                     if final_message.starts_with('/') {
                         Self::handle_command(state, tx, mode, &final_message[1..])?;
-                        if *mode == Mode::Quit { break; }
+                        if *mode == crate::app_enums::Mode::Quit {
+                            break;
+                        }
                     } else if final_message.starts_with('@') {
                         Self::handle_model_switch(state, tx, &final_message[1..])?;
                     } else {
                         // ── 👤 USER MESSAGE ──
-                        let icon = "👤".cyan().bold();
-                        println!("{} {}", icon, final_message.white());
+                        use crossterm::style::Stylize;
+                        let icon = Stylize::bold(Stylize::cyan("👤"));
+                        println!("{} {}", icon, final_message.clone().white());
                         state.activity_stream.push(ActivityBlock::Chat(
                             "USER".to_string(),
                             final_message.to_string(),
@@ -111,44 +225,53 @@ impl DashboardEngine {
                         state.rendered_actions_count += 1;
 
                         // ── 🧿 THINKING ANIMATION ──
-                        print!("{} Thinking", "🤖".cyan());
-                        let _ = stdout().flush();
+                        print!("{} Thinking", Stylize::cyan("🤖"));
+                        let _ = std::io::Write::flush(&mut std::io::stdout());
 
                         // ── 🤖 REAL NEURAL STREAMING ────────────────────────
-                        let full_response = std::sync::Arc::new(std::sync::Mutex::new(String::new()));
+                        let full_response =
+                            std::sync::Arc::new(std::sync::Mutex::new(String::new()));
                         let full_clone = full_response.clone();
                         let mut first_token = true;
 
                         let stream_result = tokio::task::block_in_place(|| {
                             let mut lock = state.neural_engine.router.blocking_lock();
-                            lock.generate_stream(&final_message, 256, Box::new(move |token| {
-                                if first_token {
-                                    print!("\r                                     \r");
-                                    print!("{} ", "🤖".magenta());
-                                    first_token = false;
-                                }
-                                print!("{}", token);
-                                let _ = stdout().flush();
-                                if let Ok(mut res) = full_clone.lock() {
-                                    res.push_str(&token);
-                                }
-                            }))
+                            lock.generate_stream(
+                                &final_message,
+                                256,
+                                Box::new(move |token| {
+                                    if first_token {
+                                        print!("\r\x1B[2K");
+                                        use crossterm::style::Stylize;
+                                        print!("{} ", Stylize::magenta("🤖"));
+                                        first_token = false;
+                                    }
+                                    print!("{}", token);
+                                    let _ = stdout().flush();
+                                    if let Ok(mut res) = full_clone.lock() {
+                                        res.push_str(&token);
+                                    }
+                                }),
+                            )
                         });
 
                         println!();
 
                         let response = if let Err(e) = stream_result {
-                            let err_msg = format!("{} ERROR: {}", "🤖".red(), e);
+                            use crossterm::style::Stylize;
+                            let err_msg = format!("{} ERROR: {}", Stylize::red("🤖"), e);
                             println!("{}", err_msg);
                             err_msg
                         } else {
                             let res = full_response.lock().unwrap().clone();
-                            if res.is_empty() { 
-                                let empty_msg = format!("{} ERROR: Generated empty response.", "🤖".red());
+                            if res.is_empty() {
+                                use crossterm::style::Stylize;
+                                let empty_msg =
+                                    format!("{} ERROR: Generated empty response.", Stylize::red("🤖"));
                                 println!("{}", empty_msg);
                                 empty_msg
-                            } else { 
-                                res 
+                            } else {
+                                res
                             }
                         };
 
@@ -159,7 +282,7 @@ impl DashboardEngine {
                     }
                 }
                 Err(_) => {
-                    *mode = Mode::Quit;
+                    *mode = crate::app_enums::Mode::Quit;
                     break;
                 }
             }
@@ -170,7 +293,7 @@ impl DashboardEngine {
     fn handle_command(
         state: &mut AppState,
         tx: &mpsc::Sender<DownloadEvent>,
-        mode: &mut Mode,
+        mode: &mut crate::app_enums::Mode,
         cmd: &str,
     ) -> Result<()> {
         match cmd {
@@ -194,11 +317,11 @@ impl DashboardEngine {
                     "Model List" => RegistryApp::show(state, tx)?,
                     "Settings" => println!("  {} Settings coming soon...", "⚙️".yellow()),
                     "Help" => println!("  {} Help coming soon...", "ℹ️".blue()),
-                    "Quit" => *mode = Mode::Quit,
+                    "Quit" => *mode = crate::app_enums::Mode::Quit,
                     _ => {}
                 }
             }
-            "quit" | "exit" => *mode = Mode::Quit,
+            "quit" | "exit" => *mode = crate::app_enums::Mode::Quit,
             "clear" => {
                 print!("\x1B[2J\x1B[1;1H");
                 state.printed_logo = false;
@@ -215,23 +338,31 @@ impl DashboardEngine {
         _tx: &mpsc::Sender<DownloadEvent>,
         _filter: &str,
     ) -> Result<()> {
-         let config = RenderConfig::default()
-            .with_prompt_prefix(Styled::new("@").with_fg(Color::LightCyan).with_attr(Attributes::BOLD))
+        let config = RenderConfig::default()
+            .with_prompt_prefix(
+                Styled::new("@")
+                    .with_fg(Color::LightCyan)
+                    .with_attr(Attributes::BOLD),
+            )
             .with_highlighted_option_prefix(Styled::new("⮞").with_fg(Color::LightCyan));
-            
-        let downloaded: Vec<_> = state.sorted_models.iter()
-            .filter(|m| m.is_cached)
-            .collect();
+
+        let downloaded: Vec<_> = state.sorted_models.iter().filter(|m| m.is_cached).collect();
 
         if downloaded.is_empty() {
-             println!("  {} No downloaded models found. Install from /menu.", "ℹ️".blue());
-             return Ok(());
+            println!(
+                "  {} No downloaded models found. Install from /menu.",
+                "ℹ️".blue()
+            );
+            return Ok(());
         }
 
         let options: Vec<String> = downloaded.iter().map(|m| m.manifest.name.clone()).collect();
-        
+
         let starting_index = if let Some(active_id) = &state._active_model_id {
-            downloaded.iter().position(|m| m.manifest.id == *active_id).unwrap_or(0)
+            downloaded
+                .iter()
+                .position(|m| m.manifest.id == *active_id)
+                .unwrap_or(0)
         } else {
             0
         };
@@ -246,62 +377,98 @@ impl DashboardEngine {
 
         if let Some(model) = downloaded.iter().find(|m| m.manifest.name == ans) {
             if state._active_model_id.as_ref() == Some(&model.manifest.id) {
-                println!("  {} {} is already active.", "ℹ️".blue(), model.manifest.name.bold());
+                println!(
+                    "  {} {} is already active.",
+                    "ℹ️".blue(),
+                    model.manifest.name.bold()
+                );
                 return Ok(());
             }
 
             println!("  {} Loading: {}", "🧬".cyan(), model.manifest.name.bold());
-            
+
             if let Some(path_str) = &model.manifest.local_path {
                 let path = std::path::PathBuf::from(path_str);
-                let device = candle_core::Device::Cpu; 
-                
-                // 🧬 SOVEREIGN DISPATCH: 
+
+                // 🧬 SOVEREIGN SILICON DETECTION
+                let profile = archer_shared::hardware::get_sovereign_profile();
+                let device = if profile.compute.has_gpu {
+                    match profile.compute.primary_driver {
+                        archer_shared::hardware::schema::profiles::BackendDriver::CUDA => {
+                            candle_core::Device::new_cuda(0).unwrap_or(candle_core::Device::Cpu)
+                        }
+                        archer_shared::hardware::schema::profiles::BackendDriver::METAL => {
+                            candle_core::Device::new_metal(0).unwrap_or(candle_core::Device::Cpu)
+                        }
+                        _ => candle_core::Device::Cpu,
+                    }
+                } else {
+                    candle_core::Device::Cpu
+                };
+
+                println!(
+                    "  {} [Silicon Dispatch] Using device: {:?}",
+                    "🧪".cyan(),
+                    device
+                );
+
+                // 🧬 SOVEREIGN DISPATCH:
                 // High bit-depth -> Native Rust (Candle)
                 // 1-bit BitNet -> MANDATORY Llama (Binary)
-                let runtime = if model.manifest.bit_depth < 2.0 { 
-                    archer_shared::BackendType::RuntimeB 
-                } else { 
-                    archer_shared::BackendType::RuntimeA 
+                let runtime = if model.manifest.bit_depth < 2.0 {
+                    archer_shared::BackendType::RuntimeB
+                } else {
+                    archer_shared::BackendType::RuntimeA
                 };
 
                 let result = tokio::task::block_in_place(|| {
                     let handle = tokio::runtime::Handle::current();
-                    match handle.block_on(engines::NeuralRouter::load_model(path, runtime.clone(), &device)) {
+                    match handle.block_on(engines::NeuralRouter::load_model(
+                        path,
+                        runtime.clone(),
+                        &device,
+                    )) {
                         Ok(router) => {
                             let mut lock = state.neural_engine.router.blocking_lock();
                             *lock = router;
                             Ok(())
                         }
                         Err(e) => {
-                             // ⚠️ NATIVE FALLBACK: Only for standard models (Bit-depth >= 2.0)! 
-                             // BitNet MUST NOT use RuntimeA (Candle) as it will crash with tensor errors.
-                             if runtime == archer_shared::BackendType::RuntimeB && model.manifest.bit_depth >= 2.0 {
-                                 let path_inner = std::path::PathBuf::from(path_str);
-                                 handle.block_on(engines::NeuralRouter::load_model(path_inner, archer_shared::BackendType::RuntimeA, &device))
-                                     .map(|router| {
-                                         let mut lock = state.neural_engine.router.blocking_lock();
-                                         *lock = router;
-                                     })
-                             } else {
-                                 Err(e)
-                             }
-                        },
+                            // ⚠️ NATIVE FALLBACK: Only for standard models (Bit-depth >= 2.0)!
+                            // BitNet MUST NOT use RuntimeA (Candle) as it will crash with tensor errors.
+                            if runtime == archer_shared::BackendType::RuntimeB
+                                && model.manifest.bit_depth >= 2.0
+                            {
+                                let path_inner = std::path::PathBuf::from(path_str);
+                                handle
+                                    .block_on(engines::NeuralRouter::load_model(
+                                        path_inner,
+                                        archer_shared::BackendType::RuntimeA,
+                                        &device,
+                                    ))
+                                    .map(|router| {
+                                        let mut lock = state.neural_engine.router.blocking_lock();
+                                        *lock = router;
+                                    })
+                            } else {
+                                Err(e)
+                            }
+                        }
                     }
                 });
 
-
-
                 match result {
                     Ok(_) => {
-                         state.neural_engine.is_loaded = true;
-                         state._active_model_id = Some(model.manifest.id.clone());
-                         println!("  {} Mounted successfully.", "✅".green());
+                        state.neural_engine.is_loaded = true;
+                        state._active_model_id = Some(model.manifest.id.clone());
+                        println!("  {} Mounted successfully.", "✅".green());
                     }
                     Err(e) => println!("  {} Load failed: {}", "❌".red(), e),
                 }
             }
-            state.activity_stream.push(ActivityBlock::ModelMounted(model.manifest.name.clone()));
+            state
+                .activity_stream
+                .push(ActivityBlock::ModelMounted(model.manifest.name.clone()));
         }
 
         Ok(())

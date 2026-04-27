@@ -9,7 +9,7 @@ pub mod provisioner;
 pub mod discovery;
 pub use provisioner::Provisioner;
 pub use discovery::AutonomousDiscovery;
-use crate::hardware::SovereignProfile;
+use crate::hardware::SiliconTruth;
 use crate::models::fetch::ModelDownloader;
 pub use archer_shared::{KernelSignature, StructuralDNA};
 
@@ -132,7 +132,7 @@ impl NeuralRoster {
         let mut registry = std::collections::HashMap::new();
 
         // 1. Load Autonomous Local Units (The Index Master)
-        let model_paths = vec!["models", "../models"];
+        let model_paths = vec!["models", "../models", "../../models", "../../../models"];
         for path in model_paths {
             let base = Path::new(path);
             if base.exists() {
@@ -146,12 +146,22 @@ impl NeuralRoster {
 
         // 2. Load Installation Templates (Downloadable/Available)
         let mut templates = Vec::new();
-        let search_paths = vec!["src/models/Installation", "../engines/src/models/Installation", "engines/src/models/Installation"];
+        let search_paths = vec![
+            "src/models/Installation", 
+            "../engines/src/models/Installation", 
+            "engines/src/models/Installation",
+            "cluaiz-cure/engines/src/models/Installation",
+            "../cluaiz-cure/engines/src/models/Installation",
+            "../../cluaiz-cure/engines/src/models/Installation"
+        ];
         
         let mut base_dir = None;
         for p in search_paths {
             let candidate = std::path::PathBuf::from(p);
-            if candidate.exists() { base_dir = Some(candidate); break; }
+            if candidate.exists() { 
+                base_dir = Some(candidate); 
+                break; 
+            }
         }
 
         if let Some(base) = base_dir {
@@ -248,7 +258,7 @@ impl NeuralRoster {
     }
 
     /// Takes the hardware spec and returns the available models with recommendations.
-    pub fn get_recommendations(hardware: &SovereignProfile, system_ram_gb: f64) -> Vec<ModelRecommendation> {
+    pub fn get_recommendations(hardware: &SiliconTruth, system_ram_gb: f64) -> Vec<ModelRecommendation> {
         let models = Self::load_roster();
         let mut recommendations = Vec::new();
 
@@ -268,15 +278,18 @@ impl NeuralRoster {
             let status = if model.is_cloud_api {
                 "Cloud".to_string()
             } else if model.requires_gpu {
-                if !hardware.compute.has_gpu {
-                    "Incompatible".to_string()
-                } else if model.ram_required_gb > hardware.compute.vram_gb {
+                if hardware.accelerators.gpus.is_empty() {
                     "Incompatible".to_string()
                 } else {
-                    let gap = (hardware.compute.vram_gb - model.ram_required_gb) / hardware.compute.vram_gb;
-                    if gap > 0.25 { "Optimal".to_string() }
-                    else if gap >= 0.10 { "Average".to_string() }
-                    else { "Heavy".to_string() }
+                    let vram_gb = hardware.accelerators.gpus.iter().map(|g| g.vram_available_gb).sum::<f64>();
+                    if model.ram_required_gb > vram_gb {
+                        "Incompatible".to_string()
+                    } else {
+                        let gap = (vram_gb - model.ram_required_gb) / vram_gb;
+                        if gap > 0.25 { "Optimal".to_string() }
+                        else if gap >= 0.10 { "Average".to_string() }
+                        else { "Heavy".to_string() }
+                    }
                 }
             } else {
                 let gap = (usable_ram - model.ram_required_gb) / usable_ram;

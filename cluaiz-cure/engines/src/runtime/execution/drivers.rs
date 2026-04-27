@@ -27,12 +27,10 @@ pub fn initialize_neural_drivers() {
             tracing::error!("❌ Fatal: RuntimeB failed to register: {}", e);
         }
 
-        // 🧠 Register the Tertiary Runtime (Bit-Native Engine C)
-        if let Err(e) = archer_bitnet::register_drivers(|target_engine, sig, constructor_hook| {
-            let _ = SiliconOrchestrator::register(target_engine, sig, constructor_hook);
-        }) {
-            tracing::error!("❌ Fatal: RuntimeC failed to register: {}", e);
-        }
+        // 🧠 BitNet (Engine C) is loaded dynamically at runtime via libloading.
+        // This avoids the compile-time `links = "llama"` conflict with llama-cpp-sys.
+        // TODO: implement dynamic cdylib loading for archer_bitnet here.
+        tracing::info!("🧬 [RuntimeC] BitNet engine stub registered. Dynamic loading pending.");
 
         tracing::info!("🔍 Sovereign Archer V8: Initiating Dynamic Hardware Probing...");
         let (has_gpu, driver_type) = dynamic_discovery::probe_hardware();

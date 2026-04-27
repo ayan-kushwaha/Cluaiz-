@@ -14,7 +14,8 @@ pub enum Backend {
     Empty(DummyBackend),
     RuntimeA(EngineA),
     RuntimeB(RuntimeBImplementation),
-    RuntimeC(archer_bitnet::ArcherBitNet),
+    // RuntimeC: BitNet is loaded dynamically via libloading at runtime.
+    // See: crate::runtime::execution::provisioner for dynamic loading.
 }
 
 impl UnifiedBackend for Backend {
@@ -23,7 +24,6 @@ impl UnifiedBackend for Backend {
             Self::Empty(b) => b.generate(prompt, max_tokens),
             Self::RuntimeA(b) => b.generate(prompt, max_tokens),
             Self::RuntimeB(b) => b.generate(prompt, max_tokens),
-            Self::RuntimeC(b) => b.generate(prompt, max_tokens),
         }
     }
     fn prefill(&mut self, prompt: &str) -> anyhow::Result<()> {
@@ -31,7 +31,6 @@ impl UnifiedBackend for Backend {
             Self::Empty(b) => b.prefill(prompt).map_err(|e| anyhow::anyhow!(e)),
             Self::RuntimeA(b) => b.prefill(prompt).map_err(|e| anyhow::anyhow!(e)),
             Self::RuntimeB(b) => b.prefill(prompt).map_err(|e| anyhow::anyhow!(e)),
-            Self::RuntimeC(b) => b.prefill(prompt).map_err(|e| anyhow::anyhow!(e)),
         }
     }
 
@@ -40,7 +39,6 @@ impl UnifiedBackend for Backend {
             Self::Empty(b) => b.evaluate_tps(),
             Self::RuntimeA(b) => b.evaluate_tps(),
             Self::RuntimeB(b) => b.evaluate_tps(),
-            Self::RuntimeC(b) => b.evaluate_tps(),
         }
     }
 }
@@ -50,7 +48,6 @@ impl archer_shared::SovereignInference for Backend {
         match self {
             Self::RuntimeA(b) => b.forward_raw(inputs, pos),
             Self::RuntimeB(b) => b.forward_raw(inputs, pos),
-            Self::RuntimeC(b) => b.forward_raw(inputs, pos),
             Self::Empty(_) => Err(anyhow::anyhow!("Empty backend")),
         }
     }
@@ -64,10 +61,7 @@ impl archer_shared::SovereignInference for Backend {
     ) -> anyhow::Result<()> {
         match self {
             Self::RuntimeA(b) => b.generate_stream(prompt, max_tokens, tokenizer, callback).map_err(|e| anyhow::anyhow!(e)),
-            Self::RuntimeB(b) => {
-                b.generate_stream(prompt, max_tokens, tokenizer, callback).map_err(|e| anyhow::anyhow!(e))
-            },
-            Self::RuntimeC(b) => b.generate_stream(prompt, max_tokens, tokenizer, callback).map_err(|e| anyhow::anyhow!(e)),
+            Self::RuntimeB(b) => b.generate_stream(prompt, max_tokens, tokenizer, callback).map_err(|e| anyhow::anyhow!(e)),
             Self::Empty(_) => Err(anyhow::anyhow!("Empty backend")),
         }
     }
@@ -143,26 +137,31 @@ impl NeuralRouter {
                 // 🛰️ BINARY PRE-FLIGHT: Validate and Provision execution core on-demand
                 let os = if cfg!(windows) { "windows" } else { "linux" };
                 let driver = if matches!(final_runtime, BackendType::RuntimeC) {
-                    archer_shared::hardware::schema::BackendDriver::CPU // BitNet uses specialized CPU kernels
+                    archer_shared::hardware::schema::BackendDriver::CPU
                 } else {
-                    archer_shared::hardware::get_silicon_state().accelerators.first()
-                            .map(|a| a.driver.clone())
-                            .unwrap_or(archer_shared::hardware::schema::BackendDriver::CPU)
+                    let truth = archer_shared::hardware::get_silicon_state();
+                    if truth.active_drivers.iter().any(|d| d.driver_id == "CUDA") {
+                        archer_shared::hardware::schema::BackendDriver::CUDA
+                    } else if truth.active_drivers.iter().any(|d| d.driver_id == "METAL") {
+                        archer_shared::hardware::schema::BackendDriver::METAL
+                    } else {
+                        archer_shared::hardware::schema::BackendDriver::CPU
+                    }
                 };
 
-                // Block to ensure binary exists before proceeding
                 let binary_path = tokio::task::block_in_place(|| {
                     let handle = tokio::runtime::Handle::current();
                     handle.block_on(crate::runtime::execution::provisioner::BinaryProvisioner::ensure_binary(os, &driver, &PathBuf::new()))
                 });
 
                 match binary_path {
-                    Ok(bin_p) => {
+                    Ok(_bin_p) => {
                         if matches!(final_runtime, BackendType::RuntimeB) {
-                            Backend::RuntimeB(RuntimeBImplementation::new(&path.to_string_lossy(), context))
-                        } else {
-                            Backend::RuntimeC(archer_bitnet::ArcherBitNet::new(&path.to_string_lossy()))
+                            // RuntimeB early return — it handles its own tokenization.
+                            return Ok(Self { active_backend: Backend::RuntimeB(RuntimeBImplementation::new(&path.to_string_lossy(), context)), tokenizer: None });
                         }
+                        // BitNet (RuntimeC): dynamic loading stub — fall through to error.
+                        return Err("RuntimeC (BitNet) dynamic loading not yet provisioned.".to_string());
                     },
                     Err(e) => {
                         return Err(format!("FATAL: Neural Core could not be provisioned. Registry Error: {}", e));
@@ -212,9 +211,7 @@ impl NeuralRouter {
     ) -> Result<(), String> {
         match &mut self.active_backend {
             Backend::RuntimeB(b) => {
-                // 🚀 SOVEREIGN BYPASS: Binary Driver handles its own tokenization.
                 use archer_shared::SovereignInference;
-                // We provide an empty tokenizer since RuntimeB doesn't use it anyway.
                 let dummy_tokenizer = tokenizers::Tokenizer::from_bytes(&[]).unwrap_or_else(|_| tokenizers::Tokenizer::new(tokenizers::models::bpe::BPE::default()));
                 b.generate_stream(prompt, max_tokens, &dummy_tokenizer, callback)
                     .map_err(|e| e.to_string())

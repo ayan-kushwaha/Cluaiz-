@@ -11,53 +11,46 @@ impl BinaryRouter {
     /// Resolves the absolute path to the optimal Llama binary based on OS and Probed Hardware.
     pub fn resolve_binary() -> PathBuf {
         let mut path = std::env::current_dir().unwrap_or_default();
-        if path.ends_with("cli") { path.pop(); }
+        while !path.join("interface-engines").exists() && path.parent().is_some() {
+            path.pop();
+        }
 
         let os_dir = if cfg!(target_os = "windows") { "windows" } 
                     else if cfg!(target_os = "macos") { "macos" } 
                     else { "linux" };
 
-        let bin_name = if cfg!(target_os = "windows") { "llama-cli.exe" } 
-                      else { "llama-cli" };
+        let arch = if cfg!(any(target_arch = "aarch64", target_arch = "arm")) {
+            "arm64"
+        } else {
+            "x86_64"
+        };
+
+        let bin_name = if cfg!(target_os = "windows") { "archer_llama.exe" } 
+                      else { "archer_llama" };
 
         let profile = get_silicon_state();
         
-        let driver_slug = if let Some(acc) = profile.accelerators.first() {
-            match acc.driver {
-                BackendDriver::CUDA => "cuda",
-                BackendDriver::METAL => "metal",
-                BackendDriver::ROCM => "rocm",
-                BackendDriver::SYCL => "sycl",
-                BackendDriver::OpenVINO => "openvino",
-                BackendDriver::QNN => "qnn",
-                BackendDriver::Hexagon => "hexagon",
-                BackendDriver::Vulkan => "vulkan",
-                BackendDriver::DirectML => "directml",
-                BackendDriver::OpenCL => "opencl",
-                BackendDriver::NNAPI => "nnapi",
-                _ => "cpu",
-            }
-        } else {
-            "cpu"
-        };
+        let driver_slug = if profile.active_drivers.iter().any(|d| d.driver_id == "CUDA") { "cuda" }
+                         else if profile.active_drivers.iter().any(|d| d.driver_id == "METAL") { "metal" }
+                         else if profile.active_drivers.iter().any(|d| d.driver_id == "ROCM") { "rocm" }
+                         else if profile.active_drivers.iter().any(|d| d.driver_id == "VULKAN") { "vulkan" }
+                         else if profile.active_drivers.iter().any(|d| d.driver_id == "OPENCL") { "opencl" }
+                         else if profile.active_drivers.iter().any(|d| d.driver_id == "NNAPI") { "nnapi" }
+                         else { "cpu" };
 
-        let bin_path = path.join("engines").join("llama").join("bin").join(os_dir).join(driver_slug).join(bin_name);
+        // 🏛️ Sovereign Alignment: interface-engines/llama/os/arch/driver/binary
+        let bin_path = path.join("interface-engines")
+            .join("llama")
+            .join(os_dir)
+            .join(arch)
+            .join(driver_slug)
+            .join(bin_name);
 
-        // 🛡️ [Delta Check] Checksum & Existence Validation
         if !bin_path.exists() {
-            tracing::warn!("⚠️ [Router] Hardware-Agnostic Binary not found at: {:?}. Falling back to CPU.", bin_path);
-            return path.join("engines").join("llama").join("bin").join(os_dir).join("cpu").join(bin_name);
-        }
-
-        let checksum_path = bin_path.with_extension("sha256");
-        if !checksum_path.exists() {
-            tracing::warn!("⚠️ [Router] Security Alert: No checksum found for binary at {:?}. Verification skipped but trace logged.", bin_path);
-        } else {
-            tracing::info!("✅ [Router] Binary Signature Verified via SHA256.");
+            tracing::warn!("⚠️ [Router] Hardware-Specific Binary NOT found: {:?}", bin_path);
         }
 
         bin_path
-
     }
 
     /// Generates compute-specific CLI arguments based on model DNA and Hardware profile.
@@ -65,23 +58,15 @@ impl BinaryRouter {
         let profile = get_silicon_state();
         let mut args = Vec::new();
 
-        if let Some(acc) = profile.accelerators.first() {
-            match acc.driver {
-                BackendDriver::CUDA | BackendDriver::METAL | BackendDriver::ROCM | BackendDriver::SYCL => {
-                    if requires_gpu {
-                        args.extend(vec!["-ngl".to_string(), "99".to_string()]);
-                    } else {
-                        args.extend(vec!["-ngl".to_string(), "32".to_string()]);
-                    }
-                },
-                BackendDriver::OpenVINO | BackendDriver::QNN | BackendDriver::Hexagon => {
-                    // Backends that use specific NPU offloading
-                    args.extend(vec!["-ngl".to_string(), "1".to_string()]); 
-                },
-                _ => {
-                    args.extend(vec!["-ngl".to_string(), "0".to_string()]);
-                }
+        if profile.active_drivers.iter().any(|d| d.driver_id == "CUDA" || d.driver_id == "METAL" || d.driver_id == "ROCM") {
+            if requires_gpu {
+                args.extend(vec!["-ngl".to_string(), "99".to_string()]);
+            } else {
+                args.extend(vec!["-ngl".to_string(), "32".to_string()]);
             }
+        } else if profile.active_drivers.iter().any(|d| d.driver_id == "OPENVINO" || d.driver_id == "QNN") {
+            // Backends that use specific NPU offloading
+            args.extend(vec!["-ngl".to_string(), "1".to_string()]); 
         } else {
             args.extend(vec!["-ngl".to_string(), "0".to_string()]);
         }

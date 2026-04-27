@@ -14,13 +14,15 @@ pub mod telemetry;
 pub mod utils;
 pub mod cli;
 pub mod sync;
+#[path = "interface-engines/mod.rs"]
+pub mod interface_engines;
 
 // ─── Master Archer Unified Access ────────────────────────────────────
 
 // pub use kernel::core::CureKernel; // Removed in V7 DNA Refactor
 
 // 2. Hardware & Architecture
-pub use hardware::{HardwareDetector, SovereignProfile, SovereignProfile as HardwareInfo, InferenceEngine, InferenceEvent};
+pub use hardware::{HardwareDetector, SiliconTruth, SiliconTruth as HardwareInfo, InferenceEngine, InferenceEvent};
 pub use hardware::system_control_manager::{detect_hardware, has_config, read_config, save_config, update_field};
 
 // 3. Execution & Inference
