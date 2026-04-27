@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
         include:
           - os: windows-latest
             suffix: win-x64
@@ -24,6 +24,9 @@ jobs:
           - os: ubuntu-latest
             suffix: linux-x64
             ext: so
+          - os: macos-latest
+            suffix: mac-arm64
+            ext: dylib
 
     steps:
       - name: 🛰️ Checkout Code
@@ -31,9 +34,14 @@ jobs:
 
       - name: 🦀 Setup Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc, x86_64-unknown-linux-gnu, aarch64-apple-darwin
 
-      - name: 🛠️ Build
-        run: cargo build --release -p engines
+      - name: 🛠️ Build Universal Kernels (Llama, Candle, BitNet)
+        run: |
+          # Build engines with hardware features
+          cargo build --release -p engines
+        shell: bash
 
       - name: 📦 Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -65,7 +73,7 @@ jobs:
 
       - name: 🏗️ Build & Push Engine Image
         run: |
-          # Create a minimal Dockerfile to host our binaries
+          # Packaging all binaries (Windows, Linux, Mac) into one OCI Artifact
           echo "FROM scratch" > Dockerfile
           echo "COPY dist/ /" >> Dockerfile
           
