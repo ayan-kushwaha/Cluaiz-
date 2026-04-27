@@ -12,20 +12,30 @@ permissions:
 
 jobs:
   build-engines:
-    name: Build ${{ matrix.os }} Engine
+    name: Build ${{ matrix.target }} Engine
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
         include:
           - os: windows-latest
+            target: x86_64-pc-windows-msvc
             suffix: win-x64
             ext: dll
           - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
             suffix: linux-x64
             ext: so
+          - os: ubuntu-latest
+            target: aarch64-linux-android
+            suffix: android-arm64
+            ext: so
           - os: macos-latest
+            target: aarch64-apple-darwin
             suffix: mac-arm64
+            ext: dylib
+          - os: macos-latest
+            target: aarch64-apple-ios
+            suffix: ios-arm64
             ext: dylib
 
     steps:
@@ -35,12 +45,21 @@ jobs:
       - name: 🦀 Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-pc-windows-msvc, x86_64-unknown-linux-gnu, aarch64-apple-darwin
+          targets: ${{ matrix.target }}
 
-      - name: 🛠️ Build Universal Kernels (Llama, Candle, BitNet)
+      - name: 🤖 Setup Android NDK (for Android Build)
+        if: matrix.target == 'aarch64-linux-android'
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r25c
+
+      - name: 🛠️ Build Universal Kernel
         run: |
-          # Build engines with hardware features
-          cargo build --release -p engines
+          if [ "${{ matrix.target }}" == "aarch64-linux-android" ]; then
+            cargo build --release -p engines --target ${{ matrix.target }}
+          else
+            cargo build --release -p engines --target ${{ matrix.target }}
+          fi
         shell: bash
 
       - name: 📦 Upload Artifacts
@@ -48,7 +67,7 @@ jobs:
         with:
           name: engine-${{ matrix.suffix }}
           path: |
-            target/release/*.${{ matrix.ext }}
+            target/${{ matrix.target }}/release/*.${{ matrix.ext }}
             cluaiz-cure/engines/default_roster.json
 
   publish-packages:
