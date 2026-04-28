@@ -1,4 +1,4 @@
-name: Cluaiz Inference Kernels
+name: Cluaiz CURE (Cluaiz Universal Runtime Engine)
 
 on:
   push:
@@ -13,7 +13,7 @@ permissions:
 jobs:
   # ─── STAGE 1: Silicon Compilation (FULL MATRIX) ─────────────────────
   build-kernels:
-    name: ⚙️ Build [${{ matrix.target }}]
+    name: ⚙️ Build Engine [${{ matrix.target }}]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -49,16 +49,7 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - name: Setup Android NDK
-        if: matrix.target == 'aarch64-linux-android'
-        uses: nttld/setup-ndk@v1
-        with:
-          ndk-version: r25c
-
       - name: Build Kernel
-        env:
-          CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: aarch64-linux-android23-clang
-          CC_aarch64_linux_android: aarch64-linux-android23-clang
         run: cargo build --release -p engines --target ${{ matrix.target }}
 
       - name: Upload Heavy Binary to Release
@@ -66,9 +57,9 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
           files: target/${{ matrix.target }}/release/*.${{ matrix.ext }}
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest-kernels' }}
-          name: Cluaiz Sovereign Release [Kernels]
-          body: "Industrial Neural Kernels compiled for sovereign hardware architectures."
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest-cure' }}
+          name: Cluaiz Sovereign Engine [${{ matrix.target }}]
+          body: "Industrial Cluaiz CURE Kernel compiled for sovereign hardware."
           draft: false
           prerelease: false
         env:
@@ -76,7 +67,7 @@ jobs:
 
   # ─── STAGE 2: Neural Manifest Generation ─────────────────────────────
   publish-manifest:
-    name: 📂 Publish Neural Manifest
+    name: 📂 Publish Engine Manifest
     needs: build-kernels
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
@@ -86,7 +77,7 @@ jobs:
 
       - name: Generate Manifest JSON
         run: |
-          VERSION=${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest-kernels' }}
+          VERSION=${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest-cure' }}
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           
           cat <<EOF > kernel-manifest.json
