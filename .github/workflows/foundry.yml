@@ -97,7 +97,7 @@ jobs:
           echo "COPY dist/ /" >> Dockerfile
           
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/cluaiz-engines
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[l-a-z]')
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[:upper:]' '[:lower:]')
           VERSION=${{ github.ref_name }}
           [ "$VERSION" == "main" ] && VERSION=latest
 
