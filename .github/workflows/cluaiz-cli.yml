@@ -50,16 +50,14 @@ jobs:
       - name: Install Cross-Compilation Toolchain (Linux ARM64)
         if: matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
-          sudo dpkg --add-architecture arm64
           sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libssl-dev:arm64
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
 
       - name: Build CLI
         env:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
           CC_aarch64_unknown_linux_gnu: aarch64-linux-gnu-gcc
-          PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig
-          PKG_CONFIG_ALLOW_CROSS: 1
+          OPENSSL_VENDORED: 1
         run: cargo build --release -p cli --target ${{ matrix.target }}
 
       - name: Upload CLI to Release
@@ -68,8 +66,8 @@ jobs:
         with:
           files: target/${{ matrix.target }}/release/cli*
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest-cli' }}
-          name: Cluaiz Sovereign Release [${{ matrix.target }}]
-          body: "Industrial Cluaiz CLI compiled for sovereign execution."
+          name: "Cluaiz Sovereign Baseline [CLI]"
+          body: "Industrial Cluaiz CLI for sovereign cross-platform execution."
           draft: false
           prerelease: false
         env:
