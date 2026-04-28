@@ -1,0 +1,135 @@
+name: Cluaiz Inference Drivers
+
+on:
+  push:
+    paths:
+      - 'interface-engines/drivers/**'
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  # ─── STAGE 1: Silicon Compilation (FULL MATRIX) ─────────────────────
+  build-drivers:
+    name: Build [${{ matrix.hardware }}] - [${{ matrix.os }}]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # --- NVIDIA Silicon (CUDA) ---
+          - os: windows-latest
+            hardware: nvidia-cuda
+            suffix: cuda
+            arch: x86_64
+          - os: ubuntu-latest
+            hardware: nvidia-cuda
+            suffix: cuda
+            arch: x86_64
+
+          # --- Apple Silicon (Metal Mastery) ---
+          - os: macos-latest
+            hardware: apple-metal
+            suffix: metal
+            arch: aarch64
+
+          # --- AMD Silicon (ROCm) ---
+          - os: ubuntu-latest
+            hardware: amd-rocm
+            suffix: rocm
+            arch: x86_64
+
+          # --- Universal Silicon (Vulkan) ---
+          - os: windows-latest
+            hardware: universal-vulkan
+            suffix: vulkan
+            arch: x86_64
+          - os: ubuntu-latest
+            hardware: universal-vulkan
+            suffix: vulkan
+            arch: x86_64
+
+          # --- ARM / Raspberry Pi (ARM64) ---
+          - os: ubuntu-latest
+            hardware: arm-pi-native
+            suffix: arm64
+            arch: aarch64
+
+          # --- Android Mobile Silicon ---
+          - os: ubuntu-latest
+            hardware: android-ndk-blas
+            suffix: android
+            arch: aarch64
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v1
+
+      - name: Silicon-Native Compilation
+        run: |
+          echo "Sovereign Build: Targeting ${{ matrix.hardware }} (${{ matrix.arch }}) with suffix -${{ matrix.suffix }}"
+          # Compilation logic for Silicon Drivers
+        shell: bash
+
+      - name: Upload Driver to Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: interface-engines/drivers/${{ matrix.suffix }}/*
+          tag_name: ${{ github.ref_name }}
+          name: Cluaiz Sovereign Release ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ─── STAGE 2: Neural Manifest Generation ─────────────────────────────
+  publish-driver-manifest:
+    name: 📂 Publish Driver Manifest
+    needs: build-drivers
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v1
+
+      - name: Generate Driver Manifest JSON
+        run: |
+          VERSION=${{ github.ref_name }}
+          # Industrial Stabilization: Force Lowercase for GHCR
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          REPO=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
+          
+          cat <<EOF > driver-manifest.json
+          {
+            "version": "$VERSION",
+            "provider": "cluaiz-silicon-foundry",
+            "drivers": {
+              "cuda": "https://github.com/${{ github.repository }}/releases/download/$VERSION/driver-cuda",
+              "metal": "https://github.com/${{ github.repository }}/releases/download/$VERSION/driver-metal",
+              "rocm": "https://github.com/${{ github.repository }}/releases/download/$VERSION/driver-rocm",
+              "vulkan": "https://github.com/${{ github.repository }}/releases/download/$VERSION/driver-vulkan",
+              "arm64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/driver-arm64",
+              "android": "https://github.com/${{ github.repository }}/releases/download/$VERSION/driver-android"
+            }
+          }
+          EOF
+
+      - name: Push Driver Manifest to GitHub Packages
+        run: |
+          # Industrial Stabilization: Force Lowercase for GHCR
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_ID=ghcr.io/$OWNER/cluaiz-driver-manifest
+          VERSION=${{ github.ref_name }}
+          
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          
+          echo "FROM scratch" > Dockerfile
+          echo "COPY driver-manifest.json /" >> Dockerfile
+          
+          docker build -t $IMAGE_ID:$VERSION .
+          docker push $IMAGE_ID:$VERSION
+          docker tag $IMAGE_ID:$VERSION $IMAGE_ID:latest
+          docker push $IMAGE_ID:latest

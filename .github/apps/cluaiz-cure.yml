@@ -1,0 +1,109 @@
+name: Cluaiz CURE (Cluaiz Universal Runtime Engine)
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  # ─── STAGE 1: Silicon Compilation (FULL MATRIX) ─────────────────────
+  build-kernels:
+    name: ⚙️ Build Engine [${{ matrix.target }}]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            suffix: win-x64
+            ext: dll
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            suffix: linux-x64
+            ext: so
+          - os: ubuntu-latest
+            target: aarch64-linux-android
+            suffix: android-arm64
+            ext: so
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            suffix: mac-arm64
+            ext: dylib
+          - os: macos-latest
+            target: aarch64-apple-ios
+            suffix: ios-arm64
+            ext: dylib
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v1
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build Kernel
+        run: cargo build --release -p engines --target ${{ matrix.target }}
+
+      - name: Upload Heavy Binary to Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: target/${{ matrix.target }}/release/*.${{ matrix.ext }}
+          tag_name: ${{ github.ref_name }}
+          name: Cluaiz Sovereign Release ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ─── STAGE 2: Neural Manifest Generation ─────────────────────────────
+  publish-manifest:
+    name: 📂 Publish Engine Manifest
+    needs: build-kernels
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v1
+
+      - name: Generate Manifest JSON
+        run: |
+          VERSION=${{ github.ref_name }}
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          REPO=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
+          
+          cat <<EOF > kernel-manifest.json
+          {
+            "version": "$VERSION",
+            "provider": "cluaiz-foundry",
+            "assets": {
+              "win-x64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/engines.dll",
+              "linux-x64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/libengines.so",
+              "android-arm64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/libengines.so",
+              "mac-arm64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/libengines.dylib",
+              "ios-arm64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/libengines.dylib"
+            }
+          }
+          EOF
+
+      - name: Push Manifest to GitHub Packages
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_ID=ghcr.io/$OWNER/cluaiz-kernel-manifest
+          VERSION=${{ github.ref_name }}
+          
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          
+          echo "FROM scratch" > Dockerfile
+          echo "COPY kernel-manifest.json /" >> Dockerfile
+          
+          docker build -t $IMAGE_ID:$VERSION .
+          docker push $IMAGE_ID:$VERSION
+          docker tag $IMAGE_ID:$VERSION $IMAGE_ID:latest
+          docker push $IMAGE_ID:latest

@@ -2,6 +2,24 @@ use crate::hardware::schema::booster::BoosterControl;
 use crate::hardware::schema::profiles::SystemControl;
 use crate::hardware::system_control::HardwareOrchestrator;
 use std::path::PathBuf;
+use std::sync::Mutex;
+use std::collections::HashMap;
+use once_cell::sync::Lazy;
+
+/// 🧠 VRAM Arbiter State: Tracks real-time resource allocations.
+pub struct ArbiterState {
+    pub total_vram_gb: f64,
+    pub allocated_vram_gb: f64,
+    pub active_allocations: HashMap<String, f64>,
+}
+
+static ARBITER: Lazy<Mutex<ArbiterState>> = Lazy::new(|| {
+    Mutex::new(ArbiterState {
+        total_vram_gb: 0.0,
+        allocated_vram_gb: 0.0,
+        active_allocations: HashMap::new(),
+    })
+});
 
 #[derive(Clone, Copy, Default)]
 pub struct HardwareGovernor;
@@ -19,7 +37,58 @@ impl HardwareGovernor {
 
     /// 🔬 Deep surgical scan and persistence of silicon state.
     pub fn auto_calibrate() -> anyhow::Result<()> {
-        HardwareOrchestrator::start()?;
+        let control = HardwareOrchestrator::start()?;
+        
+        // Update Arbiter with latest hardware truth
+        if let Ok(mut arbiter) = ARBITER.lock() {
+            let total = control.silicon_truth.accelerators.gpus.iter()
+                .map(|g| g.vram_available_gb)
+                .sum::<f64>();
+            arbiter.total_vram_gb = total;
+        }
+        
+        Ok(())
+    }
+
+    /// ⚖️ Request VRAM allocation for a neural engine.
+    /// Prevents OOM by enforcing the sovereign memory budget.
+    pub fn request_vram(engine_id: &str, required_gb: f64) -> anyhow::Result<()> {
+        let mut arbiter = ARBITER.lock().map_err(|_| anyhow::anyhow!("Arbiter Lock Poisoned"))?;
+        
+        // If total_vram is 0, we might need a quick calibration
+        if arbiter.total_vram_gb == 0.0 {
+            let _ = Self::auto_calibrate();
+        }
+
+        let available = arbiter.total_vram_gb - arbiter.allocated_vram_gb;
+        
+        if required_gb > available {
+            return Err(anyhow::anyhow!(
+                "❌ [VRAM Arbiter] Out of Memory! Requested: {:.2}GB, Available: {:.2}GB (Total: {:.2}GB)",
+                required_gb, available, arbiter.total_vram_gb
+            ));
+        }
+
+        // Allocate
+        arbiter.allocated_vram_gb += required_gb;
+        arbiter.active_allocations.insert(engine_id.to_string(), required_gb);
+        
+        println!("✅ [VRAM Arbiter] Allocated {:.2}GB to '{}'. Current Load: {:.2}/{:.2}GB", 
+                 required_gb, engine_id, arbiter.allocated_vram_gb, arbiter.total_vram_gb);
+        
+        Ok(())
+    }
+
+    /// 🔓 Release VRAM allocation when an engine is unloaded.
+    pub fn release_vram(engine_id: &str) -> anyhow::Result<()> {
+        let mut arbiter = ARBITER.lock().map_err(|_| anyhow::anyhow!("Arbiter Lock Poisoned"))?;
+        
+        if let Some(freed_gb) = arbiter.active_allocations.remove(engine_id) {
+            arbiter.allocated_vram_gb -= freed_gb;
+            println!("🔓 [VRAM Arbiter] Released {:.2}GB from '{}'. Current Load: {:.2}/{:.2}GB", 
+                     freed_gb, engine_id, arbiter.allocated_vram_gb, arbiter.total_vram_gb);
+        }
+        
         Ok(())
     }
 

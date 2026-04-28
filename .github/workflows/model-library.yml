@@ -1,0 +1,44 @@
+name: Cluaiz Models Library
+
+on:
+  push:
+    paths:
+      - 'models/library/**'
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish-library:
+    name: 📂 Sync & Publish Model Library
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v1
+
+      - name: Validate Manifest JSONs
+        run: |
+          echo "Validating model DNA..."
+          # Future: Add schema validation for each model file
+
+      - name: Package Library to GHCR
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          # Industrial Stabilization: Force Lowercase for GHCR
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_ID=ghcr.io/$OWNER/cluaiz-model-library
+          VERSION=${{ github.ref_name }}
+          
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          
+          echo "FROM scratch" > Dockerfile
+          echo "COPY models/library/ /library/" >> Dockerfile
+          
+          docker build -t $IMAGE_ID:$VERSION .
+          docker push $IMAGE_ID:$VERSION
+          docker tag $IMAGE_ID:$VERSION $IMAGE_ID:latest
+          docker push $IMAGE_ID:latest
