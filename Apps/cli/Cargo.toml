@@ -34,3 +34,6 @@ tracing = "0.1.44"
 candle-core = { git = "https://github.com/huggingface/candle.git" }
 rand = "0.8"
 unicode-width = "0.1"
+
+# ── Sovereign Security ──
+openssl = { version = "0.10", features = ["vendored"] }
