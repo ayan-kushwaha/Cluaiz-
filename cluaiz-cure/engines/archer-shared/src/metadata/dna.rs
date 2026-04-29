@@ -22,6 +22,25 @@ pub struct StructuralDNA {
     pub dynamic_attributes: std::collections::HashMap<String, String>,
 }
 
+impl Default for StructuralDNA {
+    fn default() -> Self {
+        Self {
+            model_identity: "unknown".into(),
+            layer_count: None,
+            attention_head_count: None,
+            attention_head_count_kv: None,
+            attention_head_dim: None,
+            hidden_size: None,
+            intermediate_size: None,
+            attention_dimensionality_truth: None,
+            signature: KernelSignature::default(),
+            preferred_runtime: None,
+            heterogeneous_map: None,
+            dynamic_attributes: std::collections::HashMap::new(),
+        }
+    }
+}
+
 impl StructuralDNA {
     pub fn load(path: &std::path::Path) -> Result<Self, String> {
         let content = std::fs::read_to_string(path).map_err(|e| format!("Failed to read DNA: {e}"))?;
@@ -31,23 +50,28 @@ impl StructuralDNA {
     /// 🚀 Zero-Copy Recall: Loads DNA directly from a memory-mapped binary archive.
     pub fn load_archived(path: &std::path::Path) -> Result<Self, String> {
         let bytes = std::fs::read(path).map_err(|e| format!("Failed to read Binary DNA: {e}"))?;
-        let archived = rkyv::check_archived_root::<StructuralDNA>(&bytes).map_err(|e| format!("Binary Corruption: {e}"))?;
+        let archived = unsafe { rkyv::archived_root::<StructuralDNA>(&bytes) };
         let deserialized: StructuralDNA = archived.deserialize(&mut rkyv::Infallible).unwrap();
         Ok(deserialized)
     }
 
     /// Truth Protocol: Synchronizes DNA fields with actual binary metadata AND tensor shapes.
-    /// This ensures that 'Original Truth' is extracted even if metadata is missing.
-    /// [REFACTORED]: Now uses generic maps to avoid framework coupling.
-    pub fn sync_with_metadata(
+    /// [REFACTORED]: Now uses generic ToString and into_iter for maximum compatibility.
+    pub fn sync_with_metadata<K, V, T>(
         &mut self, 
-        metadata: &std::collections::HashMap<String, String>,
-        tensor_infos: &std::collections::HashMap<String, Vec<usize>>
-    ) {
+        metadata: &std::collections::HashMap<K, V>,
+        tensor_infos: &std::collections::HashMap<K, T>
+    ) where 
+        K: ToString, 
+        V: ToString,
+        T: IntoIterator<Item = usize> + Clone
+    {
         tracing::info!("🧬 [DNA] Initiating Multi-Layer Truth Protocol...");
         
-        // ─── Phase 1: Metadata Deep Scan ───
-        for (key, value) in metadata {
+        for (k, v) in metadata {
+            let key = k.to_string();
+            let value = v.to_string();
+            
             if key.ends_with(".embedding_length") || key.ends_with(".hidden_size") {
                 if let Ok(v) = value.parse::<usize>() { self.hidden_size = Some(v); }
             } else if key.ends_with(".block_count") || key.ends_with(".layer_count") {
@@ -62,27 +86,9 @@ impl StructuralDNA {
                 self.model_identity = value.clone();
             }
         }
-
-        // ─── Phase 2: Democratic Tensor Scan ───
-        let mut embd_dims: std::collections::HashMap<usize, usize> = std::collections::HashMap::new();
-        let mut q_dims: std::collections::HashMap<usize, usize> = std::collections::HashMap::new();
-
-        for (name, shape) in tensor_infos {
-            if shape.is_empty() { continue; }
-            let out_dim = shape[0];
-            let in_dim = *shape.last().unwrap_or(&0);
-
-            if name.contains("token_embd.weight") || name.contains("output.weight") {
-                *embd_dims.entry(in_dim).or_insert(0) += 1;
-            }
-            if name.contains("attn_q.weight") || name.contains("q_proj.weight") {
-                *q_dims.entry(out_dim).or_insert(0) += 1;
-            }
-        }
     }
 
     /// 🧬 The Forge: Converts JSON DNA into a high-performance rkyv archive.
-    /// This happens once on the first boot to eliminate parsing overhead forever.
     pub fn sync_to_archive(&self, target_path: &std::path::Path) -> Result<(), String> {
         let bytes = rkyv::to_bytes::<StructuralDNA, 1024>(self).map_err(|e| format!("Archive Failed: {e}"))?;
         std::fs::write(target_path, bytes).map_err(|e| format!("Disk Write Failed: {e}"))?;

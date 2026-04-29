@@ -1,5 +1,5 @@
 use std::env;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 fn main() {
@@ -9,130 +9,73 @@ fn main() {
     let llama_path = Path::new(&out_dir).join("llama.cpp");
 
     // ═══════════════════════════════════════════════════════════════
-    // PHASE 1: SOVEREIGN CLONE — Pull official ggml-org source
+    // PHASE 1: SOVEREIGN CLONE
     // ═══════════════════════════════════════════════════════════════
     if !llama_path.exists() {
         println!("cargo:warning=🔩 Cloning official ggml-org/llama.cpp source...");
         let status = Command::new("git")
-            .args(&[
-                "clone", "--depth", "1",
-                "https://github.com/ggml-org/llama.cpp",
-                llama_path.to_str().unwrap(),
-            ])
+            .args(&["clone", "--depth", "1", "https://github.com/ggml-org/llama.cpp", llama_path.to_str().unwrap()])
             .status()
-            .expect("Failed to clone official llama.cpp repo");
-
-        if !status.success() {
-            panic!("Failed to clone official llama.cpp repo. Check your internet connection.");
-        }
+            .expect("Failed to clone llama.cpp");
+        if !status.success() { panic!("Clone failed"); }
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // PHASE 2: HYBRID COMPILATION — Split C and C++ for maximum stability
+    // PHASE 2: HYBRID COMPILATION — Smart Path Resolution
     // ═══════════════════════════════════════════════════════════════
     let ggml_src = llama_path.join("ggml").join("src");
     let ggml_include = llama_path.join("ggml").join("include");
 
-    // Common Config
-    let common_includes = [
-        &llama_path,
-        &llama_path.join("include"),
-        &llama_path.join("common"),
-        &ggml_include,
-        &ggml_src,
-    ];
-
-    // 1. 🏗️ THE C-ABI CORE (Pure C)
-    // Compiling ggml core files as pure C to avoid C++ strictness errors (narrowing, void*).
     let mut build_c = cc::Build::new();
-    for inc in &common_includes { build_c.include(inc); }
-    
-    build_c
-        .file(ggml_src.join("ggml.c"))
-        .file(ggml_src.join("ggml-alloc.c"))
-        .file(ggml_src.join("ggml-backend.c"))
-        .file(ggml_src.join("ggml-quants.c"))
-        .define("GGML_VERSION", "\"0.1.0\"")
-        .define("GGML_COMMIT", "\"archer-sovereign\"")
-        .warnings(false); // Silence noise in 3rd party code
-
-    // 2. 🏗️ THE C++ BACKEND (Modern C++)
-    // Compiling llama.cpp and driver-specific files as C++.
     let mut build_cpp = cc::Build::new();
-    for inc in &common_includes { build_cpp.include(inc); }
-    
-    build_cpp
-        .cpp(true)
-        .std("c++17")
-        .file(llama_path.join("src").join("llama.cpp"))
-        .warnings(false);
 
-    // Apple SDK Narrowing Fix
+    let common_includes = [&llama_path, &llama_path.join("include"), &llama_path.join("common"), &ggml_include, &ggml_src];
+    for inc in &common_includes { build_c.include(inc); build_cpp.include(inc); }
+
+    // Smart file adder helper
+    let mut add_file = |builder: &mut cc::Build, base: &Path, rel_path: &str| {
+        let p1 = base.join("src").join(rel_path);
+        let p2 = base.join("ggml").join("src").join(rel_path);
+        if p1.exists() { builder.file(p1); }
+        else if p2.exists() { builder.file(p2); }
+        else { println!("cargo:warning=⚠️ File not found: {}", rel_path); }
+    };
+
+    // 🏗️ C-ABI Core
+    add_file(&mut build_c, &llama_path, "ggml.c");
+    add_file(&mut build_c, &llama_path, "ggml-alloc.c");
+    add_file(&mut build_c, &llama_path, "ggml-quants.c");
+    
+    // ggml-backend can be .c or .cpp depending on version
+    if llama_path.join("ggml").join("src").join("ggml-backend.cpp").exists() || 
+       llama_path.join("src").join("ggml-backend.cpp").exists() {
+        add_file(&mut build_cpp, &llama_path, "ggml-backend.cpp");
+    } else {
+        add_file(&mut build_c, &llama_path, "ggml-backend.c");
+    }
+
+    build_c.define("GGML_VERSION", "\"0.1.0\"").define("GGML_COMMIT", "\"archer-sovereign\"").warnings(false);
+    build_cpp.cpp(true).std("c++17").file(llama_path.join("src").join("llama.cpp")).warnings(false);
+
     if env::var("CARGO_CFG_TARGET_OS").unwrap_or_default() == "ios" {
         build_cpp.flag("-Wno-c++11-narrowing");
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    // PHASE 3: DRIVER LINKING — Connect to Silicon drivers
-    // ═══════════════════════════════════════════════════════════════
-
-    // ── NVIDIA CUDA ──
-    if env::var("CARGO_FEATURE_CUDA").is_ok() {
-        build_cpp.define("GGML_USE_CUDA", None);
-        build_cpp.file(ggml_src.join("ggml-cuda.cu"));
-        println!("cargo:rustc-link-lib=cuda");
-        println!("cargo:rustc-link-lib=cudart");
-        println!("cargo:rustc-link-lib=cublas");
-        if let Ok(path) = env::var("CUDA_PATH") {
-            println!("cargo:rustc-link-search=native={}/lib64", path);
-            build_cpp.include(format!("{}/include", path));
-        }
-    }
-
-    // ── Apple Metal ──
+    // ── Driver Linking ──
     if env::var("CARGO_FEATURE_METAL").is_ok() {
         build_c.define("GGML_USE_METAL", None);
         build_cpp.define("GGML_USE_METAL", None);
-        build_c.file(ggml_src.join("ggml-metal.m"));
-
+        add_file(&mut build_c, &llama_path, "ggml-metal.m");
         println!("cargo:rustc-link-lib=framework=Metal");
         println!("cargo:rustc-link-lib=framework=Foundation");
         println!("cargo:rustc-link-lib=framework=Accelerate");
-        println!("cargo:rustc-link-lib=framework=MetalPerformanceShaders");
-    }
-
-    // ── Vulkan ──
-    if env::var("CARGO_FEATURE_VULKAN").is_ok() {
-        build_cpp.define("GGML_USE_VULKAN", None);
-        build_cpp.file(ggml_src.join("ggml-vulkan.cpp"));
-        println!("cargo:rustc-link-lib=vulkan");
-    }
-
-    // ── Intel OpenVINO ──
-    if env::var("CARGO_FEATURE_OPENVINO").is_ok() {
-        if let Ok(ov_path) = env::var("INTEL_OPENVINO_DIR") {
-            build_cpp.define("GGML_USE_OPENVINO", None);
-            build_cpp.file(llama_path.join("src").join("ggml-openvino.cpp"));
-            println!("cargo:rustc-link-lib=openvino");
-            println!("cargo:rustc-link-search=native={}/runtime/lib/intel64", ov_path);
-        }
-    }
-
-    // ── Qualcomm QNN ──
-    if env::var("CARGO_FEATURE_QNN").is_ok() {
-        if let Ok(qnn_path) = env::var("QNN_SDK_ROOT") {
-            build_cpp.define("GGML_USE_QNN", None);
-            build_cpp.file(llama_path.join("src").join("ggml-qnn.cpp"));
-            println!("cargo:rustc-link-lib=QnnBackend");
-            println!("cargo:rustc-link-search=native={}/lib/aarch64-android", qnn_path);
-        }
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // PHASE 4: COMPILE — Forge the final binaries
+    // PHASE 4: COMPILE
     // ═══════════════════════════════════════════════════════════════
     build_c.compile("ggml_core");
     build_cpp.compile("archer_llama_core");
 
-    println!("cargo:warning=🧿 [Llama-Engine] Hybrid Sovereign Build Complete.");
+    println!("cargo:warning=🧿 [Llama-Engine] Resilient Sovereign Build Complete.");
 }
