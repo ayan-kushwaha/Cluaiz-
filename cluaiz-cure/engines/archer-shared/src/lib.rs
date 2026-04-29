@@ -5,7 +5,7 @@ pub mod metadata;
 pub mod prompting;
 pub mod backend;
 pub mod neural_core;
-pub mod orchestrator;
+pub mod utils;
 
 // ── Business Logic (Unified from shared) ──
 pub mod profile;
@@ -18,4 +18,29 @@ pub use metadata::dna::*;
 pub use prompting::templater::*;
 pub use backend::{context::*, traits::*, signature::*};
 pub use neural_core::NeuralResult;
-pub use orchestrator::*;
+
+/// 🏛️ SovereignLinkerPlaceholder: Used during Phase 1 to verify the Dynamic Linker Handshake.
+pub struct SovereignLinkerPlaceholder;
+
+impl crate::backend::traits::UnifiedBackend for SovereignLinkerPlaceholder {
+    fn generate(&mut self, _prompt: &str, _max_tokens: usize) -> std::result::Result<String, String> {
+        Err("✅ SOVEREIGN LINKER: Phase 1 Handshake Success. Real inference pending Phase 2.".to_string())
+    }
+    fn prefill(&mut self, _prompt: &str) -> anyhow::Result<()> { Ok(()) }
+    fn evaluate_tps(&self) -> f64 { 0.0 }
+}
+
+impl crate::backend::traits::SovereignInference for SovereignLinkerPlaceholder {
+    fn forward_raw(&mut self, _input_ids: &[u32], _pos: usize) -> anyhow::Result<Vec<f32>> {
+        Err(anyhow::anyhow!("Handshake Placeholder"))
+    }
+    fn generate_stream(
+        &mut self,
+        _prompt: &str,
+        _max_tokens: usize,
+        _tokenizer: &tokenizers::Tokenizer,
+        _callback: Box<dyn FnMut(String) + Send + 'static>,
+    ) -> anyhow::Result<()> {
+        Err(anyhow::anyhow!("✅ SOVEREIGN LINKER: Handshake Complete. Ready for Phase 2."))
+    }
+}

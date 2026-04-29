@@ -8,7 +8,7 @@ The Cluaiz Systems License (CSL) is designed to foster a high-performance, colla
 2. THE THREE-TIER USAGE MODEL
 
 A. Free Individual Usage
-- Eligibility: Individuals, students, researchers, and entities with an annual revenue/valuation below $1,000,000 USD.
+- Eligibility: Individuals, students, researchers, and entities with an annual revenue/valuation below $10M USD.
 - Rights: Free use, modification, and integration into your projects (including commercial apps).
 - Requirement: Must include the original Cluaiz copyright notice.
 
@@ -18,7 +18,7 @@ B. Contributor Commercial Waiver
 - Requirement: Contributions must be merged into the official repository.
 
 C. Enterprise Commercial Mandate
-- Eligibility: Entities or parent companies with revenue/valuation exceeding $1,000,000 USD.
+- Eligibility: Entities or parent companies with revenue/valuation exceeding $10M USD.
 - Requirement: Must obtain a separate Commercial Agreement or fulfill the requirement through strategic partnerships (compute, funding, or hardware access).
 
 3. PROTECTIVE COVENANTS (THE LOCK & INSTA-KILL)

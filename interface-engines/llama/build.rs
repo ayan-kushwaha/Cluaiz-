@@ -127,32 +127,32 @@ fn main() {
 
     // ── Intel OpenVINO (NPU/GPU) ──
     if env::var("CARGO_FEATURE_OPENVINO").is_ok() {
-        build.define("GGML_USE_OPENVINO", None);
-        build.file(llama_path.join("src").join("ggml-openvino.cpp"));
-        
-        println!("cargo:rustc-link-lib=openvino");
-        println!("cargo:rustc-link-lib=openvino_c");
-        
         if let Ok(ov_path) = env::var("INTEL_OPENVINO_DIR") {
+            build.define("GGML_USE_OPENVINO", None);
+            build.file(llama_path.join("src").join("ggml-openvino.cpp"));
+            println!("cargo:rustc-link-lib=openvino");
+            println!("cargo:rustc-link-lib=openvino_c");
             println!("cargo:rustc-link-search=native={}/runtime/lib/intel64", ov_path);
             build.include(format!("{}/runtime/include", ov_path));
+            println!("cargo:warning=⚡ OpenVINO: Intel NPU/GPU drivers linked.");
+        } else {
+            println!("cargo:warning=⚠️ OpenVINO: INTEL_OPENVINO_DIR not found. Skipping NPU support.");
         }
-        println!("cargo:warning=⚡ OpenVINO: Intel NPU/GPU drivers linked.");
     }
 
     // ── Qualcomm QNN (Snapdragon NPU) ──
     if env::var("CARGO_FEATURE_QNN").is_ok() {
-        build.define("GGML_USE_QNN", None);
-        build.file(llama_path.join("src").join("ggml-qnn.cpp"));
-        
-        println!("cargo:rustc-link-lib=QnnBackend");
-        println!("cargo:rustc-link-lib=QnnSystem");
-        
         if let Ok(qnn_path) = env::var("QNN_SDK_ROOT") {
+            build.define("GGML_USE_QNN", None);
+            build.file(llama_path.join("src").join("ggml-qnn.cpp"));
+            println!("cargo:rustc-link-lib=QnnBackend");
+            println!("cargo:rustc-link-lib=QnnSystem");
             println!("cargo:rustc-link-search=native={}/lib/aarch64-android", qnn_path);
             build.include(format!("{}/include/QNN", qnn_path));
+            println!("cargo:warning=⚡ QNN: Qualcomm Snapdragon NPU drivers linked.");
+        } else {
+            println!("cargo:warning=⚠️ QNN: QNN_SDK_ROOT not found. Skipping Snapdragon NPU support.");
         }
-        println!("cargo:warning=⚡ QNN: Qualcomm Snapdragon NPU drivers linked.");
     }
 
     // ── ARM Neon (CPU Optimization) ──

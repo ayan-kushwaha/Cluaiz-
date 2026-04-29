@@ -1,8 +1,7 @@
 [workspace]
 members = [
-    "cluaiz-cure/engines",
     "cluaiz-cure/engines/archer-shared",
-    "driver-manager",
+    "drivers",
     "Apps/cli",
 ]
 

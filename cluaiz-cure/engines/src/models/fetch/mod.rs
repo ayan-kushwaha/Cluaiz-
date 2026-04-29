@@ -160,16 +160,14 @@ impl ModelDownloader {
 
         };
 
-        // 🔍 BINARY PROBE: Extracting truth directly from GGUF Silicon
+        // 🔍 BINARY PROBE: Extracting truth directly from GGUF Silicon (Framework-Free)
         if weight_path.exists() {
             info!("🧬 [DNA] Probing weight binary: {:?}", weight_path);
-            if let Ok(mut file) = std::fs::File::open(weight_path) {
-                if let Ok(content) = candle_core::quantized::gguf_file::Content::read(&mut file) {
-                    dna.sync_with_gguf_metadata(&content.metadata, &content.tensor_infos);
-                    info!("🧬 [DNA] Truth-Grounding complete. Signal verified.");
-                } else {
-                    warn!("🧬 [DNA] Warning: GGUF content probe failed. DNA remains in skeleton state.");
-                }
+            if let Ok((metadata, tensor_infos)) = archer_shared::utils::GGUFProber::probe(weight_path) {
+                dna.sync_with_metadata(&metadata, &tensor_infos);
+                info!("🧬 [DNA] Truth-Grounding complete. Signal verified.");
+            } else {
+                warn!("🧬 [DNA] Warning: Native GGUF probe failed. DNA remains in skeleton state.");
             }
         }
 

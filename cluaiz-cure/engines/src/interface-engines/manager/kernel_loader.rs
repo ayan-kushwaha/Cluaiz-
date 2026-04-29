@@ -44,9 +44,10 @@ impl KernelLoader {
     }
 
     /// Resolves the absolute path for a kernel binary for a SPECIFIC OS.
-    /// Pattern: [cluaiz]/kernels/[engine]/[engine].[ext]
+    /// Pattern: [cluaiz]/interface-engines/[engine]/[engine].[ext]
     pub fn resolve_path_for_os(&self, kernel_name: &str, os: &str) -> PathBuf {
         let mut path = self.base_dir.clone();
+        path.push("interface-engines");
         path.push(kernel_name);
         
         let ext = match os {

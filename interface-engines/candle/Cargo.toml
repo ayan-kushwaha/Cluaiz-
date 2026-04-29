@@ -10,7 +10,7 @@ name = "archer_candle"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-# ── Official HuggingFace Candle (Direct GitHub Source) ──
+# ── Sovereign Foundry: Official HuggingFace Source ──
 candle-core = { git = "https://github.com/huggingface/candle" }
 candle-nn = { git = "https://github.com/huggingface/candle" }
 candle-transformers = { git = "https://github.com/huggingface/candle" }
@@ -26,15 +26,16 @@ tokio = { version = "1.37", features = ["full"] }
 # ── Universal Silicon Support ──
 default = []
 
-# Mainstream Backends
+# Mainstream Backends (Verified)
 cuda = ["candle-core/cuda"]
 metal = ["candle-core/metal"]
-vulkan = ["candle-core/vulkan"]
 accelerate = ["candle-core/accelerate"]
 mkl = ["candle-core/mkl"]
 
-# Hyper-Silicon (Sovereign DNA)
-openvino = []  # Intel NPU (Sovereign implementation)
-qnn = []       # Snapdragon NPU (Sovereign implementation)
-rocm = []      # AMD support
-sycl = []      # Intel GPU support
+# Hyper-Silicon (Sovereign DNA Placeholders)
+# Note: Vulkan is currently experimental in Candle, moved to DNA phase.
+vulkan = []    
+openvino = []  
+qnn = []       
+rocm = []      
+sycl = []      

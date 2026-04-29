@@ -8,7 +8,6 @@ authors.workspace = true
 # ── Root Architecture ──
 engines = { path = "../../cluaiz-cure/engines" }
 archer_shared = { package = "archer-shared", path = "../../cluaiz-cure/engines/archer-shared" }
-archer_llama = { package = "archer-llama", path = "../../cluaiz-cure/engines/llama" }
 
 
 # ── Powerhouse Ratatui Framework ──

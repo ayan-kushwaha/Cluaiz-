@@ -114,7 +114,17 @@ impl AutonomousDiscovery {
             } else if let Ok(mut file) = std::fs::File::open(&wp) {
                 // NOTE: Standard models are probed normally.
                 if let Ok(content) = candle_core::quantized::gguf_file::Content::read(&mut file) {
-                    dna.sync_with_gguf_metadata(&content.metadata, &content.tensor_infos);
+                    let mut metadata = std::collections::HashMap::new();
+                    for (k, v) in content.metadata {
+                        metadata.insert(k, format!("{:?}", v));
+                    }
+                    
+                    let mut tensor_infos = std::collections::HashMap::new();
+                    for (k, v) in content.tensor_infos {
+                        tensor_infos.insert(k, v.shape.dims().to_vec());
+                    }
+
+                    dna.sync_with_metadata(&metadata, &tensor_infos);
                     
                     let dna_path = dir.join("structural_dna.json");
                     if let Ok(json) = serde_json::to_string_pretty(&dna) {

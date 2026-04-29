@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use libloading::{Library, Symbol};
 use crate::interface_engines::manager::kernel_loader::KernelLoader;
 use crate::interface_engines::manager::driver_bridge::DriverBridge;
 use archer_shared::hardware::schema::profiles::SystemControl;
@@ -13,6 +14,8 @@ pub struct EngineManager {
     kernel_dir: PathBuf,
     loader: KernelLoader,
     bridge: DriverBridge,
+    // 🏛️ The Soul Link: Holds the active binary in process memory
+    active_lib: Option<Library>,
 }
 
 impl EngineManager {
@@ -21,6 +24,7 @@ impl EngineManager {
             kernel_dir: kernel_dir.clone(),
             loader: KernelLoader::new(kernel_dir),
             bridge: DriverBridge::new(),
+            active_lib: None,
         }
     }
 
@@ -77,13 +81,13 @@ impl EngineManager {
         HardwareGovernor::request_vram(&binary_id, required_vram)
             .map_err(|e| format!("Memory Arbitration Failed: {}", e))?;
 
-        // 2. Check local presence in cluaiz/kernels/
+        // 2. Check local presence in cluaiz/interface-engines/
         if self.loader.exists(&binary_id) {
             Ok(self.loader.resolve_path(&binary_id))
         } else {
             // If binary missing, release the reserved memory immediately
             let _ = HardwareGovernor::release_vram(&binary_id);
-            Err(format!("Engine Binary Missing: Please pull the '{}' package for your {} silicon", binary_id, os))
+            Err(format!("Engine Binary Missing: Please pull the '{}' package for your {} silicon into your cluaiz/interface-engines/ folder", binary_id, os))
         }
     }
 
@@ -92,6 +96,44 @@ impl EngineManager {
         // We need to know which suffix was used to reconstruct the ID
         // For simplicity in V1, we iterate and release what matches the prefix
         HardwareGovernor::release_vram(engine_type)
+    }
+
+    /// 🔗 Sovereign Linker: Maps the binary kernel to process memory and resolves symbols.
+    pub fn load_and_link(&mut self, binary_path: PathBuf) -> anyhow::Result<()> {
+        tracing::info!("🧬 [Linker] Mapping binary: {:?}", binary_path);
+        
+        unsafe {
+            let lib = Library::new(&binary_path)
+                .map_err(|e| anyhow::anyhow!("Binary Mapping Failed (libloading): {}", e))?;
+            
+            // 🎯 Phase 1: Symbol Validation
+            let _init: Symbol<unsafe extern "C" fn() -> *const i8> = lib.get(b"archer_kernel_init")
+                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'archer_kernel_init' symbol missing."))?;
+
+            tracing::info!("✅ [Linker] 7ns Handshake Complete. Kernel Linked.");
+            self.active_lib = Some(lib);
+        }
+        
+        Ok(())
+    }
+
+    /// 🏛️ Neural Instantiation: Invokes the kernel's factory method to create an active execution engine.
+    pub fn instantiate(&self, model_path: &str) -> anyhow::Result<()> {
+        let lib = self.active_lib.as_ref()
+            .ok_or_else(|| anyhow::anyhow!("Linker Error: No active kernel linked."))?;
+        
+        unsafe {
+            let instantiate_fn: Symbol<unsafe extern "C" fn(*const i8) -> *mut std::ffi::c_void> = 
+                lib.get(b"archer_kernel_instantiate")
+                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'archer_kernel_instantiate' symbol missing."))?;
+            
+            let c_path = std::ffi::CString::new(model_path)?;
+            let _engine_ptr = instantiate_fn(c_path.as_ptr());
+            
+            tracing::info!("🚀 [Linker] Neural Kernel Instantiated at Bare-Metal level.");
+        }
+        
+        Ok(())
     }
 
     fn get_system_control_path(&self) -> PathBuf {

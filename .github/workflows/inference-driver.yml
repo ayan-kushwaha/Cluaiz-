@@ -81,8 +81,8 @@ jobs:
         with:
           files: interface-engines/drivers/${{ matrix.suffix }}/*
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest-drivers' }}
-          name: Cluaiz Sovereign Release [Drivers]
-          body: "Silicon-Native Cluaiz Drivers compiled for sovereign hardware."
+          name: "Cluaiz Sovereign Baseline [Drivers]"
+          body: "Industrial Silicon-Native Drivers for Cluaiz Sovereign Engine."
           draft: false
           prerelease: false
         env:

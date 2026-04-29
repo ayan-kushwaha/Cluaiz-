@@ -38,28 +38,28 @@ impl StructuralDNA {
 
     /// Truth Protocol: Synchronizes DNA fields with actual binary metadata AND tensor shapes.
     /// This ensures that 'Original Truth' is extracted even if metadata is missing.
-    pub fn sync_with_gguf_metadata(
+    /// [REFACTORED]: Now uses generic maps to avoid framework coupling.
+    pub fn sync_with_metadata(
         &mut self, 
-        metadata: &std::collections::HashMap<String, candle_core::quantized::gguf_file::Value>,
-        tensor_infos: &std::collections::HashMap<String, candle_core::quantized::gguf_file::TensorInfo>
+        metadata: &std::collections::HashMap<String, String>,
+        tensor_infos: &std::collections::HashMap<String, Vec<usize>>
     ) {
         tracing::info!("🧬 [DNA] Initiating Multi-Layer Truth Protocol...");
         
         // ─── Phase 1: Metadata Deep Scan ───
         for (key, value) in metadata {
-            // Suffix-Based Search (Architecture Agnostic)
             if key.ends_with(".embedding_length") || key.ends_with(".hidden_size") {
-                if let Some(v) = self.extract_usize(value) { self.hidden_size = Some(v); }
+                if let Ok(v) = value.parse::<usize>() { self.hidden_size = Some(v); }
             } else if key.ends_with(".block_count") || key.ends_with(".layer_count") {
-                if let Some(v) = self.extract_usize(value) { self.layer_count = Some(v); }
+                if let Ok(v) = value.parse::<usize>() { self.layer_count = Some(v); }
             } else if key.ends_with(".attention.head_count") || key.ends_with(".num_attention_heads") {
-                if let Some(v) = self.extract_usize(value) { self.attention_head_count = Some(v); }
+                if let Ok(v) = value.parse::<usize>() { self.attention_head_count = Some(v); }
             } else if key.ends_with(".attention.head_count_kv") || key.ends_with(".num_key_value_heads") {
-                if let Some(v) = self.extract_usize(value) { self.attention_head_count_kv = Some(v); }
+                if let Ok(v) = value.parse::<usize>() { self.attention_head_count_kv = Some(v); }
             } else if key.ends_with(".feed_forward_length") || key.ends_with(".intermediate_size") {
-                if let Some(v) = self.extract_usize(value) { self.intermediate_size = Some(v); }
+                if let Ok(v) = value.parse::<usize>() { self.intermediate_size = Some(v); }
             } else if key == "general.architecture" {
-                if let Ok(arch) = value.to_string() { self.model_identity = arch.to_string(); }
+                self.model_identity = value.clone();
             }
         }
 
@@ -67,10 +67,10 @@ impl StructuralDNA {
         let mut embd_dims: std::collections::HashMap<usize, usize> = std::collections::HashMap::new();
         let mut q_dims: std::collections::HashMap<usize, usize> = std::collections::HashMap::new();
 
-        for (name, tensor_info) in tensor_infos {
-            let dims = tensor_info.shape.dims();
-            let out_dim = dims[0];
-            let in_dim = *dims.last().unwrap_or(&0);
+        for (name, shape) in tensor_infos {
+            if shape.is_empty() { continue; }
+            let out_dim = shape[0];
+            let in_dim = *shape.last().unwrap_or(&0);
 
             if name.contains("token_embd.weight") || name.contains("output.weight") {
                 *embd_dims.entry(in_dim).or_insert(0) += 1;
@@ -79,43 +79,7 @@ impl StructuralDNA {
                 *q_dims.entry(out_dim).or_insert(0) += 1;
             }
         }
-
-        if self.hidden_size.is_none() {
-            if let Some((&true_embd, _)) = embd_dims.iter().max_by_key(|&(_, count)| count) {
-                self.hidden_size = Some(true_embd);
-            }
-        }
-
-        if self.attention_dimensionality_truth.is_none() {
-             if let Some((&true_q_width, _)) = q_dims.iter().max_by_key(|&(_, count)| count) {
-                self.attention_dimensionality_truth = Some(true_q_width);
-                if self.attention_head_count.is_none() {
-                    let standard_dim = 128; // Standard Llama-cpp assumption
-                    self.attention_head_count = Some(true_q_width / standard_dim);
-                    self.attention_head_dim = Some(standard_dim);
-                }
-            }
-        }
-
-        // 🏛️ SOVEREIGN DECISION: Routing
-        // GGUF models are routed to RuntimeB (Llama.cpp) except specific overrides.
-        self.preferred_runtime = Some(BackendType::RuntimeB);
     }
-
-    fn extract_usize(&self, value: &candle_core::quantized::gguf_file::Value) -> Option<usize> {
-        match value {
-            candle_core::quantized::gguf_file::Value::U8(v) => Some(*v as usize),
-            candle_core::quantized::gguf_file::Value::U16(v) => Some(*v as usize),
-            candle_core::quantized::gguf_file::Value::U32(v) => Some(*v as usize),
-            candle_core::quantized::gguf_file::Value::U64(v) => Some(*v as usize),
-            candle_core::quantized::gguf_file::Value::I8(v) => Some(*v as usize),
-            candle_core::quantized::gguf_file::Value::I16(v) => Some(*v as usize),
-            candle_core::quantized::gguf_file::Value::I32(v) => Some(*v as usize),
-            candle_core::quantized::gguf_file::Value::I64(v) => Some(*v as usize),
-            _ => None,
-        }
-    }
-
 
     /// 🧬 The Forge: Converts JSON DNA into a high-performance rkyv archive.
     /// This happens once on the first boot to eliminate parsing overhead forever.

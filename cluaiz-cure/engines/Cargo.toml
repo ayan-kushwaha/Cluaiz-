@@ -32,17 +32,15 @@ uuid = { version = "1", features = ["v4"] }
 
 # ── Shared Workspace Member Links ──
 archer-shared = { path = "archer-shared" }
-archer-llama  = { path = "llama" }
-archer-candle = { path = "candle" }
-# archer-bitnet is loaded dynamically at runtime via libloading (avoids links conflict)
+# Engines (Llama, Candle, BitNet) are now loaded dynamically via libloading from interface-engines
 system-booster = { path = "system-booster", optional = true }
 
 # ── Dynamic Neural Bridge (The Soul Linker) ──
 libloading = "0.8"
+candle-core = { git = "https://github.com/huggingface/candle.git" }
+candle-nn = { git = "https://github.com/huggingface/candle.git" }
 
 # ── Common Utilities (Used by All) ──
-candle-core         = { git = "https://github.com/huggingface/candle.git" }
-candle-nn           = { git = "https://github.com/huggingface/candle.git" }
 tokenizers          = "0.22.2"
 once_cell           = "1.19"
 anyhow              = "1.0.102"
