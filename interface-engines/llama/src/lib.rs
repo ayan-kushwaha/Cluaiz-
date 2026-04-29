@@ -67,14 +67,16 @@ impl SovereignInference for RuntimeB {
 // ─── Sovereign FFI Gateway ──────────────────────────────────────────────────
 
 #[no_mangle]
-pub extern "C" fn archer_kernel_init() -> *const i8 {
+#[used]
+pub extern "C" fn archer_kernel_init() -> *const std::os::raw::c_char {
     tracing::info!("🧬 [Llama-Kernel] Sovereign Handshake Initialized.");
-    "archer-llama-v8-active\0".as_ptr() as *const i8
+    "archer-llama-v8-active\0".as_ptr() as *const std::os::raw::c_char
 }
 
 #[no_mangle]
+#[used]
 pub extern "C" fn archer_kernel_instantiate(
-    path_ptr: *const i8,
+    path_ptr: *const std::os::raw::c_char,
 ) -> *mut RuntimeB {
     let path = unsafe { std::ffi::CStr::from_ptr(path_ptr) }.to_string_lossy().into_owned();
     let dna = archer_shared::StructuralDNA::default();

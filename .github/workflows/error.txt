@@ -1,316 +1,164 @@
-⚙️ Build [llama-ios-arm64-metal]
-failed 1 minute ago in 2m 15s
+ Build [llama-win-x64-cuda]
+failed 2 minutes ago in 3m 50s
 
-Run BINARY="interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a"
-  BINARY="interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a"
-  
-  echo "🔍 Auditing binary: $BINARY"
-  
-  if [[ "ios-arm64" == "win-x64" ]]; then
-    # Windows Audit
-    nm "$BINARY" | grep "archer_kernel_init" || (echo "❌ ERROR: archer_kernel_init not found in Windows DLL" && exit 1)
-  elif [[ "ios-arm64" == "mac-arm64" || "ios-arm64" == "ios-arm64" ]]; then
-    # Apple Audit (Symbols often have leading underscore)
-    echo "🔍 DEBUG: Listing symbols for Apple target..."
-    ls -l "$BINARY"
-    nm -gU "$BINARY" | head -n 20
-    nm -gU "$BINARY" | grep -E "archer_kernel_init|_archer_kernel_init" || (echo "❌ ERROR: archer_kernel_init not found in Apple binary" && exit 1)
-  else
-    # Linux/Android Audit
-    nm -D "$BINARY" | grep "archer_kernel_init" || (echo "❌ ERROR: archer_kernel_init not found in Linux/Android Shared Lib" && exit 1)
-  fi
-  
-  echo "✅ Handshake symbol 'archer_kernel_init' verified."
-  shell: /bin/bash --noprofile --norc -e -o pipefail {0}
-  env:
-    CARGO_BUILD_JOBS: 4
-    CARGO_HOME: /Users/runner/.cargo
-    CARGO_INCREMENTAL: 0
-    CARGO_TERM_COLOR: always
-    SDKROOT: /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk
-    CARGO_TARGET_AARCH64_APPLE_IOS_LINKER: clang
-    CARGO_TARGET_AARCH64_APPLE_IOS_RUSTFLAGS: -C link-arg=-isysroot -C link-arg=/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -C link-arg=-lSystem
-🔍 Auditing binary: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a
-🔍 DEBUG: Listing symbols for Apple target...
--rw-r--r--  1 runner  staff  33847008 Apr 29 16:45 interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a
+error: failed to run custom build command for `archer-llama v4.4.0 (D:\a\cluaiz\cluaiz\interface-engines\llama)`
 
-archer_llama.archer_llama.cd66d5ee689f4259-cgu.00.rcgu.o:
-0000000000000e74 T __ZN5tokio7runtime4park16CachedParkThread8block_on17h1b650b664c9042faE
+Caused by:
+  process didn't exit successfully: `D:\a\cluaiz\cluaiz\interface-engines\target\release\build\archer-llama-7893d836fd562cd3\build-script-build` (exit code: 101)
+  --- stdout
+  cargo:rerun-if-changed=build.rs
+  cargo:warning=🔩 Cloning official ggml-org/llama.cpp source...
 
-archer_llama.archer_llama.cd66d5ee689f4259-cgu.01.rcgu.o:
+  --- stderr
+  Cloning into 'D:\a\cluaiz\cluaiz\interface-engines\target\x86_64-pc-windows-msvc\release\build\archer-llama-cb1d8ef2ef399ae5\out\llama.cpp'...
+  Updating files:  58% (1550/2670)
+Updating files:  59% (1576/2670)
+Updating files:  60% (1602/2670)
+Updating files:  61% (1629/2670)
+Updating files:  62% (1656/2670)
+Updating files:  63% (1683/2670)
+Updating files:  64% (1709/2670)
+Updating files:  65% (1736/2670)
+Updating files:  66% (1763/2670)
+Updating files:  67% (1789/2670)
+Updating files:  68% (1816/2670)
+Updating files:  69% (1843/2670)
+Updating files:  70% (1869/2670)
+Updating files:  71% (1896/2670)
+Updating files:  72% (1923/2670)
+Updating files:  73% (1950/2670)
+Updating files:  74% (1976/2670)
+Updating files:  75% (2003/2670)
+Updating files:  76% (2030/2670)
+Updating files:  77% (2056/2670)
+Updating files:  78% (2083/2670)
+Updating files:  79% (2110/2670)
+Updating files:  80% (2136/2670)
+Updating files:  81% (2163/2670)
+Updating files:  82% (2190/2670)
+error: unable to create file tools/server/webui/src/lib/components/app/chat/ChatForm/ChatFormActions/ChatFormActionsAttachments/ChatFormActionAttachmentsDropdown.svelte: Filename too long
+  error: unable to create file tools/server/webui/src/lib/components/app/chat/ChatForm/ChatFormActions/ChatFormActionsAttachments/ChatFormActionAttachmentsSheet.svelte: Filename too long
+  Updating files:  83% (2217/2670)
+Updating files:  84% (2243/2670)
+Updating files:  85% (2270/2670)
+Updating files:  86% (2297/2670)
+Updating files:  87% (2323/2670)
+Updating files:  88% (2350/2670)
+Updating files:  89% (2377/2670)
+Updating files:  90% (2403/2670)
+Updating files:  91% (2430/2670)
+Updating files:  92% (2457/2670)
+Updating files:  93% (2484/2670)
+Updating files:  94% (2510/2670)
+Updating files:  95% (2537/2670)
+Updating files:  96% (2564/2670)
+Updating files:  97% (2590/2670)
+Updating files:  98% (2617/2670)
+Updating files:  99% (2644/2670)
+Updating files: 100% (2670/2670)
+Updating files: 100% (2670/2670), done.
+  fatal: unable to checkout working tree
+  warning: Clone succeeded, but checkout failed.
+  You can inspect what was checked out with 'git status'
+  and retry with 'git restore --source=HEAD :/'
 
-archer_llama.archer_llama.cd66d5ee689f4259-cgu.02.rcgu.o:
-0000000000000000 T __RNvMNtNtNtCskZn6J6i4cQL_3std4sync4mpmc5wakerNtB2_5Waker6notify.llvm.16540996432053893583
-0000000000000114 T __ZN3std4sync4mpmc4list16Channel$LT$T$GT$18disconnect_senders17hc8c42563b9dac4f6E
-00000000000002f4 T __ZN3std4sync4mpmc4list16Channel$LT$T$GT$20disconnect_receivers17h88bd49478cb30095E
-0000000000000548 T __ZN3std4sync4mpmc4list16Channel$LT$T$GT$4recv17h0165e3a228f0c831E
-0000000000001274 T __ZN3std4sync4mpmc4list16Channel$LT$T$GT$4send17ha5cfedf3fb01f04dE
-0000000000001848 T __ZN4core3ptr132drop_in_place$LT$std..sync..poison..PoisonError$LT$std..sync..poison..mutex..MutexGuard$LT$std..sync..mpmc..waker..Waker$GT$$GT$$GT$17h3766a9a705acd96eE.llvm.16540996432053893583
-0000000000001898 T __ZN4core3ptr94drop_in_place$LT$std..sync..poison..mutex..MutexGuard$LT$std..sync..mpmc..waker..Waker$GT$$GT$17h03a7f20689101217E.llvm.16540996432053893583
-00000000000018f0 T __ZN81_$LT$std..sync..mpmc..list..Channel$LT$T$GT$$u20$as$u20$core..ops..drop..Drop$GT$4drop17hf3ada5138a311a11E
-0000000000001b14 S _anon.36369da466e4fe29ba5cb69e9af81cb6.1.llvm.16540996432053893583
-0000000000001d00 S _anon.36369da466e4fe29ba5cb69e9af81cb6.15.llvm.16540996432053893583
-0000000000001d48 S _anon.36369da466e4fe29ba5cb69e9af81cb6.16.llvm.16540996432053893583
-0000000000001c40 S _anon.36369da466e4fe29ba5cb69e9af81cb6.4.llvm.16540996432053893583
 
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(std-c30dc4efd4973d6d.std.f47b6dd0b6eb9a79-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
+  thread 'main' (9480) panicked at llama\build.rs:20:32:
+  Clone failed
+  note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(panic_unwind-07334641ef5cb489.panic_unwind.c777b1a434915d01-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
 
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(object-b32151aec662014a.object.e04bf612cc4ca9a9-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
 
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(memchr-29da4da5219bc532.memchr.342643f133be27f5-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
 
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(addr2line-0381e09b018c78a9.addr2line.be78e651e6e5d9ec-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
 
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(gimli-a734aa1fb8b0a20d.gimli.20d4ef4c4c5cb4b1-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
+  ⚙️ Build [llama-linux-x64-openvino]
+failed 7 minutes ago in 25s
 
-interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a:cfg_if-558cede0714c07b0.cfg_if.4fd158265d1c9909-cgu.0.rcgu.o: no symbols
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(rustc_demangle-21815290b17bedf3.rustc_demangle.eddebcfba4d59dc8-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
+E: Unable to locate package intel-openvino-runtime-ubuntu22-2023.2.0
+E: Couldn't find any package by glob 'intel-openvino-runtime-ubuntu22-2023.2.0'
+E: Couldn't find any package by regex 'intel-openvino-runtime-ubuntu22-2023.2.0'
+Error: Process completed with exit code 100.
 
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(std_detect-dc87b86ef71e816f.std_detect.e490dbf4c78d28f7-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
 
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(hashbrown-f9a6a46db496d95c.hashbrown.19d134a95746ac12-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
+⚙️ Build [llama-android-arm64-qnn]
+failed 6 minutes ago in 2m 14
 
-interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a:rustc_std_workspace_alloc-7c571275b2b26f59.rustc_std_workspace_alloc.60937afe775e72e5-cgu.0.rcgu.o: no symbols
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(miniz_oxide-15f5a3120ab2049f.miniz_oxide.a9a2cfaee25aa96c-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
 
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(adler2-57ea1af127aa62f6.adler2.80345af8900caaaa-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
 
-interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a:unwind-68b543b09e3ad798.unwind.f9acd10259809b1e-cgu.0.rcgu.o: no symbols
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(libc-4f1f23bf984c7c76.libc.f0c22e1b846eb068-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
+error[E0308]: mismatched types
+  --> llama/src/lib.rs:79:50
+   |
+79 |     let path = unsafe { std::ffi::CStr::from_ptr(path_ptr) }.to_string_lossy().into_owned();
+   |                         ------------------------ ^^^^^^^^ expected `*const u8`, found `*const i8`
+   |                         |
+   |                         arguments to this function are incorrect
+   |
+   = note: expected raw pointer `*const u8`
+              found raw pointer `*const i8`
+note: associated function defined here
+  --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/ffi/c_str.rs:253:24
 
-interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a:rustc_std_workspace_core-7ecfdbd7cbd0d348.rustc_std_workspace_core.cf5887636283dea8-cgu.0.rcgu.o: no symbols
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(alloc-f39c1eb4f5314fcf.alloc.473e878a89141f3-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
 
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(core-ac49de26bc405baf.core.35bf372f3c24c1ac-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
 
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.000.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
+⚙️ Build [llama-mac-arm64-metal]
+failed 9 minutes ago in 1m 31s
 
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.001.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.002.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.003.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.004.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.005.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.006.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.007.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.008.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.009.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.010.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.011.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.014.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.016.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.017.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.018.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.019.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.020.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.021.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.022.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.023.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.025.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.027.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.028.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.029.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.035.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.036.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.041.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.055.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.056.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.059.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.080.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.081.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.106.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.111.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.151.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a:compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.218.rcgu.o: no symbols
-interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a:compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.219.rcgu.o: no symbols
-interface-engines/target/aarch64-apple-ios/release/libarcher_llama.a:compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.220.rcgu.o: no symbols
-LLVM ERROR: IO failure on output stream: Broken pipe
+❌ ERROR: archer_kernel_init not found in Apple binary
 Error: Process completed with exit code 1.
 
 
 
-
-
-
-
-
-
-
-
-
-
-⚙️ Build [candle-ios-arm64-metal]
-failed 2 minutes ago in 3m 10s
-
-
-
-
-Run BINARY="interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a"
-🔍 Auditing binary: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a
-🔍 DEBUG: Listing symbols for Apple target...
--rw-r--r--  1 runner  staff  64191528 Apr 29 16:46 interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a
-
-archer_candle.archer_candle.2f8289e1d6857bcb-cgu.00.rcgu.o:
-0000000000000000 T __ZN132_$LT$alloc..vec..Vec$LT$T$C$A$GT$$u20$as$u20$alloc..vec..spec_extend..SpecExtend$LT$$RF$T$C$core..slice..iter..Iter$LT$T$GT$$GT$$GT$11spec_extend17hd068b5e107415a59E
-0000000000000084 T __ZN4core3ptr100drop_in_place$LT$core..option..Option$LT$alloc..vec..Vec$LT$tokenizers..tokenizer..Token$GT$$GT$$GT$17hd4ea8d58d5be64dfE.llvm.4247311725034604135
-0000000000000204 T __ZN4core3ptr40drop_in_place$LT$tracing..span..Span$GT$17ha4cd00611d23f11fE.llvm.4247311725034604135
-000000000000027c T __ZN4core3ptr51drop_in_place$LT$std..backtrace..BacktraceFrame$GT$17he63f5d4064891e90E.llvm.4247311725034604135
-0000000000000360 T __ZN4core3ptr52drop_in_place$LT$std..backtrace..BacktraceSymbol$GT$17h9a72d431041256c2E.llvm.4247311725034604135
-00000000000003f0 T __ZN4core3ptr61drop_in_place$LT$candle_core..quantized..gguf_file..Value$GT$17hf6e9555be09269d7E.llvm.4247311725034604135
-000000000000047c T __ZN4core3ptr62drop_in_place$LT$tokenizers..tokenizer..encoding..Encoding$GT$17hea8fea95b5cad666E.llvm.4247311725034604135
-0000000000000704 T __ZN4core3ptr64drop_in_place$LT$tokenizers..tokenizer..pre_tokenizer..Split$GT$17hed54075ec7138db7E.llvm.4247311725034604135
-0000000000000850 T __ZN4core3ptr69drop_in_place$LT$core..option..Option$LT$tracing..span..Inner$GT$$GT$17h7f3500f53d4cafe9E.llvm.4247311725034604135
-0000000000000884 T __ZN4core3ptr70drop_in_place$LT$candle_transformers..models..quantized_llama..Mlp$GT$17h9195c81dcf46b03cE.llvm.4247311725034604135
-00000000000008d8 T __ZN4core3ptr74drop_in_place$LT$candle_transformers..models..quantized_llama..QMatMul$GT$17h2440f8fbda32a3e2E.llvm.4247311725034604135
-0000000000000ac8 T __ZN4core3ptr76drop_in_place$LT$core..option..Option$LT$std..backtrace..BytesOrWide$GT$$GT$17ha4b1b23ff8362bb3E.llvm.4247311725034604135
-0000000000000b08 T __ZN4core3ptr79drop_in_place$LT$candle_transformers..models..quantized_llama..LayerWeights$GT$17hff2ba6dfa28ce5e8E.llvm.4247311725034604135
-0000000000000e70 T __ZN4core3ptr80drop_in_place$LT$candle_transformers..models..quantized_gemma3..LayerWeights$GT$17h7c4f55d754c14e1aE.llvm.4247311725034604135
-0000000000001300 T __ZN5alloc3vec16Vec$LT$T$C$A$GT$11extend_with17h13f454a0676f75baE
-00000000000013f4 T __ZN5alloc3vec16Vec$LT$T$C$A$GT$5drain17h4bbffc3e61acbce3E
-0000000000001414 T __ZN5alloc3vec16Vec$LT$T$C$A$GT$7reserve17hda23d416676d75d3E
-000000000000143c T __ZN5alloc3vec16in_place_collect108_$LT$impl$u20$alloc..vec..spec_from_iter..SpecFromIter$LT$T$C$I$GT$$u20$for$u20$alloc..vec..Vec$LT$T$GT$$GT$9from_iter17h237c6a5b6b780778E
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(std-c30dc4efd4973d6d.std.f47b6dd0b6eb9a79-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(panic_unwind-07334641ef5cb489.panic_unwind.c777b1a434915d01-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(object-b32151aec662014a.object.e04bf612cc4ca9a9-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(memchr-29da4da5219bc532.memchr.342643f133be27f5-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(addr2line-0381e09b018c78a9.addr2line.be78e651e6e5d9ec-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(gimli-a734aa1fb8b0a20d.gimli.20d4ef4c4c5cb4b1-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a:cfg_if-558cede0714c07b0.cfg_if.4fd158265d1c9909-cgu.0.rcgu.o: no symbols
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(rustc_demangle-21815290b17bedf3.rustc_demangle.eddebcfba4d59dc8-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(std_detect-dc87b86ef71e816f.std_detect.e490dbf4c78d28f7-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(hashbrown-f9a6a46db496d95c.hashbrown.19d134a95746ac12-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a:rustc_std_workspace_alloc-7c571275b2b26f59.rustc_std_workspace_alloc.60937afe775e72e5-cgu.0.rcgu.o: no symbols
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(miniz_oxide-15f5a3120ab2049f.miniz_oxide.a9a2cfaee25aa96c-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(adler2-57ea1af127aa62f6.adler2.80345af8900caaaa-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a:unwind-68b543b09e3ad798.unwind.f9acd10259809b1e-cgu.0.rcgu.o: no symbols
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(libc-4f1f23bf984c7c76.libc.f0c22e1b846eb068-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a:rustc_std_workspace_core-7ecfdbd7cbd0d348.rustc_std_workspace_core.cf5887636283dea8-cgu.0.rcgu.o: no symbols
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(alloc-f39c1eb4f5314fcf.alloc.473e878a89141f3-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(core-ac49de26bc405baf.core.35bf372f3c24c1ac-cgu.0.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.000.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.001.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.002.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.003.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.004.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.005.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.006.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.007.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.008.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.009.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.010.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.011.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.014.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.016.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.017.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.018.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.019.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.020.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.021.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.022.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.023.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.025.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.027.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.028.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.029.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.035.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.036.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.041.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.055.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.056.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.059.rcgu.o): Unknown attribute kind (102) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.080.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.081.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.106.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.111.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm: error: interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a(compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.151.rcgu.o): Unknown attribute kind (105) (Producer: 'LLVM22.1.2-rust-1.95.0-stable' Reader: 'LLVM APPLE_1_1700.0.13.5_0')
-
-interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a:compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.218.rcgu.o: no symbols
-interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a:compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.219.rcgu.o: no symbols
-interface-engines/target/aarch64-apple-ios/release/libarcher_candle.a:compiler_builtins-7b880efa0202a30c.compiler_builtins.d928360b6e0741c1-cgu.220.rcgu.o: no symbols
-LLVM ERROR: IO failure on output stream: Broken pipe
+⚙️ Build [candle-win-x64-cuda]
+failed 8 minutes ago in 2m 45s
+
+error: failed to run custom build command for `cudarc v0.19.4`
+
+Caused by:
+  process didn't exit successfully: `D:\a\cluaiz\cluaiz\interface-engines\target\release\build\cudarc-23dac49e3758d787\build-script-build` (exit code: 101)
+  --- stdout
+  cargo:rerun-if-changed=build.rs
+  cargo:rerun-if-env-changed=CUDARC_CUDA_VERSION
+  cargo:rerun-if-env-changed=CUDA_HOME
+  cargo:rerun-if-env-changed=CUDA_PATH
+  cargo:rerun-if-env-changed=CUDA_ROOT
+  cargo:rerun-if-env-changed=CUDA_TOOLKIT_ROOT_DIR
+  cargo:rerun-if-env-changed=CUDNN_LIB
+
+  --- stderr
+
+  thread 'main' (4352) panicked at C:\Users\runneradmin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\cudarc-0.19.4\build.rs:125:13:
+  `nvcc --version` failed.
+  Err(Error { kind: NotFound, message: "program not found" })
+  note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+
+
+  ⚙️ Build [candle-linux-x64-openvino]
+failed 10 minutes ago in 27s
+
+E: Unable to locate package intel-openvino-runtime-ubuntu22-2023.2.0
+E: Couldn't find any package by glob 'intel-openvino-runtime-ubuntu22-2023.2.0'
+E: Couldn't find any package by regex 'intel-openvino-runtime-ubuntu22-2023.2.0'
+Error: Process completed with exit code 100.
+
+⚙️ Build [candle-android-arm64-qnn]
+failed 8 minutes ago in 3m 32s
+
+error[E0308]: mismatched types
+  --> candle/src/lib.rs:91:50
+   |
+91 |     let path = unsafe { std::ffi::CStr::from_ptr(path_ptr) }.to_string_lossy().into_owned();
+   |                         ------------------------ ^^^^^^^^ expected `*const u8`, found `*const i8`
+   |                         |
+   |                         arguments to this function are incorrect
+   |
+   = note: expected raw pointer `*const u8`
+              found raw pointer `*const i8`
+note: associated function defined here
+  --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/ffi/c_str.rs:253:24
+
+  ⚙️ Build [candle-mac-arm64-metal]
+failed 8 minutes ago in 3m 35s
+❌ ERROR: archer_kernel_init not found in Apple binary
 Error: Process completed with exit code 1.
