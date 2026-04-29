@@ -26,8 +26,8 @@ jobs:
       fail-fast: false
       matrix:
         kernel: [llama, candle]
+        platform: [win-x64, linux-x64, android-arm64, mac-arm64, ios-arm64]
         include:
-          # ── Desktop & Server ──
           - platform: win-x64
             backend: cuda
             os: windows-latest
@@ -42,15 +42,6 @@ jobs:
             features: cuda
             ext: so
             prefix: "lib"
-          - platform: linux-x64
-            backend: openvino
-            os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            features: openvino
-            ext: so
-            prefix: "lib"
-          
-          # ── Mobile & NPU ──
           - platform: android-arm64
             backend: qnn
             os: ubuntu-latest
@@ -71,6 +62,14 @@ jobs:
             target: aarch64-apple-ios
             features: metal
             ext: a
+            prefix: "lib"
+          # Extra rule for OpenVINO (Linux only)
+          - platform: linux-x64
+            backend: openvino
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            features: openvino
+            ext: so
             prefix: "lib"
 
     steps:
