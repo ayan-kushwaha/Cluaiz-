@@ -28,143 +28,111 @@ fn main() {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // PHASE 2: SOVEREIGN COMPILATION — Build C++ with cc crate
+    // PHASE 2: HYBRID COMPILATION — Split C and C++ for maximum stability
     // ═══════════════════════════════════════════════════════════════
     let ggml_src = llama_path.join("ggml").join("src");
     let ggml_include = llama_path.join("ggml").join("include");
 
-    let mut build = cc::Build::new();
-    build
-        .cpp(true)
-        .include(&llama_path)
-        .include(llama_path.join("include"))
-        .include(llama_path.join("common"))
-        .include(&ggml_include)
-        .include(&ggml_src)
-        .file(llama_path.join("src").join("llama.cpp"))
+    // Common Config
+    let common_includes = [
+        &llama_path,
+        &llama_path.join("include"),
+        &llama_path.join("common"),
+        &ggml_include,
+        &ggml_src,
+    ];
+
+    // 1. 🏗️ THE C-ABI CORE (Pure C)
+    // Compiling ggml core files as pure C to avoid C++ strictness errors (narrowing, void*).
+    let mut build_c = cc::Build::new();
+    for inc in &common_includes { build_c.include(inc); }
+    
+    build_c
         .file(ggml_src.join("ggml.c"))
         .file(ggml_src.join("ggml-alloc.c"))
         .file(ggml_src.join("ggml-backend.c"))
-        .file(ggml_src.join("ggml-quants.c"));
+        .file(ggml_src.join("ggml-quants.c"))
+        .define("GGML_VERSION", "\"0.1.0\"")
+        .define("GGML_COMMIT", "\"archer-sovereign\"")
+        .warnings(false); // Silence noise in 3rd party code
+
+    // 2. 🏗️ THE C++ BACKEND (Modern C++)
+    // Compiling llama.cpp and driver-specific files as C++.
+    let mut build_cpp = cc::Build::new();
+    for inc in &common_includes { build_cpp.include(inc); }
+    
+    build_cpp
+        .cpp(true)
+        .std("c++17")
+        .file(llama_path.join("src").join("llama.cpp"))
+        .warnings(false);
+
+    // Apple SDK Narrowing Fix
+    if env::var("CARGO_CFG_TARGET_OS").unwrap_or_default() == "ios" {
+        build_cpp.flag("-Wno-c++11-narrowing");
+    }
 
     // ═══════════════════════════════════════════════════════════════
-    // PHASE 3: DRIVER LINKING — Connect to actual hardware drivers
-    // Without this, the binary compiles but CRASHES at runtime
-    // because it can't find the GPU/NPU libraries.
+    // PHASE 3: DRIVER LINKING — Connect to Silicon drivers
     // ═══════════════════════════════════════════════════════════════
 
     // ── NVIDIA CUDA ──
     if env::var("CARGO_FEATURE_CUDA").is_ok() {
-        build.define("GGML_USE_CUDA", None);
-        build.file(ggml_src.join("ggml-cuda.cu"));
-
-        // Link the actual CUDA runtime and driver libraries
+        build_cpp.define("GGML_USE_CUDA", None);
+        build_cpp.file(ggml_src.join("ggml-cuda.cu"));
         println!("cargo:rustc-link-lib=cuda");
         println!("cargo:rustc-link-lib=cudart");
         println!("cargo:rustc-link-lib=cublas");
-        println!("cargo:rustc-link-lib=cublasLt");
-
-        // Search paths (CUDA toolkit default locations)
-        if let Ok(cuda_path) = env::var("CUDA_PATH") {
-            println!("cargo:rustc-link-search=native={}/lib64", cuda_path);
-            println!("cargo:rustc-link-search=native={}/lib/x64", cuda_path);
-            build.include(format!("{}/include", cuda_path));
-        } else {
-            // Default Linux CUDA path
-            println!("cargo:rustc-link-search=native=/usr/local/cuda/lib64");
+        if let Ok(path) = env::var("CUDA_PATH") {
+            println!("cargo:rustc-link-search=native={}/lib64", path);
+            build_cpp.include(format!("{}/include", path));
         }
-
-        println!("cargo:warning=⚡ CUDA: Driver libraries linked (cuda, cudart, cublas).");
     }
 
     // ── Apple Metal ──
     if env::var("CARGO_FEATURE_METAL").is_ok() {
-        build.define("GGML_USE_METAL", None);
-        build.file(ggml_src.join("ggml-metal.m"));
+        build_c.define("GGML_USE_METAL", None);
+        build_cpp.define("GGML_USE_METAL", None);
+        build_c.file(ggml_src.join("ggml-metal.m"));
 
-        // Link Apple frameworks (Metal, Foundation, Accelerate)
         println!("cargo:rustc-link-lib=framework=Metal");
         println!("cargo:rustc-link-lib=framework=Foundation");
         println!("cargo:rustc-link-lib=framework=Accelerate");
         println!("cargo:rustc-link-lib=framework=MetalPerformanceShaders");
-
-        println!("cargo:warning=⚡ Metal: Apple frameworks linked (Metal, Accelerate, MPS).");
     }
 
-    // ── Vulkan (Cross-platform GPU) ──
+    // ── Vulkan ──
     if env::var("CARGO_FEATURE_VULKAN").is_ok() {
-        build.define("GGML_USE_VULKAN", None);
-        build.file(ggml_src.join("ggml-vulkan.cpp"));
-
-        // Link Vulkan SDK
+        build_cpp.define("GGML_USE_VULKAN", None);
+        build_cpp.file(ggml_src.join("ggml-vulkan.cpp"));
         println!("cargo:rustc-link-lib=vulkan");
-
-        if let Ok(vulkan_sdk) = env::var("VULKAN_SDK") {
-            println!("cargo:rustc-link-search=native={}/lib", vulkan_sdk);
-            build.include(format!("{}/include", vulkan_sdk));
-        }
-
-        println!("cargo:warning=⚡ Vulkan: SDK linked.");
     }
 
-    // ── AMD ROCm ──
-    if env::var("CARGO_FEATURE_ROCM").is_ok() {
-        build.define("GGML_USE_HIPBLAS", None);
-
-        println!("cargo:rustc-link-lib=hipblas");
-        println!("cargo:rustc-link-lib=rocblas");
-        println!("cargo:rustc-link-lib=amdhip64");
-
-        if let Ok(rocm_path) = env::var("ROCM_PATH") {
-            println!("cargo:rustc-link-search=native={}/lib", rocm_path);
-            build.include(format!("{}/include", rocm_path));
-        } else {
-            println!("cargo:rustc-link-search=native=/opt/rocm/lib");
-        }
-
-        println!("cargo:warning=⚡ ROCm: AMD HIP libraries linked.");
-    }
-
-    // ── Intel OpenVINO (NPU/GPU) ──
+    // ── Intel OpenVINO ──
     if env::var("CARGO_FEATURE_OPENVINO").is_ok() {
         if let Ok(ov_path) = env::var("INTEL_OPENVINO_DIR") {
-            build.define("GGML_USE_OPENVINO", None);
-            build.file(llama_path.join("src").join("ggml-openvino.cpp"));
+            build_cpp.define("GGML_USE_OPENVINO", None);
+            build_cpp.file(llama_path.join("src").join("ggml-openvino.cpp"));
             println!("cargo:rustc-link-lib=openvino");
-            println!("cargo:rustc-link-lib=openvino_c");
             println!("cargo:rustc-link-search=native={}/runtime/lib/intel64", ov_path);
-            build.include(format!("{}/runtime/include", ov_path));
-            println!("cargo:warning=⚡ OpenVINO: Intel NPU/GPU drivers linked.");
-        } else {
-            println!("cargo:warning=⚠️ OpenVINO: INTEL_OPENVINO_DIR not found. Skipping NPU support.");
         }
     }
 
-    // ── Qualcomm QNN (Snapdragon NPU) ──
+    // ── Qualcomm QNN ──
     if env::var("CARGO_FEATURE_QNN").is_ok() {
         if let Ok(qnn_path) = env::var("QNN_SDK_ROOT") {
-            build.define("GGML_USE_QNN", None);
-            build.file(llama_path.join("src").join("ggml-qnn.cpp"));
+            build_cpp.define("GGML_USE_QNN", None);
+            build_cpp.file(llama_path.join("src").join("ggml-qnn.cpp"));
             println!("cargo:rustc-link-lib=QnnBackend");
-            println!("cargo:rustc-link-lib=QnnSystem");
             println!("cargo:rustc-link-search=native={}/lib/aarch64-android", qnn_path);
-            build.include(format!("{}/include/QNN", qnn_path));
-            println!("cargo:warning=⚡ QNN: Qualcomm Snapdragon NPU drivers linked.");
-        } else {
-            println!("cargo:warning=⚠️ QNN: QNN_SDK_ROOT not found. Skipping Snapdragon NPU support.");
         }
     }
 
-    // ── ARM Neon (CPU Optimization) ──
-    if env::var("CARGO_FEATURE_ARM_NEON").is_ok() {
-        build.define("GGML_USE_ARM_NEON", None);
-        println!("cargo:warning=⚡ ARM Neon: Mobile/Pi CPU optimizations enabled.");
-    }
-
     // ═══════════════════════════════════════════════════════════════
-    // PHASE 4: COMPILE — Forge the raw machine code
+    // PHASE 4: COMPILE — Forge the final binaries
     // ═══════════════════════════════════════════════════════════════
-    build.compile("archer_llama_core");
+    build_c.compile("ggml_core");
+    build_cpp.compile("archer_llama_core");
 
-    println!("cargo:warning=🧿 [Llama-Engine] Sovereign Source + Drivers Compiled.");
+    println!("cargo:warning=🧿 [Llama-Engine] Hybrid Sovereign Build Complete.");
 }

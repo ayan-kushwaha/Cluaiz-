@@ -1,7 +1,5 @@
 //! 🏛️ Sovereign Universal Rust Engine (Standard + BitNet)
-//! 
 //! Hardware-Adaptive Neural Runtime built on Candle.
-//! Capable of executing standard GGUF models and 1.58-bit Ternary models.
 
 use anyhow::Result;
 use archer_shared::{SovereignInference, StructuralDNA, UnifiedBackend, SovereignContext};
@@ -16,9 +14,22 @@ pub mod bit_linear;
 
 pub use crate::bit_linear::BitLinear;
 
+// ─── Sovereign Model Wrapper ──────────────────────────────────────────────
 pub enum SovereignModel {
-    Standard(candle_transformers::models::quantized_llama::ModelWeights),
-    Ternary(Vec<BitLinear>), // Placeholder for full BitNet architecture
+    Variant1(candle_transformers::models::quantized_llama::ModelWeights),
+    Variant2(candle_transformers::models::quantized_gemma3::ModelWeights),
+    Ternary(Vec<BitLinear>),
+}
+
+impl SovereignModel {
+    /// Dispatcher for the forward pass across different architecture variants.
+    pub fn forward(&mut self, x: &Tensor, pos: usize) -> CandleResult<Tensor> {
+        match self {
+            Self::Variant1(m) => m.forward(x, pos),
+            Self::Variant2(m) => m.forward(x, pos),
+            Self::Ternary(_) => Err(candle_core::Error::Msg("BitNet forward not implemented yet".into())),
+        }
+    }
 }
 
 pub struct CandleEngine {
@@ -33,18 +44,10 @@ impl CandleEngine {
         let content = candle_core::quantized::gguf_file::Content::read(&mut file)
             .map_err(|e| anyhow::anyhow!("Failed to parse GGUF: {}", e))?;
         
-        // 🛰️ AUTO-DETECTION: Check if model weights are ternary
-        let is_bitnet = path.to_string_lossy().to_lowercase().contains("bitnet");
+        let dna = archer_shared::metadata::dna::StructuralDNA::default();
+        let model = loader::CandleLoader::load(&path, content, &mut file, device, Some(dna))?;
         
-        if is_bitnet {
-            tracing::info!("🧩 [Universal-Engine] BitNet 1.58b (Ternary) Architecture Detected.");
-            // Logic to instantiate BitNet layers will go here
-            Ok(Self { path, device: device.clone(), model: SovereignModel::Ternary(vec![]) })
-        } else {
-            tracing::info!("🦙 [Universal-Engine] Standard GGUF Architecture Detected.");
-            let model = loader::CandleLoader::load(&path, content, &mut file, device, None)?;
-            Ok(Self { path, device: device.clone(), model: SovereignModel::Standard(model) })
-        }
+        Ok(Self { path, device: device.clone(), model })
     }
 }
 
@@ -60,16 +63,8 @@ impl SovereignInference for CandleEngine {
         tokenizer: &Tokenizer,
         callback: Box<dyn FnMut(String) + Send + 'static>,
     ) -> Result<()> {
-        match &mut self.model {
-            SovereignModel::Standard(m) => {
-                infer::CandleInference::generate_stream(m, prompt, max_tokens, tokenizer, &self.device, callback)
-                    .map_err(|e| anyhow::anyhow!("Standard Inference Error: {}", e))
-            }
-            SovereignModel::Ternary(_) => {
-                callback("BitNet streaming optimized for pure silicon registers.".to_string());
-                Ok(())
-            }
-        }
+        infer::CandleInference::generate_stream(&mut self.model, prompt, max_tokens, tokenizer, &self.device, callback)
+            .map_err(|e| anyhow::anyhow!("Inference Error: {}", e))
     }
 }
 
@@ -78,7 +73,7 @@ impl UnifiedBackend for CandleEngine {
         Err("Sovereign V8: Universal Engine uses streaming API for optimal latency".into())
     }
     fn prefill(&mut self, _prompt: &str) -> Result<()> { Ok(()) }
-    fn evaluate_tps(&self) -> f64 { 120.0 } // 1.58-bit speed target
+    fn evaluate_tps(&self) -> f64 { 120.0 }
 }
 
 // ─── Sovereign FFI Gateway ──────────────────────────────────────────────────
@@ -94,11 +89,8 @@ pub extern "C" fn archer_kernel_instantiate(
     path_ptr: *const i8,
 ) -> *mut CandleEngine {
     let path = unsafe { std::ffi::CStr::from_ptr(path_ptr) }.to_string_lossy().into_owned();
-    let engine = CandleEngine::new(PathBuf::from(path), &Device::Cpu).unwrap();
-    Box::into_raw(Box::new(engine))
-}
-
-#[no_mangle]
-pub extern "C" fn archer_kernel_version() -> *const i8 {
-    "v8.universal-rust-native\0".as_ptr() as *const i8
+    match CandleEngine::new(PathBuf::from(path), &Device::Cpu) {
+        Ok(engine) => Box::into_raw(Box::new(engine)),
+        Err(_) => std::ptr::null_mut(),
+    }
 }

@@ -1,40 +1,189 @@
+error: failed to run custom build command for `archer-llama v4.4.0 (/Users/runner/work/cluaiz/cluaiz/interface-engines/llama)`
+
+Caused by:
+  process didn't exit successfully: `/Users/runner/work/cluaiz/cluaiz/interface-engines/target/release/build/archer-llama-99d22436aea2f47e/build-script-build` (exit status: 1)
+  --- stdout
+  cargo:rerun-if-changed=build.rs
+  cargo:warning=🔩 Cloning official ggml-org/llama.cpp source...
+  cargo:rustc-link-lib=framework=Metal
+  cargo:rustc-link-lib=framework=Foundation
+  cargo:rustc-link-lib=framework=Accelerate
+  cargo:rustc-link-lib=framework=MetalPerformanceShaders
+  cargo:warning=⚡ Metal: Apple frameworks linked (Metal, Accelerate, MPS).
+  cargo:rerun-if-env-changed=CC_FORCE_DISABLE
+  CC_FORCE_DISABLE = None
+  cargo:rerun-if-env-changed=CXX_aarch64-apple-ios
+  CXX_aarch64-apple-ios = None
+  cargo:rerun-if-env-changed=CXX_aarch64_apple_ios
+  CXX_aarch64_apple_ios = None
+  cargo:rerun-if-env-changed=TARGET_CXX
+  TARGET_CXX = None
+  cargo:rerun-if-env-changed=CXX
+  CXX = None
+  cargo:rerun-if-env-changed=CC_ENABLE_DEBUG_OUTPUT
+  cargo:rerun-if-env-changed=CRATE_CC_NO_DEFAULTS
+  CRATE_CC_NO_DEFAULTS = None
+  cargo:rerun-if-env-changed=IPHONEOS_DEPLOYMENT_TARGET
+  IPHONEOS_DEPLOYMENT_TARGET = None
+  Detecting "ios" SDK path for iphoneos
+  cargo:rerun-if-env-changed=SDKROOT
+  SDKROOT = Some(/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk)
+  cargo:rerun-if-env-changed=CXXFLAGS
+  CXXFLAGS = None
+  cargo:rerun-if-env-changed=TARGET_CXXFLAGS
+  TARGET_CXXFLAGS = None
+  cargo:rerun-if-env-changed=CXXFLAGS_aarch64_apple_ios
+  CXXFLAGS_aarch64_apple_ios = None
+  cargo:rerun-if-env-changed=CXXFLAGS_aarch64-apple-ios
+  CXXFLAGS_aarch64-apple-ios = None
+  cargo:warning=In file included from /Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/src/llama.cpp:6:
+  cargo:warning=In file included from /Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/src/llama-context.h:6:
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/src/llama-graph.h:556:27: warning: decomposition declarations are a C++17 extension [-Wc++17-extensions]
+  cargo:warning=  556 |         for (const auto & [seq_id, sampler] : lhs) {
+  cargo:warning=      |                           ^~~~~~~~~~~~~~~~~
+  cargo:warning=1 warning generated.
+  cargo:rerun-if-env-changed=CXX_aarch64-apple-ios
+  CXX_aarch64-apple-ios = None
+  cargo:rerun-if-env-changed=CXX_aarch64_apple_ios
+  CXX_aarch64_apple_ios = None
+  cargo:rerun-if-env-changed=TARGET_CXX
+  TARGET_CXX = None
+  cargo:rerun-if-env-changed=CXX
+  CXX = None
+  cargo:rerun-if-env-changed=CRATE_CC_NO_DEFAULTS
+  CRATE_CC_NO_DEFAULTS = None
+  Detecting "ios" SDK path for iphoneos
+  cargo:rerun-if-env-changed=CXXFLAGS
+  CXXFLAGS = None
+  cargo:rerun-if-env-changed=TARGET_CXXFLAGS
+  TARGET_CXXFLAGS = None
+  cargo:rerun-if-env-changed=CXXFLAGS_aarch64_apple_ios
+  CXXFLAGS_aarch64_apple_ios = None
+  cargo:rerun-if-env-changed=CXXFLAGS_aarch64-apple-ios
+  CXXFLAGS_aarch64-apple-ios = None
+  cargo:warning=clang++: warning: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated [-Wdeprecated]
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:510:12: error: use of undeclared identifier 'GGML_VERSION'; did you mean 'GGML_OP_SIN'?
+  cargo:warning=  510 |     return GGML_VERSION;
+  cargo:warning=      |            ^~~~~~~~~~~~
+  cargo:warning=      |            GGML_OP_SIN
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/include/ggml.h:487:9: note: 'GGML_OP_SIN' declared here
+  cargo:warning=  487 |         GGML_OP_SIN,
+  cargo:warning=      |         ^
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:510:12: error: cannot initialize return object of type 'const char *' with an rvalue of type 'ggml_op'
+  cargo:warning=  510 |     return GGML_VERSION;
+  cargo:warning=      |            ^~~~~~~~~~~~
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:514:12: error: use of undeclared identifier 'GGML_COMMIT'
+  cargo:warning=  514 |     return GGML_COMMIT;
+  cargo:warning=      |            ^
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:1581:27: error: cannot initialize a variable of type 'struct ggml_context *' with an rvalue of type 'void *'
+  cargo:warning= 1581 |     struct ggml_context * ctx = GGML_MALLOC(sizeof(struct ggml_context));
+  cargo:warning=      |                           ^     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:1676:18: error: cannot initialize a variable of type 'char *const' with an lvalue of type 'void *'
+  cargo:warning= 1676 |     char * const mem_buffer = ctx->mem_buffer;
+  cargo:warning=      |                  ^            ~~~~~~~~~~~~~~~
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:1935:18: error: cannot initialize a variable of type 'char *const' with an lvalue of type 'void *const'
+  cargo:warning= 1935 |     char * const mem_buffer = ctx->mem_buffer;
+  cargo:warning=      |                  ^            ~~~~~~~~~~~~~~~
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:1952:18: error: cannot initialize a variable of type 'char *const' with an lvalue of type 'void *const'
+  cargo:warning= 1952 |     char * const mem_buffer = ctx->mem_buffer;
+  cargo:warning=      |                  ^            ~~~~~~~~~~~~~~~
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:1968:18: error: cannot initialize a variable of type 'char *const' with an lvalue of type 'void *'
+  cargo:warning= 1968 |     char * const mem_buffer = ctx->mem_buffer;
+  cargo:warning=      |                  ^            ~~~~~~~~~~~~~~~
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:2149:26: error: non-constant-expression cannot be narrowed from type 'size_t' (aka 'unsigned long') to 'int32_t' (aka 'int') in initializer list [-Wc++11-narrowing]
+  cargo:warning= 2149 |     int32_t params[] = { nb1, nb2, nb3, offset, inplace ? 1 : 0 };
+  cargo:warning=      |                          ^~~
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:2149:26: note: insert an explicit cast to silence this issue
+  cargo:warning= 2149 |     int32_t params[] = { nb1, nb2, nb3, offset, inplace ? 1 : 0 };
+  cargo:warning=      |                          ^~~
+  cargo:warning=      |                          static_cast<int32_t>( )
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:2149:31: error: non-constant-expression cannot be narrowed from type 'size_t' (aka 'unsigned long') to 'int32_t' (aka 'int') in initializer list [-Wc++11-narrowing]
+  cargo:warning= 2149 |     int32_t params[] = { nb1, nb2, nb3, offset, inplace ? 1 : 0 };
+  cargo:warning=      |                               ^~~
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:2149:31: note: insert an explicit cast to silence this issue
+  cargo:warning= 2149 |     int32_t params[] = { nb1, nb2, nb3, offset, inplace ? 1 : 0 };
+  cargo:warning=      |                               ^~~
+  cargo:warning=      |                               static_cast<int32_t>( )
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:2149:36: error: non-constant-expression cannot be narrowed from type 'size_t' (aka 'unsigned long') to 'int32_t' (aka 'int') in initializer list [-Wc++11-narrowing]
+  cargo:warning= 2149 |     int32_t params[] = { nb1, nb2, nb3, offset, inplace ? 1 : 0 };
+  cargo:warning=      |                                    ^~~
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:2149:36: note: insert an explicit cast to silence this issue
+  cargo:warning= 2149 |     int32_t params[] = { nb1, nb2, nb3, offset, inplace ? 1 : 0 };
+  cargo:warning=      |                                    ^~~
+  cargo:warning=      |                                    static_cast<int32_t>( )
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:2149:41: error: non-constant-expression cannot be narrowed from type 'size_t' (aka 'unsigned long') to 'int32_t' (aka 'int') in initializer list [-Wc++11-narrowing]
+  cargo:warning= 2149 |     int32_t params[] = { nb1, nb2, nb3, offset, inplace ? 1 : 0 };
+  cargo:warning=      |                                         ^~~~~~
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:2149:41: note: insert an explicit cast to silence this issue
+  cargo:warning= 2149 |     int32_t params[] = { nb1, nb2, nb3, offset, inplace ? 1 : 0 };
+  cargo:warning=      |                                         ^~~~~~
+  cargo:warning=      |                                         static_cast<int32_t>( )
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:3398:26: error: non-constant-expression cannot be narrowed from type 'size_t' (aka 'unsigned long') to 'int32_t' (aka 'int') in initializer list [-Wc++11-narrowing]
+  cargo:warning= 3398 |     int32_t params[] = { nb1, nb2, nb3, offset, inplace ? 1 : 0 };
+  cargo:warning=      |                          ^~~
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:3398:26: note: insert an explicit cast to silence this issue
+  cargo:warning= 3398 |     int32_t params[] = { nb1, nb2, nb3, offset, inplace ? 1 : 0 };
+  cargo:warning=      |                          ^~~
+  cargo:warning=      |                          static_cast<int32_t>( )
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:3398:31: error: non-constant-expression cannot be narrowed from type 'size_t' (aka 'unsigned long') to 'int32_t' (aka 'int') in initializer list [-Wc++11-narrowing]
+  cargo:warning= 3398 |     int32_t params[] = { nb1, nb2, nb3, offset, inplace ? 1 : 0 };
+  cargo:warning=      |                               ^~~
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:3398:31: note: insert an explicit cast to silence this issue
+  cargo:warning= 3398 |     int32_t params[] = { nb1, nb2, nb3, offset, inplace ? 1 : 0 };
+  cargo:warning=      |                               ^~~
+  cargo:warning=      |                               static_cast<int32_t>( )
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:3398:36: error: non-constant-expression cannot be narrowed from type 'size_t' (aka 'unsigned long') to 'int32_t' (aka 'int') in initializer list [-Wc++11-narrowing]
+  cargo:warning= 3398 |     int32_t params[] = { nb1, nb2, nb3, offset, inplace ? 1 : 0 };
+  cargo:warning=      |                                    ^~~
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:3398:36: note: insert an explicit cast to silence this issue
+  cargo:warning= 3398 |     int32_t params[] = { nb1, nb2, nb3, offset, inplace ? 1 : 0 };
+  cargo:warning=      |                                    ^~~
+  cargo:warning=      |                                    static_cast<int32_t>( )
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:3398:41: error: non-constant-expression cannot be narrowed from type 'size_t' (aka 'unsigned long') to 'int32_t' (aka 'int') in initializer list [-Wc++11-narrowing]
+  cargo:warning= 3398 |     int32_t params[] = { nb1, nb2, nb3, offset, inplace ? 1 : 0 };
+  cargo:warning=      |                                         ^~~~~~
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:3398:41: note: insert an explicit cast to silence this issue
+  cargo:warning= 3398 |     int32_t params[] = { nb1, nb2, nb3, offset, inplace ? 1 : 0 };
+  cargo:warning=      |                                         ^~~~~~
+  cargo:warning=      |                                         static_cast<int32_t>( )
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:4938:46: error: type 'float' cannot be narrowed to 'int32_t' (aka 'int') in initializer list [-Wc++11-narrowing]
+  cargo:warning= 4938 |     int32_t params[] = { op, k0, k1, s0, s1, p0, p1 };
+  cargo:warning=      |                                              ^~
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:4938:46: note: insert an explicit cast to silence this issue
+  cargo:warning= 4938 |     int32_t params[] = { op, k0, k1, s0, s1, p0, p1 };
+  cargo:warning=      |                                              ^~
+  cargo:warning=      |                                              static_cast<int32_t>( )
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:4938:50: error: type 'float' cannot be narrowed to 'int32_t' (aka 'int') in initializer list [-Wc++11-narrowing]
+  cargo:warning= 4938 |     int32_t params[] = { op, k0, k1, s0, s1, p0, p1 };
+  cargo:warning=      |                                                  ^~
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:4938:50: note: insert an explicit cast to silence this issue
+  cargo:warning= 4938 |     int32_t params[] = { op, k0, k1, s0, s1, p0, p1 };
+  cargo:warning=      |                                                  ^~
+  cargo:warning=      |                                                  static_cast<int32_t>( )
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:4961:46: error: type 'float' cannot be narrowed to 'int32_t' (aka 'int') in initializer list [-Wc++11-narrowing]
+  cargo:warning= 4961 |     int32_t params[] = { op, k0, k1, s0, s1, p0, p1 };
+  cargo:warning=      |                                              ^~
+  cargo:warning=/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c:4961:46: note: insert an explicit cast to silence this issue
+  cargo:warning= 4961 |     int32_t params[] = { op, k0, k1, s0, s1, p0, p1 };
+  cargo:warning=      |                                              ^~
+  cargo:warning=      |                                              static_cast<int32_t>( )
+  cargo:warning=fatal error: too many errors emitted, stopping now [-ferror-limit=]
+  cargo:warning=20 errors generated.
+
+  --- stderr
+  Cloning into '/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp'...
+
+
+  error occurred in cc-rs: command did not execute successfully (status code exit status: 1): LC_ALL="C" SDKROOT="/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk" "clang++" "-O3" "-fPIC" "--target=arm64-apple-ios" "-miphoneos-version-min=18.5" "-isysroot" "/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk" "-I" "/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp" "-I" "/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/include" "-I" "/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/common" "-I" "/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/include" "-I" "/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src" "-Wall" "-Wextra" "-DGGML_USE_METAL" "-o" "/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/964a4778565c2d68-ggml.o" "-c" "/Users/runner/work/cluaiz/cluaiz/interface-engines/target/aarch64-apple-ios/release/build/archer-llama-40dc6b8b8725c03d/out/llama.cpp/ggml/src/ggml.c"
+
+
+warning: build failed, waiting for other jobs to finish...
+warning: `archer-shared` (lib) generated 4 warnings (run `cargo fix --lib -p archer-shared` to apply 3 suggestions)
+Error: Process completed with exit code 101.
+
+
+
 Annotations
 1 error and 1 warning
 Build Kernel [llama]
 Process completed with exit code 101.
-Complete job
-Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/cache@v4, actions/checkout@v4. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
-
-
-error: failed to select a version for `candle-core`.
-    ... required by package `archer-candle v4.4.0 (/Users/runner/work/cluaiz/cluaiz/interface-engines/candle)`
-versions that meet the requirements `*` are: 0.10.2
-
-package `archer-candle` depends on `candle-core` with feature `vulkan` but `candle-core` does not have that feature.
- available features: accelerate, cuda, cudarc, cudnn, default, metal, mkl, nccl, ug
-
-
-failed to select a version for `candle-core` which could resolve this conflict
-Error: Process completed with exit code 101.
-
-
-
-Annotations
-1 error and 1 warning
-Build Kernel [candle]
-Process completed with exit code 101.
-Complete job
-Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/cache@v4, actions/checkout@v4. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
-
-
-
-error: failed to select a version for `candle-core`.
-    ... required by package `archer-candle v4.4.0 (/Users/runner/work/cluaiz/cluaiz/interface-engines/candle)`
-versions that meet the requirements `*` are: 0.10.2
-
-package `archer-candle` depends on `candle-core` with feature `vulkan` but `candle-core` does not have that feature.
- available features: accelerate, cuda, cudarc, cudnn, default, metal, mkl, nccl, ug
-
-
-failed to select a version for `candle-core` which could resolve this conflict
-Error: Process completed with exit code 101.
