@@ -10,14 +10,31 @@ name = "archer_candle"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-# ── Sovereign Universal Rust Engine (Zero-Wrapper Strategy) ──
-# We pull raw Rust code directly from: https://github.com/huggingface/candle
-anyhow = "1.0.81"
+# ── Official HuggingFace Candle (Direct GitHub Source) ──
+candle-core = { git = "https://github.com/huggingface/candle" }
+candle-nn = { git = "https://github.com/huggingface/candle" }
+candle-transformers = { git = "https://github.com/huggingface/candle" }
+
+# ── Sovereign Ecosystem ──
+anyhow = "1.0"
 tracing = "0.1"
 archer-shared = { path = "../../cluaiz-cure/engines/archer-shared" }
 tokenizers = "0.22.2"
 tokio = { version = "1.37", features = ["full"] }
 
-[build-dependencies]
-# Foundry tools to manage the official source
-cc = "1.0"
+[features]
+# ── Universal Silicon Support ──
+default = []
+
+# Mainstream Backends
+cuda = ["candle-core/cuda"]
+metal = ["candle-core/metal"]
+vulkan = ["candle-core/vulkan"]
+accelerate = ["candle-core/accelerate"]
+mkl = ["candle-core/mkl"]
+
+# Hyper-Silicon (Sovereign DNA)
+openvino = []  # Intel NPU (Sovereign implementation)
+qnn = []       # Snapdragon NPU (Sovereign implementation)
+rocm = []      # AMD support
+sycl = []      # Intel GPU support

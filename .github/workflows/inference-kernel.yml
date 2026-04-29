@@ -10,7 +10,6 @@ permissions:
   contents: write
   packages: write
 
-# 🛡️ Prevent parallel release uploads from conflicting
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
@@ -19,39 +18,58 @@ env:
   CARGO_BUILD_JOBS: 4
 
 jobs:
-  # ─── STAGE 1: Silicon Compilation (FULL MATRIX) ─────────────────────
+  # ─── STAGE 1: Silicon Compilation (HYPER MATRIX) ────────────────────
   build-kernels:
-    name: ⚙️ Build [${{ matrix.kernel }}-${{ matrix.platform }}]
+    name: ⚙️ Build [${{ matrix.kernel }}-${{ matrix.platform }}-${{ matrix.backend }}]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         kernel: [llama, candle]
-        platform: [win-x64, linux-x64, android-arm64, mac-arm64, ios-arm64]
         include:
+          # ── Desktop & Server ──
           - platform: win-x64
+            backend: cuda
             os: windows-latest
             target: x86_64-pc-windows-msvc
+            features: cuda
             ext: dll
             prefix: ""
           - platform: linux-x64
+            backend: cuda
             os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
+            features: cuda
             ext: so
             prefix: "lib"
+          - platform: linux-x64
+            backend: openvino
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            features: openvino
+            ext: so
+            prefix: "lib"
+          
+          # ── Mobile & NPU ──
           - platform: android-arm64
+            backend: qnn
             os: ubuntu-latest
             target: aarch64-linux-android
+            features: qnn
             ext: so
             prefix: "lib"
           - platform: mac-arm64
+            backend: metal
             os: macos-latest
             target: aarch64-apple-darwin
+            features: metal
             ext: dylib
             prefix: "lib"
           - platform: ios-arm64
+            backend: metal
             os: macos-latest
             target: aarch64-apple-ios
+            features: metal
             ext: a
             prefix: "lib"
 
@@ -59,7 +77,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # ── Cargo Cache ──
       - name: Cache Cargo Registry & Build
         uses: actions/cache@v4
         with:
@@ -67,22 +84,29 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             interface-engines/target
-          key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('interface-engines/**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.target }}-${{ matrix.backend }}-cargo-${{ hashFiles('interface-engines/**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.target }}-cargo-
+            ${{ runner.os }}-${{ matrix.target }}-${{ matrix.backend }}-cargo-
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
 
-      # ── Cross-Compilation Prerequisites ──
+      # ── Hyper-Silicon SDKs ──
+      - name: Setup OpenVINO (Intel)
+        if: matrix.backend == 'openvino'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y intel-openvino-runtime-ubuntu22-2023.2.0
+          echo "INTEL_OPENVINO_DIR=/opt/intel/openvino_2023.2.0" >> $GITHUB_ENV
+
       - name: Install Build Tools (Linux)
-        if: matrix.platform == 'linux-x64'
+        if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y build-essential cmake clang pkg-config
 
       - name: Ensure Xcode Tools (macOS / iOS)
-        if: matrix.platform == 'mac-arm64' || matrix.platform == 'ios-arm64'
+        if: runner.os == 'macOS'
         run: xcode-select --install || true
 
       - name: Setup Android NDK
@@ -117,7 +141,28 @@ jobs:
         shell: bash
         working-directory: interface-engines
         run: |
-          cargo build --release --verbose --target ${{ matrix.target }} -p archer-${{ matrix.kernel }}
+          cargo build --release --verbose --target ${{ matrix.target }} -p archer-${{ matrix.kernel }} --features ${{ matrix.features }}
+
+      # ── 🔬 THE SOVEREIGN AUDIT (Symbol Verification) ──
+      - name: Audit Exported Symbols
+        shell: bash
+        run: |
+          BINARY="interface-engines/target/${{ matrix.target }}/release/${{ matrix.prefix }}archer_${{ matrix.kernel }}.${{ matrix.ext }}"
+          
+          echo "🔍 Auditing binary: $BINARY"
+          
+          if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
+            # Windows Audit
+            nm "$BINARY" | grep "archer_kernel_init" || (echo "❌ ERROR: archer_kernel_init not found in Windows DLL" && exit 1)
+          elif [[ "${{ matrix.platform }}" == "mac-arm64" || "${{ matrix.platform }}" == "ios-arm64" ]]; then
+            # Apple Audit
+            nm -gU "$BINARY" | grep "archer_kernel_init" || (echo "❌ ERROR: archer_kernel_init not found in Apple binary" && exit 1)
+          else
+            # Linux/Android Audit
+            nm -D "$BINARY" | grep "archer_kernel_init" || (echo "❌ ERROR: archer_kernel_init not found in Linux/Android Shared Lib" && exit 1)
+          fi
+          
+          echo "✅ Handshake symbol 'archer_kernel_init' verified."
 
       # ── Sovereign Binary Naming ──
       - name: Prepare Sovereign Binary
@@ -126,20 +171,16 @@ jobs:
         run: |
           VERSION="${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'dev' }}"
           ORIGINAL="${{ matrix.prefix }}archer_${{ matrix.kernel }}.${{ matrix.ext }}"
-          RENAMED="${{ matrix.prefix }}archer_${{ matrix.kernel }}-${VERSION}-${{ matrix.platform }}.${{ matrix.ext }}"
+          RENAMED="${{ matrix.prefix }}archer_${{ matrix.kernel }}-${VERSION}-${{ matrix.platform }}-${{ matrix.backend }}.${{ matrix.ext }}"
 
           SRC="interface-engines/target/${{ matrix.target }}/release/${ORIGINAL}"
           DEST="interface-engines/target/${{ matrix.target }}/release/${RENAMED}"
 
-          # 🛡️ Safety: Verify binary exists before renaming
           if [ ! -f "$SRC" ]; then
             echo "❌ ERROR: Binary not found at: $SRC"
-            echo "Available files in release dir:"
-            ls -la "interface-engines/target/${{ matrix.target }}/release/" || true
             exit 1
           fi
 
-          # 🔪 Strip debug symbols (Linux/Android/macOS only)
           if [[ "${{ matrix.platform }}" != "win-x64" ]]; then
             strip "$SRC" || true
           fi
@@ -148,7 +189,6 @@ jobs:
           echo "binary_path=${DEST}" >> $GITHUB_OUTPUT
           echo "binary_name=${RENAMED}" >> $GITHUB_OUTPUT
 
-      # ── Upload to GitHub Releases ──
       - name: Upload Kernel Binary
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
@@ -156,17 +196,17 @@ jobs:
           files: ${{ steps.naming.outputs.binary_path }}
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest-kernels' }}
           name: "Cluaiz Interface Engines"
-          body: "Pre-compiled Neural Kernels for Cluaiz. Optimized for silicon-native execution."
+          body: "Pre-compiled Hyper-Silicon Neural Kernels for Cluaiz. Optimized for NPU/GPU/CPU."
           draft: false
           prerelease: false
-          overwrite_files: true
           make_latest: true
+          overwrite_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # ─── STAGE 2: Neural Manifest Generation ─────────────────────────────
+  # ─── STAGE 2: Hyper-Manifest Generation ─────────────────────────────
   publish-manifest:
-    name: 📂 Publish Kernel Manifest
+    name: 📂 Publish Hyper-Manifest
     needs: build-kernels
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
@@ -183,21 +223,23 @@ jobs:
           cat <<EOF > kernel-manifest.json
           {
             "version": "${VERSION}",
-            "provider": "cluaiz-foundry",
+            "provider": "cluaiz-hyper-foundry",
             "kernels": {
               "llama": {
-                "win-x64": "${BASE}/archer_llama-${VERSION}-win-x64.dll",
-                "linux-x64": "${BASE}/libarcher_llama-${VERSION}-linux-x64.so",
-                "android-arm64": "${BASE}/libarcher_llama-${VERSION}-android-arm64.so",
-                "mac-arm64": "${BASE}/libarcher_llama-${VERSION}-mac-arm64.dylib",
-                "ios-arm64": "${BASE}/libarcher_llama-${VERSION}-ios-arm64.a"
+                "win-x64-cuda": "${BASE}/archer_llama-${VERSION}-win-x64-cuda.dll",
+                "linux-x64-cuda": "${BASE}/libarcher_llama-${VERSION}-linux-x64-cuda.so",
+                "linux-x64-openvino": "${BASE}/libarcher_llama-${VERSION}-linux-x64-openvino.so",
+                "android-arm64-qnn": "${BASE}/libarcher_llama-${VERSION}-android-arm64-qnn.so",
+                "mac-arm64-metal": "${BASE}/libarcher_llama-${VERSION}-mac-arm64-metal.dylib",
+                "ios-arm64-metal": "${BASE}/libarcher_llama-${VERSION}-ios-arm64-metal.a"
               },
               "candle": {
-                "win-x64": "${BASE}/archer_candle-${VERSION}-win-x64.dll",
-                "linux-x64": "${BASE}/libarcher_candle-${VERSION}-linux-x64.so",
-                "android-arm64": "${BASE}/libarcher_candle-${VERSION}-android-arm64.so",
-                "mac-arm64": "${BASE}/libarcher_candle-${VERSION}-mac-arm64.dylib",
-                "ios-arm64": "${BASE}/libarcher_candle-${VERSION}-ios-arm64.a"
+                "win-x64-cuda": "${BASE}/archer_candle-${VERSION}-win-x64-cuda.dll",
+                "linux-x64-cuda": "${BASE}/libarcher_candle-${VERSION}-linux-x64-cuda.so",
+                "linux-x64-openvino": "${BASE}/libarcher_candle-${VERSION}-linux-x64-openvino.so",
+                "android-arm64-qnn": "${BASE}/libarcher_candle-${VERSION}-android-arm64-qnn.so",
+                "mac-arm64-metal": "${BASE}/libarcher_candle-${VERSION}-mac-arm64-metal.dylib",
+                "ios-arm64-metal": "${BASE}/libarcher_candle-${VERSION}-ios-arm64-metal.a"
               }
             }
           }
