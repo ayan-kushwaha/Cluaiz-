@@ -96,6 +96,10 @@ jobs:
         if: runner.os == 'Windows'
         run: git config --global core.longpaths true
 
+      - name: Setup MSVC Developer Command Prompt
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Setup CUDA Toolkit
         if: matrix.backend == 'cuda'
         uses: jimver/cuda-toolkit@v0.2.21
@@ -107,15 +111,15 @@ jobs:
         if: matrix.backend == 'openvino'
         run: |
           curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | sudo gpg --dearmor -o /usr/share/keyrings/intel-sw-products.gpg
-          echo "deb [signed-by=/usr/share/keyrings/intel-sw-products.gpg] https://apt.repos.intel.com/openvino/2023 ubuntu22 main" | sudo tee /etc/apt/sources.list.d/intel-openvino-2023.list
+          echo "deb [signed-by=/usr/share/keyrings/intel-sw-products.gpg] https://apt.repos.intel.com/openvino/2024 ubuntu22 main" | sudo tee /etc/apt/sources.list.d/intel-openvino-2024.list
           sudo apt-get update
 
       # ── Hyper-Silicon SDKs ──
       - name: Setup OpenVINO (Intel)
         if: matrix.backend == 'openvino'
         run: |
-          sudo apt-get install -y intel-openvino-runtime-ubuntu22-2023.2.0
-          echo "INTEL_OPENVINO_DIR=/opt/intel/openvino_2023.2.0" >> $GITHUB_ENV
+          sudo apt-get install -y intel-openvino-runtime-ubuntu22-2024.0.0
+          echo "INTEL_OPENVINO_DIR=/opt/intel/openvino_2024.0.0" >> $GITHUB_ENV
 
       - name: Install Build Tools (Linux)
         if: runner.os == 'Linux'

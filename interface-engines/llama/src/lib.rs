@@ -67,6 +67,7 @@ impl SovereignInference for RuntimeB {
 // ─── Sovereign FFI Gateway ──────────────────────────────────────────────────
 
 #[no_mangle]
+#[export_name = "archer_kernel_init"]
 pub extern "C" fn archer_kernel_init() -> *const std::os::raw::c_char {
     tracing::info!("🧬 [Llama-Kernel] Sovereign Handshake Initialized.");
     "archer-llama-v8-active\0".as_ptr() as *const std::os::raw::c_char
