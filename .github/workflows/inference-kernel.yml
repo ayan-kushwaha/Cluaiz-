@@ -155,8 +155,8 @@ jobs:
             # Windows Audit
             nm "$BINARY" | grep "archer_kernel_init" || (echo "❌ ERROR: archer_kernel_init not found in Windows DLL" && exit 1)
           elif [[ "${{ matrix.platform }}" == "mac-arm64" || "${{ matrix.platform }}" == "ios-arm64" ]]; then
-            # Apple Audit
-            nm -gU "$BINARY" | grep "archer_kernel_init" || (echo "❌ ERROR: archer_kernel_init not found in Apple binary" && exit 1)
+            # Apple Audit (Symbols often have leading underscore)
+            nm -gU "$BINARY" | grep -E "archer_kernel_init|_archer_kernel_init" || (echo "❌ ERROR: archer_kernel_init not found in Apple binary" && exit 1)
           else
             # Linux/Android Audit
             nm -D "$BINARY" | grep "archer_kernel_init" || (echo "❌ ERROR: archer_kernel_init not found in Linux/Android Shared Lib" && exit 1)

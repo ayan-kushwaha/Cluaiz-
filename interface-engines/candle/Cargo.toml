@@ -7,7 +7,7 @@ build = "build.rs"
 
 [lib]
 name = "archer_candle"
-crate-type = ["cdylib", "rlib"]
+crate-type = ["cdylib", "rlib", "staticlib"]
 
 [dependencies]
 # ── Sovereign Foundry: Official HuggingFace Source ──
