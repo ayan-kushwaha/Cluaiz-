@@ -22,10 +22,11 @@ impl CandleLoader {
         let mut dna_ref = dna.ok_or_else(|| anyhow::anyhow!("DNA required for Sovereign V1.0"))?;
         
         // 🛡️ [TRANSLATOR]: Convert Candle GGUF types to framework-agnostic DNA types
+        // [FIXED]: Iterating over references to avoid moving 'content'
         let mut metadata_simple = HashMap::new();
-        for (k, v) in content.metadata {
+        for (k, v) in &content.metadata {
             let val_str = match v {
-                Value::String(s) => s,
+                Value::String(s) => s.clone(),
                 Value::U8(u) => u.to_string(),
                 Value::U16(u) => u.to_string(),
                 Value::U32(u) => u.to_string(),
@@ -35,13 +36,12 @@ impl CandleLoader {
                 Value::I32(i) => i.to_string(),
                 _ => "unsupported".to_string(),
             };
-            metadata_simple.insert(k, val_str);
+            metadata_simple.insert(k.clone(), val_str);
         }
 
         let mut tensor_simple = HashMap::new();
-        for (k, v) in content.tensor_infos {
-            // [FIXED]: Shape is converted to Vec via dims()
-            tensor_simple.insert(k, v.shape.dims().to_vec());
+        for (k, v) in &content.tensor_infos {
+            tensor_simple.insert(k.clone(), v.shape.dims().to_vec());
         }
 
         // 🏁 [Truth Protocol] Sync with binary metadata
