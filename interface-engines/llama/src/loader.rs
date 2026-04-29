@@ -3,7 +3,6 @@
 use archer_shared::backend::signature::{BackendType, KernelSignature};
 use archer_shared::backend::context::SovereignContext;
 use archer_shared::backend::traits::ModelWeightsWrapper;
-use candle_core::Device;
 use std::sync::Arc;
 use crate::config::RuntimeBConfig;
 

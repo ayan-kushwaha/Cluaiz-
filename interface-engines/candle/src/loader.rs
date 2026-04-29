@@ -40,26 +40,27 @@ impl CandleLoader {
 
         let mut tensor_simple = HashMap::new();
         for (k, v) in content.tensor_infos {
-            tensor_simple.insert(k, v.shape.to_vec());
+            // [FIXED]: Shape is converted to Vec via dims()
+            tensor_simple.insert(k, v.shape.dims().to_vec());
         }
 
         // 🏁 [Truth Protocol] Sync with binary metadata
         dna_ref.sync_with_metadata(&metadata_simple, &tensor_simple);
         
         if dna_ref.signature.is_bitnet {
-            tracing::info!("🚀 [Kernel] Routine: 1-bit Neural Logic — Dispatching Variant 1.");
+            println!("🚀 [Kernel] Routine: 1-bit Neural Logic — Dispatching Variant 1.");
             let weights = candle_transformers::models::quantized_llama::ModelWeights::from_gguf(
                 content, file, device,
             )?;
             Ok(SovereignModel::Variant1(weights))
         } else if dna_ref.signature.is_heterogeneous {
-            tracing::info!("🚀 [Kernel] Routine: Heterogeneous Block Logic — Dispatching Variant 2.");
+            println!("🚀 [Kernel] Routine: Heterogeneous Block Logic — Dispatching Variant 2.");
             let weights = candle_transformers::models::quantized_gemma3::ModelWeights::from_gguf(
                 content, file, device,
             )?;
             Ok(SovereignModel::Variant2(weights))
         } else {
-            tracing::info!("🚀 [Kernel] Routine: Uniform GQA Logic — Dispatching Variant 1.");
+            println!("🚀 [Kernel] Routine: Uniform GQA Logic — Dispatching Variant 1.");
             let weights = candle_transformers::models::quantized_llama::ModelWeights::from_gguf(
                 content, file, device,
             )?;
