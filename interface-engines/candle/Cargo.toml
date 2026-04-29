@@ -1,0 +1,23 @@
+[package]
+name = "archer-candle"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+build = "build.rs"
+
+[lib]
+name = "archer_candle"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# ── Sovereign Universal Rust Engine (Zero-Wrapper Strategy) ──
+# We pull raw Rust code directly from: https://github.com/huggingface/candle
+anyhow = "1.0.81"
+tracing = "0.1"
+archer-shared = { path = "../../cluaiz-cure/engines/archer-shared" }
+tokenizers = "0.22.2"
+tokio = { version = "1.37", features = ["full"] }
+
+[build-dependencies]
+# Foundry tools to manage the official source
+cc = "1.0"

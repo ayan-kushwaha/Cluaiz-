@@ -1,0 +1,26 @@
+[package]
+name = "archer-llama"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+build = "build.rs"
+
+[lib]
+name = "archer_llama"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# ── Sovereign LLaMA Backend (Zero-Wrapper Strategy) ──
+# We do NOT use llama-cpp-2 or llama-cpp-sys. 
+# We pull raw C++ code from: https://github.com/ggml-org/llama.cpp
+anyhow = "1.0"
+tracing = "0.1"
+archer-shared = { path = "../../cluaiz-cure/engines/archer-shared" }
+tokenizers = "0.22.2"
+libloading = "0.8"
+tokio = { version = "1.37", features = ["full"] }
+
+[build-dependencies]
+# Tools to compile the OFFICIAL ggml-org/llama.cpp source directly
+cc = "1.0"
+bindgen = "0.69"
