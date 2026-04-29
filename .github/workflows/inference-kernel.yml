@@ -118,8 +118,10 @@ jobs:
       - name: Setup OpenVINO (Intel)
         if: matrix.backend == 'openvino'
         run: |
-          sudo apt-get install -y intel-openvino-runtime-ubuntu22-2024.0.0
-          echo "INTEL_OPENVINO_DIR=/opt/intel/openvino_2024.0.0" >> $GITHUB_ENV
+          sudo apt-get install -y intel-openvino-runtime-ubuntu22-2024*
+          # Find the exact path where it was installed
+          OV_INSTALL_DIR=$(ls -d /opt/intel/openvino_2024* | head -n 1)
+          echo "INTEL_OPENVINO_DIR=$OV_INSTALL_DIR" >> $GITHUB_ENV
 
       - name: Install Build Tools (Linux)
         if: runner.os == 'Linux'
@@ -158,14 +160,14 @@ jobs:
 
       # ── The Foundry Build ──
       - name: Build Kernel [${{ matrix.kernel }}]
-        shell: bash
+        shell: ${{ runner.os == 'Windows' && 'cmd' || 'bash' }}
         working-directory: interface-engines
         run: |
-          # 🛡️ SOVEREIGN BUILD LOGIC: Hardware-Specific Dispatch
-          if [[ "${{ matrix.backend }}" == "cuda" ]]; then
-            export CUDA_PATH=$CUDA_PATH
-            export CUDA_COMPUTE_CAP=80
-          fi
+          @echo off
+          if "${{ matrix.backend }}" == "cuda" (
+            set CUDA_COMPUTE_CAP=80
+            set CUDA_PATH=%CUDA_PATH%
+          )
           cargo build --release --verbose --target ${{ matrix.target }} -p archer-${{ matrix.kernel }} --features ${{ matrix.features }}
 
       # ── 🔬 THE SOVEREIGN AUDIT (Symbol Verification) ──
@@ -179,7 +181,6 @@ jobs:
           if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
             # Windows Audit: Be resilient if tools are missing
             echo "🔍 DEBUG: Verifying Windows DLL symbols..."
-            # Try to use strings (often in Git Bash) or just verify file existence
             if command -v strings >/dev/null 2>&1; then
               strings "$BINARY" | grep "archer_kernel_init" || (echo "❌ ERROR: archer_kernel_init not found in Windows DLL" && exit 1)
             else

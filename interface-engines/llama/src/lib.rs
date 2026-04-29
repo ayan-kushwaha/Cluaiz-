@@ -73,6 +73,9 @@ pub extern "C" fn archer_kernel_init() -> *const std::os::raw::c_char {
     "archer-llama-v8-active\0".as_ptr() as *const std::os::raw::c_char
 }
 
+#[used]
+static _FORCE_KEEP_INIT: extern "C" fn() -> *const std::os::raw::c_char = archer_kernel_init;
+
 #[no_mangle]
 pub extern "C" fn archer_kernel_instantiate(
     path_ptr: *const std::os::raw::c_char,
