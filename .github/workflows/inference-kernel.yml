@@ -160,13 +160,15 @@ jobs:
 
       # ── The Foundry Build ──
       - name: Build Kernel [${{ matrix.kernel }}]
-        shell: ${{ runner.os == 'Windows' && 'cmd' || 'bash' }}
+        shell: ${{ matrix.os == 'windows-latest' && 'cmd' || 'bash' }}
         working-directory: interface-engines
         run: |
           @echo off
-          if "${{ matrix.backend }}" == "cuda" (
-            set CUDA_COMPUTE_CAP=80
-            set CUDA_PATH=%CUDA_PATH%
+          if "${{ matrix.os }}" == "windows-latest" (
+            if "${{ matrix.backend }}" == "cuda" (
+              set CUDA_COMPUTE_CAP=80
+              set CUDA_PATH=%CUDA_PATH%
+            )
           )
           cargo build --release --verbose --target ${{ matrix.target }} -p archer-${{ matrix.kernel }} --features ${{ matrix.features }}
 
