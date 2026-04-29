@@ -1,7 +1,6 @@
 //! Sovereign Implementation B: Acceleration Pipeline (With Binary Fallback).
 
 use archer_shared::backend::context::SovereignContext;
-use archer_shared::neural_core::config::NeuralConfig;
 use std::process::{Command, Stdio};
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
@@ -16,14 +15,14 @@ impl RuntimeBPipeline {
         prompt: &str,
         _max_tokens: usize,
         mut callback: Box<dyn FnMut(String) + Send + 'static>,
-    ) -> candle_core::Result<()> {
+    ) -> anyhow::Result<()> {
         info!("🚀 [Llama] Engaging Bare-Metal Binary Driver for: {}", model_path);
 
         // ── OS & Hardware Aware Routing ──
         let binary_path = crate::router::BinaryRouter::resolve_binary();
         if !binary_path.exists() {
              error!("❌ Binary Sanctum Empty! Archer cannot locate: {:?}", binary_path);
-             return Err(candle_core::Error::Msg(format!("Missing binary at {:?}", binary_path).into()));
+             return Err(anyhow::anyhow!("Missing binary at {:?}", binary_path));
         }
 
         // 🧬 Extract Model Requirement from DNA
@@ -32,8 +31,8 @@ impl RuntimeBPipeline {
             .and_then(|v| v.parse::<bool>().ok())
             .unwrap_or(false);
 
-
-        let wrapped_prompt = context.templater.apply_chat_template(prompt);
+        // Apply template via templater
+        let wrapped_prompt = context.templater.format("llama", prompt);
 
         // Resolve model path to absolute
         let model_path_buf = PathBuf::from(model_path);
@@ -46,7 +45,6 @@ impl RuntimeBPipeline {
         };
 
         info!("🔥 [Binary Driver] Model: {}", model_path_str);
-        info!("🔥 [Binary Driver] DNA Require GPU: {}", requires_gpu);
 
         // 🧬 Build Dynamic Arguments via Router
         let mut base_args = vec![
@@ -56,10 +54,9 @@ impl RuntimeBPipeline {
             "--temp".to_string(), "0.7".to_string(),
             "--ctx-size".to_string(), "2048".to_string(),
             "--no-display-prompt".to_string(),
-            "--mmap".to_string(), // ⚡ Zero swap-latency
-            "--mlock".to_string(), // 🔒 Lock memory to prevent paging
+            "--mmap".to_string(),
+            "--mlock".to_string(),
         ];
-
 
         let compute_args = crate::router::BinaryRouter::get_compute_args(requires_gpu);
         base_args.extend(compute_args);
@@ -69,10 +66,9 @@ impl RuntimeBPipeline {
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()
-
             .map_err(|e| {
                 error!("❌ Failed to spawn llama-cli: {}", e);
-                candle_core::Error::Msg(format!("Process launch fail: {}", e))
+                anyhow::anyhow!("Process launch fail: {}", e)
             })?;
 
         info!("✅ [Binary Driver] Process spawned successfully, reading tokens...");
@@ -80,11 +76,7 @@ impl RuntimeBPipeline {
         let stdout = child.stdout.take().unwrap();
         let stderr = child.stderr.take().unwrap();
         
-        // 🧬 Read stdout character by character in a separate thread
-        // llama-cli outputs tokens WITHOUT newlines, so line-based reading won't work well.
-        // Instead, read raw bytes and forward them.
         let (tx, rx) = std::sync::mpsc::channel::<String>();
-        
         let stdout_thread = std::thread::spawn(move || {
             let mut reader = BufReader::new(stdout);
             let mut buf = [0u8; 256];
@@ -101,7 +93,6 @@ impl RuntimeBPipeline {
             }
         });
         
-        // Receive and forward tokens
         while let Ok(token) = rx.recv() {
             if !token.is_empty() {
                 callback(token);
@@ -110,7 +101,6 @@ impl RuntimeBPipeline {
         
         stdout_thread.join().ok();
         
-        // 🛡️ Stderr monitor
         let err_reader = BufReader::new(stderr);
         for line_res in err_reader.lines() {
             if let Ok(line) = line_res {
@@ -120,7 +110,6 @@ impl RuntimeBPipeline {
                 }
             }
         }
-
 
         let _ = child.wait();
         info!("🏁 [Binary Driver] Process completed.");
@@ -133,7 +122,7 @@ impl RuntimeBPipeline {
         _prompt: &str,
         _max_tokens: usize,
         _callback: Box<dyn FnMut(String) + Send + 'static>,
-    ) -> candle_core::Result<()> {
-        Err(candle_core::Error::Msg("FFI Driver deprecated for 1-bit. Use async Binary Driver.".into()))
+    ) -> anyhow::Result<()> {
+        Err(anyhow::anyhow!("FFI Driver deprecated. Use Binary Driver."))
     }
 }

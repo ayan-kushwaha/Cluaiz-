@@ -22,6 +22,10 @@ pub use neural_core::NeuralResult;
 /// 🏛️ SovereignLinkerPlaceholder: Used during Phase 1 to verify the Dynamic Linker Handshake.
 pub struct SovereignLinkerPlaceholder;
 
+// Ensure placeholder is Send + Sync for the Orchestrator's type requirements
+unsafe impl Send for SovereignLinkerPlaceholder {}
+unsafe impl Sync for SovereignLinkerPlaceholder {}
+
 impl crate::backend::traits::UnifiedBackend for SovereignLinkerPlaceholder {
     fn generate(&mut self, _prompt: &str, _max_tokens: usize) -> std::result::Result<String, String> {
         Err("✅ SOVEREIGN LINKER: Phase 1 Handshake Success. Real inference pending Phase 2.".to_string())

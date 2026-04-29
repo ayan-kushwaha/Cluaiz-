@@ -3,10 +3,9 @@
 
 use std::path::PathBuf;
 use crate::utils::healer::AutoHealer;
-use archer_shared::{UnifiedBackend, BackendType, SovereignContext, StructuralDNA, TemplateManager, KernelSignature, ModelWeightsWrapper};
+use archer_shared::{UnifiedBackend, BackendType, SovereignContext, StructuralDNA, TemplateManager, ModelWeightsWrapper};
 use crate::runtime::execution::hub::SiliconOrchestrator;
 use candle_core::Device;
-use tracing::{info, warn, error};
 
 pub enum Backend {
     Empty(DummyBackend),
@@ -22,8 +21,8 @@ impl UnifiedBackend for Backend {
     }
     fn prefill(&mut self, prompt: &str) -> anyhow::Result<()> {
         match self {
-            Self::Empty(b) => b.prefill(prompt).map_err(|e: anyhow::Error| anyhow::anyhow!(e)),
-            Self::Sovereign(b) => b.prefill(prompt).map_err(|e: anyhow::Error| anyhow::anyhow!(e)),
+            Self::Empty(b) => b.prefill(prompt),
+            Self::Sovereign(b) => b.prefill(prompt),
         }
     }
 
@@ -51,7 +50,7 @@ impl archer_shared::SovereignInference for Backend {
         callback: Box<dyn FnMut(String) + Send + 'static>,
     ) -> anyhow::Result<()> {
         match self {
-            Self::Sovereign(b) => b.generate_stream(prompt, max_tokens, tokenizer, callback).map_err(|e: anyhow::Error| anyhow::anyhow!(e)),
+            Self::Sovereign(b) => b.generate_stream(prompt, max_tokens, tokenizer, callback),
             Self::Empty(_) => Err(anyhow::anyhow!("Empty backend")),
         }
     }
@@ -76,39 +75,17 @@ impl NeuralRouter {
             let _ = AutoHealer::heal_missing_tokenizer(&repo_id, parent).await;
         }
 
+        // [SOVEREIGN ALIGNMENT]: Bootstrapping context with default DNA and Templates
+        let mut dna = StructuralDNA::default();
+        dna.preferred_runtime = Some(runtime);
+        
         let context = SovereignContext::boot(
-            StructuralDNA {
-                model_identity: "llama-default-v3".to_string(),
-                layer_count: Some(32),
-                hidden_size: Some(4096),
-                attention_head_count: Some(32),
-                attention_head_count_kv: Some(32),
-                attention_head_dim: Some(128),
-                intermediate_size: Some(11008),
-                attention_dimensionality_truth: Some(4096),
-                signature: KernelSignature {
-                    has_experts: false,
-                    is_asymmetric: false,
-                    is_multimodal: false,
-                    is_heterogeneous: false,
-                    is_bitnet: false,
-                    is_ssm: false,
-                    head_pattern: "uniform".to_string(),
-                    activation: "silu".to_string(),
-                },
-                preferred_runtime: Some(runtime.clone()), 
-                heterogeneous_map: None,
-                dynamic_attributes: std::collections::HashMap::new(),
-            },
-
-            TemplateManager {
-                jinja_template: "".to_string(),
-                is_fallback: true,
-            },
+            dna,
+            TemplateManager::default(),
         );
 
         // 🚀 THE SOVEREIGN HANDSHAKE: Dispatching to the Dynamic Linker
-        info!("🧬 [Router] Dispatching to SiliconOrchestrator for dynamic linkage...");
+        println!("🧬 [Router] Dispatching to SiliconOrchestrator for dynamic linkage...");
         let engine = SiliconOrchestrator::instantiate(&path.to_string_lossy(), context)
             .await
             .map_err(|e| format!("Sovereign Handshake Failure: {}", e))?;
@@ -128,7 +105,7 @@ impl NeuralRouter {
         };
 
         if let Some(err) = t_error {
-            tracing::error!("🗣️ [Router] Voice initialization fail: {}", err);
+            println!("🗣️ [Router] Voice initialization fail: {}", err);
         }
 
         Ok(Self { active_backend: Backend::Sovereign(engine), tokenizer })
@@ -148,7 +125,7 @@ impl NeuralRouter {
             Backend::Sovereign(b) => {
                 if let Some(ref tokenizer) = self.tokenizer {
                     b.generate_stream(prompt, max_tokens, tokenizer, callback)
-                        .map_err(|e: anyhow::Error| e.to_string())
+                        .map_err(|e| e.to_string())
                 } else {
                     Err("Tokenizer not loaded.".to_string())
                 }
@@ -164,7 +141,6 @@ impl archer_shared::UnifiedBackend for DummyBackend {
         Err("Neural weights not loaded.".to_string())
     }
     fn prefill(&mut self, _prompt: &str) -> anyhow::Result<()> { Ok(()) }
-
     fn evaluate_tps(&self) -> f64 { 0.0 }
 }
 

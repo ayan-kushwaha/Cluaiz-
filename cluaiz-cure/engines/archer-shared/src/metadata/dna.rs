@@ -1,6 +1,7 @@
 use crate::backend::signature::{BackendType, KernelSignature};
 use serde::{Deserialize, Serialize};
 use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
+use std::collections::HashMap;
 
 // ─── Structural DNA Synchronization (The Root Genome) ──────────────────────
 #[derive(Debug, Clone, Deserialize, Serialize, Archive, RkyvSerialize, RkyvDeserialize)]
@@ -16,10 +17,8 @@ pub struct StructuralDNA {
     pub attention_dimensionality_truth: Option<usize>,
     pub signature: KernelSignature,
     pub preferred_runtime: Option<BackendType>,
-    pub heterogeneous_map: Option<std::collections::HashMap<String, usize>>,
-    
-    /// Dynamic attributes are stored as JSON strings for rkyv compatibility
-    pub dynamic_attributes: std::collections::HashMap<String, String>,
+    pub heterogeneous_map: Option<HashMap<String, usize>>,
+    pub dynamic_attributes: HashMap<String, String>,
 }
 
 impl Default for StructuralDNA {
@@ -36,7 +35,7 @@ impl Default for StructuralDNA {
             signature: KernelSignature::default(),
             preferred_runtime: None,
             heterogeneous_map: None,
-            dynamic_attributes: std::collections::HashMap::new(),
+            dynamic_attributes: HashMap::new(),
         }
     }
 }
@@ -47,7 +46,6 @@ impl StructuralDNA {
         serde_json::from_str(&content).map_err(|e| format!("DNA Syntax Error: {e}"))
     }
 
-    /// 🚀 Zero-Copy Recall: Loads DNA directly from a memory-mapped binary archive.
     pub fn load_archived(path: &std::path::Path) -> Result<Self, String> {
         let bytes = std::fs::read(path).map_err(|e| format!("Failed to read Binary DNA: {e}"))?;
         let archived = unsafe { rkyv::archived_root::<StructuralDNA>(&bytes) };
@@ -55,23 +53,16 @@ impl StructuralDNA {
         Ok(deserialized)
     }
 
-    /// Truth Protocol: Synchronizes DNA fields with actual binary metadata AND tensor shapes.
-    /// [REFACTORED]: Now uses generic ToString and into_iter for maximum compatibility.
-    pub fn sync_with_metadata<K, V, T>(
+    /// Truth Protocol: Synchronizes DNA fields with actual binary metadata.
+    pub fn sync_with_metadata(
         &mut self, 
-        metadata: &std::collections::HashMap<K, V>,
-        tensor_infos: &std::collections::HashMap<K, T>
-    ) where 
-        K: ToString, 
-        V: ToString,
-        T: IntoIterator<Item = usize> + Clone
-    {
-        tracing::info!("🧬 [DNA] Initiating Multi-Layer Truth Protocol...");
+        metadata: &HashMap<String, String>,
+        _tensor_infos: &HashMap<String, Vec<usize>>
+    ) {
+        // [SOVEREIGN CLEAN]: Switched to println for better editor compatibility
+        println!("🧬 [DNA] Initiating Multi-Layer Truth Protocol...");
         
-        for (k, v) in metadata {
-            let key = k.to_string();
-            let value = v.to_string();
-            
+        for (key, value) in metadata {
             if key.ends_with(".embedding_length") || key.ends_with(".hidden_size") {
                 if let Ok(v) = value.parse::<usize>() { self.hidden_size = Some(v); }
             } else if key.ends_with(".block_count") || key.ends_with(".layer_count") {
@@ -88,11 +79,10 @@ impl StructuralDNA {
         }
     }
 
-    /// 🧬 The Forge: Converts JSON DNA into a high-performance rkyv archive.
     pub fn sync_to_archive(&self, target_path: &std::path::Path) -> Result<(), String> {
         let bytes = rkyv::to_bytes::<StructuralDNA, 1024>(self).map_err(|e| format!("Archive Failed: {e}"))?;
         std::fs::write(target_path, bytes).map_err(|e| format!("Disk Write Failed: {e}"))?;
-        tracing::info!("✅ [DNA] Sovereign Archive Created: {:?}", target_path);
+        println!("✅ [DNA] Sovereign Archive Created: {:?}", target_path);
         Ok(())
     }
 }

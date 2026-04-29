@@ -3,8 +3,7 @@
 
 use anyhow::Result;
 use archer_shared::{
-    BackendType, KernelSignature, ModelWeightsWrapper, SovereignInference,
-    UnifiedBackend, SovereignContext, orchestrator::SovereignLinkerPlaceholder
+    SovereignInference, UnifiedBackend, SovereignContext
 };
 use tokenizers::Tokenizer;
 
@@ -37,7 +36,7 @@ impl UnifiedBackend for RuntimeB {
     }
 
     fn prefill(&mut self, _prompt: &str) -> Result<()> { Ok(()) }
-    fn evaluate_tps(&self) -> f64 { 85.0 } // Calibrated for bare-metal
+    fn evaluate_tps(&self) -> f64 { 85.0 }
 }
 
 impl SovereignInference for RuntimeB {
@@ -67,24 +66,20 @@ impl SovereignInference for RuntimeB {
 
 // ─── Sovereign FFI Gateway ──────────────────────────────────────────────────
 
-/// 🛰️ ARCHER KERNEL INIT: The entry point for the Dynamic Sovereign Linker.
-/// This function is discovered by the EngineManager at runtime.
 #[no_mangle]
 pub extern "C" fn archer_kernel_init() -> *const i8 {
     tracing::info!("🧬 [Llama-Kernel] Sovereign Handshake Initialized.");
     "archer-llama-v8-active\0".as_ptr() as *const i8
 }
 
-/// 🏛️ SOVEREIGN FACTORY: Instantiates the Llama Engine for the given context.
-/// [Note]: In full Phase 2, this will return a C-ABI compliant interface.
 #[no_mangle]
 pub extern "C" fn archer_kernel_instantiate(
     path_ptr: *const i8,
 ) -> *mut RuntimeB {
     let path = unsafe { std::ffi::CStr::from_ptr(path_ptr) }.to_string_lossy().into_owned();
-    // Dummy context for now, will be passed via FFI in Phase 3
+    let dna = archer_shared::StructuralDNA::default();
     let context = SovereignContext::boot(
-        archer_shared::StructuralDNA::load(std::path::Path::new("structural_dna.json")).unwrap_or_default(),
+        dna,
         archer_shared::TemplateManager::default()
     );
     

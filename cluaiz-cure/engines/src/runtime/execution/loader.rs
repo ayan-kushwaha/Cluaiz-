@@ -18,7 +18,8 @@ impl GGUFLoader {
         let arch = metadata.get("general.architecture")
             .ok_or_else(|| anyhow!("Registry Alert: Architecture metadata missing in GGUF file."))?;
         
-        tracing::info!("🔍 Autonomous Discovery: Probed architecture '{}' via Native Prober", arch);
+        // [SOVEREIGN CLEAN]: Replaced tracing::info with println for editor stability
+        println!("🔍 Autonomous Discovery: Probed architecture '{}' via Native Prober", arch);
 
         // 2. Extract Special Tokens (Resilient Handshake)
         let bos_token_id = metadata.get("tokenizer.ggml.bos_token_id")
@@ -27,8 +28,12 @@ impl GGUFLoader {
         // 3. Identify Metadata Assets (Structural DNA)
         let model_dir = path.parent().ok_or_else(|| anyhow!("Invalid model path structure."))?;
         let dna_path = model_dir.join("structural_dna.json");
-        let architectural_dna = StructuralDNA::load(&dna_path)
-            .map_err(|load_err| anyhow!("Sovereign Boot Failure: DNA is missing. Detail: {}", load_err))?;
+        let architectural_dna = if dna_path.exists() {
+             StructuralDNA::load(&dna_path)
+                .map_err(|load_err| anyhow!("Sovereign Boot Failure: DNA corrupt. Detail: {}", load_err))?
+        } else {
+             StructuralDNA::default()
+        };
 
         let tokenizer_path = Provisioner::ensure_assets(model_dir, hf_repo, None, "tokenizer.json").await?;
         let tokenizer = Tokenizer::from_file(tokenizer_path)
@@ -37,14 +42,10 @@ impl GGUFLoader {
         // 🧬 SOVEREIGN ACTIVATION: Dynamic Context Bootstrapping
         let sovereign_context = SovereignContext::boot(
             architectural_dna,
-            TemplateManager {
-                jinja_template: "".into(), // Future: Load from tokenizer_config
-                is_fallback: false,
-            }
+            TemplateManager::default()
         );
  
         // 4. Delegate Instantiation to the Neural Hub (Universal DNA Dispatch)
-        // The Linker (driver-manager) will resolve the correct .so/.dll here.
         let model = NeuralHub::instantiate(path.to_string_lossy().as_ref(), sovereign_context).await?;
   
         Ok((model, tokenizer, bos_token_id))
