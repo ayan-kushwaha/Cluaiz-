@@ -79,14 +79,12 @@ impl UnifiedBackend for CandleEngine {
 // ─── Sovereign FFI Gateway ──────────────────────────────────────────────────
 
 #[no_mangle]
-#[used]
 pub extern "C" fn archer_kernel_init() -> *const std::os::raw::c_char {
     tracing::info!("🧬 [Universal-Kernel] Sovereign Handshake Verified.");
     "archer-candle-v8-active\0".as_ptr() as *const std::os::raw::c_char
 }
 
 #[no_mangle]
-#[used]
 pub extern "C" fn archer_kernel_instantiate(
     path_ptr: *const std::os::raw::c_char,
 ) -> *mut CandleEngine {

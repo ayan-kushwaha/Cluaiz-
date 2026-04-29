@@ -106,9 +106,8 @@ jobs:
       - name: Setup OpenVINO Repository (Linux)
         if: matrix.backend == 'openvino'
         run: |
-          wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
-          sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
-          echo "deb https://apt.repos.intel.com/openvino/2023 ubuntu22 main" | sudo tee /etc/apt/sources.list.d/intel-openvino-2023.list
+          curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | sudo gpg --dearmor -o /usr/share/keyrings/intel-sw-products.gpg
+          echo "deb [signed-by=/usr/share/keyrings/intel-sw-products.gpg] https://apt.repos.intel.com/openvino/2023 ubuntu22 main" | sudo tee /etc/apt/sources.list.d/intel-openvino-2023.list
           sudo apt-get update
 
       # ── Hyper-Silicon SDKs ──
@@ -161,6 +160,7 @@ jobs:
           # 🛡️ SOVEREIGN BUILD LOGIC: Hardware-Specific Dispatch
           if [[ "${{ matrix.backend }}" == "cuda" ]]; then
             export CUDA_PATH=$CUDA_PATH
+            export CUDA_COMPUTE_CAP=80
           fi
           cargo build --release --verbose --target ${{ matrix.target }} -p archer-${{ matrix.kernel }} --features ${{ matrix.features }}
 
