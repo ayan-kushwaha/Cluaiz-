@@ -30,7 +30,7 @@ jobs:
         include:
           - platform: win-x64
             backend: cuda
-            os: windows-2019
+            os: windows-latest
             target: x86_64-pc-windows-msvc
             features: cuda
             ext: dll
@@ -102,20 +102,28 @@ jobs:
 
       - name: Setup CUDA Toolkit
         if: matrix.backend == 'cuda'
+        id: cuda_toolkit
         uses: jimver/cuda-toolkit@v0.2.21
         with:
-          cuda: '12.2.0'
+          cuda: '12.5.0'
           method: 'network'
 
       # ── Hyper-Silicon SDKs ──
       - name: Setup OpenVINO (Intel)
         if: matrix.backend == 'openvino'
         run: |
-          wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/2023.1/linux/l_openvino_toolkit_ubuntu22_2023.1.0.12148.d560565c400_x86_64.tgz
-          tar -xzf l_openvino_toolkit_ubuntu22_2023.1.0.12148.d560565c400_x86_64.tgz
-          sudo mv l_openvino_toolkit_ubuntu22_2023.1.0.12148.d560565c400_x86_64 /opt/intel/openvino_2023
-          echo "INTEL_OPENVINO_DIR=/opt/intel/openvino_2023" >> $GITHUB_ENV
-          echo "LD_LIBRARY_PATH=/opt/intel/openvino_2023/runtime/lib/intel64:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+          curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | sudo gpg --dearmor -o /usr/share/keyrings/intel-sw-products.gpg
+          echo "deb [signed-by=/usr/share/keyrings/intel-sw-products.gpg] https://apt.repos.intel.com/openvino/2024 ubuntu22 main" | sudo tee /etc/apt/sources.list.d/intel-openvino-2024.list
+          sudo apt-get update
+          
+          echo "🔍 Running Sovereign APT Brute-Force for OpenVINO 2024..."
+          sudo apt-get install -y openvino-2024.0.0 || sudo apt-get install -y openvino-2024.1.0 || sudo apt-get install -y openvino-2024.2.0 || sudo apt-get install -y openvino-2024.3.0 || sudo apt-get install -y openvino
+          
+          OV_DIR=$(ls -d /opt/intel/openvino_2024* | head -n 1 || echo "/usr")
+          echo "INTEL_OPENVINO_DIR=$OV_DIR" >> $GITHUB_ENV
+          if [ -d "$OV_DIR/runtime/lib/intel64" ]; then
+            echo "LD_LIBRARY_PATH=$OV_DIR/runtime/lib/intel64:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+          fi
 
       - name: Install Build Tools (Linux)
         if: runner.os == 'Linux'
@@ -154,19 +162,20 @@ jobs:
 
       # ── The Foundry Build ──
       - name: Build Kernel [${{ matrix.kernel }}] (Windows)
-        if: matrix.os == 'windows-2019'
+        if: matrix.os == 'windows-latest'
         shell: cmd
         working-directory: interface-engines
         run: |
           @echo off
           if "${{ matrix.backend }}" == "cuda" (
             set CUDA_COMPUTE_CAP=80
-            set CUDA_PATH=%CUDA_PATH%
+            set CUDA_PATH=${{ steps.cuda_toolkit.outputs.CUDA_PATH }}
+            set PATH=${{ steps.cuda_toolkit.outputs.CUDA_PATH }}\bin;%PATH%
           )
           cargo build --release --verbose --target ${{ matrix.target }} -p archer-${{ matrix.kernel }} --features ${{ matrix.features }}
 
       - name: Build Kernel [${{ matrix.kernel }}] (Linux/macOS)
-        if: matrix.os != 'windows-2019'
+        if: matrix.os != 'windows-latest'
         shell: bash
         working-directory: interface-engines
         run: |
