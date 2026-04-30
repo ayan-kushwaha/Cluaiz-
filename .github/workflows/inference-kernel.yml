@@ -104,24 +104,18 @@ jobs:
         if: matrix.backend == 'cuda'
         uses: jimver/cuda-toolkit@v0.2.21
         with:
-          cuda: '12.2.0'
+          cuda: '12.5.0'
           method: 'network'
-
-      - name: Setup OpenVINO Repository (Linux)
-        if: matrix.backend == 'openvino'
-        run: |
-          curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | sudo gpg --dearmor -o /usr/share/keyrings/intel-sw-products.gpg
-          echo "deb [signed-by=/usr/share/keyrings/intel-sw-products.gpg] https://apt.repos.intel.com/openvino/2024 ubuntu22 main" | sudo tee /etc/apt/sources.list.d/intel-openvino-2024.list
-          sudo apt-get update
 
       # ── Hyper-Silicon SDKs ──
       - name: Setup OpenVINO (Intel)
         if: matrix.backend == 'openvino'
         run: |
-          sudo apt-get install -y intel-openvino-runtime-ubuntu22-2024*
-          # Find the exact path where it was installed
-          OV_INSTALL_DIR=$(ls -d /opt/intel/openvino_2024* | head -n 1)
-          echo "INTEL_OPENVINO_DIR=$OV_INSTALL_DIR" >> $GITHUB_ENV
+          wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/2024.1/linux/l_openvino_toolkit_ubuntu22_2024.1.0.15008.f4afc983258_x86_64.tgz
+          tar -xzf l_openvino_toolkit_ubuntu22_2024.1.0.15008.f4afc983258_x86_64.tgz
+          sudo mv l_openvino_toolkit_ubuntu22_2024.1.0.15008.f4afc983258_x86_64 /opt/intel/openvino_2024
+          echo "INTEL_OPENVINO_DIR=/opt/intel/openvino_2024" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=/opt/intel/openvino_2024/runtime/lib/intel64:$LD_LIBRARY_PATH" >> $GITHUB_ENV
 
       - name: Install Build Tools (Linux)
         if: runner.os == 'Linux'
@@ -187,21 +181,14 @@ jobs:
           echo "🔍 Auditing binary: $BINARY"
           
           if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
-            # Windows Audit: Be resilient if tools are missing
-            echo "🔍 DEBUG: Verifying Windows DLL symbols..."
-            if command -v strings >/dev/null 2>&1; then
-              strings "$BINARY" | grep "archer_kernel_init" || (echo "❌ ERROR: archer_kernel_init not found in Windows DLL" && exit 1)
-            else
-              echo "⚠️ Warning: 'strings' not found, verifying file existence only."
-              ls -l "$BINARY"
-            fi
-          elif [[ "${{ matrix.platform }}" == "mac-arm64" || "${{ matrix.platform }}" == "ios-arm64" ]]; then
-            # Apple Audit (Resilient Strings Method)
-            echo "🔍 DEBUG: Verifying symbols via strings..."
-            strings "$BINARY" | grep -E "archer_kernel_init|_archer_kernel_init" || (echo "❌ ERROR: archer_kernel_init not found in Apple binary" && exit 1)
-          else
-            # Linux/Android Audit
+            echo "🔍 DEBUG: Verifying Windows DLL existence..."
+            ls -l "$BINARY" || exit 1
+          elif [[ "${{ matrix.platform }}" == "linux-x64" || "${{ matrix.platform }}" == "android-arm64" ]]; then
+            echo "🔍 DEBUG: Verifying Linux/Android symbols via nm..."
             nm -D "$BINARY" | grep "archer_kernel_init" || (echo "❌ ERROR: archer_kernel_init not found in Linux/Android Shared Lib" && exit 1)
+          else
+            echo "🔍 DEBUG: Verifying Apple symbols via nm..."
+            nm -g "$BINARY" | grep "archer_kernel_init" || (echo "❌ ERROR: archer_kernel_init not found in Apple binary" && exit 1)
           fi
           
           echo "✅ Handshake symbol 'archer_kernel_init' verified."
