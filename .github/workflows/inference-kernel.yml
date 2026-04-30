@@ -30,7 +30,7 @@ jobs:
         include:
           - platform: win-x64
             backend: cuda
-            os: windows-latest
+            os: windows-2019
             target: x86_64-pc-windows-msvc
             features: cuda
             ext: dll
@@ -104,18 +104,18 @@ jobs:
         if: matrix.backend == 'cuda'
         uses: jimver/cuda-toolkit@v0.2.21
         with:
-          cuda: '12.5.0'
+          cuda: '12.2.0'
           method: 'network'
 
       # ── Hyper-Silicon SDKs ──
       - name: Setup OpenVINO (Intel)
         if: matrix.backend == 'openvino'
         run: |
-          wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/2024.1/linux/l_openvino_toolkit_ubuntu22_2024.1.0.15008.f4afc983258_x86_64.tgz
-          tar -xzf l_openvino_toolkit_ubuntu22_2024.1.0.15008.f4afc983258_x86_64.tgz
-          sudo mv l_openvino_toolkit_ubuntu22_2024.1.0.15008.f4afc983258_x86_64 /opt/intel/openvino_2024
-          echo "INTEL_OPENVINO_DIR=/opt/intel/openvino_2024" >> $GITHUB_ENV
-          echo "LD_LIBRARY_PATH=/opt/intel/openvino_2024/runtime/lib/intel64:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+          wget -q https://storage.openvinotoolkit.org/repositories/openvino/packages/2023.1/linux/l_openvino_toolkit_ubuntu22_2023.1.0.12148.d560565c400_x86_64.tgz
+          tar -xzf l_openvino_toolkit_ubuntu22_2023.1.0.12148.d560565c400_x86_64.tgz
+          sudo mv l_openvino_toolkit_ubuntu22_2023.1.0.12148.d560565c400_x86_64 /opt/intel/openvino_2023
+          echo "INTEL_OPENVINO_DIR=/opt/intel/openvino_2023" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=/opt/intel/openvino_2023/runtime/lib/intel64:$LD_LIBRARY_PATH" >> $GITHUB_ENV
 
       - name: Install Build Tools (Linux)
         if: runner.os == 'Linux'
@@ -154,7 +154,7 @@ jobs:
 
       # ── The Foundry Build ──
       - name: Build Kernel [${{ matrix.kernel }}] (Windows)
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-2019'
         shell: cmd
         working-directory: interface-engines
         run: |
@@ -166,7 +166,7 @@ jobs:
           cargo build --release --verbose --target ${{ matrix.target }} -p archer-${{ matrix.kernel }} --features ${{ matrix.features }}
 
       - name: Build Kernel [${{ matrix.kernel }}] (Linux/macOS)
-        if: matrix.os != 'windows-latest'
+        if: matrix.os != 'windows-2019'
         shell: bash
         working-directory: interface-engines
         run: |
@@ -188,7 +188,9 @@ jobs:
             nm -D "$BINARY" | grep "archer_kernel_init" || (echo "❌ ERROR: archer_kernel_init not found in Linux/Android Shared Lib" && exit 1)
           else
             echo "🔍 DEBUG: Verifying Apple symbols via nm..."
-            nm -g "$BINARY" | grep "archer_kernel_init" || (echo "❌ ERROR: archer_kernel_init not found in Apple binary" && exit 1)
+            set +o pipefail
+            nm -g "$BINARY" 2>/dev/null | grep "archer_kernel_init" || (echo "❌ ERROR: archer_kernel_init not found in Apple binary" && exit 1)
+            set -o pipefail
           fi
           
           echo "✅ Handshake symbol 'archer_kernel_init' verified."
