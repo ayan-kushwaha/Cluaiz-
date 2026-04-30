@@ -16,6 +16,8 @@ concurrency:
 
 env:
   CARGO_BUILD_JOBS: 4
+  # 🛡️ Sovereign Compliance: Suppress GitHub's internal Node.js 20 deprecation warnings
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   # ─── STAGE 1: Silicon Compilation (HYPER MATRIX) ────────────────────
@@ -167,11 +169,10 @@ jobs:
         working-directory: interface-engines
         run: |
           @echo off
-          if "${{ matrix.backend }}" == "cuda" (
-            set CUDA_COMPUTE_CAP=80
-            set CUDA_PATH=${{ steps.cuda_toolkit.outputs.CUDA_PATH }}
-            set PATH=${{ steps.cuda_toolkit.outputs.CUDA_PATH }}\bin;%PATH%
-          )
+          if "${{ matrix.backend }}" == "cuda" set CUDA_COMPUTE_CAP=80
+          if "${{ matrix.backend }}" == "cuda" set CUDA_PATH=${{ steps.cuda_toolkit.outputs.CUDA_PATH }}
+          if "${{ matrix.backend }}" == "cuda" set PATH=${{ steps.cuda_toolkit.outputs.CUDA_PATH }}\bin;%PATH%
+          
           cargo build --release --verbose --target ${{ matrix.target }} -p archer-${{ matrix.kernel }} --features ${{ matrix.features }}
 
       - name: Build Kernel [${{ matrix.kernel }}] (Linux/macOS)

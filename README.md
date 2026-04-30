@@ -372,9 +372,9 @@ It refers to the **App→Engine signal latency** via shared memory pointer + ato
 ## 📜 **LICENSE: CLUAIZ SYSTEMS LICENSE (CSL) v1.0**
 
 Cluaiz is governed by a **Sovereign-First License**:
-- **Free for Individual Sovereignty**: No cost for individuals or companies under $1M revenue.
+- **Free for Individual Sovereignty**: No cost for individuals or companies under $10M revenue.
 - **Architecture Protection**: Cloning the 3-tier kernel or AtmaSteer logic for competing engines is strictly prohibited.
-- **Enterprise Scale**: Companies >$1M revenue require a Commercial Agreement.
+- **Enterprise Scale**: Companies >$10M revenue require a Commercial Agreement.
 
 ---
 
