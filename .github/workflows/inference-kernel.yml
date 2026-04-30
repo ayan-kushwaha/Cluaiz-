@@ -257,8 +257,9 @@ jobs:
       - name: Generate Manifest JSON
         shell: bash
         run: |
-          VERSION="${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest-kernels' }}"
-          BASE="https://github.com/${{ github.repository }}/releases/download/${VERSION}"
+          VERSION="${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'dev' }}"
+          RELEASE_TAG="${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest-kernels' }}"
+          BASE="https://github.com/${{ github.repository }}/releases/download/${RELEASE_TAG}"
 
           cat <<EOF > kernel-manifest.json
           {
