@@ -8,7 +8,7 @@ fn main() -> anyhow::Result<()> {
     
     match HardwareGovernor::auto_calibrate() {
         Ok(_) => {
-            println!("✅ [CALIBRATE] Sovereign hardware fingerprint saved to AppData/Cluaiz/system_control.json");
+            println!("✅ [CALIBRATE] Silicon Truth & Performance Booster Synchronized.");
             Ok(())
         },
         Err(e) => {

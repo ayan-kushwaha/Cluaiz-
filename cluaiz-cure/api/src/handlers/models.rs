@@ -11,7 +11,8 @@ pub async fn list_models(State(_state): State<Arc<AppState>>) -> Json<Value> {
     sys.refresh_all();
     let ram_gb = sys.total_memory() as f64 / 1_073_741_824.0; // Bytes to GB
 
-    let recommendations = NeuralRoster::get_recommendations(ram_gb);
+    let silicon = HardwareDetector::new().detect();
+    let recommendations = NeuralRoster::get_recommendations(&silicon, ram_gb);
     
     Json(json!({
         "success": true,
@@ -22,7 +23,7 @@ pub async fn list_models(State(_state): State<Arc<AppState>>) -> Json<Value> {
 
 // ─── GET /hardware ───────────────────────────────────────────────
 pub async fn hardware_status(State(_state): State<Arc<AppState>>) -> Json<Value> {
-    let stats = archer_shared::hardware::hal::detect_silicon();
+    let stats = HardwareDetector::new().detect();
     Json(json!({
         "success": true,
         "hardware": stats

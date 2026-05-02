@@ -7,6 +7,7 @@ use archer_shared::hardware::governor::HardwareGovernor;
 
 pub mod kernel_loader;
 pub mod driver_bridge;
+pub mod npu_bridge;
 
 /// Sovereign Engine Manager
 /// Orchestrates pre-compiled Kernels (BitNet, Llama, Candle) and Silicon Drivers.
@@ -44,6 +45,13 @@ impl EngineManager {
         let has_drivers = !control.silicon_truth.active_drivers.is_empty();
 
         println!("🎯 Engine Prep: OS={}, Arch={}, GPU={:?}, Drivers={}", os, arch, gpu_vendor, has_drivers);
+
+        // 🧠 Mission 12: Chronicle Neural Activity
+        let _ = archer_shared::neural::graph::NeuralGraph::chronicle_pulse(
+            "Silicon Handshake & Engine Preparation",
+            engine_type,
+            &format!("OS: {}, GPU: {:?}", os, gpu_vendor)
+        );
 
         // 1. Resolve Silicon Suffix based on Deep Probing
         let suffix = match (os.as_str(), arch.as_str()) {
@@ -137,6 +145,6 @@ impl EngineManager {
     }
 
     fn get_system_control_path(&self) -> PathBuf {
-        HardwareGovernor::resolve_base_path().join("system_control.json")
+        HardwareGovernor::resolve_base_path().join("interface-engines").join("system_control.json")
     }
 }

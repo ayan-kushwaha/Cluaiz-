@@ -1,7 +1,13 @@
 [workspace]
 members = [
+    "cluaiz-cure/api",
+    "cluaiz-cure/engines",
     "cluaiz-cure/engines/archer-shared",
-    "drivers",
+    "cluaiz-cure/engines/system-booster",
+    "interface-engines/dispatcher",
+    "interface-engines/llama",
+    "interface-engines/candle",
+    "interface-engines/neural_core",
     "Apps/cli",
 ]
 

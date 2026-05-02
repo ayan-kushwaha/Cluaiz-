@@ -3,7 +3,11 @@
 //! ═══════════════════════════════════════════════════════════════════════
 
 pub mod speculative;
+pub mod dflash;
+pub mod manager;
 pub mod os_tuning;
+
+
 pub mod telemetry;
 pub mod system_booster;
 

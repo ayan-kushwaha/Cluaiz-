@@ -10,7 +10,9 @@ mod handlers;
 mod routes;
 
 use colored::*;
-use kernel::CureKernel;
+use dispatcher::NeuralDispatcher;
+use system_booster::SystemBooster;
+use archer_shared::backend::signature::KernelSignature;
 use std::env;
 use std::sync::Arc;
 use storage::EmbeddedManager;
@@ -33,13 +35,21 @@ async fn main() {
     tracing::info!("🔧 Initializing CURE Engine...");
 
     let embedded = EmbeddedManager::new(cure_root.clone());
-    let kernel = CureKernel::new();
+    
+    // 🚀 Ignite the SystemBooster to optimize hardware before booting engines
+    let booster_state = SystemBooster::ignite().unwrap_or_default();
+    
+    // Create the Dispatcher with the active booster state
+    let dispatcher = NeuralDispatcher::new(
+        booster_state, 
+        KernelSignature::default() // Default to CPU fallback; dynamically updated during /models/load
+    );
 
     // ── Boot Embedded databases ──
     embedded.boot_all().await;
 
     // ── Create shared state ──
-    let state = Arc::new(AppState { kernel, embedded });
+    let state = Arc::new(AppState { dispatcher, embedded });
 
     // ── Build the Router ──
     let app = routes::build(state);

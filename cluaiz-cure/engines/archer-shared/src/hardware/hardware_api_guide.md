@@ -27,7 +27,7 @@ println!("Detected GPU for Driver Download: {}", gpu_name);
 
 **Kaise Call Karein (In Rust CLI/Frontend):**
 ```rust
-use archer_shared::hardware::system_performance_live::SystemPerformanceLive;
+use archer_shared::hardware::system_performance::SystemPerformanceLive;
 
 // Ye function background me ek thread chalu kar dega jo har 500ms me update hoga.
 let live_pulse = SystemPerformanceLive::start_background_stream();

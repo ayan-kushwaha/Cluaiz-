@@ -81,6 +81,8 @@ impl DashboardEngine {
                     tps,
                 ) = {
                     let pulse_lock = pulse_ref.pulse.read().unwrap();
+                    let primary_gpu_temp = pulse_lock.gpus.get(0).map(|g| g.temperature_c).unwrap_or(0.0);
+                    
                     (
                         pulse_lock.cpu.utilization_pct,
                         pulse_lock.cpu.temperature_c,
@@ -90,7 +92,7 @@ impl DashboardEngine {
                         pulse_lock.vram_used_gb,
                         pulse_lock.vram_total_gb,
                         pulse_lock.vram_pressure_pct,
-                        pulse_lock.gpu.temperature_c,
+                        primary_gpu_temp,
                         pulse_lock.relay_latency_ms as f64 / 10.0,
                     )
                 };

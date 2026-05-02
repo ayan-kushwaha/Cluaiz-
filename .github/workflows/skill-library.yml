@@ -1,0 +1,72 @@
+name: Skill Hub (Global Distribution)
+
+on:
+  push:
+    paths:
+      - 'skills/**'
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  publish-library:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: 🛰️ Checkout Cluaiz-OS
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Packaging Core
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq zip
+
+      - name: 🏗️ Compiling Skill Library & Index
+        id: build_library
+        run: |
+          mkdir -p dist/library
+          # Official Naming: skills_index.json (The Sovereign Library Index)
+          echo "{\"library_version\": \"1.0.0\", \"publisher\": \"Cluaiz-OS Sovereign\", \"timestamp\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\", \"available_skills\": []}" > dist/skills_index.json
+
+          find skills -name "manifest.json" | while read manifest_path; do
+            skill_dir=$(dirname "$manifest_path")
+            skill_id=$(jq -r '.id' "$manifest_path")
+            skill_name=$(basename "$skill_dir")
+            
+            echo "📦 Publishing to Library: $skill_id ($skill_name)"
+            
+            # Professional Binary Packaging
+            zip_name="${skill_id}.zip"
+            (cd "$skill_dir" && zip -r "../../../dist/library/$zip_name" .)
+            
+            # Update Library Index with Official URLs
+            jq --arg id "$skill_id" \
+               --arg name "$skill_name" \
+               --arg zip "$zip_name" \
+               --arg desc "$(jq -r '.description' "$manifest_path")" \
+               '.available_skills += [{id: $id, name: $name, download_url: "https://github.com/${{ github.repository }}/releases/download/latest-library/\($zip)", description: $desc}]' \
+               dist/skills_index.json > dist/tmp.json && mv dist/tmp.json dist/skills_index.json
+          done
+
+      - name: 🚀 Official Library Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-library
+          name: "🏹 Cluaiz-OS: Sovereign Skill Hub (Official Library)"
+          body: |
+            ## 🏹 Sovereign Skill Library
+            Official high-performance skills for Cluaiz-OS.
+            
+            ### 🛠️ Installation
+            Use the Cluaiz CLI to pull skills directly into your local neural foundry:
+            ```bash
+            cluaiz pull skill:<skill_id>
+            ```
+          files: |
+            dist/library/*.zip
+            dist/skills_index.json
+          prerelease: false
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

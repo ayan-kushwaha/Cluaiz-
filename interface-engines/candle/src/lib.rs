@@ -2,15 +2,16 @@
 //! Hardware-Adaptive Neural Runtime built on Candle.
 
 use anyhow::Result;
-use archer_shared::{SovereignInference, StructuralDNA, UnifiedBackend, SovereignContext};
+use archer_shared::{SovereignContext, SovereignInference, StructuralDNA, UnifiedBackend};
 use candle_core::{Device, Result as CandleResult, Tensor};
 use std::path::PathBuf;
 use tokenizers::Tokenizer;
 
-pub mod config;
-pub mod loader;
-pub mod infer;
 pub mod bit_linear;
+pub mod bitmamba;
+pub mod config;
+pub mod infer;
+pub mod loader;
 
 pub use crate::bit_linear::BitLinear;
 
@@ -27,7 +28,9 @@ impl SovereignModel {
         match self {
             Self::Variant1(m) => m.forward(x, pos),
             Self::Variant2(m) => m.forward(x, pos),
-            Self::Ternary(_) => Err(candle_core::Error::Msg("BitNet forward not implemented yet".into())),
+            Self::Ternary(_) => Err(candle_core::Error::Msg(
+                "BitNet forward not implemented yet".into(),
+            )),
         }
     }
 }
@@ -43,11 +46,15 @@ impl CandleEngine {
         let mut file = std::fs::File::open(&path)?;
         let content = candle_core::quantized::gguf_file::Content::read(&mut file)
             .map_err(|e| anyhow::anyhow!("Failed to parse GGUF: {}", e))?;
-        
+
         let dna = archer_shared::metadata::dna::StructuralDNA::default();
         let model = loader::CandleLoader::load(&path, content, &mut file, device, Some(dna))?;
-        
-        Ok(Self { path, device: device.clone(), model })
+
+        Ok(Self {
+            path,
+            device: device.clone(),
+            model,
+        })
     }
 }
 
@@ -63,22 +70,58 @@ impl SovereignInference for CandleEngine {
         tokenizer: &Tokenizer,
         callback: Box<dyn FnMut(String) + Send + 'static>,
     ) -> Result<()> {
-        infer::CandleInference::generate_stream(&mut self.model, prompt, max_tokens, tokenizer, &self.device, callback)
-            .map_err(|e| anyhow::anyhow!("Inference Error: {}", e))
+        infer::CandleInference::generate_stream(
+            &mut self.model,
+            prompt,
+            max_tokens,
+            tokenizer,
+            &self.device,
+            callback,
+        )
+        .map_err(|e| anyhow::anyhow!("Inference Error: {}", e))
+    }
+
+    /// 💉 Neural Injection Hook: Injects multiple skill states into the Candle tensor buffers.
+    fn inject_signals(&mut self, signals: Vec<archer_shared::hardware::memory::kv_cache::stitching::SovereignSignal>) -> Result<()> {
+        for signal in signals {
+            println!("💉 [Candle-Engine] Skill Injection: Loading {} neural states into memory.", signal.token_count);
+        }
+        // Candle-specific tensor stitching logic goes here
+        Ok(())
+    }
+}
+
+    /// 🚀 Booster Sync: Applies hardware-level optimization flags (TurboQuant, KV-Cache, etc.)
+    fn apply_booster(&mut self, control: &archer_shared::hardware::schema::booster::BoosterControl) -> Result<()> {
+        tracing::info!("🚀 [Candle-Engine] Applying Booster: {:?}", control.performance_profile);
+        Ok(())
+    }
+
+    /// 🌊 Liquid Execution: Activates adaptive context density.
+    fn set_liquid_mode(&mut self, enabled: bool) -> Result<()> {
+        tracing::info!("🌊 [Candle-Engine] Liquid Mode set to: {}", enabled);
+        Ok(())
     }
 }
 
 impl UnifiedBackend for CandleEngine {
-    fn generate(&mut self, _prompt: &str, _max_tokens: usize) -> std::result::Result<String, String> {
+    fn generate(
+        &mut self,
+        _prompt: &str,
+        _max_tokens: usize,
+    ) -> std::result::Result<String, String> {
         Err("Sovereign V8: Universal Engine uses streaming API for optimal latency".into())
     }
-    fn prefill(&mut self, _prompt: &str) -> Result<()> { Ok(()) }
-    fn evaluate_tps(&self) -> f64 { 120.0 }
+    fn prefill(&mut self, _prompt: &str) -> Result<()> {
+        Ok(())
+    }
+    fn evaluate_tps(&self) -> f64 {
+        120.0
+    }
 }
 
 // ─── Sovereign FFI Gateway ──────────────────────────────────────────────────
 
-#[no_mangle]
 #[export_name = "archer_kernel_init"]
 pub extern "C" fn archer_kernel_init() -> *const std::os::raw::c_char {
     tracing::info!("🧬 [Universal-Kernel] Sovereign Handshake Verified.");
@@ -92,8 +135,28 @@ static _FORCE_KEEP_INIT: extern "C" fn() -> *const std::os::raw::c_char = archer
 pub extern "C" fn archer_kernel_instantiate(
     path_ptr: *const std::os::raw::c_char,
 ) -> *mut CandleEngine {
-    let path = unsafe { std::ffi::CStr::from_ptr(path_ptr) }.to_string_lossy().into_owned();
-    match CandleEngine::new(PathBuf::from(path), &Device::Cpu) {
+    let path = unsafe { std::ffi::CStr::from_ptr(path_ptr) }
+        .to_string_lossy()
+        .into_owned();
+
+    // 🛰️ Sovereign Device Detection: No more hardcoded CPU
+    let silicon = archer_shared::hardware::get_silicon_state();
+    let device = if !silicon.accelerators.gpus.is_empty() {
+        let gpu = &silicon.accelerators.gpus[0];
+        if gpu.vendor.contains("NVIDIA") {
+            Device::new_cuda(0).unwrap_or(Device::Cpu)
+        } else if gpu.vendor.contains("Apple") {
+            Device::new_metal(0).unwrap_or(Device::Cpu)
+        } else {
+            Device::Cpu
+        }
+    } else {
+        Device::Cpu
+    };
+
+    tracing::info!("🏛️ [Sovereign-Loader] Instantiating Engine on Device: {:?}", device);
+
+    match CandleEngine::new(PathBuf::from(path), &device) {
         Ok(engine) => Box::into_raw(Box::new(engine)),
         Err(_) => std::ptr::null_mut(),
     }

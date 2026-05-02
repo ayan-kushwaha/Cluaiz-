@@ -1,10 +1,11 @@
 use crate::hardware::schema::booster::BoosterControl;
 use crate::hardware::schema::profiles::SystemControl;
 use crate::hardware::system_control::HardwareOrchestrator;
+use once_cell::sync::Lazy;
+use rkyv::Deserialize;
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Mutex;
-use std::collections::HashMap;
-use once_cell::sync::Lazy;
 
 /// 🧠 VRAM Arbiter State: Tracks real-time resource allocations.
 pub struct ArbiterState {
@@ -32,36 +33,53 @@ impl HardwareGovernor {
 
     /// 🛡️ Checks if the 'system_control.json' fingerprint exists.
     pub fn is_ready(&self) -> bool {
-        Self::resolve_base_path().join("system_control.json").exists()
+        Self::resolve_base_path()
+            .join("interface-engines")
+            .join("system_control.json")
+            .exists()
     }
 
     /// 🔬 Deep surgical scan and persistence of silicon state.
     pub fn auto_calibrate() -> anyhow::Result<()> {
         let control = HardwareOrchestrator::start()?;
-        
+        Self::save_booster_settings(&Self::load_booster_settings().unwrap_or_default())?;
+
+        // 🧠 Mission 12: Chronicle Foundry State
+        let _ = crate::neural::graph::NeuralGraph::chronicle_pulse(
+            "Foundry Calibration & Silicon Audit",
+            "HardwareGovernor",
+            &format!("Silicon: {}, Arch: {}", control.silicon_truth.cpu.brand.trim(), control.identity.architecture)
+        );
+
         // Update Arbiter with latest hardware truth
         if let Ok(mut arbiter) = ARBITER.lock() {
-            let total = control.silicon_truth.accelerators.gpus.iter()
+            let total = control
+                .silicon_truth
+                .accelerators
+                .gpus
+                .iter()
                 .map(|g| g.vram_available_gb)
                 .sum::<f64>();
             arbiter.total_vram_gb = total;
         }
-        
+
         Ok(())
     }
 
     /// ⚖️ Request VRAM allocation for a neural engine.
     /// Prevents OOM by enforcing the sovereign memory budget.
     pub fn request_vram(engine_id: &str, required_gb: f64) -> anyhow::Result<()> {
-        let mut arbiter = ARBITER.lock().map_err(|_| anyhow::anyhow!("Arbiter Lock Poisoned"))?;
-        
+        let mut arbiter = ARBITER
+            .lock()
+            .map_err(|_| anyhow::anyhow!("Arbiter Lock Poisoned"))?;
+
         // If total_vram is 0, we might need a quick calibration
         if arbiter.total_vram_gb == 0.0 {
             let _ = Self::auto_calibrate();
         }
 
         let available = arbiter.total_vram_gb - arbiter.allocated_vram_gb;
-        
+
         if required_gb > available {
             return Err(anyhow::anyhow!(
                 "❌ [VRAM Arbiter] Out of Memory! Requested: {:.2}GB, Available: {:.2}GB (Total: {:.2}GB)",
@@ -71,31 +89,39 @@ impl HardwareGovernor {
 
         // Allocate
         arbiter.allocated_vram_gb += required_gb;
-        arbiter.active_allocations.insert(engine_id.to_string(), required_gb);
-        
-        println!("✅ [VRAM Arbiter] Allocated {:.2}GB to '{}'. Current Load: {:.2}/{:.2}GB", 
-                 required_gb, engine_id, arbiter.allocated_vram_gb, arbiter.total_vram_gb);
-        
+        arbiter
+            .active_allocations
+            .insert(engine_id.to_string(), required_gb);
+
+        println!(
+            "✅ [VRAM Arbiter] Allocated {:.2}GB to '{}'. Current Load: {:.2}/{:.2}GB",
+            required_gb, engine_id, arbiter.allocated_vram_gb, arbiter.total_vram_gb
+        );
+
         Ok(())
     }
 
     /// 🔓 Release VRAM allocation when an engine is unloaded.
     pub fn release_vram(engine_id: &str) -> anyhow::Result<()> {
-        let mut arbiter = ARBITER.lock().map_err(|_| anyhow::anyhow!("Arbiter Lock Poisoned"))?;
-        
+        let mut arbiter = ARBITER
+            .lock()
+            .map_err(|_| anyhow::anyhow!("Arbiter Lock Poisoned"))?;
+
         if let Some(freed_gb) = arbiter.active_allocations.remove(engine_id) {
             arbiter.allocated_vram_gb -= freed_gb;
-            println!("🔓 [VRAM Arbiter] Released {:.2}GB from '{}'. Current Load: {:.2}/{:.2}GB", 
-                     freed_gb, engine_id, arbiter.allocated_vram_gb, arbiter.total_vram_gb);
+            println!(
+                "🔓 [VRAM Arbiter] Released {:.2}GB from '{}'. Current Load: {:.2}/{:.2}GB",
+                freed_gb, engine_id, arbiter.allocated_vram_gb, arbiter.total_vram_gb
+            );
         }
-        
+
         Ok(())
     }
 
     /// ⚙️ Updates a specific field in the sovereign configuration.
     pub fn update_field(field: &str, value: serde_json::Value) -> anyhow::Result<()> {
         let mut control = HardwareOrchestrator::start()?;
-        
+
         // ⚙️ Sovereign Configuration Dispatch
         match field {
             "machine_name" => {
@@ -129,10 +155,10 @@ impl HardwareGovernor {
         }
 
         // Save back the updated control
-        let base = Self::resolve_base_path();
+        let base = Self::resolve_base_path().join("interface-engines");
         let json_data = serde_json::to_string_pretty(&control)?;
         std::fs::write(base.join("system_control.json"), json_data)?;
-        
+
         Ok(())
     }
 
@@ -143,19 +169,61 @@ impl HardwareGovernor {
             .join("Cluaiz")
     }
 
-    // ─── 🚀 SYSTEM CONTROL (HARDWARE TRUTH) ───
+    // ─── 🚀 SYSTEM CONTROL (BINARY TRUTH) ───
+
+    /// 🏛️ Loads the sovereign hardware fingerprint from the binary truth (.bin).
+    /// If missing, it triggers an automatic "Self-Healing" recovery scan.
+    pub fn load_binary_truth() -> anyhow::Result<SystemControl> {
+        let path = Self::resolve_base_path().join("interface-engines").join("system_control.bin");
+        
+        if !path.exists() {
+            println!("🛠️ [Self-Healing] Kernel Binary Missing. Regenerating...");
+            Self::auto_calibrate()?;
+        }
+
+        let bytes = std::fs::read(&path)?;
+        let archived = unsafe { rkyv::archived_root::<SystemControl>(&bytes) };
+        let control: SystemControl = match archived.deserialize(&mut rkyv::Infallible) {
+            Ok(val) => val,
+            Err(_) => {
+                println!("⚠️ [Self-Healing] Binary Corrupted. Regenerating...");
+                Self::auto_calibrate()?;
+                return Self::load_binary_truth();
+            }
+        };
+        Ok(control)
+    }
 
     pub fn load_system_control() -> anyhow::Result<SystemControl> {
-        let path = Self::resolve_base_path().join("system_control.json");
-        let data = std::fs::read_to_string(path)?;
-        let control: SystemControl = serde_json::from_str(&data)?;
+        let base = Self::resolve_base_path().join("interface-engines");
+        let path = base.join("system_control.json");
+        let bin_path = base.join("system_control.bin");
+        
+        if !path.exists() {
+            if !bin_path.exists() {
+                println!("🛠️ [Self-Healing] System Truth LOST. Initiating Full Recovery...");
+                Self::auto_calibrate()?;
+            } else {
+                return Self::load_binary_truth();
+            }
+        }
+
+        let data =
+            std::fs::read_to_string(&path).map_err(|_| anyhow::anyhow!("JSON Load Failed"))?;
+        let control: SystemControl = match serde_json::from_str(&data) {
+            Ok(val) => val,
+            Err(_) => {
+                println!("⚠️ [Self-Healing] JSON Tampered. Restoring from Binary...");
+                Self::load_binary_truth().unwrap_or_default()
+            }
+        };
         Ok(control)
     }
 
     // ─── 🚀 BOOSTER CONTROL (USER SETTINGS) ───
 
     pub fn load_booster_settings() -> anyhow::Result<BoosterControl> {
-        let path = Self::resolve_base_path().join("system_booster.json");
+        let path = Self::resolve_base_path().join("booster").join("system_booster.json");
         if !path.exists() {
             return Ok(BoosterControl::default());
         }
@@ -165,17 +233,37 @@ impl HardwareGovernor {
     }
 
     pub fn save_booster_settings(control: &BoosterControl) -> anyhow::Result<()> {
-        let base = Self::resolve_base_path();
+        let base = Self::resolve_base_path().join("booster");
         std::fs::create_dir_all(&base)?;
 
-        // JSON for humans
-        let json_data = serde_json::to_string_pretty(control)?;
-        std::fs::write(base.join("system_booster.json"), json_data)?;
+        let json_path = base.join("system_booster.json");
+        let bin_path = base.join("system_booster.bin");
 
-        // Binary for speed (Zero-copy)
-        let bytes = rkyv::to_bytes::<_, 1024>(control)?;
-        std::fs::write(base.join("system_booster.bin"), bytes.as_slice())?;
+        // 🔓 Step 1: Unlock for Update
+        Self::set_file_lock(&json_path, false);
+        Self::set_file_lock(&bin_path, false);
+
+        // ✍️ Step 2: Write Booster Settings
+        let json_data = serde_json::to_string_pretty(control)?;
+        std::fs::write(&json_path, json_data)?;
+
+        let bytes = rkyv::to_bytes::<_, 1024>(control)
+            .map_err(|e| anyhow::anyhow!("Binary Serialization Failed: {}", e))?;
+        std::fs::write(&bin_path, bytes.as_slice())?;
+
+        // 🔒 Step 3: Sovereign Lockdown
+        Self::set_file_lock(&json_path, true);
+        Self::set_file_lock(&bin_path, true);
 
         Ok(())
+    }
+
+    /// 🔒 Applies OS-level protection to a file to prevent manual deletion or tampering.
+    fn set_file_lock(path: &std::path::Path, locked: bool) {
+        if let Ok(metadata) = std::fs::metadata(path) {
+            let mut permissions = metadata.permissions();
+            permissions.set_readonly(locked);
+            let _ = std::fs::set_permissions(path, permissions);
+        }
     }
 }

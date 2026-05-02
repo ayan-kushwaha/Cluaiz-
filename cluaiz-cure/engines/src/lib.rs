@@ -16,6 +16,7 @@ pub mod cli;
 pub mod sync;
 #[path = "interface-engines/mod.rs"]
 pub mod interface_engines;
+pub mod neural_foundry;
 
 // ─── Master Archer Unified Access ────────────────────────────────────
 

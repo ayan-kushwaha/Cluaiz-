@@ -59,6 +59,7 @@ impl archer_shared::SovereignInference for Backend {
 pub struct NeuralRouter {
     pub active_backend: Backend,
     pub tokenizer: Option<tokenizers::Tokenizer>,
+    pub foundry: crate::neural_foundry::NeuralFoundry,
 }
 
 impl NeuralRouter {
@@ -66,6 +67,7 @@ impl NeuralRouter {
         Self { 
             active_backend: Backend::Empty(DummyBackend),
             tokenizer: None,
+            foundry: crate::neural_foundry::NeuralFoundry::new(),
         }
     }
 
@@ -108,7 +110,15 @@ impl NeuralRouter {
             println!("🗣️ [Router] Voice initialization fail: {}", err);
         }
 
-        Ok(Self { active_backend: Backend::Sovereign(engine), tokenizer })
+        let mut foundry = crate::neural_foundry::NeuralFoundry::new();
+        // Load skills from a standard location (this could be configurable)
+        foundry.initialize("skills");
+
+        Ok(Self { 
+            active_backend: Backend::Sovereign(engine), 
+            tokenizer,
+            foundry 
+        })
     }
 
     pub fn generate(&mut self, prompt: &str, max_tokens: usize) -> Result<String, String> {
@@ -121,8 +131,19 @@ impl NeuralRouter {
         max_tokens: usize,
         callback: Box<dyn FnMut(String) + Send + 'static>,
     ) -> Result<(), String> {
+        // 🧪 SOVEREIGN HANDSHAKE: Check for skills before generation
+        let rt = tokio::runtime::Handle::current();
+        let intent_result = rt.block_on(self.foundry.process_intent(prompt))
+            .map_err(|e| format!("Skill Discovery Error: {}", e))?;
+
         match &mut self.active_backend {
             Backend::Sovereign(b) => {
+                // If neural signals (skill souls) were identified, inject them into the kernel
+                if !intent_result.signals.is_empty() {
+                    println!("💉 [Router] Injecting {} neural signals into active backend...", intent_result.signals.len());
+                    b.inject_signals(intent_result.signals).map_err(|e| format!("Signal Injection Failure: {}", e))?;
+                }
+
                 if let Some(ref tokenizer) = self.tokenizer {
                     b.generate_stream(prompt, max_tokens, tokenizer, callback)
                         .map_err(|e| e.to_string())

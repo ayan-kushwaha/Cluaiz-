@@ -2,6 +2,7 @@
 
 pub mod hardware;
 pub mod metadata;
+pub mod neural;
 pub mod prompting;
 pub mod backend;
 pub mod neural_core;

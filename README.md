@@ -5,6 +5,10 @@
 <h1 align="center">Cluaiz: Sovereign Silicon AI Infrastructure</h1>
 
 <p align="center">
+  <b>⚠️ Under Development - Beta Version Coming Soon</b>
+</p>
+
+<p align="center">
   <b>Direct-to-Metal Inference. Zero-Bloat Sovereignty. Future-Ready Neural Foundations.</b>
 </p>
 
@@ -39,7 +43,7 @@
 
 ## 🧭 **What is Cluaiz? (Engine ≠ Model)**
 
-> ⚠️ **Critical Clarification**: Cluaiz is **NOT** an AI model. It is a **Sovereign Silicon-Native Inference Engine** — an industrial-grade hardware orchestrator built to run AI models directly on local silicon with near-zero abstraction overhead.
+> **Industrial Note**: Cluaiz is **NOT** an AI model. It is a **Sovereign Silicon-Native Inference Engine** — a system-critical hardware orchestrator built to run AI models directly on local silicon with zero-copy efficiency.
 
 | Component               | Analogy              | Examples                                |
 | :---------------------- | :------------------- | :-------------------------------------- |
@@ -75,9 +79,7 @@ Cluaiz is not a software application; it is a **Universal Neural Kernel**. Our m
 
 ---
 
-## 🛰️ **CORE ARCHITECTURE: THE 3-TIER SOVEREIGNTY**
-
-Cluaiz is built as a decoupled, industrial-grade ecosystem designed for 100% hardware-agnostic execution.
+Cluaiz is built as a decoupled, system-critical ecosystem designed for 100% hardware-agnostic execution.
 
 ```mermaid
 graph TD
@@ -212,11 +214,7 @@ Built in **Rust** for zero-latency communication. Dynamically binds CUDA/Metal l
 
 When we say "7ns Handshake" or "0% Hallucination," we are talking about **Industrial Engineering**, not marketing hype.
 
-### 1. **The 7ns Handshake (Physics vs. Engineering)**
-- **The Claim**: 7ns App-to-Engine communication.
-- **The Truth**: This refers to the **IPC (Inter-Process Communication) Handshake** via Shared Memory.
-- **The Logic**: Standard AI uses HTTP/JSON (~50ms latency). Cluaiz uses **mmap + Atomic Pointers**. When an App sends a request, it writes a 64-bit pointer to RAM. The Engine detects this bit-flip at the **L3 Cache level**.
-- **Verdict**: Handshake happens at **~7ns - 20ns**. Full inference remains bound by RAM/GPU physics (~100ns access time).
+- **Verdict**: Handshake happens at **~7ns - 20ns** (L3 Cache hit). Full inference remains bound by RAM/GPU physics (~100ns access time).
 
 ### 2. **Ternary Native Compute (+1, 0, -1)**
 - **The Claim**: Replacing Matrix Multiplication with Addition.
@@ -363,7 +361,7 @@ It refers to the **App→Engine signal latency** via shared memory pointer + ato
 | Resource | Link |
 |:---|:---|
 | **GitHub Issues** | [Report Bugs](https://github.com/cluaiz/cluaiz/issues) |
-| **Discussions** | [Community Q&A](https://github.com/cluaiz/cluaiz/discussions) |
+| **Email Support** | [support@cluaiz.com](mailto:support@cluaiz.com) |
 | **Discord** | [Join Sovereign Chat](https://discord.gg/cluaiz) |
 | **Benchmarks** | [Verified Results Dashboard](https://benchmarks.cluaiz.dev) |
 

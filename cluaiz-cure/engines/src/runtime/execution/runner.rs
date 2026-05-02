@@ -30,9 +30,9 @@ impl SovereignRunner {
         Self { model, tokenizer, sampler, bos_token_id, device }
     }
 
-    /// 🔗 Instant Recall: Injects a neural sovereign signal before generation.
-    pub fn inject_neural_signal(&mut self, signal: archer_shared::hardware::memory::kv_cache::stitching::SovereignSignal) -> Result<()> {
-        self.model.inject_signal(signal)
+    /// 🔗 Instant Recall: Injects neural sovereign signals before generation.
+    pub fn inject_neural_signals(&mut self, signals: Vec<archer_shared::hardware::memory::kv_cache::stitching::SovereignSignal>) -> Result<()> {
+        self.model.inject_signals(signals)
     }
 
     pub fn generate(
@@ -41,6 +41,14 @@ impl SovereignRunner {
         max_tokens: usize,
         mut callback: impl FnMut(String) + Send + 'static,
     ) -> Result<SovereignMetrics> {
+        // 🛰️ SOVEREIGN BOOSTER SYNC: Load truth from Governor before generation
+        let booster = archer_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+        self.model.apply_booster(&booster)?;
+        
+        // 🌊 Liquid Mode Linkage
+        if booster.turbo_quant == archer_shared::hardware::schema::booster::FeatureState::On {
+            self.model.set_liquid_mode(true)?;
+        }
 
         let start_time = std::time::Instant::now();
         

@@ -18,6 +18,7 @@ pub struct StructuralDNA {
     pub signature: KernelSignature,
     pub preferred_runtime: Option<BackendType>,
     pub heterogeneous_map: Option<HashMap<String, usize>>,
+    pub max_context_length: Option<usize>,
     pub dynamic_attributes: HashMap<String, String>,
 }
 
@@ -35,6 +36,7 @@ impl Default for StructuralDNA {
             signature: KernelSignature::default(),
             preferred_runtime: None,
             heterogeneous_map: None,
+            max_context_length: None, // Must be truth-grounded
             dynamic_attributes: HashMap::new(),
         }
     }
@@ -73,6 +75,8 @@ impl StructuralDNA {
                 if let Ok(v) = value.parse::<usize>() { self.attention_head_count_kv = Some(v); }
             } else if key.ends_with(".feed_forward_length") || key.ends_with(".intermediate_size") {
                 if let Ok(v) = value.parse::<usize>() { self.intermediate_size = Some(v); }
+            } else if key.contains("context_length") || key.contains("max_position_embeddings") {
+                if let Ok(v) = value.parse::<usize>() { self.max_context_length = Some(v); }
             } else if key == "general.architecture" {
                 self.model_identity = value.clone();
             }
@@ -84,5 +88,48 @@ impl StructuralDNA {
         std::fs::write(target_path, bytes).map_err(|e| format!("Disk Write Failed: {e}"))?;
         println!("✅ [DNA] Sovereign Archive Created: {:?}", target_path);
         Ok(())
+    }
+
+    /// 🛠️ Parser: Converts manifest context strings (e.g., "8k", "128k") to usize.
+    pub fn parse_context_string(ctx_str: &str) -> usize {
+        let normalized = ctx_str.to_lowercase();
+        if normalized.ends_with('k') {
+            let num = normalized.trim_end_matches('k').parse::<usize>().unwrap_or(4);
+            num * 1024
+        } else if normalized.ends_with('m') {
+            let num = normalized.trim_end_matches('m').parse::<usize>().unwrap_or(1);
+            num * 1024 * 1024
+        } else {
+            normalized.parse::<usize>().unwrap_or(4096)
+        }
+    }
+
+    /// 🛠️ Skeleton Factory: Creates a primed DNA backbone from manifest data.
+    pub fn create_skeleton(
+        id: String,
+        has_vision: bool,
+        expert_count: Option<usize>,
+        bit_depth: f64,
+        context_window: &str,
+    ) -> Self {
+        let mut signature = KernelSignature::default();
+        signature.is_multimodal = has_vision;
+        if expert_count.is_some() {
+            signature.has_experts = true;
+        }
+
+        let mut preferred_runtime = Some(BackendType::RuntimeA); // Default: Candle
+        if bit_depth < 2.0 {
+            signature.is_bitnet = true;
+            preferred_runtime = Some(BackendType::RuntimeB); // BitNet -> Llama.cpp
+        }
+
+        Self {
+            model_identity: id,
+            signature,
+            preferred_runtime,
+            max_context_length: Some(Self::parse_context_string(context_window)),
+            ..Default::default()
+        }
     }
 }

@@ -1,8 +1,8 @@
-use kernel::CureKernel;
+use dispatcher::NeuralDispatcher;
 use storage::EmbeddedManager;
 
-/// Shared application state containing the kernel and storage manager.
+/// Shared application state containing the dispatcher and storage manager.
 pub struct AppState {
-    pub kernel: CureKernel,
+    pub dispatcher: NeuralDispatcher,
     pub embedded: EmbeddedManager,
 }

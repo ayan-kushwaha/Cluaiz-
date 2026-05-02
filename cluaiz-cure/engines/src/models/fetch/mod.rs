@@ -136,29 +136,19 @@ impl ModelDownloader {
             preferred_runtime = Some(archer_shared::backend::signature::BackendType::RuntimeB);
         }
 
-        let mut dna = crate::models::registry::StructuralDNA {
-            model_identity: manifest.id.clone(),
-            layer_count: None,
-            attention_head_count: None,
-            attention_head_count_kv: None,
-            attention_head_dim: None,
-            hidden_size: None,
-            intermediate_size: None,
-            attention_dimensionality_truth: None,
-            signature: signature.clone(),
-            preferred_runtime,
-            heterogeneous_map: None,
-            dynamic_attributes: {
-                let mut map = std::collections::HashMap::new();
-                map.insert("bit_depth".to_string(), bit_val.to_string());
-                map.insert("parameters".to_string(), manifest.parameters.clone());
-                map.insert("training_tokens".to_string(), manifest.training_tokens.clone());
-                map.insert("context_window".to_string(), manifest.context_window.clone());
-                map.insert("category".to_string(), manifest.category.clone());
-                map
-            },
+        let mut dna = crate::models::registry::StructuralDNA::create_skeleton(
+            manifest.id.clone(),
+            manifest.has_vision,
+            manifest.expert_count,
+            bit_val,
+            &manifest.context_window,
+        );
 
-        };
+        // Add extra dynamic attributes
+        dna.dynamic_attributes.insert("bit_depth".to_string(), bit_val.to_string());
+        dna.dynamic_attributes.insert("parameters".to_string(), manifest.parameters.clone());
+        dna.dynamic_attributes.insert("training_tokens".to_string(), manifest.training_tokens.clone());
+        dna.dynamic_attributes.insert("category".to_string(), manifest.category.clone());
 
         // 🔍 BINARY PROBE: Extracting truth directly from GGUF Silicon (Framework-Free)
         if weight_path.exists() {

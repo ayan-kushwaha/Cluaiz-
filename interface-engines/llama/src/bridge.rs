@@ -21,19 +21,42 @@ pub struct InternalPrismBridge {
 
 impl InternalPrismBridge {
     pub fn load_specialized(model_path: &str) -> std::result::Result<Self, String> {
-        // We look for prism-compatible binaries inside the engine's internal bin path
-        let lib_path = if cfg!(windows) {
-            "engines/llama/bin/archer_prism.dll"
+        // 🛡️ Sovereign Path Resolution: No hardcoded drives, fully dynamic.
+        let lib_name = if cfg!(windows) {
+            "archer_prism.dll"
         } else {
-            "engines/llama/bin/libarcher_prism.so"
+            "libarcher_prism.so"
         };
 
-        if !Path::new(lib_path).exists() {
-            return Err(format!("❌ Prism-Inference Kernel not found at {}. Specialized 1-bit models require the Prism core.", lib_path));
+        // Search strategy:
+        // 1. Explicit Environment Variable
+        // 2. Relative to current executable
+        // 3. Current Working Directory / interface-engines
+        let mut lib_path = PathBuf::from(lib_name);
+        
+        if let Ok(env_path) = std::env::var("ARCHER_PRISM_PATH") {
+            lib_path = PathBuf::from(env_path).join(lib_name);
+        } else if let Ok(exe_path) = std::env::current_exe() {
+            if let Some(parent) = exe_path.parent() {
+                let candidate = parent.join("engines/llama/bin").join(lib_name);
+                if candidate.exists() {
+                    lib_path = candidate;
+                }
+            }
+        }
+
+        if !lib_path.exists() {
+            // Fallback for development workspace
+            let dev_candidate = PathBuf::from("interface-engines/llama_backend/bin").join(lib_name);
+            if dev_candidate.exists() {
+                lib_path = dev_candidate;
+            } else {
+                return Err(format!("❌ Prism-Inference Kernel not found for {}. Please set ARCHER_PRISM_PATH or ensure the binary is in the correct relative directory.", lib_name));
+            }
         }
 
         unsafe {
-            let lib = Library::new(lib_path).map_err(|e| format!("Failed to load Prism library: {}", e))?;
+            let lib = Library::new(&lib_path).map_err(|e| format!("Failed to load Prism library at {:?}: {}", lib_path, e))?;
             
             let create_fn: Symbol<CreateBackendFn> = lib.get(b"create_backend\0")
                 .map_err(|_| "Missing symbol: create_backend")?;

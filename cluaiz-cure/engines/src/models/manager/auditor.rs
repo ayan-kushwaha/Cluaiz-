@@ -52,10 +52,9 @@ impl SiliconAuditor {
     }
 
     fn get_system_control_path(&self) -> PathBuf {
-        let mut path = dirs::config_dir().unwrap_or_else(|| PathBuf::from("C:\\Users\\Aryan\\AppData\\Roaming"));
-        path.push("Cluaiz");
-        path.push("system_control.json");
-        path
+        archer_shared::HardwareGovernor::resolve_base_path()
+            .join("interface-engines")
+            .join("system_control.json")
     }
 }
 

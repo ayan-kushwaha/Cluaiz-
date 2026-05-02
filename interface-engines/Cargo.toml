@@ -2,6 +2,11 @@
 members = [
     "candle",
     "llama",
+    "neural_core",
+    "dispatcher",
+    "ffi",
+    "global_runtime",
+    "utils",
 ]
 
 [workspace.package]

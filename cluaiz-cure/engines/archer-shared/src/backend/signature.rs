@@ -48,16 +48,32 @@ pub enum BackendType {
 pub struct GlobalFeatureRegistry;
 
 impl GlobalFeatureRegistry {
-    /// Dispatches a model loader based on the model signature matching
-    pub fn select_runtime(signature: &KernelSignature) -> BackendType {
-        // 🚀 Sovereign Dispatch Logic
-        // BitNet models are now supported natively via RuntimeC (Engine C)
+    /// Dispatches a model loader based on the model signature and hardware truth.
+    pub fn select_runtime(signature: &KernelSignature, hardware: &crate::hardware::schema::profiles::SiliconTruth) -> BackendType {
+        // 🚀 Sovereign Dispatch Logic (Hardware-Aware)
+        
+        // 1. NPU/TPU Preference: If an AI accelerator is detected, prioritize it.
+        if !hardware.accelerators.npus.is_empty() || !hardware.accelerators.tpus.is_empty() {
+             tracing::info!("🧠 [Dispatcher] Silicon Awakening: NPU/TPU Detected. Routing to Runtime D (Hardware Native).");
+             return BackendType::RuntimeD;
+        }
+
+        // 2. VRAM Guard: Check if we have enough VRAM for Runtime B (Llama.cpp/GPU)
+        let has_gpu = !hardware.accelerators.gpus.is_empty();
+        if has_gpu && signature.is_bitnet {
+             tracing::info!("🔩 [Signature] 1-bit architecture on GPU detected. Routing to Runtime B.");
+             return BackendType::RuntimeB;
+        }
+
+        // 3. BitNet Native (CPU/NPU)
         if signature.is_bitnet {
-            tracing::info!("🔩 [Signature] 1-bit architecture detected. Routing to Runtime C (Native Bit-Depth).");
-            BackendType::RuntimeC
-        } else if signature.is_heterogeneous {
+            return BackendType::RuntimeC;
+        }
+
+        // 4. Default Fallbacks
+        if signature.is_heterogeneous {
             BackendType::RuntimeA 
-        } else if signature.is_asymmetric {
+        } else if signature.is_asymmetric && has_gpu {
              BackendType::RuntimeB 
         } else {
              BackendType::RuntimeA

@@ -34,6 +34,7 @@ uuid = { version = "1", features = ["v4"] }
 archer-shared = { path = "archer-shared" }
 # Engines (Llama, Candle, BitNet) are now loaded dynamically via libloading from interface-engines
 system-booster = { path = "system-booster", optional = true }
+neural-core = { path = "../../interface-engines/neural_core" }
 
 # ── Dynamic Neural Bridge (The Soul Linker) ──
 libloading = "0.8"
@@ -50,6 +51,9 @@ dashmap             = "6.1"
 rand                = "0.9"
 memmap2             = "0.9"
 zip                 = "2.2"
+wasmtime            = "29.0"
+wasmtime-wasi       = "29.0"
+async-trait         = "0.1"
 
 
 [build-dependencies]

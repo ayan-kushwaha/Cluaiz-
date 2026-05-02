@@ -24,7 +24,7 @@ pub fn build(state: Arc<AppState>) -> Router {
         
         .route("/chat", post(chat::chat))
         .route("/history/{session_id}", get(chat::get_history))
-        .route("/history", get(chat::get_all_sessions))
+        .route("/history", get(chat::get_sessions))
         
         // ── Models API ──
         .route("/models/available", get(models::list_models))

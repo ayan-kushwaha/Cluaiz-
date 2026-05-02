@@ -5,13 +5,14 @@ pub mod memory;
 pub mod schema;
 pub mod system_control;
 pub mod lookup;
-pub mod system_performance_live;
+pub mod system_performance;
 pub mod governor;
 pub mod speed_checker;
 
 // ── Re-exports for clean API ──
 pub use system_control::HardwareOrchestrator;
-pub use system_performance_live::LivePulse;
+pub use system_performance::pulse_schema::LivePulse;
+pub use system_performance::get_pulse;
 pub use governor::HardwareGovernor;
 
 /// 📡 Helper: Quick access to the Sovereign Silicon Truth.
@@ -54,5 +55,5 @@ impl schema::profiles::SovereignProfile {
 
 // ── Backward Compatibility ──
 pub mod telemetry {
-    pub use crate::hardware::system_performance_live::*;
+    pub use crate::hardware::system_performance::*;
 }

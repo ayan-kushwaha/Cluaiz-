@@ -22,11 +22,12 @@ impl SovereignHealthChecker {
         let is_nvme = storage_speed > 1000.0;
         
         profile.storage = vec![StorageSubsystem {
-            drive_letter: "C".to_string(),
+            mount_point: "/".to_string(), // Universal Root for Diagnostics
             drive_type: if is_nvme { "NVMe (High-Performance)".into() } else { "SSD".into() },
             read_speed_mbps: storage_speed,
             total_gb: 512.0, // Base estimate
             free_gb: 256.0,
+            is_primary_workspace: true,
             ..Default::default()
         }];
 

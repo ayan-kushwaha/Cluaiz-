@@ -81,26 +81,16 @@ impl AutonomousDiscovery {
             };
 
 
-            let mut dna = crate::models::registry::StructuralDNA {
-                model_identity: manifest.id.clone(),
-                layer_count: None,
-                attention_head_count: None,
-                attention_head_count_kv: None,
-                attention_head_dim: None,
-                hidden_size: None,
-                intermediate_size: None,
-                attention_dimensionality_truth: None,
-                signature,
-                preferred_runtime: Some(runtime),
-                heterogeneous_map: None,
-                dynamic_attributes: {
-                    let mut map = std::collections::HashMap::new();
-                    map.insert("bit_depth".to_string(), manifest.bit_depth.to_string());
-                    map.insert("context_window".to_string(), manifest.context_window.clone());
-                    map
-                },
+            let mut dna = crate::models::registry::StructuralDNA::create_skeleton(
+                manifest.id.clone(),
+                manifest.has_vision,
+                manifest.expert_count,
+                manifest.bit_depth,
+                &manifest.context_window,
+            );
 
-            };
+            dna.dynamic_attributes.insert("bit_depth".to_string(), manifest.bit_depth.to_string());
+            dna.dynamic_attributes.insert("context_window".to_string(), manifest.context_window.clone());
 
             if manifest.bit_depth < 2.0 {
                 // 👻 GHOST PROBE: 1-bit models (BitNet) cannot be parsed by Candle natively.

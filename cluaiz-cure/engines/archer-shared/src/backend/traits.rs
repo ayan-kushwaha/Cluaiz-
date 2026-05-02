@@ -26,10 +26,25 @@ pub trait SovereignInference: Send + Sync + UnifiedBackend {
         callback: Box<dyn FnMut(String) + Send + 'static>,
     ) -> Result<()>;
 
-    /// 🔗 Signal Injection Hook: Injects pre-encoded neural states directly into hardware cache.
-    fn inject_signal(&mut self, _signal: crate::hardware::memory::kv_cache::stitching::SovereignSignal) -> Result<()> {
-        tracing::warn!("⚠️ [Backend] Signal injection Not Implemented for this kernel.");
+    /// 🔗 Signal Injection Hook: Injects multiple pre-encoded neural states directly into hardware cache.
+    fn inject_signals(&mut self, _signals: Vec<crate::hardware::memory::kv_cache::stitching::SovereignSignal>) -> Result<()> {
+        tracing::warn!("⚠️ [Backend] Multi-Signal injection Not Implemented for this kernel.");
         Ok(())
+    }
+
+    /// 🚀 Booster Sync: Applies hardware-level optimization flags (TurboQuant, KV-Cache, etc.)
+    fn apply_booster(&mut self, _control: &crate::hardware::schema::booster::BoosterControl) -> Result<()> {
+        Ok(())
+    }
+
+    /// 🌊 Liquid Execution: Activates adaptive context density.
+    fn set_liquid_mode(&mut self, _enabled: bool) -> Result<()> {
+        Ok(())
+    }
+
+    /// 🧠 JEPA Predictor: Returns latent state predictions for future tokens.
+    fn predict_latent(&mut self, _input_ids: &[u32]) -> Result<Vec<f32>> {
+        Err(anyhow::anyhow!("JEPA not supported on this silicon."))
     }
 }
 

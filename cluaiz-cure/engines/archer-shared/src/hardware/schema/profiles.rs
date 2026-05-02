@@ -16,9 +16,7 @@ pub struct SovereignIdentity {
 #[derive(Debug, Clone, Serialize, Deserialize, Default, Archive, RkyvSerialize, RkyvDeserialize)]
 #[archive(check_bytes)]
 pub struct SovereignContext {
-    pub machine_id: String,
-    pub boot_timestamp: u64,
-    pub session_id: String,
+    pub cluaiz_root: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, Archive, RkyvSerialize, RkyvDeserialize)]
@@ -99,14 +97,26 @@ pub struct MemorySubsystem {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, Archive, RkyvSerialize, RkyvDeserialize)]
 #[archive(check_bytes)]
+pub struct DFlashMetadata {
+    pub nand_type: String,
+    pub controller: String,
+    pub wear_level_percent: f64,
+    pub total_host_writes_tb: f64,
+    pub health_status: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default, Archive, RkyvSerialize, RkyvDeserialize)]
+#[archive(check_bytes)]
 pub struct StorageSubsystem {
-    pub drive_letter: String,
+    pub mount_point: String,
     pub drive_type: String,
     pub bus: String,
     pub read_speed_mbps: f64,
     pub write_speed_mbps: f64,
     pub total_gb: f64,
     pub free_gb: f64,
+    pub is_primary_workspace: bool,
+    pub dflash: Option<DFlashMetadata>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, Archive, RkyvSerialize, RkyvDeserialize)]
