@@ -13,7 +13,7 @@ crate-type = ["cdylib", "rlib", "staticlib"]
 # ── Sovereign LLaMA Backend (Direct C++ Bridge) ──
 anyhow = "1.0"
 tracing = "0.1"
-archer-shared = { path = "../../cluaiz-cure/engines/archer-shared" }
+archer-shared = { path = "../../cluaiz-engine/engines/archer-shared" }
 tokenizers = "0.22.2"
 libloading = "0.8"
 tokio = { version = "1.37", features = ["full"] }

@@ -1,4 +1,4 @@
-name: Cluaiz Inference Drivers
+name: Cluaiz Drivers
 
 on:
   push:
@@ -13,128 +13,86 @@ permissions:
   packages: write
 
 jobs:
-  # ─── STAGE 1: Silicon Compilation (FULL MATRIX) ─────────────────────
   build-drivers:
-    name: Build [${{ matrix.hardware }}] - [${{ matrix.os }}]
+    name: Build Driver [${{ matrix.hardware }}]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          # --- NVIDIA Silicon (CUDA) ---
           - os: windows-latest
             hardware: nvidia-cuda
             suffix: cuda
-            arch: x86_64
-          - os: ubuntu-latest
-            hardware: nvidia-cuda
-            suffix: cuda
-            arch: x86_64
-
-          # --- Apple Silicon (Metal Mastery) ---
           - os: macos-latest
             hardware: apple-metal
             suffix: metal
-            arch: aarch64
-
-          # --- AMD Silicon (ROCm) ---
           - os: ubuntu-latest
             hardware: amd-rocm
             suffix: rocm
-            arch: x86_64
-
-          # --- Universal Silicon (Vulkan) ---
           - os: windows-latest
             hardware: universal-vulkan
             suffix: vulkan
-            arch: x86_64
-          - os: ubuntu-latest
-            hardware: universal-vulkan
-            suffix: vulkan
-            arch: x86_64
-
-          # --- ARM / Raspberry Pi (ARM64) ---
-          - os: ubuntu-latest
-            hardware: arm-pi-native
-            suffix: arm64
-            arch: aarch64
-
-          # --- Android Mobile Silicon ---
-          - os: ubuntu-latest
-            hardware: android-ndk-blas
-            suffix: android
-            arch: aarch64
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v1
+      - name: Checkout Cluaiz
+        uses: actions/checkout@v4
 
-      - name: Silicon-Native Compilation
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Driver
         run: |
-          echo "Sovereign Build: Targeting ${{ matrix.hardware }} (${{ matrix.arch }}) with suffix -${{ matrix.suffix }}"
-          # Compilation logic for Silicon Drivers
+          echo "Building driver for ${{ matrix.hardware }}"
+          # Compilation logic for drivers
         shell: bash
 
-      - name: Upload Driver to Release
-        uses: softprops/action-gh-release@v1
+      - name: Release Drivers
+        uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
-          files: interface-engines/drivers/${{ matrix.suffix }}/*
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest-drivers' }}
-          name: "Cluaiz Sovereign Baseline [Drivers]"
-          body: "Industrial Silicon-Native Drivers for Cluaiz Sovereign Engine."
+          files: artifacts/*
+          tag_name: v0.1.0
+          name: "Cluaiz Drivers v0.1.0"
+          body: "Cluaiz Drivers v0.1.0 release."
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # ─── STAGE 2: Neural Manifest Generation ─────────────────────────────
-  publish-driver-manifest:
-    name: 📂 Publish Driver Manifest
+  publish-manifest:
+    name: Publish Driver Manifest
     needs: build-drivers
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v1
+      - name: Checkout Cluaiz
+        uses: actions/checkout@v4
 
-      - name: Generate Driver Manifest JSON
+      - name: Generate Manifest
         run: |
-          VERSION=${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest-drivers' }}
-          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          
+          VERSION="v0.1.0"
           cat <<EOF > driver-manifest.json
           {
             "version": "$VERSION",
-            "provider": "cluaiz-silicon-foundry",
             "drivers": {
-              "cuda": "https://github.com/${{ github.repository }}/releases/download/$VERSION/driver-cuda",
-              "metal": "https://github.com/${{ github.repository }}/releases/download/$VERSION/driver-metal",
-              "rocm": "https://github.com/${{ github.repository }}/releases/download/$VERSION/driver-rocm",
-              "vulkan": "https://github.com/${{ github.repository }}/releases/download/$VERSION/driver-vulkan",
-              "arm64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/driver-arm64",
-              "android": "https://github.com/${{ github.repository }}/releases/download/$VERSION/driver-android"
+              "cuda": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cuda.dll",
+              "metal": "https://github.com/${{ github.repository }}/releases/download/$VERSION/metal.dylib",
+              "vulkan": "https://github.com/${{ github.repository }}/releases/download/$VERSION/vulkan.dll"
             }
           }
           EOF
 
-      - name: Push Driver Manifest to GitHub Packages
+      - name: Push Manifest to GHCR
         run: |
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           IMAGE_ID=ghcr.io/$OWNER/cluaiz-driver-manifest
-          VERSION=${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest' }}
           
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           
           echo "FROM scratch" > Dockerfile
-          echo "LABEL org.opencontainers.image.source=https://github.com/${{ github.repository }}" >> Dockerfile
-          echo "LABEL org.opencontainers.image.description='Cluaiz Sovereign Driver Manifest'" >> Dockerfile
           echo "COPY driver-manifest.json /" >> Dockerfile
           
-          docker build -t $IMAGE_ID:$VERSION .
-          docker push $IMAGE_ID:$VERSION
-          
-          if [ "$VERSION" != "latest" ]; then
-            docker tag $IMAGE_ID:$VERSION $IMAGE_ID:latest
-            docker push $IMAGE_ID:latest
-          fi
+          docker build -t $IMAGE_ID:v0.1.0 .
+          docker push $IMAGE_ID:v0.1.0
+          docker tag $IMAGE_ID:v0.1.0 $IMAGE_ID:latest
+          docker push $IMAGE_ID:latest

@@ -1,0 +1,59 @@
+name: Cluaiz Models Library
+
+on:
+  push:
+    paths:
+      - 'models/library/**'
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  publish-library:
+    name: 📂 Sync & Publish Model Library
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛰️ Checkout Cluaiz-OS
+        uses: actions/checkout@v4
+
+      - name: Validate Model Library
+        run: |
+          echo "Validating Sovereign Model DNA..."
+          ls -R models/library/
+
+      - name: Create Bundle Artifact
+        run: |
+          zip -r model-library-bundle.zip models/library/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: model-library-bundle.zip
+          name: "Cluaiz Ai Models v0.1.0 (Functional Baseline)"
+          tag_name: v0.1.0
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Package Library to GHCR
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_ID=ghcr.io/$OWNER/cluaiz-model-library
+          VERSION="v0.1.0"
+          
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          
+          echo "FROM scratch" > Dockerfile
+          echo "LABEL org.opencontainers.image.source=https://github.com/${{ github.repository }}" >> Dockerfile
+          echo "LABEL org.opencontainers.image.description='Cluaiz Ai Sovereign Model Library'" >> Dockerfile
+          echo "COPY models/library/ /library/" >> Dockerfile
+          
+          docker build -t $IMAGE_ID:$VERSION .
+          docker push $IMAGE_ID:$VERSION
+          docker tag $IMAGE_ID:$VERSION $IMAGE_ID:latest
+          docker push $IMAGE_ID:latest

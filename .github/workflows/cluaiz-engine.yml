@@ -1,0 +1,105 @@
+name: Cluaiz Engine
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-engine:
+    name: Build Engine [${{ matrix.target }}]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            suffix: win-x64
+            ext: dll
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            suffix: linux-x64
+            ext: so
+          - os: ubuntu-latest
+            target: aarch64-linux-android
+            suffix: android-arm64
+            ext: so
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            suffix: mac-arm64
+            ext: dylib
+          - os: macos-latest
+            target: aarch64-apple-ios
+            suffix: ios-arm64
+            ext: dylib
+
+    steps:
+      - name: Checkout Cluaiz
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build Engine
+        run: cargo build --release -p engines --target ${{ matrix.target }}
+
+      - name: Upload Binary
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        with:
+          files: target/${{ matrix.target }}/release/*.${{ matrix.ext }}
+          tag_name: v0.1.0
+          name: "Cluaiz Engine v0.1.0"
+          body: "Cluaiz Engine v0.1.0 release."
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-manifest:
+    name: Publish Engine Manifest
+    needs: build-engine
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout Cluaiz
+        uses: actions/checkout@v4
+
+      - name: Generate Manifest
+        run: |
+          VERSION="v0.1.0"
+          cat <<EOF > engine-manifest.json
+          {
+            "version": "$VERSION",
+            "assets": {
+              "win-x64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/engines.dll",
+              "linux-x64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/libengines.so",
+              "android-arm64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/libengines.so",
+              "mac-arm64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/libengines.dylib",
+              "ios-arm64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/libengines.dylib"
+            }
+          }
+          EOF
+
+      - name: Push Manifest to GHCR
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_ID=ghcr.io/$OWNER/cluaiz-engine-manifest
+          
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          
+          echo "FROM scratch" > Dockerfile
+          echo "COPY engine-manifest.json /" >> Dockerfile
+          
+          docker build -t $IMAGE_ID:v0.1.0 .
+          docker push $IMAGE_ID:v0.1.0
+          docker tag $IMAGE_ID:v0.1.0 $IMAGE_ID:latest
+          docker push $IMAGE_ID:latest

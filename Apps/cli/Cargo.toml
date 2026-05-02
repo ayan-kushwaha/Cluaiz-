@@ -6,8 +6,8 @@ authors.workspace = true
 
 [dependencies]
 # ── Root Architecture ──
-engines = { path = "../../cluaiz-cure/engines" }
-archer_shared = { package = "archer-shared", path = "../../cluaiz-cure/engines/archer-shared" }
+engines = { path = "../../cluaiz-engine/engines" }
+archer_shared = { package = "archer-shared", path = "../../cluaiz-engine/engines/archer-shared" }
 
 
 # ── Powerhouse Ratatui Framework ──

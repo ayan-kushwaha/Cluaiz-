@@ -39,8 +39,8 @@ jobs:
             ext: binary
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v1
+      - name: 🛰️ Checkout Cluaiz-OS
+        uses: actions/checkout@v4
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -58,13 +58,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload CLI to Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
           files: target/${{ matrix.target }}/release/cli*
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest-cli' }}
-          name: "Cluaiz Sovereign Baseline [CLI]"
-          body: "Industrial Cluaiz CLI for sovereign cross-platform execution."
+          tag_name: v0.1.0
+          name: "Cluaiz CLI v0.1.0"
+          body: |
+            Cluaiz CLI v0.1.0
+            
+            Installation:
+            Download the binary for your platform and add it to your PATH.
           draft: false
           prerelease: false
         env:
@@ -77,12 +81,12 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v1
+      - name: 🛰️ Checkout Cluaiz-OS
+        uses: actions/checkout@v4
 
       - name: Generate CLI Manifest JSON
         run: |
-          VERSION=${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest-cli' }}
+          VERSION="v0.1.0"
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           
           cat <<EOF > cli-manifest.json
@@ -98,23 +102,20 @@ jobs:
           }
           EOF
 
-      - name: Push CLI Manifest to GitHub Packages
+      - name: Push CLI Manifest to GHCR
         run: |
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           IMAGE_ID=ghcr.io/$OWNER/cluaiz-cli-manifest
-          VERSION=${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest' }}
+          VERSION="v0.1.0"
           
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           
           echo "FROM scratch" > Dockerfile
           echo "LABEL org.opencontainers.image.source=https://github.com/${{ github.repository }}" >> Dockerfile
-          echo "LABEL org.opencontainers.image.description='Cluaiz Sovereign CLI Manifest'" >> Dockerfile
+          echo "LABEL org.opencontainers.image.description='Cluaiz Ai Sovereign CLI Manifest'" >> Dockerfile
           echo "COPY cli-manifest.json /" >> Dockerfile
           
           docker build -t $IMAGE_ID:$VERSION .
           docker push $IMAGE_ID:$VERSION
-          
-          if [ "$VERSION" != "latest" ]; then
-            docker tag $IMAGE_ID:$VERSION $IMAGE_ID:latest
-            docker push $IMAGE_ID:latest
-          fi
+          docker tag $IMAGE_ID:$VERSION $IMAGE_ID:latest
+          docker push $IMAGE_ID:latest

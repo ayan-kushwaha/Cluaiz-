@@ -1,9 +1,9 @@
 [workspace]
 members = [
-    "cluaiz-cure/api",
-    "cluaiz-cure/engines",
-    "cluaiz-cure/engines/archer-shared",
-    "cluaiz-cure/engines/system-booster",
+    "cluaiz-engine/api",
+    "cluaiz-engine/engines",
+    "cluaiz-engine/engines/archer-shared",
+    "cluaiz-engine/engines/system-booster",
     "interface-engines/dispatcher",
     "interface-engines/llama",
     "interface-engines/candle",
