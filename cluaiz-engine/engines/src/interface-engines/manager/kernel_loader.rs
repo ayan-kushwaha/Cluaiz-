@@ -1,7 +1,20 @@
 use std::path::PathBuf;
 
+use archer_shared::HardwareGovernor;
+
+/// Reads `cluaiz_root` securely via the Sovereign Hardware Governor.
+/// This uses the binary truth (`system_control.bin`) as the ultimate source,
+/// exactly as the Sovereign Architecture intends. Zero custom hardcoding.
+fn read_cluaiz_root() -> Option<PathBuf> {
+    let control = HardwareGovernor::load_system_control()
+        .inspect_err(|e| tracing::error!("❌ [KernelLoader] Failed to read System Truth: {}", e))
+        .ok()?;
+    Some(PathBuf::from(control.context.cluaiz_root))
+}
+
 /// Kernel Loader
 /// Manages pre-compiled binaries (.dll, .so, .dylib) for different OS/Architecture pairs.
+/// All paths are resolved dynamically via system_control.json. Zero hardcoding.
 pub struct KernelLoader {
     base_dir: PathBuf,
 }
@@ -23,28 +36,19 @@ impl KernelLoader {
         path.exists()
     }
 
-    /// Resolves path based on current compilation target (NATIVE)
+    /// Resolves path based on current compilation target (NATIVE).
     pub fn resolve_path(&self, kernel_name: &str) -> PathBuf {
-        #[cfg(target_os = "windows")]
-        return self.resolve_path_for_os(kernel_name, "Windows");
-        
-        #[cfg(target_os = "linux")]
-        return self.resolve_path_for_os(kernel_name, "Linux");
-
-        #[cfg(target_os = "android")]
-        return self.resolve_path_for_os(kernel_name, "Android");
-        
-        #[cfg(target_os = "macos")]
-        return self.resolve_path_for_os(kernel_name, "macOS");
-
-        #[cfg(target_os = "ios")]
-        return self.resolve_path_for_os(kernel_name, "iOS");
-
-        self.resolve_path_for_os(kernel_name, "Unknown")
+        let os = if cfg!(target_os = "windows") { "Windows" }
+            else if cfg!(target_os = "linux") { "Linux" }
+            else if cfg!(target_os = "android") { "Android" }
+            else if cfg!(target_os = "macos") { "macOS" }
+            else if cfg!(target_os = "ios") { "iOS" }
+            else { "Unknown" };
+        self.resolve_path_for_os(kernel_name, os)
     }
 
     /// Resolves the absolute path for a kernel binary for a SPECIFIC OS.
-    /// Pattern: [cluaiz]/interface-engines/[engine]/[engine].[ext]
+    /// Priority: [cluaiz_root]/interface-engines/ → fallback to base_dir/target/release/
     pub fn resolve_path_for_os(&self, kernel_name: &str, os: &str) -> PathBuf {
         let ext = match os {
             "Windows" => "dll",
@@ -52,27 +56,27 @@ impl KernelLoader {
             "macOS" | "iOS" => "dylib",
             _ => "bin",
         };
-        
-        // We use archer_ prefix for the actual file name since that's what the build outputs
+
+        // Build the canonical file name (matches CI/CD build output)
         let file_name = format!("archer_{}.{}", kernel_name, ext);
 
-        // 1. Check Global Sovereign Blueprint path first
-        #[cfg(target_os = "windows")]
-        let global_dir = PathBuf::from("C:\\Cluaiz\\drivers");
-        #[cfg(not(target_os = "windows"))]
-        let global_dir = PathBuf::from("/Cluaiz/drivers");
-        
-        let global_path = global_dir.join(&file_name);
-        if global_path.exists() {
-            return global_path;
+        // 1. PRIMARY: Read cluaiz_root from system_control.json — the Single Source of Truth.
+        //    Path pattern: <cluaiz_root>/interface-engines/<file_name>
+        if let Some(cluaiz_root) = read_cluaiz_root() {
+            let sovereign_path = cluaiz_root.join("interface-engines").join(&file_name);
+            if sovereign_path.exists() {
+                tracing::info!("🎯 [KernelLoader] Sovereign path resolved: {:?}", sovereign_path);
+                return sovereign_path;
+            }
         }
 
-        // 2. Fallback to local development path
-        let mut local_path = self.base_dir.clone();
-        local_path.push("target");
-        local_path.push("release");
-        local_path.push(&file_name);
-        
-        local_path
+        // 2. FALLBACK: Local development build output (for dev/testing only).
+        let mut dev_path = self.base_dir.clone();
+        dev_path.push("target");
+        dev_path.push("release");
+        dev_path.push(&file_name);
+        tracing::warn!("⚠️ [KernelLoader] Sovereign path not found. Falling back to dev path: {:?}", dev_path);
+        dev_path
     }
 }
+
