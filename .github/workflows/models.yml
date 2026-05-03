@@ -36,8 +36,6 @@ jobs:
           name: "Cluaiz Models v0.1.0"
           tag_name: models-v0.1.0
           body: |
-            ## Cluaiz Models v0.1.0
-            
             Sovereign Model Library for Cluaiz-OS.
             
             ### 🚀 Quick Start

@@ -84,8 +84,6 @@ jobs:
           tag_name: cli-v0.1.0
           name: "Cluaiz CLI v0.1.0"
           body: |
-            ## Cluaiz CLI v0.1.0
-            
             Sovereign Neural Interface CLI.
             
             ### 🖥️ Quick Installation
