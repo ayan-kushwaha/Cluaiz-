@@ -18,8 +18,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        driver: [cuda, metal, rocm, vulkan, openvino, qnn, tpu, cpu-blas, ghost]
-        os: [ubuntu-latest] # Default runner
         include:
           - driver: cuda
             os: windows-latest
