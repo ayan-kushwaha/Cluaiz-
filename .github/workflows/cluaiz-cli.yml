@@ -47,12 +47,11 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
+      - name: Install Cross
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
       - name: Build CLI (Industrial Cross-Compile)
-        uses: cross-rs/cross-action@v1
-        with:
-          command: build
-          target: ${{ matrix.target }}
-          args: --release -p cli
+        run: cross build --release --target ${{ matrix.target }} -p cli
         env:
           OPENSSL_VENDORED: 1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
