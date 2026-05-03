@@ -33,8 +33,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: model-library-bundle.zip
-          name: "Cluaiz Ai Models v0.1.0 (Functional Baseline)"
-          tag_name: v0.1.0
+          name: "Cluaiz Models v0.1.0"
+          tag_name: models-v0.1.0
           draft: false
           prerelease: false
         env:
