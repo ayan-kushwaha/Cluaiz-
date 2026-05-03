@@ -59,6 +59,7 @@ jobs:
 
       - name: Prepare Sovereign Binary
         id: naming
+        if: startsWith(github.ref, 'refs/tags/cli-') || github.event_name == 'workflow_dispatch'
         shell: bash
         run: |
           VERSION="v0.1.0"
@@ -121,10 +122,10 @@ jobs:
           {
             "version": "$VERSION",
             "binaries": {
-              "win-x64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cli.exe",
-              "linux-x64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cli",
-              "linux-arm64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cli",
-              "mac-arm64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cli"
+              "win-x64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-win-x64.exe",
+              "linux-x64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-linux-x64",
+              "linux-arm64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-linux-arm64",
+              "mac-arm64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-mac-arm64"
             }
           }
           EOF
