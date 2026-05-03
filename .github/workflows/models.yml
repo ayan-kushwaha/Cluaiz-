@@ -20,23 +20,37 @@ jobs:
       - name: 🛰️ Checkout Cluaiz-OS
         uses: actions/checkout@v4
 
-      - name: Validate Model Library
-        run: |
-          echo "Validating Sovereign Model DNA..."
-          ls -R models/library/
+      - name: Setup Tools
+        run: sudo apt-get update && sudo apt-get install -y jq zip
 
-      - name: Create Bundle Artifact
+      - name: Package Individual Models
+        id: build_models
         run: |
-          zip -r model-library-bundle.zip models/library/
+          mkdir -p dist/models
+          echo "{\"version\": \"v0.1.0\", \"models\": []}" > dist/models.json
+
+          find models/library -maxdepth 1 -mindepth 1 -type d | while read model_dir; do
+            model_name=$(basename "$model_dir")
+            zip_name="${model_name}.zip"
+            echo "📦 Packaging model: $model_name"
+            (cd "$model_dir" && zip -r "../../../dist/models/$zip_name" .)
+            
+            jq --arg name "$model_name" \
+               --arg zip "$zip_name" \
+               '.models += [{id: $name, name: $name, url: "https://github.com/${{ github.repository }}/releases/download/models-v0.1.0/\($zip)"}]' \
+               dist/models.json > dist/tmp.json && mv dist/tmp.json dist/models.json
+          done
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: model-library-bundle.zip
+          files: |
+            dist/models/*.zip
+            dist/models.json
           name: "Cluaiz Models v0.1.0"
           tag_name: models-v0.1.0
           body: |
-            Sovereign Model Library for Cluaiz-OS.
+            Model Library for Cluaiz.
             
             ### 🚀 Quick Start
             ```bash
@@ -45,7 +59,7 @@ jobs:
             *This will automatically pull and initialize the model.*
             
             ### 📦 Manual Download
-            Download the `model-library-bundle.zip` and extract it to your `/Cluaiz/models/` directory.
+            Download the specific model zip file below and extract it to your `/Cluaiz/models/` directory.
           draft: false
           prerelease: false
         env:
@@ -62,7 +76,8 @@ jobs:
           echo "FROM scratch" > Dockerfile
           echo "LABEL org.opencontainers.image.source=https://github.com/${{ github.repository }}" >> Dockerfile
           echo "LABEL org.opencontainers.image.description='Cluaiz Ai Sovereign Model Library'" >> Dockerfile
-          echo "COPY models/library/ /library/" >> Dockerfile
+          echo "COPY dist/models/ /library/" >> Dockerfile
+          echo "COPY dist/models.json /" >> Dockerfile
           
           docker build -t $IMAGE_ID:$VERSION .
           docker push $IMAGE_ID:$VERSION
