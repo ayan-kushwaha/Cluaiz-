@@ -72,8 +72,7 @@ fn inspect(path: PathBuf, model_name: &str) {
     if issues == 0 {
         println!("  ✅ All tensors use standard supported dtypes. Loading SHOULD work.");
         println!("  ⚠️  If loading still fails, the issue is in the model architecture code, not the dtypes.");
-    } else {
-    }
+    } 
 }
 
 fn main() {

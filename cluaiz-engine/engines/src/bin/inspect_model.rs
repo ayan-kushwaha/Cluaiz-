@@ -25,7 +25,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 2. Specific Architecture Keys
     let arch = match content.metadata.get("general.architecture") {
-        Some(v) => v.to_string().map(|s| s.clone()).unwrap_or_else(|_| "unknown".to_string()),
+        Some(v) => v.to_string().cloned().unwrap_or_else(|_| "unknown".to_string()),
         None => "unknown".to_string(),
     };
     

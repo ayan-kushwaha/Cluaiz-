@@ -16,6 +16,12 @@ struct CluaizWasmState {
     wasi: WasiP1Ctx,
 }
 
+impl Default for WasmHost {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl WasmHost {
     pub fn new() -> Self {
         let mut config = Config::new();
@@ -77,12 +83,12 @@ impl WasmHost {
 
         // 🏗️ 1. Malloc Handshake: Ask WASM for a safe buffer
         let param_bytes = params.as_bytes();
-        let param_ptr = if let Some(malloc) = instance.get_typed_func::<i32, i32>(&mut store, "malloc").ok() {
+        let param_ptr = if let Ok(malloc) = instance.get_typed_func::<i32, i32>(&mut store, "malloc") {
             tracing::info!("🔗 [WasmHost] Malloc Handshake: Requesting {} bytes from guest...", param_bytes.len());
             malloc.call_async(&mut store, param_bytes.len() as i32).await? as usize
         } else {
             tracing::warn!("⚠️ [WasmHost] No 'malloc' export found. Falling back to unsafe offset 0.");
-            0 as usize
+            0_usize
         };
 
         // 📝 2. Write params to WASM memory
@@ -101,7 +107,7 @@ impl WasmHost {
             &mut results
         ).await {
             let _ = NeuralGraph::chronicle_pulse("Neural Skill Execution Failed", skill_id, &format!("Error: {}", e));
-            return Err(e.into());
+            return Err(e);
         }
 
         // 📖 3. Read the result back (Pooled/Zero-Allocation)
@@ -111,7 +117,7 @@ impl WasmHost {
         };
 
         let mut pool = self.result_pool.lock().map_err(|_| anyhow::anyhow!("Result pool poison"))?;
-        memory.read(&mut store, res_ptr, &mut *pool)?;
+        memory.read(&mut store, res_ptr, &mut pool)?;
 
         let null_pos = pool.iter().position(|&b| b == 0).unwrap_or(pool.len());
         let response = String::from_utf8_lossy(&pool[..null_pos]).to_string();

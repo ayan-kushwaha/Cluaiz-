@@ -17,8 +17,8 @@ fn main() {
             i,
             pulse.cpu.temperature_c,
             pulse.cpu.utilization_pct,
-            pulse.gpu.temperature_c,
-            pulse.gpu.utilization_pct,
+            pulse.gpus.first().map(|g| g.temperature_c).unwrap_or(0.0),
+            pulse.gpus.first().map(|g| g.utilization_pct).unwrap_or(0.0),
             pulse.ram.used_gb,
             pulse.relay_latency_ms as f64 / 10.0
         );

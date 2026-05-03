@@ -102,7 +102,7 @@ pub fn can_advance(step: OnboardingStep, profile: &UserProfile) -> bool {
             match profile.account_type {
                 AccountType::Personal => !profile.identity.name.is_empty(),
                 AccountType::Business => {
-                    profile.business.as_ref().map_or(false, |b| {
+                    profile.business.as_ref().is_some_and(|b| {
                         !b.name.is_empty() && !b.industry.is_empty()
                     })
                 }
@@ -158,5 +158,5 @@ pub fn should_skip_onboarding() -> bool {
         && crate::profile::load_profile()
             .ok()
             .flatten()
-            .map_or(false, |p| p.onboarding_completed)
+            .is_some_and(|p| p.onboarding_completed)
 }

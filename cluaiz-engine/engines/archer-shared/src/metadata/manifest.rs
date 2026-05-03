@@ -19,7 +19,7 @@ impl ModelManifest {
     pub fn resolve_ctx(&self) -> usize {
         let clean = self.context_window.to_lowercase();
         if clean.contains('k') {
-            let num_str: String = clean.chars().filter(|c| c.is_digit(10)).collect();
+            let num_str: String = clean.chars().filter(|c| c.is_ascii_digit()).collect();
             num_str.parse::<usize>().unwrap_or(2048) * 1024
         } else {
             clean.parse::<usize>().unwrap_or(2048)

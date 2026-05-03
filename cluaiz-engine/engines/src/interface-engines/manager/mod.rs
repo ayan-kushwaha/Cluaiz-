@@ -56,7 +56,7 @@ impl EngineManager {
         // 1. Resolve Silicon Suffix based on Deep Probing
         let suffix = match (os.as_str(), arch.as_str()) {
             // --- Apple Silicon (Metal Mastery) ---
-            ("macos", "aarch64") if gpu_vendor.as_ref().map_or(false, |v| v.contains("apple")) => "metal",
+            ("macos", "aarch64") if gpu_vendor.as_ref().is_some_and(|v| v.contains("apple")) => "metal",
             
             // --- Linux/Windows High-Performance Targets ---
             ("linux", _) | ("windows", _) if gpu_vendor.is_some() => {

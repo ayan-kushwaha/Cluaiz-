@@ -3,7 +3,6 @@
 
 use std::path::PathBuf;
 use archer_shared::hardware::get_silicon_state;
-use archer_shared::hardware::schema::BackendDriver;
 
 pub struct BinaryRouter;
 

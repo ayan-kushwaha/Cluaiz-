@@ -4,7 +4,7 @@
 use std::path::{Path, PathBuf};
 use archer_shared::hardware::schema::BackendDriver;
 use anyhow::{Result, anyhow};
-use tracing::{info, warn, error};
+use tracing::{info, warn};
 
 pub struct BinaryProvisioner;
 
@@ -89,7 +89,7 @@ impl BinaryProvisioner {
         Ok(path)
     }
 
-    fn verify_integrity(path: &Path) -> Result<()> {
+    fn verify_integrity(_path: &Path) -> Result<()> {
         // Logic: Read file, calculate SHA-256, compare with hard-locked hash map.
         Ok(()) // Simplified for blueprint verification
     }

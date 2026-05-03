@@ -1,5 +1,5 @@
 use std::env;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 
 fn main() {
@@ -14,7 +14,7 @@ fn main() {
     if !llama_path.exists() {
         println!("cargo:warning=🔩 Cloning official ggml-org/llama.cpp source...");
         let status = Command::new("git")
-            .args(&["clone", "--depth", "1", "https://github.com/ggml-org/llama.cpp", llama_path.to_str().unwrap()])
+            .args(["clone", "--depth", "1", "https://github.com/ggml-org/llama.cpp", llama_path.to_str().unwrap()])
             .status()
             .expect("Failed to clone llama.cpp");
         if !status.success() { panic!("Clone failed"); }
@@ -33,7 +33,7 @@ fn main() {
     for inc in &common_includes { build_c.include(inc); build_cpp.include(inc); }
 
     // Smart file adder helper
-    let mut add_file = |builder: &mut cc::Build, base: &Path, rel_path: &str| {
+    let add_file = |builder: &mut cc::Build, base: &Path, rel_path: &str| {
         let p1 = base.join("src").join(rel_path);
         let p2 = base.join("ggml").join("src").join(rel_path);
         if p1.exists() { builder.file(p1); }

@@ -24,11 +24,10 @@ impl HardwareDriver for CpuGenericDriver {
         let components = sysinfo::Components::new_with_refreshed_list();
         for comp in &components {
             let label = comp.label().to_lowercase();
-            if label.contains("cpu") || label.contains("core") || label.contains("package") || label.contains("k10temp") || label.contains("tctl") {
-                if comp.temperature() > cpu_temp {
+            if (label.contains("cpu") || label.contains("core") || label.contains("package") || label.contains("k10temp") || label.contains("tctl"))
+                && comp.temperature() > cpu_temp {
                     cpu_temp = comp.temperature();
                 }
-            }
         }
         Ok(cpu_temp)
     }

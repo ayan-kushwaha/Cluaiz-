@@ -2,7 +2,7 @@
 //! Extern "C" bindings for custom C++ CUDA kernels (DFlash, DDTree, SSM Convolutions, AtmaSteer).
 
 use std::ffi::{c_void};
-use std::os::raw::{c_char, c_int, c_float};
+use std::os::raw::{c_int, c_float};
 use libloading::{Library, Symbol};
 use neural_core::SovereignBuffer;
 

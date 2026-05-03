@@ -12,7 +12,7 @@ impl VulkanDriver {
         #[cfg(target_os = "windows")]
         {
             let output = Command::new("powershell")
-                .args(&["-Command", "Get-ChildItem 'C:\\Windows\\System32\\vulkan-1.dll'"])
+                .args(["-Command", "Get-ChildItem 'C:\\Windows\\System32\\vulkan-1.dll'"])
                 .output()?;
             if output.status.success() { return Ok(Self); }
         }
@@ -44,7 +44,7 @@ impl HardwareDriver for VulkanDriver {
         {
             // Fetch dedicated video memory via WMI
             let output = Command::new("powershell")
-                .args(&["-Command", "Get-CimInstance Win32_VideoController | Select-Object AdapterRAM"])
+                .args(["-Command", "Get-CimInstance Win32_VideoController | Select-Object AdapterRAM"])
                 .output()?;
             let s = String::from_utf8_lossy(&output.stdout);
             let bytes = s.lines().nth(3).unwrap_or("0").trim().parse::<u64>().unwrap_or(0);

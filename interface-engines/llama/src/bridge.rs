@@ -4,7 +4,7 @@
 use std::ffi::{CString, CStr};
 use std::os::raw::{c_char, c_void};
 use libloading::{Library, Symbol};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 type CreateBackendFn = unsafe extern "C" fn(path: *const c_char) -> *mut c_void;
 type GenerateFn = unsafe extern "C" fn(backend: *mut c_void, prompt: *const c_char, max_tokens: usize) -> *mut c_char;

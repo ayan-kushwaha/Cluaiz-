@@ -11,7 +11,7 @@ impl OpenVinoDriver {
         #[cfg(target_os = "windows")]
         {
             let output = Command::new("powershell")
-                .args(&["-Command", "Get-CimInstance Win32_VideoController | Where-Object { $_.Name -match 'Intel' }"])
+                .args(["-Command", "Get-CimInstance Win32_VideoController | Where-Object { $_.Name -match 'Intel' }"])
                 .output()?;
             if !output.stdout.is_empty() { return Ok(Self); }
         }
@@ -44,7 +44,7 @@ impl HardwareDriver for OpenVinoDriver {
         #[cfg(target_os = "windows")]
         {
             let output = Command::new("powershell")
-                .args(&["-Command", "Get-CimInstance Win32_VideoController | Where-Object { $_.Name -match 'Intel' } | Select-Object AdapterRAM"])
+                .args(["-Command", "Get-CimInstance Win32_VideoController | Where-Object { $_.Name -match 'Intel' } | Select-Object AdapterRAM"])
                 .output()?;
             let s = String::from_utf8_lossy(&output.stdout);
             let bytes = s.lines().nth(3).unwrap_or("0").trim().parse::<u64>().unwrap_or(0);

@@ -62,6 +62,12 @@ pub struct NeuralRouter {
     pub foundry: crate::neural_foundry::NeuralFoundry,
 }
 
+impl Default for NeuralRouter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl NeuralRouter {
     pub fn new() -> Self {
         Self { 

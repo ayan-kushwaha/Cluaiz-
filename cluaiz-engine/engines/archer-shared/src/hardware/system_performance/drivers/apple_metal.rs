@@ -1,6 +1,5 @@
 use super::HardwareDriver;
 use anyhow::Result;
-use std::process::Command;
 
 /// 🍎 Apple Metal Driver (Sovereign Production Implementation)
 /// Targets Apple Silicon (M1/M2/M3) using macOS native sysctl and system_profiler.

@@ -29,6 +29,12 @@ pub struct PermissionGuard {
     pub audit_log: Mutex<Vec<String>>,
 }
 
+impl Default for PermissionGuard {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PermissionGuard {
     pub fn new() -> Self {
         Self {

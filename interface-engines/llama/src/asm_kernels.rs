@@ -27,7 +27,7 @@ impl BareMetalMath for Avx2MaddubsKernel {
         count: usize,
     ) -> Result<(), &'static str> {
         if count == 0 { return Ok(()); }
-        if count % 32 != 0 {
+        if !count.is_multiple_of(32) {
             return Err("count must be a multiple of 32 for AVX2 maddubs path");
         }
 

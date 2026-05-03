@@ -87,7 +87,7 @@ fn main() {
             let tps_str = parts[5].replace("+", "").replace("-", "0").trim().to_string();
             
             // Just grab numbers
-            let tps: u32 = tps_str.chars().filter(|c| c.is_digit(10)).collect::<String>().parse().unwrap_or(0);
+            let tps: u32 = tps_str.chars().filter(|c| c.is_ascii_digit()).collect::<String>().parse().unwrap_or(0);
             let strength = parts[6].trim();
 
             let is_cloud = name.to_lowercase().contains("grok") || bit_depth.to_lowercase().contains("api");

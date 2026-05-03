@@ -1,4 +1,3 @@
-use serde::{Deserialize, Serialize};
 
 pub mod models_runner;
 pub mod system_control_manager;
@@ -14,6 +13,12 @@ pub use archer_shared::hardware::schema::profiles::{
 pub use archer_shared::hardware::schema::metrics::SiliconMetrics;
 
 pub struct HardwareDetector;
+impl Default for HardwareDetector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl HardwareDetector {
     pub fn new() -> Self { Self }
 

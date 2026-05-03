@@ -31,9 +31,9 @@ impl EmbeddedManager {
         tracing::info!("🚀 Booting Embedded CURE Databases (Zero Network Overhead)...");
 
         // Prepare physical paths on disk
-        let surreal_path = self.vault_root.join("surreal.db");
+        let _surreal_path = self.vault_root.join("surreal.db");
         let lance_path = self.vault_root.join("lancedb");
-        let duck_path = self.vault_root.join("duck.db");
+        let _duck_path = self.vault_root.join("duck.db");
         let minio_path = self.vault_root.join("fs_blobs");
 
         let _ = std::fs::create_dir_all(&lance_path);

@@ -18,6 +18,12 @@ pub struct SovereignSync {
     discovery_port: u16,
 }
 
+impl Default for SovereignSync {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SovereignSync {
     pub fn new() -> Self {
         Self {

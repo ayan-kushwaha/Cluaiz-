@@ -9,7 +9,7 @@ pub mod security;
 use registry::SkillRegistry;
 use intelligence::skill_router::SkillRouter;
 use runtime::wasm_host::WasmHost;
-use runtime::mcp_gateway::{McpGateway, ToolRunner};
+use runtime::mcp_gateway::McpGateway;
 use security::guard::{PermissionGuard, PermissionLevel};
 use tracing::{info, warn};
 use archer_shared::hardware::memory::kv_cache::stitching::SovereignSignal;
@@ -30,6 +30,12 @@ pub struct NeuralFoundry {
     pub mcp_gateway: McpGateway,
     pub guard: PermissionGuard,
     pub active_skill_ids: Mutex<Vec<String>>,
+}
+
+impl Default for NeuralFoundry {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl NeuralFoundry {
@@ -98,7 +104,7 @@ impl NeuralFoundry {
             }
             
             // 4. Logic execution (WASM)
-            let _ = self.guard.validate_action(&skill.manifest, PermissionLevel::ReadOnly)?;
+            self.guard.validate_action(&skill.manifest, PermissionLevel::ReadOnly)?;
             let logic_path = skill.path.join("logic.wasm");
             if logic_path.exists() {
                 match self.wasm_runtime.execute_skill_logic(&logic_path, "run", prompt).await {

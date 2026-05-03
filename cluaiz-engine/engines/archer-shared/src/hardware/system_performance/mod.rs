@@ -18,6 +18,12 @@ pub struct SystemPerformanceLive {
     pub state: Arc<ObservableHardwareState>,
 }
 
+impl Default for SystemPerformanceLive {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SystemPerformanceLive {
     pub fn new() -> Self {
         // 🔗 Sovereign Linkage: Get truth from Orchestrator
@@ -161,5 +167,5 @@ impl SystemPerformanceLive {
 static GLOBAL_TELEMETRY: OnceLock<Arc<ObservableHardwareState>> = OnceLock::new();
 
 pub fn get_pulse() -> Arc<ObservableHardwareState> {
-    GLOBAL_TELEMETRY.get_or_init(|| SystemPerformanceLive::start_background_stream()).clone()
+    GLOBAL_TELEMETRY.get_or_init(SystemPerformanceLive::start_background_stream).clone()
 }

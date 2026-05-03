@@ -39,7 +39,7 @@ impl ModelDownloader {
     }
 
     pub fn get_cached_path(category: &str, repo_id: &str, filename: &str) -> Option<PathBuf> {
-        let model_name = repo_id.split('/').last().unwrap_or(repo_id);
+        let model_name = repo_id.split('/').next_back().unwrap_or(repo_id);
         let repo_path = Self::get_models_dir().join(category).join(model_name);
         
         // 1. Check for main weight file
@@ -68,7 +68,7 @@ impl ModelDownloader {
         tx: mpsc::Sender<DownloadEvent>,
         abort: Arc<AtomicBool>
     ) -> Result<PathBuf, String> {
-        let model_name = repo_id.split('/').last().unwrap_or(repo_id);
+        let model_name = repo_id.split('/').next_back().unwrap_or(repo_id);
         let dest_dir = Self::get_models_dir().join(category).join(model_name);
         std::fs::create_dir_all(&dest_dir).map_err(|e| e.to_string())?;
 
@@ -225,7 +225,7 @@ impl ModelDownloader {
         if asset_path.exists() { return Ok(()); }
 
         let client = reqwest::Client::new();
-        let model_name = repo_id.split('/').last().unwrap_or(repo_id);
+        let model_name = repo_id.split('/').next_back().unwrap_or(repo_id);
         
         // 🚀 SMART FALLBACK LIST: Try various repository formats to bypass gating/missing files
         let repo_ids_to_try = vec![
@@ -276,7 +276,7 @@ impl ModelDownloader {
     }
 
     pub fn purge_model(category: &str, repo_id: &str) -> Result<(), String> {
-        let model_name = repo_id.split('/').last().unwrap_or(repo_id);
+        let model_name = repo_id.split('/').next_back().unwrap_or(repo_id);
         let path = Self::get_models_dir().join(category).join(model_name);
         if !path.exists() { return Err("Model directory not found".to_string()); }
         for attempt in 1..=3 {
@@ -289,7 +289,7 @@ impl ModelDownloader {
     }
 
     pub fn cleanup_partial_download(category: &str, repo_id: &str) -> Result<(), String> {
-        let model_name = repo_id.split('/').last().unwrap_or(repo_id);
+        let model_name = repo_id.split('/').next_back().unwrap_or(repo_id);
         let blobs_path = Self::get_models_dir().join(category).join(model_name).join("blobs");
         if let Ok(entries) = std::fs::read_dir(&blobs_path) {
             for entry in entries.flatten() {

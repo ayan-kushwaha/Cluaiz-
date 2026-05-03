@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 /// 🧠 NeuralSessionCache: The Persistent Memory of the Sovereign OS.
 /// Stores KV cache signals indexed by session ID to prevent instruction forgetting.
-pub static SESSION_CACHE: Lazy<DashMap<Uuid, SovereignSignal>> = Lazy::new(|| DashMap::new());
+pub static SESSION_CACHE: Lazy<DashMap<Uuid, SovereignSignal>> = Lazy::new(DashMap::new);
 
 pub struct SessionManager;
 

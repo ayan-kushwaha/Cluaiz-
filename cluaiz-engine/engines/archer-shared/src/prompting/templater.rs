@@ -1,4 +1,3 @@
-use anyhow::Result;
 use std::collections::HashMap;
 
 /// 🎭 TemplateManager: Handles neural prompt formatting based on model DNA.

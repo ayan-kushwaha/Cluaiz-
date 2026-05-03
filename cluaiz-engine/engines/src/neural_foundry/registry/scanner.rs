@@ -3,7 +3,6 @@
 
 use std::path::{Path, PathBuf};
 use std::fs;
-use serde_json;
 
 pub struct SkillScanner {
     base_path: PathBuf,

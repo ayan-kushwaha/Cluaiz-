@@ -2,6 +2,12 @@ use crate::neural_foundry::registry::SkillRegistry;
 
 pub struct SkillRouter {}
 
+impl Default for SkillRouter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SkillRouter {
     pub fn new() -> Self {
         Self {}

@@ -1,5 +1,5 @@
-use candle_core::{Tensor, Result, DType, Device};
-use candle_nn::{Module, VarMap, VarBuilder};
+use candle_core::{Tensor, Result};
+use candle_nn::Module;
 
 /// 🧱 Sovereign Bit-Linear Layer (Integrated in Candle Engine)
 /// Optimized for 1.58-bit (Ternary) Weights: {-1, 0, 1}

@@ -1,7 +1,7 @@
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::fs;
 use crate::models::registry::ModelManifest;
-use tracing::{info, warn, error};
+use tracing::info;
 
 pub struct AutonomousDiscovery;
 
@@ -74,7 +74,7 @@ impl AutonomousDiscovery {
             if manifest.expert_count.is_some() { signature.has_experts = true; }
             if manifest.bit_depth < 2.0 { signature.is_bitnet = true; }
 
-            let runtime = if manifest.bit_depth < 2.0 {
+            let _runtime = if manifest.bit_depth < 2.0 {
                 archer_shared::backend::signature::BackendType::RuntimeB
             } else {
                 archer_shared::backend::signature::BackendType::RuntimeA

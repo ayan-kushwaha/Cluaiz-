@@ -212,7 +212,7 @@ impl NeuralRoster {
         let manifests = file.models.into_iter().map(|m| {
             let gguf_filename = m.download_url
                 .split('/')
-                .last()
+                .next_back()
                 .map(|s| s.to_string())
                 .unwrap_or_else(|| format!("{}-Q4_K_M.gguf", m.id));
 

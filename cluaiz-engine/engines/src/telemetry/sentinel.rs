@@ -3,11 +3,16 @@
 //! ═══════════════════════════════════════════════════════════════════════
 
 use sysinfo::System;
-use archer_shared::HardwareGovernor;
 
 pub struct MemorySentinel {
     sys: System,
     buffer_pct: f64,
+}
+
+impl Default for MemorySentinel {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl MemorySentinel {
@@ -34,11 +39,7 @@ impl MemorySentinel {
         let avail_mem = self.sys.available_memory();
         let buffer_bytes = (total_mem as f64 * self.buffer_pct) as u64;
 
-        let safe_limit = if avail_mem > buffer_bytes {
-            avail_mem - buffer_bytes
-        } else {
-            0
-        };
+        let safe_limit = avail_mem.saturating_sub(buffer_bytes);
 
         println!("🛡️ [Sentinel] Available: {}MB | Buffer: {}MB | Safe Limit: {}MB | Required: {}MB", 
             avail_mem / 1024 / 1024, buffer_bytes / 1024 / 1024, safe_limit / 1024 / 1024, required_bytes / 1024 / 1024);

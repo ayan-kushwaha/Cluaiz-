@@ -2,7 +2,6 @@
 //! Implementation of advanced execution paradigms: Dynamic Context, Predictive Latency, and Silicon Affinity.
 
 use serde::{Deserialize, Serialize};
-use anyhow::Result;
 
 /// 🌊 Dynamic Context Density: Adaptive token resolution for high-pressure silicon environments.
 /// Industry Standard: Context Compression / Token Pruning logic.
@@ -47,6 +46,12 @@ pub struct PerformanceTelemetry {
     pub tokens_per_second: f64,
     pub cache_hit_rate: f32,
     pub silicon_saturation_pct: f32,
+}
+
+impl Default for PerformanceTelemetry {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl PerformanceTelemetry {

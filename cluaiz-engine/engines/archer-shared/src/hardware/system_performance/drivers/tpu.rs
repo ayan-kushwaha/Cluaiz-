@@ -15,7 +15,7 @@ impl TpuDriver {
         #[cfg(target_os = "windows")]
         {
             let output = Command::new("powershell")
-                .args(&["-Command", "Get-CimInstance Win32_PnPEntity | Where-Object { $_.Name -match 'Coral|Edge TPU' }"])
+                .args(["-Command", "Get-CimInstance Win32_PnPEntity | Where-Object { $_.Name -match 'Coral|Edge TPU' }"])
                 .output()?;
             if !output.stdout.is_empty() { return Ok(Self); }
         }

@@ -2,7 +2,7 @@
 //! Hardware-Adaptive Neural Runtime built on Candle.
 
 use anyhow::Result;
-use archer_shared::{SovereignContext, SovereignInference, StructuralDNA, UnifiedBackend};
+use archer_shared::{SovereignInference, UnifiedBackend};
 use candle_core::{Device, Result as CandleResult, Tensor};
 use std::path::PathBuf;
 use tokenizers::Tokenizer;

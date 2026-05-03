@@ -39,7 +39,7 @@ impl BlockManager {
         self.blocks[block_idx].mark_used();
         
         self.page_table.entry(sequence_id.to_string())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(block_idx);
             
         Some(block_idx)

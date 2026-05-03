@@ -1,7 +1,6 @@
 use super::HardwareDriver;
 use anyhow::Result;
 use std::process::Command;
-use std::fs;
 
 /// 🔴 AMD ROCm Driver (Sovereign Production Implementation)
 /// Uses SysFS on Linux and WMI/PowerShell on Windows. Zero Hardcoding.
@@ -21,7 +20,7 @@ impl AmdRocmDriver {
         #[cfg(target_os = "windows")]
         {
             let output = Command::new("powershell")
-                .args(&["-Command", "Get-CimInstance Win32_VideoController | Where-Object { $_.Name -match 'AMD|Radeon' }"])
+                .args(["-Command", "Get-CimInstance Win32_VideoController | Where-Object { $_.Name -match 'AMD|Radeon' }"])
                 .output()?;
             if !output.stdout.is_empty() {
                 return Ok(Self { card_index: 0 });

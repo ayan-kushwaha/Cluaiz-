@@ -1,4 +1,3 @@
-use serde::{Deserialize, Serialize};
 
 /// Nebula Registry Client
 /// Handles communication with GitHub and Cloudflare for manifests and stats.

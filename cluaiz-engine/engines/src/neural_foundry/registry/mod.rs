@@ -53,6 +53,12 @@ pub struct SkillRegistry {
     pub router_path: Option<PathBuf>, // 🛰️ The .system/router.bin path
 }
 
+impl Default for SkillRegistry {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SkillRegistry {
     pub fn new() -> Self {
         Self { 

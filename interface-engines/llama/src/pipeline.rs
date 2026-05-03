@@ -4,7 +4,7 @@ use archer_shared::backend::context::SovereignContext;
 use std::process::{Command, Stdio};
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
-use tracing::{info, warn, error};
+use tracing::{info, error};
 
 pub struct RuntimeBPipeline;
 
@@ -102,12 +102,10 @@ impl RuntimeBPipeline {
         stdout_thread.join().ok();
         
         let err_reader = BufReader::new(stderr);
-        for line_res in err_reader.lines() {
-            if let Ok(line) = line_res {
-                let lower_line = line.to_lowercase();
-                if lower_line.contains("error") || lower_line.contains("assert") {
-                     error!("⚠️ [Binary Driver ERROR]: {}", line);
-                }
+        for line in err_reader.lines().flatten() {
+            let lower_line = line.to_lowercase();
+            if lower_line.contains("error") || lower_line.contains("assert") {
+                 error!("⚠️ [Binary Driver ERROR]: {}", line);
             }
         }
 

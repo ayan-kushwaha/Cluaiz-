@@ -20,7 +20,7 @@ pub struct ObservableHardwareState {
 impl ObservableHardwareState {
     pub fn resolve_gear(&self) -> EngineGear {
         let p = self.pulse.read().unwrap_or_else(|e| e.into_inner());
-        let primary_gpu_util = p.gpus.get(0).map(|g| g.utilization_pct).unwrap_or(0.0);
+        let primary_gpu_util = p.gpus.first().map(|g| g.utilization_pct).unwrap_or(0.0);
 
         if p.cpu.utilization_pct > 95.0 || primary_gpu_util > 95.0 {
             EngineGear::Emergency

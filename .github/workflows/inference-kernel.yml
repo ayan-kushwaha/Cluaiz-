@@ -83,8 +83,8 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            interface-engines/target
-          key: ${{ runner.os }}-${{ matrix.target }}-${{ matrix.backend }}-cargo-${{ hashFiles('interface-engines/**/Cargo.lock') }}
+            target
+          key: ${{ runner.os }}-${{ matrix.target }}-${{ matrix.backend }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.target }}-${{ matrix.backend }}-cargo-
 
@@ -183,7 +183,7 @@ jobs:
       - name: Audit Exported Symbols
         shell: bash
         run: |
-          BINARY="interface-engines/target/${{ matrix.target }}/release/${{ matrix.prefix }}archer_${{ matrix.kernel }}.${{ matrix.ext }}"
+          BINARY="target/${{ matrix.target }}/release/${{ matrix.prefix }}archer_${{ matrix.kernel }}.${{ matrix.ext }}"
           
           echo "🔍 Auditing binary: $BINARY"
           
@@ -211,8 +211,8 @@ jobs:
           ORIGINAL="${{ matrix.prefix }}archer_${{ matrix.kernel }}.${{ matrix.ext }}"
           RENAMED="${{ matrix.prefix }}archer_${{ matrix.kernel }}-${VERSION}-${{ matrix.platform }}-${{ matrix.backend }}.${{ matrix.ext }}"
 
-          SRC="interface-engines/target/${{ matrix.target }}/release/${ORIGINAL}"
-          DEST="interface-engines/target/${{ matrix.target }}/release/${RENAMED}"
+          SRC="target/${{ matrix.target }}/release/${ORIGINAL}"
+          DEST="target/${{ matrix.target }}/release/${RENAMED}"
 
           if [ ! -f "$SRC" ]; then
             echo "❌ ERROR: Binary not found at: $SRC"

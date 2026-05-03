@@ -5,7 +5,7 @@ use anyhow::Result;
 use archer_shared::{SovereignContext, SovereignInference, UnifiedBackend};
 use std::sync::Arc;
 use tokenizers::Tokenizer;
-use neural_core::interfaces::memory_contract::{ActiveBuffer, SovereignBuffer};
+use neural_core::interfaces::memory_contract::SovereignBuffer;
 
 pub mod asm_kernels;
 pub mod bridge;

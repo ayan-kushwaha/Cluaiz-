@@ -6,7 +6,6 @@ use crate::hardware::schema::profiles::{
     Accelerators, CpuSubsystem, GpuSubsystem, MemorySubsystem, SiliconTruth, SovereignContext,
     SovereignIdentity, StorageSubsystem, SystemControl,
 };
-use crate::hardware::schema::EngineDriver;
 use sysinfo::System;
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -56,7 +55,7 @@ impl HardwareOrchestrator {
     fn fetch_raw_hw_value(domain: &str, field: &str) -> String {
         // Attempt Windows Native WMI First
         if let Ok(output) = std::process::Command::new("wmic")
-            .args(&[domain, "get", field])
+            .args([domain, "get", field])
             .output()
         {
             let s = String::from_utf8_lossy(&output.stdout);
@@ -177,7 +176,7 @@ impl HardwareOrchestrator {
 
         // 🪟 Windows Native WMI Fallback
         if let Ok(output) = std::process::Command::new("powershell")
-            .args(&[
+            .args([
                 "-Command",
                 "Get-CimInstance Win32_CacheMemory | Select-Object Level, MaxCacheSize",
             ])
@@ -314,7 +313,7 @@ impl HardwareOrchestrator {
             let write_dur = start_write.elapsed().as_secs_f64();
 
             let start_read = Instant::now();
-            if let Ok(_) = std::fs::read(&test_file) {
+            if std::fs::read(&test_file).is_ok() {
                 let read_dur = start_read.elapsed().as_secs_f64();
                 let _ = std::fs::remove_file(&test_file);
 
@@ -429,7 +428,7 @@ impl HardwareOrchestrator {
         let mut npus = Vec::new();
         let mut tpus = Vec::new();
         if let Ok(output) = std::process::Command::new("powershell")
-            .args(&["-Command", "Get-CimInstance Win32_PnPEntity | Where-Object { $_.Name -match '\\bNPU\\b|Neural|Tensor|AI Accelerator|Edge TPU' } | Select-Object Name"])
+            .args(["-Command", "Get-CimInstance Win32_PnPEntity | Where-Object { $_.Name -match '\\bNPU\\b|Neural|Tensor|AI Accelerator|Edge TPU' } | Select-Object Name"])
             .output() {
             let s = String::from_utf8_lossy(&output.stdout);
             let lines: Vec<&str> = s.lines().map(|l| l.trim()).filter(|l| !l.is_empty()).collect();
@@ -466,7 +465,7 @@ impl HardwareOrchestrator {
 
         // 🚀 Sovereign Dynamic Compute Driver Probe (Cross-Vendor: AMD, Intel, NVIDIA)
         if let Ok(output) = std::process::Command::new("powershell")
-            .args(&[
+            .args([
                 "-Command",
                 "Get-CimInstance Win32_VideoController | Select-Object Name, DriverVersion",
             ])

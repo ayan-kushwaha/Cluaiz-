@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 
-use archer_shared::HardwareGovernor;
 
 /// Reads `cluaiz_root` securely via the Sovereign Hardware Governor.
 /// This uses the binary truth (`system_control.bin`) as the ultimate source,

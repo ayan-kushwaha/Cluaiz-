@@ -11,6 +11,12 @@ pub trait ToolRunner {
 
 pub struct McpGateway {}
 
+impl Default for McpGateway {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl McpGateway {
     pub fn new() -> Self {
         Self {}

@@ -1,5 +1,4 @@
 use std::sync::Once;
-use crate::runtime::execution::hub::SiliconOrchestrator;
 
 static STARTUP: Once = Once::new();
 
