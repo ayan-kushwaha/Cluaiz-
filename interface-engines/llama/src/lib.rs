@@ -131,7 +131,7 @@ impl SovereignInference for RuntimeB {
 
     /// 🚀 Booster Sync: Applies hardware-level optimization flags (TurboQuant, KV-Cache, etc.)
     fn apply_booster(&mut self, control: &archer_shared::hardware::schema::booster::BoosterControl) -> Result<()> {
-        tracing::info!("🚀 [Llama-Engine] Applying Booster: {:?}", control.performance_profile);
+        tracing::info!("🚀 [Llama-Engine] Applying Booster: {:?}", control.silicon.performance_profile);
         // Llama-specific tuning logic (e.g., ASM kernel switching) goes here
         Ok(())
     }
