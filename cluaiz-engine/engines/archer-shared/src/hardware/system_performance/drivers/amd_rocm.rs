@@ -1,6 +1,8 @@
 use super::HardwareDriver;
 use anyhow::Result;
 use std::process::Command;
+#[allow(unused_imports)]
+use std::fs;
 
 /// 🔴 AMD ROCm Driver (Sovereign Production Implementation)
 /// Uses SysFS on Linux and WMI/PowerShell on Windows. Zero Hardcoding.
