@@ -6,10 +6,13 @@ use archer_shared::HardwareGovernor;
 /// This uses the binary truth (`system_control.bin`) as the ultimate source,
 /// exactly as the Sovereign Architecture intends. Zero custom hardcoding.
 fn read_cluaiz_root() -> Option<PathBuf> {
-    let control = HardwareGovernor::load_system_control()
-        .inspect_err(|e| tracing::error!("❌ [KernelLoader] Failed to read System Truth: {}", e))
-        .ok()?;
-    Some(PathBuf::from(control.context.cluaiz_root))
+    match archer_shared::HardwareGovernor::load_system_control() {
+        Ok(control) => Some(PathBuf::from(control.context.cluaiz_root)),
+        Err(e) => {
+            tracing::error!("❌ [KernelLoader] Failed to read System Truth: {}", e);
+            None
+        }
+    }
 }
 
 /// Kernel Loader
