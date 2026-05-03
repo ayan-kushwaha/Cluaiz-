@@ -53,7 +53,7 @@ jobs:
           tag_name: skills-v0.1.0
           name: "Cluaiz Skills v0.1.0"
           body: |
-            Distributed Neural Plugins for Cluaiz-OS.
+            Cluaiz Ai Skills Library.
             
             ### 🚀 Quick Start
             ```bash

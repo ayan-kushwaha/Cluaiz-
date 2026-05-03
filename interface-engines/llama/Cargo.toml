@@ -1,5 +1,5 @@
 [package]
-name = "llama"
+name = "archer-llama"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true

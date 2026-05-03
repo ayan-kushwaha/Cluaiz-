@@ -50,7 +50,7 @@ jobs:
           name: "Cluaiz Models v0.1.0"
           tag_name: models-v0.1.0
           body: |
-            Model Library for Cluaiz.
+            Cluaiz Ai Models Library.
             
             ### 🚀 Quick Start
             ```bash
