@@ -45,14 +45,31 @@ jobs:
           # Compilation logic for drivers
         shell: bash
 
+      - name: 📦 Zip Driver
+        run: |
+          mkdir -p dist/drivers
+          # Assuming binary is in artifacts/ or similar after build
+          zip -j "dist/drivers/cluaiz-driver-${{ matrix.suffix }}.zip" artifacts/*
+        shell: bash
+
       - name: Release Drivers
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/drivers-') || github.event_name == 'workflow_dispatch'
         with:
-          files: artifacts/*
+          files: dist/drivers/*.zip
           tag_name: drivers-v0.1.0
           name: "Cluaiz Drivers v0.1.0"
-          body: "Cluaiz Drivers v0.1.0 release."
+          body: |
+            Hardware Acceleration Drivers for Cluaiz.
+            
+            ### 🚀 Quick Start
+            ```bash
+            cluaiz calibrate driver:${{ matrix.suffix }}
+            ```
+            *This will automatically install the correct hardware driver.*
+            
+            ### 📦 Manual Download
+            Download the specific zip file below and extract it to your `/Cluaiz/interface-engines/` directory.
           draft: false
           prerelease: false
         env:
@@ -69,14 +86,15 @@ jobs:
 
       - name: Generate Manifest
         run: |
-          VERSION="v0.1.0"
+          VERSION="drivers-v0.1.0"
           cat <<EOF > driver-manifest.json
           {
             "version": "$VERSION",
             "drivers": {
-              "cuda": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cuda.dll",
-              "metal": "https://github.com/${{ github.repository }}/releases/download/$VERSION/metal.dylib",
-              "vulkan": "https://github.com/${{ github.repository }}/releases/download/$VERSION/vulkan.dll"
+              "cuda": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-cuda.zip",
+              "metal": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-metal.zip",
+              "rocm": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-rocm.zip",
+              "vulkan": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-vulkan.zip"
             }
           }
           EOF
