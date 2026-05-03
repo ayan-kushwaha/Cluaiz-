@@ -1,5 +1,7 @@
 use super::HardwareDriver;
 use anyhow::Result;
+#[allow(unused_imports)]
+use std::process::Command;
 
 /// 🐉 Qualcomm QNN Driver (Sovereign Production Implementation)
 /// Targets Snapdragon NPU Silicon using native ARM64 OS probes.
