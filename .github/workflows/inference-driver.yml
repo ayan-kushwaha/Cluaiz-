@@ -10,7 +10,6 @@ on:
 
 permissions:
   contents: write
-  packages: write
 
 jobs:
   build-drivers:
@@ -82,17 +81,12 @@ jobs:
           }
           EOF
 
-      - name: Push Manifest to GHCR
-        run: |
-          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          IMAGE_ID=ghcr.io/$OWNER/cluaiz-driver-manifest
-          
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          
-          echo "FROM scratch" > Dockerfile
-          echo "COPY driver-manifest.json /" >> Dockerfile
-          
-          docker build -t $IMAGE_ID:v0.1.0 .
-          docker push $IMAGE_ID:v0.1.0
-          docker tag $IMAGE_ID:v0.1.0 $IMAGE_ID:latest
-          docker push $IMAGE_ID:latest
+      - name: Upload Manifest to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: driver-manifest.json
+          tag_name: v0.1.0
+          name: "Cluaiz Drivers v0.1.0"
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
