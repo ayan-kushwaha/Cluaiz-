@@ -1,5 +1,5 @@
 [package]
-name = "archer-candle"
+name = "candle"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true

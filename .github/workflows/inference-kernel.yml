@@ -165,19 +165,21 @@ jobs:
       - name: Build Kernel [${{ matrix.kernel }}] (Windows)
         if: matrix.os == 'windows-latest'
         shell: cmd
+        working-directory: interface-engines
         run: |
           @echo off
           if "${{ matrix.backend }}" == "cuda" set CUDA_COMPUTE_CAP=80
           if "${{ matrix.backend }}" == "cuda" set CUDA_PATH=${{ steps.cuda_toolkit.outputs.CUDA_PATH }}
           if "${{ matrix.backend }}" == "cuda" set PATH=${{ steps.cuda_toolkit.outputs.CUDA_PATH }}\bin;%PATH%
           
-          cargo build --release --verbose --target ${{ matrix.target }} -p archer-${{ matrix.kernel }} --features ${{ matrix.features }}
+          cargo build --release --verbose --target ${{ matrix.target }} -p ${{ matrix.kernel }} --features ${{ matrix.features }}
 
       - name: Build Kernel [${{ matrix.kernel }}] (Linux/macOS)
         if: matrix.os != 'windows-latest'
         shell: bash
+        working-directory: interface-engines
         run: |
-          cargo build --release --verbose --target ${{ matrix.target }} -p archer-${{ matrix.kernel }} --features ${{ matrix.features }}
+          cargo build --release --verbose --target ${{ matrix.target }} -p ${{ matrix.kernel }} --features ${{ matrix.features }}
 
       # ── 🔬 THE SOVEREIGN AUDIT (Symbol Verification) ──
       - name: Audit Exported Symbols
