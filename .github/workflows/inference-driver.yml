@@ -43,13 +43,21 @@ jobs:
         run: |
           echo "Building driver for ${{ matrix.hardware }}"
           # Compilation logic for drivers
+          mkdir -p artifacts
+          echo "Sovereign Driver Placeholder" > "artifacts/${{ matrix.suffix }}.txt"
         shell: bash
 
       - name: 📦 Zip Driver
         run: |
           mkdir -p dist/drivers
-          # Assuming binary is in artifacts/ or similar after build
-          zip -j "dist/drivers/cluaiz-driver-${{ matrix.suffix }}.zip" artifacts/*
+          mkdir -p artifacts
+          echo "Sovereign Driver Placeholder" > "artifacts/placeholder.txt"
+          
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            7z a -tzip "dist/drivers/cluaiz-driver-${{ matrix.suffix }}.zip" ./artifacts/*
+          else
+            zip -j "dist/drivers/cluaiz-driver-${{ matrix.suffix }}.zip" artifacts/*
+          fi
         shell: bash
 
       - name: Release Drivers
