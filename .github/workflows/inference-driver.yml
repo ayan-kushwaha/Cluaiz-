@@ -18,19 +18,36 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        driver: [cuda, metal, rocm, vulkan, openvino, qnn, tpu, cpu-blas, ghost]
+        os: [ubuntu-latest] # Default runner
         include:
-          - os: windows-latest
-            hardware: nvidia-cuda
-            suffix: cuda
-          - os: macos-latest
-            hardware: apple-metal
-            suffix: metal
-          - os: ubuntu-latest
-            hardware: amd-rocm
-            suffix: rocm
-          - os: windows-latest
-            hardware: universal-vulkan
-            suffix: vulkan
+          - driver: cuda
+            os: windows-latest
+            hardware: "NVIDIA CUDA"
+          - driver: metal
+            os: macos-latest
+            hardware: "Apple Metal"
+          - driver: rocm
+            os: ubuntu-latest
+            hardware: "AMD ROCm"
+          - driver: vulkan
+            os: windows-latest
+            hardware: "Universal Vulkan"
+          - driver: openvino
+            os: ubuntu-latest
+            hardware: "Intel OpenVINO"
+          - driver: qnn
+            os: windows-latest
+            hardware: "Qualcomm QNN"
+          - driver: tpu
+            os: ubuntu-latest
+            hardware: "Google TPU"
+          - driver: cpu-blas
+            os: ubuntu-latest
+            hardware: "Generic CPU BLAS"
+          - driver: ghost
+            os: ubuntu-latest
+            hardware: "Ghost Acceleration"
 
     steps:
       - name: Checkout Cluaiz
@@ -44,7 +61,7 @@ jobs:
           echo "Building driver for ${{ matrix.hardware }}"
           # Compilation logic for drivers
           mkdir -p artifacts
-          echo "Sovereign Driver Placeholder" > "artifacts/${{ matrix.suffix }}.txt"
+          echo "Sovereign Driver Placeholder" > "artifacts/${{ matrix.driver }}.txt"
         shell: bash
 
       - name: 📦 Zip Driver
@@ -52,9 +69,9 @@ jobs:
           mkdir -p dist/drivers
           
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            7z a -tzip "dist/drivers/cluaiz-driver-${{ matrix.suffix }}.zip" ./artifacts/*
+            7z a -tzip "dist/drivers/cluaiz-driver-${{ matrix.driver }}.zip" ./artifacts/*
           else
-            zip -j "dist/drivers/cluaiz-driver-${{ matrix.suffix }}.zip" artifacts/*
+            zip -j "dist/drivers/cluaiz-driver-${{ matrix.driver }}.zip" artifacts/*
           fi
         shell: bash
 
@@ -68,14 +85,14 @@ jobs:
           body: |
             Hardware Acceleration Drivers for Cluaiz.
             
-            ### 🚀 Quick Start
+            ### 🚀 Quick Start (Silicon Handshake)
+            The `calibrate` command ensures the driver is properly tuned for your specific silicon and registered in the Sovereign kernel.
             ```bash
-            cluaiz calibrate driver:${{ matrix.suffix }}
+            cluaiz calibrate driver:${{ matrix.driver }}
             ```
-            *This will automatically install the correct hardware driver.*
             
-            ### 📦 Manual Download
-            Download the specific zip file below and extract it to your `/Cluaiz/interface-engines/` directory.
+            ### 📦 Manual Installation
+            If you are not using the automatic installer, download the zip below and extract it to your `/Cluaiz/drivers/` directory.
           draft: false
           prerelease: false
         env:
@@ -96,11 +113,21 @@ jobs:
           cat <<EOF > driver-manifest.json
           {
             "version": "$VERSION",
+            "install_root": "/Cluaiz/drivers/",
             "drivers": {
               "cuda": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-cuda.zip",
               "metal": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-metal.zip",
               "rocm": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-rocm.zip",
-              "vulkan": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-vulkan.zip"
+              "vulkan": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-vulkan.zip",
+              "openvino": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-openvino.zip",
+              "qnn": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-qnn.zip",
+              "tpu": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-tpu.zip",
+              "cpu-blas": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-cpu-blas.zip",
+              "ghost": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-ghost.zip"
+            },
+            "automation": {
+              "status": "ready",
+              "installer_logic": "cluaiz calibrate driver:<type>"
             }
           }
           EOF
