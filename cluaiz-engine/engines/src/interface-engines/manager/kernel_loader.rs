@@ -46,18 +46,33 @@ impl KernelLoader {
     /// Resolves the absolute path for a kernel binary for a SPECIFIC OS.
     /// Pattern: [cluaiz]/interface-engines/[engine]/[engine].[ext]
     pub fn resolve_path_for_os(&self, kernel_name: &str, os: &str) -> PathBuf {
-        let mut path = self.base_dir.clone();
-        path.push("interface-engines");
-        path.push(kernel_name);
-        
         let ext = match os {
             "Windows" => "dll",
             "Linux" | "Android" => "so",
             "macOS" | "iOS" => "dylib",
             _ => "bin",
         };
+        
+        // We use archer_ prefix for the actual file name since that's what the build outputs
+        let file_name = format!("archer_{}.{}", kernel_name, ext);
 
-        path.push(format!("{}.{}", kernel_name, ext));
-        path
+        // 1. Check Global Sovereign Blueprint path first
+        #[cfg(target_os = "windows")]
+        let global_dir = PathBuf::from("C:\\Cluaiz\\drivers");
+        #[cfg(not(target_os = "windows"))]
+        let global_dir = PathBuf::from("/Cluaiz/drivers");
+        
+        let global_path = global_dir.join(&file_name);
+        if global_path.exists() {
+            return global_path;
+        }
+
+        // 2. Fallback to local development path
+        let mut local_path = self.base_dir.clone();
+        local_path.push("target");
+        local_path.push("release");
+        local_path.push(&file_name);
+        
+        local_path
     }
 }
