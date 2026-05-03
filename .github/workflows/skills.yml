@@ -57,10 +57,11 @@ jobs:
             
             Distributed Neural Plugins for Cluaiz-OS.
             
-            ### 📥 Installation
+            ### 🚀 Quick Start
             ```bash
-            cluaiz pull skill:<skill_id>
+            cluaiz run skill:<skill_id>
             ```
+            *This will automatically pull and activate the neural plugin.*
             
             ### 📦 Manual Download
             Download the zip files below and place them in your `skills/` directory.

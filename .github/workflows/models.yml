@@ -40,10 +40,11 @@ jobs:
             
             Sovereign Model Library for Cluaiz-OS.
             
-            ### 📥 Installation
+            ### 🚀 Quick Start
             ```bash
-            cluaiz pull model:<model_id>
+            cluaiz run model:<model_id>
             ```
+            *This will automatically pull and initialize the model.*
             
             ### 📦 Manual Download
             Download the `model-library-bundle.zip` and extract it to your `models/` directory.
