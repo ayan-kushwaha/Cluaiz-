@@ -35,6 +35,18 @@ jobs:
           files: model-library-bundle.zip
           name: "Cluaiz Models v0.1.0"
           tag_name: models-v0.1.0
+          body: |
+            ## Cluaiz Models v0.1.0
+            
+            Sovereign Model Library for Cluaiz-OS.
+            
+            ### 📥 Installation
+            ```bash
+            cluaiz pull models:v0.1.0
+            ```
+            
+            ### 📦 Manual Download
+            Download the `model-library-bundle.zip` and extract it to your `models/` directory.
           draft: false
           prerelease: false
         env:

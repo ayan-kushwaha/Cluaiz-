@@ -53,12 +53,17 @@ jobs:
           tag_name: skills-v0.1.0
           name: "Cluaiz Skills v0.1.0"
           body: |
-            Cluaiz Skills v0.1.0
+            ## Cluaiz Skills v0.1.0
             
-            Installation:
+            Distributed Neural Plugins for Cluaiz-OS.
+            
+            ### 📥 Installation
             ```bash
             cluaiz pull skill:<skill_id>
             ```
+            
+            ### 📦 Manual Download
+            Download the zip files below and place them in your `skills/` directory.
           files: |
             dist/library/*.zip
             dist/skills.json
@@ -77,6 +82,7 @@ jobs:
           
           echo "FROM scratch" > Dockerfile
           echo "LABEL org.opencontainers.image.source=https://github.com/${{ github.repository }}" >> Dockerfile
+          echo "LABEL org.opencontainers.image.description='Distributed Neural Plugins (Skills) for Cluaiz-OS'" >> Dockerfile
           echo "COPY dist/library/ /skills/" >> Dockerfile
           echo "COPY dist/skills.json /" >> Dockerfile
           

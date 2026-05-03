@@ -65,10 +65,15 @@ jobs:
           tag_name: cli-v0.1.0
           name: "Cluaiz CLI v0.1.0"
           body: |
-            Cluaiz CLI v0.1.0
+            ## Cluaiz CLI v0.1.0
             
-            Installation:
-            Download the binary for your platform and add it to your PATH.
+            Sovereign Neural Interface CLI.
+            
+            ### 📥 Installation
+            ```bash
+            cluaiz self-update v0.1.0
+            ```
+            *Or download the binary for your platform below and add it to your PATH.*
           draft: false
           prerelease: false
         env:
@@ -107,6 +112,7 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           
           echo "FROM scratch" > Dockerfile
+          echo "LABEL org.opencontainers.image.description='Sovereign Neural Interface CLI for Cluaiz-OS'" >> Dockerfile
           echo "COPY cli-manifest.json /" >> Dockerfile
           
           docker build -t $IMAGE_ID:v0.1.0 .
