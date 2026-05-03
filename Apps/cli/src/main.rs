@@ -26,6 +26,9 @@ async fn main() -> Result<()> {
 
     color_eyre::install()?;
 
+    // 🚀 SOVEREIGN BOOTSTRAP: Ensure Neural Engine is ready before anything else
+    crate::core::bootstrapper::Bootstrapper::ignite().await?;
+
     // 📡 SILICON IGNITION: Fire up the Watchtower Telemetry Server
     engines::telemetry::ignite_watchtower();
 

@@ -21,6 +21,18 @@ use state::AppState;
 
 #[tokio::main]
 async fn main() {
+    // ── CLI ARGUMENTS PROCESSING ──────────────────────────────────────────
+    let args: Vec<String> = env::args().collect();
+    if args.iter().any(|arg| arg == "--setup") {
+        println!("🛠️ [Sovereign] Initializing Hardware Calibration...");
+        if let Err(e) = archer_shared::HardwareGovernor::auto_calibrate() {
+            eprintln!("❌ [Sovereign] Calibration Failed: {}", e);
+            std::process::exit(1);
+        }
+        println!("✅ [Sovereign] Hardware Fingerprint Sealed. system_control.bin updated.");
+        std::process::exit(0);
+    }
+
     // ── Initialize logging ──
     tracing_subscriber::fmt()
         .with_target(false)
