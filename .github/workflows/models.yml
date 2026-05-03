@@ -42,7 +42,7 @@ jobs:
             
             ### 📥 Installation
             ```bash
-            cluaiz pull models:v0.1.0
+            cluaiz pull model:<model_id>
             ```
             
             ### 📦 Manual Download

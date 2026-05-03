@@ -57,11 +57,30 @@ jobs:
           OPENSSL_VENDORED: 1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Prepare Sovereign Binary
+        id: naming
+        shell: bash
+        run: |
+          VERSION="v0.1.0"
+          SUFFIX="${{ matrix.suffix }}"
+          EXT="${{ matrix.ext }}"
+          
+          ORIGINAL="target/${{ matrix.target }}/release/cli"
+          if [ "$EXT" == "exe" ]; then
+            ORIGINAL="target/${{ matrix.target }}/release/cli.exe"
+            DEST="target/${{ matrix.target }}/release/cluaiz-${SUFFIX}.exe"
+          else
+            DEST="target/${{ matrix.target }}/release/cluaiz-${SUFFIX}"
+          fi
+          
+          mv "$ORIGINAL" "$DEST"
+          echo "binary_path=${DEST}" >> $GITHUB_OUTPUT
+          
       - name: 🚀 Release to GitHub
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/cli-') || github.event_name == 'workflow_dispatch'
         with:
-          files: target/${{ matrix.target }}/release/cli*
+          files: ${{ steps.naming.outputs.binary_path }}
           tag_name: cli-v0.1.0
           name: "Cluaiz CLI v0.1.0"
           body: |
@@ -69,11 +88,19 @@ jobs:
             
             Sovereign Neural Interface CLI.
             
-            ### 📥 Installation
-            ```bash
-            cluaiz self-update v0.1.0
+            ### 🖥️ Quick Installation
+            
+            **Windows (PowerShell):**
+            ```powershell
+            iwr -useb https://raw.githubusercontent.com/cluaiz/cluaiz/main/install.ps1 | iex
             ```
-            *Or download the binary for your platform below and add it to your PATH.*
+            
+            **Linux / macOS (Bash):**
+            ```bash
+            curl -fsSL https://raw.githubusercontent.com/cluaiz/cluaiz/main/install.sh | bash
+            ```
+            
+            *Manual binaries are available below for custom setups.*
           draft: false
           prerelease: false
         env:
