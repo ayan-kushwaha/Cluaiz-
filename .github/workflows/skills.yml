@@ -62,7 +62,7 @@ jobs:
             *This will automatically pull and activate the neural plugin.*
             
             ### 📦 Manual Download
-            Download the zip files below and place them in your `skills/` directory.
+            Download the zip files below and place them in your `/Cluaiz/skills/` directory.
           files: |
             dist/library/*.zip
             dist/skills.json

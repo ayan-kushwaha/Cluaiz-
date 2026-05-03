@@ -45,7 +45,7 @@ jobs:
             *This will automatically pull and initialize the model.*
             
             ### 📦 Manual Download
-            Download the `model-library-bundle.zip` and extract it to your `models/` directory.
+            Download the `model-library-bundle.zip` and extract it to your `/Cluaiz/models/` directory.
           draft: false
           prerelease: false
         env:
