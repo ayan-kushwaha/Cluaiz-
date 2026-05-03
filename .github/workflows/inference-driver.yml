@@ -50,8 +50,6 @@ jobs:
       - name: 📦 Zip Driver
         run: |
           mkdir -p dist/drivers
-          mkdir -p artifacts
-          echo "Sovereign Driver Placeholder" > "artifacts/placeholder.txt"
           
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             7z a -tzip "dist/drivers/cluaiz-driver-${{ matrix.suffix }}.zip" ./artifacts/*
