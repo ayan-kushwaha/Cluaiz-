@@ -21,7 +21,6 @@ dirs = "5"
 # ── System Hardware Info ──
 sysinfo = "0.30"
 sys-locale = "0.3"
-mac_address = "1.1"
 
 # ── Serialization ──
 serde      = { version = "1", features = ["derive"] }
