@@ -17,7 +17,7 @@ impl SiliconOrchestrator {
         tracing::info!("🔩 [Orchestrator] Initiating Dynamic Silicon Handshake...");
 
         // 1. Initialize the Engine Manager (The Sovereign Linker)
-        let base_path = archer_shared::hardware::governor::HardwareGovernor::resolve_base_path();
+        let base_path = archer_shared::hardware::governor::HardwareGovernor::resolve_hub_path();
         let manager = EngineManager::new(base_path);
 
         // 2. Identify Engine Type based on DNA Signature

@@ -52,7 +52,7 @@ impl SiliconAuditor {
     }
 
     fn get_system_control_path(&self) -> PathBuf {
-        archer_shared::HardwareGovernor::resolve_base_path()
+        archer_shared::HardwareGovernor::resolve_hub_path()
             .join("interface-engines")
             .join("system_control.json")
     }
