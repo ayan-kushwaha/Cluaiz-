@@ -49,7 +49,7 @@ try {
 
     # 1. Workspace
     Write-Step "Provisioning environment..."
-    $Folders = @("bin", "apps/cli", "interface-engines", "interface-engines/kernels", "interface-engines/drivers")
+    $Folders = @("bin", "apps/cli", "engine", "interface-engines", "interface-engines/kernels", "interface-engines/drivers")
     foreach ($f in $Folders) {
         $path = Join-Path $HubPath $f
         if (-not (Test-Path $path)) { New-Item -ItemType Directory -Path $path -Force | Out-Null }
