@@ -66,36 +66,44 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - name: Build Engine (Neutral Orchestrator)
+      - name: Build Engine (Sovereign Core)
         shell: bash
         run: |
-          cargo build --release --target ${{ matrix.target }} -p engines
+          if [ "${{ matrix.target }}" == "aarch64-unknown-linux-gnu" ] || [[ "${{ matrix.target }}" == *"-android"* ]] || [ "${{ matrix.target }}" == "aarch64-apple-ios" ]; then
+            cargo install cross --git https://github.com/cross-rs/cross
+            cross build --release --target ${{ matrix.target }} -p engines
+          else
+            cargo build --release --target ${{ matrix.target }} -p engines
+          fi
         env:
           OPENSSL_VENDORED: 1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # ── Sovereign Binary Naming ──
       - name: Prepare Sovereign Binary
         id: naming
         shell: bash
         run: |
+          VERSION="${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'dev' }}"
           SUFFIX="${{ matrix.suffix }}"
           EXT="${{ matrix.ext }}"
           
-          # Engine binary name is usually 'engines' in Cargo.toml
           if [ "$EXT" == "dll" ]; then
             SRC="target/${{ matrix.target }}/release/engines.dll"
-            DEST="target/${{ matrix.target }}/release/cluaiz-engine-${SUFFIX}.dll"
           elif [ "$EXT" == "a" ]; then
             SRC="target/${{ matrix.target }}/release/libengines.a"
-            DEST="target/${{ matrix.target }}/release/cluaiz-engine-${SUFFIX}.a"
           else
-            SRC="target/${{ matrix.target }}/release/libengines.${EXT}"
-            DEST="target/${{ matrix.target }}/release/cluaiz-engine-${SUFFIX}.${EXT}"
+            if [ -f "target/${{ matrix.target }}/release/libengines.${EXT}" ]; then
+              SRC="target/${{ matrix.target }}/release/libengines.${EXT}"
+            else
+              SRC="target/${{ matrix.target }}/release/engines.${EXT}"
+            fi
           fi
           
+          DEST="target/${{ matrix.target }}/release/cluaiz-engine-${VERSION}-${SUFFIX}.${EXT}"
           mv "$SRC" "$DEST"
           echo "binary_path=${DEST}" >> $GITHUB_OUTPUT
-          echo "binary_name=cluaiz-engine-${SUFFIX}.${EXT}" >> $GITHUB_OUTPUT
+          echo "binary_name=cluaiz-engine-${VERSION}-${SUFFIX}.${EXT}" >> $GITHUB_OUTPUT
 
       - name: 🚀 Release to GitHub
         uses: softprops/action-gh-release@v2
@@ -103,7 +111,7 @@ jobs:
         with:
           files: ${{ steps.naming.outputs.binary_path }}
           tag_name: engine-v0.1.0
-          name: "Cluaiz Engine"
+          name: "Cluaiz Engine v0.1.0"
           body: |
             Sovereign Neural Orchestration Engine.
             
@@ -127,20 +135,20 @@ jobs:
 
       - name: Generate Engine Manifest JSON
         run: |
-          VERSION="engine-v0.1.0"
+          VERSION="${{ github.ref_name || 'dev' }}"
           cat <<EOF > engine-manifest.json
           {
             "version": "$VERSION",
             "assets": {
-              "win-x64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-engine-win-x64.dll",
-              "win-arm64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-engine-win-arm64.dll",
-              "linux-x64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-engine-linux-x64.so",
-              "linux-arm64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-engine-linux-arm64.so",
-              "android-arm64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-engine-android-arm64.so",
-              "android-x64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-engine-android-x64.so",
-              "mac-arm64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-engine-mac-arm64.dylib",
-              "mac-x64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-engine-mac-x64.dylib",
-              "ios-arm64": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-engine-ios-arm64.a"
+              "win-x64": "https://github.com/${{ github.repository }}/releases/download/engine-v0.1.0/cluaiz-engine-$VERSION-win-x64.dll",
+              "win-arm64": "https://github.com/${{ github.repository }}/releases/download/engine-v0.1.0/cluaiz-engine-$VERSION-win-arm64.dll",
+              "linux-x64": "https://github.com/${{ github.repository }}/releases/download/engine-v0.1.0/cluaiz-engine-$VERSION-linux-x64.so",
+              "linux-arm64": "https://github.com/${{ github.repository }}/releases/download/engine-v0.1.0/cluaiz-engine-$VERSION-linux-arm64.so",
+              "android-arm64": "https://github.com/${{ github.repository }}/releases/download/engine-v0.1.0/cluaiz-engine-$VERSION-android-arm64.so",
+              "android-x64": "https://github.com/${{ github.repository }}/releases/download/engine-v0.1.0/cluaiz-engine-$VERSION-android-x64.so",
+              "mac-arm64": "https://github.com/${{ github.repository }}/releases/download/engine-v0.1.0/cluaiz-engine-$VERSION-mac-arm64.dylib",
+              "mac-x64": "https://github.com/${{ github.repository }}/releases/download/engine-v0.1.0/cluaiz-engine-$VERSION-mac-x64.dylib",
+              "ios-arm64": "https://github.com/${{ github.repository }}/releases/download/engine-v0.1.0/cluaiz-engine-$VERSION-ios-arm64.a"
             }
           }
           EOF
