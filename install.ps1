@@ -1,47 +1,31 @@
-# CLUAIZ Core Infrastructure Installer (Windows)
+# CLUAIZ CORE INFRASTRUCTURE - VERSION 1.0.5
 # Industrial Standard Deployment Script
 
-param (
-    [string]$Version = "latest"
-)
+param ([string]$Version = "latest")
 
 $ErrorActionPreference = "Stop"
 $ProgressPreference = 'SilentlyContinue'
 
-# --- UI Matrix (Minimalist Industrial) ---
+# --- UI Matrix ---
 $BOLD = "$([char]27)[1m"; $CYAN = "$([char]27)[36m"; $GRAY = "$([char]27)[90m"; $GREEN = "$([char]27)[32m"; $YELLOW = "$([char]27)[33m"; $RED = "$([char]27)[31m"; $NC = "$([char]27)[0m"
 
 function Write-Step ([string]$msg) { Write-Host "  $GRAY[*] $msg$NC" }
 function Write-Success ([string]$msg) { Write-Host "  $GREEN[OK] $msg$NC" }
-function Write-Warn ([string]$msg) { Write-Host "  $YELLOW[!] $msg$NC" }
 function Write-Fail ([string]$msg) { Write-Host "  $RED[ERR] $msg$NC" -ForegroundColor Red }
 
-function Get-SovereignManifest ([string]$url) {
-    try {
-        $response = Invoke-WebRequest -Uri $url -UseBasicParsing -ErrorAction Stop
-        $content = [System.Text.Encoding]::UTF8.GetString($response.Content)
-        return $content | ConvertFrom-Json
-    }
-    catch {
-        Write-Fail "Failed to resolve manifest from $url"
-        return $null
-    }
-}
-
+# --- Security & Protocol ---
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
 
 # --- Header ---
 Clear-Host
-Write-Host ""
-Write-Host "  $BOLD CLUAIZ CORE INFRASTRUCTURE $NC"
-Write-Host "  $GRAY Standard Deployment Sequence $NC"
-Write-Host ""
+Write-Host "`n  $BOLD CLUAIZ CORE INFRASTRUCTURE (V1.0.5) $NC"
+Write-Host "  $GRAY Standard Deployment Sequence $NC`n"
 
 try {
     $HubPath = Join-Path $HOME ".cluaiz"
     $Repo = "cluaiz/cluaiz"
 
-    # 1. Environment Provisioning
+    # 1. Workspace
     Write-Step "Provisioning environment..."
     $Folders = @("bin", "apps/cli", "interface-engines", "interface-engines/kernels", "interface-engines/drivers")
     foreach ($f in $Folders) {
@@ -49,85 +33,64 @@ try {
         if (-not (Test-Path $path)) { New-Item -ItemType Directory -Path $path -Force | Out-Null }
     }
 
-    # 2. System Integration
-    [System.Environment]::SetEnvironmentVariable("CLUAIZ_ROOT", $HubPath, "User")
+    # 2. Path
     $BinPath = Join-Path $HubPath "bin"
+    [System.Environment]::SetEnvironmentVariable("CLUAIZ_ROOT", $HubPath, "User")
     $OldPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
     if ($OldPath -notlike "*$BinPath*") {
-        Write-Step "Registering system path..."
         [System.Environment]::SetEnvironmentVariable("Path", "$OldPath;$BinPath", "User")
     }
 
-    # 3. Artifact Retrieval
+    # 3. Registry
     Write-Step "Resolving artifacts from registry..."
-    $AllReleases = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases"
-    
-    $RawArch = $env:PROCESSOR_ARCHITECTURE
-    $Arch = if ($RawArch -eq "ARM64") { "win-arm64" } else { "win-x64" }
+    $Releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases"
+    $Arch = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "win-arm64" } else { "win-x64" }
 
-    $CliRelease = $AllReleases | Where-Object { $_.tag_name -like "cli-v*" } | Select-Object -First 1
-    if ($null -eq $CliRelease) { throw "CLI release tag not found." }
-    $CliTag = $CliRelease.tag_name
-    $CliManifestUrl = "https://github.com/$Repo/releases/download/$CliTag/cli-manifest.json"
-    $CliManifest = Get-SovereignManifest $CliManifestUrl
+    # --- CLI Deployment ---
+    $CliRel = $Releases | Where-Object { $_.tag_name -like "cli-v*" } | Select-Object -First 1
+    $CliUrl = "https://github.com/$Repo/releases/download/$($CliRel.tag_name)/cli-manifest.json"
+    $CliManifest = Invoke-RestMethod -Uri $CliUrl
     
-    if ($null -eq $CliManifest.binaries) { throw "CLI manifest is missing 'binaries' key." }
+    if (-not $CliManifest.binaries) { throw "X01: CLI binary map missing in manifest." }
+    Write-Step "Retrieving CLI ($Arch)..."
+    Invoke-WebRequest -Uri $CliManifest.binaries.($Arch) -OutFile (Join-Path $HubPath "apps/cli/cluaiz.exe")
     
-    Write-Step "Retrieving Cluaiz CLI ($Arch)..."
-    $CliUrl = $CliManifest.binaries.($Arch)
-    if ($null -eq $CliUrl -or $CliUrl -eq "") { throw "CLI binary URL not found for $Arch in manifest." }
-    Invoke-WebRequest -Uri $CliUrl -OutFile (Join-Path $HubPath "apps/cli/cluaiz.exe")
     $BinLink = Join-Path $BinPath 'cluaiz.exe'
     if (Test-Path $BinLink) { Remove-Item $BinLink -Force }
     cmd /c mklink /H "$BinLink" "$(Join-Path $HubPath 'apps/cli/cluaiz.exe')" | Out-Null
 
-    # --- Engine ---
-    $EngineRelease = $AllReleases | Where-Object { $_.tag_name -like "engine-v*" } | Select-Object -First 1
-    if ($null -eq $EngineRelease) { throw "Engine release tag not found." }
-    $EngineTag = $EngineRelease.tag_name
-    $EngineManifestUrl = "https://github.com/$Repo/releases/download/$EngineTag/engine-manifest.json"
-    $EngineManifest = Get-SovereignManifest $EngineManifestUrl
+    # --- Engine Deployment ---
+    $EngRel = $Releases | Where-Object { $_.tag_name -like "engine-v*" } | Select-Object -First 1
+    $EngUrl = "https://github.com/$Repo/releases/download/$($EngRel.tag_name)/engine-manifest.json"
+    $EngManifest = Invoke-RestMethod -Uri $EngUrl
     
-    if ($null -eq $EngineManifest.binaries) { throw "Engine manifest is missing 'binaries' key." }
-    
+    if (-not $EngManifest.binaries) { throw "X02: Engine binary map missing in manifest." }
     Write-Step "Retrieving Neural Engine..."
-    $EngineUrl = $EngineManifest.binaries.($Arch)
-    if ($null -eq $EngineUrl -or $EngineUrl -eq "") { throw "Engine binary URL not found for $Arch in manifest." }
-    Invoke-WebRequest -Uri $EngineUrl -OutFile (Join-Path $HubPath "interface-engines/cluaiz-engine.dll")
+    Invoke-WebRequest -Uri $EngManifest.binaries.($Arch) -OutFile (Join-Path $HubPath "interface-engines/cluaiz-engine.dll")
 
-    # --- Default Kernel ---
-    $KernelRelease = $AllReleases | Where-Object { $_.tag_name -like "kernel-v*" } | Select-Object -First 1
-    if ($null -eq $KernelRelease) { throw "Kernel release tag not found." }
-    $KernelTag = $KernelRelease.tag_name
-    $KernelManifestUrl = "https://github.com/$Repo/releases/download/$KernelTag/kernel-manifest.json"
-    $KernelManifest = Get-SovereignManifest $KernelManifestUrl
+    # --- Kernel Deployment ---
+    $KerRel = $Releases | Where-Object { $_.tag_name -like "kernel-v*" } | Select-Object -First 1
+    $KerUrl = "https://github.com/$Repo/releases/download/$($KerRel.tag_name)/kernel-manifest.json"
+    $KerManifest = Invoke-RestMethod -Uri $KerUrl
     
-    if ($null -eq $KernelManifest.kernels) { throw "Kernel manifest is missing 'kernels' key." }
+    if (-not $KerManifest.kernels) { throw "X03: Kernel map missing in manifest." }
+    $KUrl = $KerManifest.kernels.llama.("$Arch-cuda")
+    if (-not $KUrl) { $KUrl = $KerManifest.kernels.llama.("$Arch-cpu") }
     
-    $Key = "$($Arch)-cuda"
-    $KernelUrl = $KernelManifest.kernels.llama.($Key)
-    if ($null -eq $KernelUrl -or $KernelUrl -eq "") { 
-        $Key = "$($Arch)-cpu"
-        $KernelUrl = $KernelManifest.kernels.llama.($Key)
-    }
-    
-    if ($null -ne $KernelUrl -and $KernelUrl -ne "") {
+    if ($KUrl) {
         Write-Step "Retrieving Neural Kernel..."
-        Invoke-WebRequest -Uri $KernelUrl -OutFile (Join-Path $HubPath "interface-engines/kernels/archer_llama.dll")
+        Invoke-WebRequest -Uri $KUrl -OutFile (Join-Path $HubPath "interface-engines/kernels/archer_llama.dll")
     }
 
     Write-Host ""
     Write-Success "Deployment successful."
-    Write-Host "  Path: $HubPath $NC"
-    Write-Host "  Launching Cluaiz CLI...$NC"
-    Write-Host ""
-    
-    # Launch CLI
+    Write-Host "  Launching Cluaiz CLI..."
     & "$BinLink"
 }
 catch {
     Write-Host ""
     Write-Fail "Deployment failed: $($_.Exception.Message)"
+    Write-Host "`n  [Troubleshoot] Check your connection or GitHub release state." -ForegroundColor Gray
     Write-Host "  Press any key to exit..." -ForegroundColor Gray
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }
