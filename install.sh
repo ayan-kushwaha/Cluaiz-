@@ -2,11 +2,12 @@
 # CLUAIZ Core Infrastructure Installer (Unix/macOS)
 # Standard Deployment Script - Industrial Grade
 
-set -e
+set -euo pipefail
 
-HUB_PATH="$HOME/.cluaiz"
+HUB_PATH="${HOME:-/tmp}/.cluaiz"
 REPO="cluaiz/cluaiz"
 VERSION="${1:-latest}"
+TMPFILES=()
 
 # --- UI & Personality Matrix ---
 BOLD='\033[1m'
@@ -27,35 +28,82 @@ TAGLINES=(
     "Neural Core sync in progress. Stay calibrated."
 )
 
+# --- Core Robustness Engine ---
+
+cleanup() {
+    for f in "${TMPFILES[@]:-}"; do
+        rm -rf "$f" 2>/dev/null || true
+    done
+}
+trap cleanup EXIT
+
+mktempfile() {
+    local f
+    f="$(mktemp)"
+    TMPFILES+=("$f")
+    echo "$f"
+}
+
 write_step() { echo -e "  ${GRAY}[*] $1${NC}"; }
 write_success() { echo -e "  ${GREEN}[OK] $1${NC}"; }
 write_error() { echo -e "  ${RED}[ERROR] $1${NC}"; }
+write_warn() { echo -e "  ${YELLOW}[!] $1${NC}"; }
+
+# Downloader with Retries (OpenClaw Style)
+download_file() {
+    local url="$1"
+    local output="$2"
+    if command -v curl >/dev/null 2>&1; then
+        curl -fsSL --proto '=https' --tlsv1.2 --retry 3 --retry-delay 2 -o "$output" "$url"
+    elif command -v wget >/dev/null 2>&1; then
+        wget -q --https-only --tries=3 --timeout=15 -O "$output" "$url"
+    else
+        write_error "Missing downloader: curl or wget required."
+        exit 1
+    fi
+}
 
 # --- Banner ---
 echo -e "\n  ${CYAN}${BOLD}CLUAIZ Core Installer${NC}"
 SELECTED_TAGLINE=${TAGLINES[$RANDOM % ${#TAGLINES[@]}]}
 echo -e "  ${GRAY}${SELECTED_TAGLINE}${NC}\n"
 
-# 1. Filesystem Provisioning
+# 1. Environment Sanitization
+if [[ -z "${HOME:-}" ]]; then
+    write_error "HOME environment variable not set."
+    exit 1
+fi
+
+# 2. Filesystem Provisioning
 mkdir -p "$HUB_PATH/bin" "$HUB_PATH/apps/cli"
 write_success "Workspace initialized at: $HUB_PATH"
 
-# 2. Environment Configuration
+# 3. Dependency Check (Essential for Skills/Engine)
+if ! command -v git >/dev/null 2>&1; then
+    write_warn "Git not found. Some 'Skills' may require manual Git installation."
+fi
+
+# 4. PATH Registration
 if [[ ":$PATH:" != *":$HUB_PATH/bin:"* ]]; then
     write_step "Registering binary path..."
     SHELL_RC="$HOME/.bashrc"
     [[ "$SHELL" == *"zsh"* ]] && SHELL_RC="$HOME/.zshrc"
     
-    echo "export CLUAIZ_ROOT=\"$HUB_PATH\"" >> "$SHELL_RC"
-    echo "export PATH=\"\$PATH:$HUB_PATH/bin\"" >> "$SHELL_RC"
+    # Avoid duplicate exports
+    if ! grep -q "CLUAIZ_ROOT" "$SHELL_RC" 2>/dev/null; then
+        echo -e "\n# CLUAIZ Environment" >> "$SHELL_RC"
+        echo "export CLUAIZ_ROOT=\"$HUB_PATH\"" >> "$SHELL_RC"
+        echo "export PATH=\"\$PATH:$HUB_PATH/bin\"" >> "$SHELL_RC"
+    fi
     export CLUAIZ_ROOT="$HUB_PATH"
     export PATH="$PATH:$HUB_PATH/bin"
-    write_success "Shell profile updated."
+    write_success "Shell profile ($SHELL_RC) updated."
 fi
 
-# 3. Binary Retrieval
+# 5. Manifest Retrieval
 APP_PATH="$HUB_PATH/apps/cli/cluaiz"
 BIN_LINK="$HUB_PATH/bin/cluaiz"
+MANIFEST_TMP=$(mktempfile)
 
 if [ "$VERSION" == "latest" ]; then
     write_step "Fetching latest release manifest..."
@@ -75,17 +123,16 @@ fi
 
 write_success "Active Channel: $TARGET_TAG"
 
-# Find manifest asset URL
 MANIFEST_URL=$(echo "$RELEASE_DATA" | grep -oE '"browser_download_url": "[^"]+cli-manifest.json"' | head -1 | cut -d'"' -f4)
-
 if [ -z "$MANIFEST_URL" ]; then
     write_error "Manifest asset missing."
     exit 1
 fi
 
-MANIFEST=$(curl -sL "$MANIFEST_URL")
+download_file "$MANIFEST_URL" "$MANIFEST_TMP"
+MANIFEST_CONTENT=$(cat "$MANIFEST_TMP")
 
-# Architecture Mapping
+# 6. Architecture Mapping
 OS_TYPE=$(uname -s | tr '[:upper:]' '[:lower:]')
 ARCH_TYPE=$(uname -m)
 
@@ -102,15 +149,16 @@ case "$ARCH_TYPE" in
 esac
 
 ARCH_KEY="$OS-$ARCH"
-CLI_URL=$(echo "$MANIFEST" | grep -oE "\"$ARCH_KEY\": \"[^\"]+\"" | cut -d'"' -f4)
+CLI_URL=$(echo "$MANIFEST_CONTENT" | grep -oE "\"$ARCH_KEY\": \"[^\"]+\"" | cut -d'"' -f4)
 
 if [ -z "$CLI_URL" ]; then
     write_error "No binary mapped for architecture: $ARCH_KEY"
     exit 1
 fi
 
+# 7. Secure Download & Execution
 write_step "Downloading core binary ($ARCH_KEY)..."
-curl -sL "$CLI_URL" -o "$APP_PATH"
+download_file "$CLI_URL" "$APP_PATH"
 chmod +x "$APP_PATH"
 
 # Establish Link
