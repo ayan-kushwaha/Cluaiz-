@@ -21,15 +21,16 @@ impl Bootstrapper {
         if !engine_path.exists() {
             println!("  {} [Sovereign] Neural Engine missing in Hub. Initiating retrieval...", "📡".blue());
             Self::download_engine(&engine_path).await?;
-            // Setup logic for DLLs will be handled via libloading in the next phase
-            // Self::trigger_setup(&engine_path)?; 
-        } else {
-            // Verify if system_control.bin exists in Hub, if not, trigger setup anyway
-            let bin_truth = HardwareGovernor::resolve_interface_path().join("system_control.bin");
-            if !bin_truth.exists() {
-                println!("  {} [Sovereign] System Truth missing. Re-calibrating Silicon...", "🛠️".yellow());
-                Self::trigger_setup(&engine_path)?;
-            }
+        }
+
+        // --- FULL STACK SYNC: Kernels & Drivers ---
+        Self::sync_neural_stack().await?;
+
+        // Verify if system_control.bin exists in Hub
+        let bin_truth = HardwareGovernor::resolve_interface_path().join("system_control.bin");
+        if !bin_truth.exists() {
+            println!("  {} [Sovereign] System Truth missing. Re-calibrating Silicon...", "🛠️".yellow());
+            // Setup logic for DLLs will be handled via libloading/calibrate
         }
 
         Ok(())
@@ -78,6 +79,68 @@ impl Bootstrapper {
             return Err(eyre!("Engine setup failed with status: {}", status));
         }
 
+        Ok(())
+    }
+
+    async fn sync_neural_stack() -> Result<()> {
+        let hub_path = HardwareGovernor::resolve_hub_path();
+        let control_path = hub_path.join("interface-engines/system_control.json");
+        
+        if !control_path.exists() {
+            return Ok(()); // Wait for first calibration
+        }
+
+        let control_data: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&control_path)?)?;
+        let has_nvidia = control_data["silicon_truth"]["accelerators"]["gpus"]
+            .as_array()
+            .map(|gpus| gpus.iter().any(|g| g["vendor"].as_str() == Some("NVIDIA_CORP")))
+            .unwrap_or(false);
+
+        let backend = if has_nvidia { "cuda" } else { "cpu" };
+        let platform = if cfg!(windows) { "win-x64" } else if cfg!(target_os = "macos") { "mac-arm64" } else { "linux-x64" };
+
+        // 1. Kernel Sync
+        let kernel_dir = hub_path.join("interface-engines/kernels");
+        let kernel_ext = if cfg!(windows) { "dll" } else if cfg!(target_os = "macos") { "dylib" } else { "so" };
+        let kernel_path = kernel_dir.join(format!("archer_llama.{}", kernel_ext));
+
+        if !kernel_path.exists() {
+            println!("  {} [Sovereign] Syncing Neural Kernel ({})...", "🧠".magenta(), backend);
+            let url = format!("https://github.com/cluaiz/cluaiz/releases/download/kernel-v0.1.0/archer_llama-dev-{}-{}.{}", platform, backend, kernel_ext);
+            Self::download_asset(&url, &kernel_path).await?;
+        }
+
+        // 2. Driver Sync (If needed)
+        if has_nvidia {
+            let driver_dir = hub_path.join("interface-engines/drivers");
+            let driver_tag = driver_dir.join("cuda.tag");
+            if !driver_tag.exists() {
+                println!("  {} [Sovereign] Deploying Hardware Driver (CUDA)...", "🏎️".yellow());
+                let url = "https://github.com/cluaiz/cluaiz/releases/download/drivers-v0.1.0/cluaiz-driver-cuda.zip";
+                let zip_path = driver_dir.join("driver.zip");
+                Self::download_asset(url, &zip_path).await?;
+                // TODO: Extraction logic
+                std::fs::write(driver_tag, "ready")?;
+            }
+        }
+
+        Ok(())
+    }
+
+    async fn download_asset(url: &str, dest: &Path) -> Result<()> {
+        if let Some(parent) = dest.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+
+        let response = reqwest::get(url).await
+            .map_err(|e| eyre!("Failed to connect to Sovereign Registry: {}", e))?;
+
+        if !response.status().is_success() {
+            return Err(eyre!("Registry Error: {} returned {}", url, response.status()));
+        }
+
+        let content = response.bytes().await?;
+        std::fs::write(dest, content)?;
         Ok(())
     }
 

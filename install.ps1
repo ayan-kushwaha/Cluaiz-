@@ -7,124 +7,73 @@ param (
 
 $ErrorActionPreference = "Stop"
 
-# --- UI & Personality Matrix ---
-$BOLD = "$([char]27)[1m"
-$CYAN = "$([char]27)[36m"
-$GRAY = "$([char]27)[90m"
-$GREEN = "$([char]27)[32m"
-$YELLOW = "$([char]27)[33m"
-$RED = "$([char]27)[31m"
-$NC = "$([char]27)[0m"
-
-$Taglines = @(
-    "Neural logic initialized. Preparing for ignition.",
-    "Bypassing hardware boundaries... Extraction in progress.",
-    "Establishing the Sovereign Hub. Secure partition active.",
-    "Claws out, logic in. Let's build something impossible.",
-    "Your terminal just grew a brain. Minimal fuss, maximal pinch.",
-    "Silicon Mastery achieved. Extracting every bit of performance."
-)
+# --- UI Matrix ---
+$BOLD = "$([char]27)[1m"; $CYAN = "$([char]27)[36m"; $GRAY = "$([char]27)[90m"; $GREEN = "$([char]27)[32m"; $YELLOW = "$([char]27)[33m"; $RED = "$([char]27)[31m"; $NC = "$([char]27)[0m"
 
 function Write-Step ([string]$msg) { Write-Host "  $GRAY[*] $msg$NC" }
 function Write-Success ([string]$msg) { Write-Host "  $GREEN[OK] $msg$NC" }
 function Write-Warn ([string]$msg) { Write-Host "  $YELLOW[!] $msg$NC" }
 function Write-Error ([string]$msg) { Write-Host "  $RED[ERR] $msg$NC" }
 
-# --- Core Robustness Engine ---
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
 
-function Refresh-Env {
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-}
-
-# --- Premium UI Header ---
+# --- Premium Header ---
 Clear-Host
-Write-Host ""
-Write-Host "  $CYAN$BOLD ──────────────────────────────────────────$NC"
-Write-Host "  $CYAN$BOLD    CLUAIZ CORE INFRASTRUCTURE $NC"
-Write-Host "  $CYAN$BOLD ──────────────────────────────────────────$NC"
-$SelectedTagline = Get-Random -InputObject $Taglines
-Write-Host "  $GRAY  $SelectedTagline $NC"
-Write-Host ""
+Write-Host "`n  $CYAN$BOLD CLUAIZ CORE: SOVEREIGN NEURAL KERNEL$NC"
+Write-Host "  $GRAY Establishing silicon-to-registry handshake...$NC`n"
 
 try {
-    # 1. Environment Verification
-    $IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    if ($IsAdmin) {
-        Write-Success "Elevated privileges detected."
-    } else {
-        Write-Warn "Non-Admin context. Path updates localized to User."
-    }
-
     $HubPath = Join-Path $HOME ".cluaiz"
     $Repo = "cluaiz/cluaiz"
-    Write-Step "Initializing workspace at: $HubPath"
 
-    # 2. Filesystem Provisioning
-    $Folders = @("bin", "apps/cli", "interface-engines")
+    # 1. Workspace Provisioning
+    $Folders = @("bin", "apps/cli", "interface-engines", "interface-engines/kernels", "interface-engines/drivers")
     foreach ($f in $Folders) {
         $path = Join-Path $HubPath $f
-        if (-not (Test-Path $path)) {
-            New-Item -ItemType Directory -Path $path -Force | Out-Null
-        }
+        if (-not (Test-Path $path)) { New-Item -ItemType Directory -Path $path -Force | Out-Null }
     }
 
-    # 3. Environment Variable Registration
+    # 2. Path Registration
     [System.Environment]::SetEnvironmentVariable("CLUAIZ_ROOT", $HubPath, "User")
-    $env:CLUAIZ_ROOT = $HubPath
-
     $BinPath = Join-Path $HubPath "bin"
     $OldPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
     if ($OldPath -notlike "*$BinPath*") {
-        Write-Step "Registering binary path..."
         [System.Environment]::SetEnvironmentVariable("Path", "$OldPath;$BinPath", "User")
-        Refresh-Env
     }
 
-    # 4. Core Binary Retrieval
-    $AppPath = Join-Path $HubPath "apps/cli/cluaiz.exe"
-    $BinLink = Join-Path $HubPath "bin/cluaiz.exe"
-
-    Write-Step "Syncing with Sovereign Registry..."
-    if ($Version -eq "latest") {
-        $Releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases"
-        $CliRelease = $Releases | Where-Object { $_.tag_name -like "cli-v*" } | Select-Object -First 1
-    } else {
-        $TargetTag = if ($Version -notlike "cli-*") { "cli-$Version" } else { $Version }
-        $CliRelease = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/tags/$TargetTag"
-    }
-    
-    if ($null -eq $CliRelease) { throw "Could not resolve release manifest." }
-    Write-Success "Active Channel: $($CliRelease.tag_name)"
-
-    $ManifestAsset = $CliRelease.assets | Where-Object { $_.name -eq "cli-manifest.json" }
-    if ($null -eq $ManifestAsset) { throw "Manifest asset missing." }
-
-    $Manifest = Invoke-RestMethod -Uri $ManifestAsset.browser_download_url
+    # 3. Registry Discovery
+    Write-Step "Discovering latest neural artifacts..."
+    $AllReleases = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases"
     
     $RawArch = $env:PROCESSOR_ARCHITECTURE
     $Arch = if ($RawArch -eq "ARM64") { "win-arm64" } else { "win-x64" }
-    
-    $CliUrl = $Manifest.binaries.$Arch
-    if ($null -eq $CliUrl) { throw "No binary mapped for architecture: $Arch" }
 
-    Write-Step "Downloading Cluaiz CLI ($Arch)..."
-    Invoke-WebRequest -Uri $CliUrl -OutFile $AppPath -ProgressAction SilentlyContinue
+    # --- A. CLI Download ---
+    $CliRelease = $AllReleases | Where-Object { $_.tag_name -like "cli-v*" } | Select-Object -First 1
+    $CliManifest = Invoke-RestMethod -Uri ($CliRelease.assets | Where-Object { $_.name -eq "cli-manifest.json" }).browser_download_url
+    Write-Step "Downloading CLI ($Arch)..."
+    Invoke-WebRequest -Uri $CliManifest.binaries.$Arch -OutFile (Join-Path $HubPath "apps/cli/cluaiz.exe") -ProgressAction SilentlyContinue
+    cmd /c mklink /H "$(Join-Path $BinPath 'cluaiz.exe')" "$(Join-Path $HubPath 'apps/cli/cluaiz.exe')" | Out-Null
 
-    if (Test-Path $BinLink) { Remove-Item $BinLink -Force }
-    cmd /c mklink /H "$BinLink" "$AppPath" | Out-Null
+    # --- B. Engine Download ---
+    $EngineRelease = $AllReleases | Where-Object { $_.tag_name -like "engine-v*" } | Select-Object -First 1
+    $EngineManifest = Invoke-RestMethod -Uri ($EngineRelease.assets | Where-Object { $_.name -eq "engine-manifest.json" }).browser_download_url
+    Write-Step "Downloading Neural Engine..."
+    Invoke-WebRequest -Uri $EngineManifest.binaries.$Arch -OutFile (Join-Path $HubPath "interface-engines/cluaiz-engine.dll") -ProgressAction SilentlyContinue
 
-    Write-Host ""
-    Write-Host "  $CYAN$BOLD ──────────────────────────────────────────$NC"
-    Write-Host "  $CYAN$BOLD    DEPLOYMENT COMPLETE $NC"
-    Write-Host "  $CYAN$BOLD ──────────────────────────────────────────$NC"
-    Write-Host "  $GRAY  Run 'cluaiz' to ignite your neural engine. $NC"
-    Write-Host ""
+    # --- C. Kernel Sync (Default Llama) ---
+    $KernelRelease = $AllReleases | Where-Object { $_.tag_name -like "kernel-v*" } | Select-Object -First 1
+    $KernelManifest = Invoke-RestMethod -Uri ($KernelRelease.assets | Where-Object { $_.name -eq "kernel-manifest.json" }).browser_download_url
+    Write-Step "Provisioning Neural Kernels..."
+    # Defaulting to CPU/CUDA based on architecture for first-run
+    $KernelUrl = $KernelManifest.kernels.llama."$Arch-cuda" 
+    if ($null -eq $KernelUrl) { $KernelUrl = $KernelManifest.kernels.llama."$Arch-cpu" }
+    Invoke-WebRequest -Uri $KernelUrl -OutFile (Join-Path $HubPath "interface-engines/kernels/archer_llama.dll") -ProgressAction SilentlyContinue
+
+    Write-Host "`n  $GREEN$BOLD [COMPLETE] Sovereign stack initialized.$NC"
+    Write-Host "  $GRAY Path: $HubPath $NC`n"
 }
 catch {
-    Write-Host ""
-    Write-Error "Installation aborted."
-    Write-Host "  Reason: $($_.Exception.Message)" -ForegroundColor Gray
-    Write-Host ""
+    Write-Error "Deployment failed: $($_.Exception.Message)"
     exit 1
 }
