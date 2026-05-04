@@ -103,24 +103,31 @@ jobs:
             Cluaiz CLI
             
             ### 🖥️ Quick Installation
-            
             **Windows (PowerShell):**
             ```powershell
             iwr -useb https://raw.githubusercontent.com/cluaiz/cluaiz/main/install.ps1 | iex
             ```
-            
             **Linux / macOS (Bash):**
             ```bash
             curl -fsSL https://raw.githubusercontent.com/cluaiz/cluaiz/main/install.sh | bash
             ```
-            
-            ### 📦 Manual Setup
-            Download the binary for your architecture and place it in your `/Cluaiz/apps/cli/` directory.
-            Download the binary for your architecture and place it in your `$CLUAIZ_ROOT/bin/` directory.
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # ─── STAGE 2: CLI Manifest Generation ──────────────────────────────
+  publish-cli-manifest:
+    name: 📂 Publish CLI Manifest
+    needs: build-cli
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout Cluaiz
+        uses: actions/checkout@v4
+
       - name: Generate CLI Manifest JSON
+        shell: bash
         run: |
           VERSION="${{ github.ref_name || 'dev' }}"
           cat <<EOF > cli-manifest.json
