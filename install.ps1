@@ -16,6 +16,18 @@ function Write-Success ([string]$msg) { Write-Host "  $GREEN[OK] $msg$NC" }
 function Write-Warn ([string]$msg) { Write-Host "  $YELLOW[!] $msg$NC" }
 function Write-Fail ([string]$msg) { Write-Host "  $RED[ERR] $msg$NC" -ForegroundColor Red }
 
+function Get-SovereignManifest ([string]$url) {
+    try {
+        $content = Invoke-WebRequest -Uri $url -UseBasicParsing -ErrorAction Stop | Select-Object -ExpandProperty Content
+        return $content | ConvertFrom-Json
+    }
+    catch {
+        Write-Fail "Failed to parse manifest from $url"
+        Write-Host "  DEBUG: Received content snippet: $($content.Substring(0, [Math]::Min(100, $content.Length)))" -ForegroundColor Gray
+        throw "Manifest retrieval failed."
+    }
+}
+
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
 
 # --- Header ---
@@ -57,10 +69,9 @@ try {
     if ($null -eq $CliRelease) { throw "CLI release tag not found." }
     $CliTag = $CliRelease.tag_name
     $CliManifestUrl = "https://github.com/$Repo/releases/download/$CliTag/cli-manifest.json"
+    $CliManifest = Get-SovereignManifest $CliManifestUrl
     
-    $CliManifest = Invoke-WebRequest -Uri $CliManifestUrl -UseBasicParsing | Select-Object -ExpandProperty Content | ConvertFrom-Json
-    
-    if ($null -eq $CliManifest.binaries) { throw "CLI manifest is structurally invalid." }
+    if ($null -eq $CliManifest.binaries) { throw "CLI manifest is missing 'binaries' key." }
     
     Write-Step "Retrieving Cluaiz CLI ($Arch)..."
     $CliUrl = $CliManifest.binaries.($Arch)
@@ -75,9 +86,9 @@ try {
     if ($null -eq $EngineRelease) { throw "Engine release tag not found." }
     $EngineTag = $EngineRelease.tag_name
     $EngineManifestUrl = "https://github.com/$Repo/releases/download/$EngineTag/engine-manifest.json"
+    $EngineManifest = Get-SovereignManifest $EngineManifestUrl
     
-    $EngineManifest = Invoke-WebRequest -Uri $EngineManifestUrl -UseBasicParsing | Select-Object -ExpandProperty Content | ConvertFrom-Json
-    if ($null -eq $EngineManifest.binaries) { throw "Engine manifest is structurally invalid." }
+    if ($null -eq $EngineManifest.binaries) { throw "Engine manifest is missing 'binaries' key." }
     
     Write-Step "Retrieving Neural Engine..."
     $EngineUrl = $EngineManifest.binaries.($Arch)
@@ -89,9 +100,9 @@ try {
     if ($null -eq $KernelRelease) { throw "Kernel release tag not found." }
     $KernelTag = $KernelRelease.tag_name
     $KernelManifestUrl = "https://github.com/$Repo/releases/download/$KernelTag/kernel-manifest.json"
+    $KernelManifest = Get-SovereignManifest $KernelManifestUrl
     
-    $KernelManifest = Invoke-WebRequest -Uri $KernelManifestUrl -UseBasicParsing | Select-Object -ExpandProperty Content | ConvertFrom-Json
-    if ($null -eq $KernelManifest.kernels) { throw "Kernel manifest is structurally invalid." }
+    if ($null -eq $KernelManifest.kernels) { throw "Kernel manifest is missing 'kernels' key." }
     
     $Key = "$($Arch)-cuda"
     $KernelUrl = $KernelManifest.kernels.llama.($Key)
