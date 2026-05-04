@@ -44,7 +44,7 @@ impl HardwareOrchestrator {
     }
 
     fn probe_context() -> SovereignContext {
-        let root_path = crate::hardware::governor::HardwareGovernor::resolve_base_path();
+        let root_path = crate::hardware::governor::HardwareGovernor::resolve_hub_path();
 
         SovereignContext {
             cluaiz_root: root_path.to_string_lossy().to_string(),
@@ -511,7 +511,7 @@ impl HardwareOrchestrator {
     }
 
     pub fn persist_sovereign_state(control: &SystemControl) -> anyhow::Result<()> {
-        let base = crate::hardware::governor::HardwareGovernor::resolve_base_path().join("interface-engines");
+        let base = crate::hardware::governor::HardwareGovernor::resolve_hub_path().join("interface-engines");
         std::fs::create_dir_all(&base)?;
 
         let json_path = base.join("system_control.json");
