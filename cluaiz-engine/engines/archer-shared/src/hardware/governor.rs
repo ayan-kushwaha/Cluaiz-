@@ -166,7 +166,7 @@ impl HardwareGovernor {
     /// 1. CLUAIZ_ROOT environment variable.
     /// 2. Portable Mode: Parent directory of current executable.
     /// 3. OS Standard Config Dir.
-    pub fn resolve_base_path() -> PathBuf {
+    pub fn resolve_hub_path() -> PathBuf {
         if let Ok(root) = std::env::var("CLUAIZ_ROOT") {
             return PathBuf::from(root);
         }
@@ -177,7 +177,7 @@ impl HardwareGovernor {
     }
 
     pub fn resolve_apps_path() -> PathBuf {
-        let path = Self::resolve_base_path().join("apps");
+        let path = Self::resolve_hub_path().join("apps");
         let _ = std::fs::create_dir_all(&path);
         path
     }
@@ -189,13 +189,13 @@ impl HardwareGovernor {
     }
 
     pub fn resolve_engine_path() -> PathBuf {
-        let path = Self::resolve_base_path().join("engine");
+        let path = Self::resolve_hub_path().join("engine");
         let _ = std::fs::create_dir_all(&path);
         path
     }
 
     pub fn resolve_interface_path() -> PathBuf {
-        let path = Self::resolve_base_path().join("interface-engines");
+        let path = Self::resolve_hub_path().join("interface-engines");
         let _ = std::fs::create_dir_all(&path);
         path
     }
@@ -207,19 +207,19 @@ impl HardwareGovernor {
     }
 
     pub fn resolve_vault_path() -> PathBuf {
-        let path = Self::resolve_base_path().join("vault");
+        let path = Self::resolve_hub_path().join("vault");
         let _ = std::fs::create_dir_all(&path);
         path
     }
 
     pub fn resolve_skills_path() -> PathBuf {
-        let path = Self::resolve_base_path().join("skills");
+        let path = Self::resolve_hub_path().join("skills");
         let _ = std::fs::create_dir_all(&path);
         path
     }
 
     pub fn resolve_bin_gateway() -> PathBuf {
-        let path = Self::resolve_base_path().join("bin");
+        let path = Self::resolve_hub_path().join("bin");
         let _ = std::fs::create_dir_all(&path);
         path
     }
@@ -305,7 +305,7 @@ impl HardwareGovernor {
     }
 
     pub fn save_booster_settings(control: &BoosterControl) -> anyhow::Result<()> {
-        let base = Self::resolve_base_path().join("booster");
+        let base = Self::resolve_hub_path().join("booster");
         std::fs::create_dir_all(&base)?;
 
         let json_path = base.join("system_booster.json");
