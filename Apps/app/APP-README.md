@@ -1,161 +1,270 @@
-# Cluaiz App System Design (Archer)
+# Cluaiz App Sovereign System Design v3 (Archer)
 
-## 1) Objective (UI-First, Engine-Isolated)
-- Build a single `Cluaiz App` architecture for Desktop + Mobile + Web with Tauri 2 as native shell and shared UI system.
-- First delivery target is `UI foundation only` (chat-grade experience), with strict isolation from engine runtime.
-- Engine, inference, and hardware control integration will come only after UI contracts stabilize.
+## 1) Product Intent
+Cluaiz is a unified AI app system for Desktop, Mobile, and Web with:
+- Best-in-class chat UX
+- Rust-native power and OS control
+- Flexible architecture for unlimited future features
+- Lightweight and fast runtime behavior
 
-## 2) Design Principles (Rules-Aligned)
-- DRY First: reusable shared modules, no duplicate feature logic across platforms.
-- Modular Boundaries: each domain has isolated folder, explicit interfaces, and no cross-layer shortcut imports.
-- Monolith Core + Modular Packs: one app core for navigation/state/contracts; feature folders plugged through registry.
-- No Hardcoded Platform Logic in UI: platform behavior routed through adapters/contracts only.
-- Reusable Comments Rule: only high-value comments at boundaries and non-obvious flows.
+This document is the source of truth for system structure, UI behavior, module boundaries, and scale strategy.
 
-## 3) Proposed Folder Stitcher (Apps/app)
+## 2) Core Principles (Non-Negotiable)
+- DRY first: no duplicated business logic.
+- Contract-first: schema/interface before implementation.
+- Feature isolation: each feature in its own module folder.
+- Stable core: app-core orchestrates; features plug in.
+- Native isolation: UI never calls OS APIs directly.
+- Backward-safe evolution: all commands/events versioned.
+- Performance by default: startup, render, stream budgets enforced.
+
+## 3) Final Technology Choice
+- Native shell: Tauri v2 (desktop + mobile)
+- UI app: React + Vite + TypeScript
+- State: Zustand + TanStack Query
+- UI system: Tailwind + tokenized primitives
+- Protocol validation: zod
+- Native bridge: Rust commands/events + adapter plugins
+- Realtime: Tauri events + WebSocket/SSE
+- Monorepo tools: npm/pnpm + Turbo + Cargo
+
+Decision note:
+- `npm` is for frontend toolchain.
+- Rust remains the native execution/control layer.
+- End-user app does not require Node runtime.
+
+## 4) Macro Architecture
+1. App Core (`control plane`)
+- bootstrap, router, state shell, feature host, protocol gateway, error model
+
+2. Feature Packs (`domain modules`)
+- chat, coding, agents, workflows, projects, memory, settings, business
+
+3. Native Capability Mesh (`adapter layer`)
+- camera, filesystem, notifications, browser hooks, sensors, device profile, permissions
+
+4. Runtime Bridge (`engine integration contract`)
+- inference router, session gateway, tool gateway, fallback policy
+
+## 5) Folder Stitcher (Scalable)
 ```text
 Apps/app/
   APP-README.md
   package.json
   pnpm-workspace.yaml
   turbo.json
-  .editorconfig
-  .gitignore
 
   apps/
-    shell-desktop/              # Tauri 2 desktop wrapper (Win/macOS/Linux)
-      src-tauri/
+    shell-desktop/
       src/
-    shell-mobile/               # Tauri 2 mobile wrapper (Android/iOS)
       src-tauri/
+    shell-mobile/
       src/
-    shell-web/                  # Web runtime shell (PWA/Browser)
+      src-tauri/
+    shell-web/
       src/
 
   packages/
-    ui-core/                    # Pure design system + primitives (no business logic)
+    ui-core/
       src/tokens/
       src/primitives/
       src/patterns/
+      src/motion/
       src/accessibility/
 
-    app-core/                   # App monolith core (state, routing, contracts, feature host)
+    app-core/
       src/bootstrap/
       src/router/
+      src/layout-modes/
       src/state/
-      src/events/
       src/contracts/
+      src/events/
       src/feature-host/
+      src/error-model/
+      src/observability/
 
-    features/
-      chat/
-        src/ui/
-        src/state/
-        src/contracts/
-      composer/
-        src/ui/
-        src/state/
-      history/
-        src/ui/
-        src/state/
-      agents/
-        src/ui/
-        src/state/
-      settings/
-        src/ui/
-        src/state/
-      workspace/
-        src/ui/
-        src/state/
-
-    platform-adapters/          # platform-specific bridges hidden behind interfaces
-      src/camera/
-      src/filesystem/
-      src/notifications/
-      src/browser/
-      src/permissions/
-      src/device/
-
-    protocol/                   # versioned command/event schemas for UI <-> native/core
+    protocol/
       src/commands/
       src/events/
       src/versioning/
+      src/validation/
 
-    telemetry-ui/               # UX and perf telemetry (UI-level only)
-      src/metrics/
-      src/traces/
+    platform-adapters/
+      src/capability-registry/
+      src/permissions/
+      src/camera/
+      src/filesystem/
+      src/browser/
+      src/notifications/
+      src/device/
+      src/sensors/
 
-  tooling/
-    lint/
-    test/
-    build/
+    features/
+      chat/
+      coding/
+      agents/
+      workflows/
+      projects/
+      business/
+      memory/
+      settings/
+
+    runtime-bridge/
+      src/inference-router/
+      src/session-gateway/
+      src/tool-gateway/
+      src/fallback-policy/
+
+    telemetry-ui/
+      src/perf/
+      src/ux/
+      src/errors/
 
   docs/
     architecture/
-      app-system-overview.md
-      ui-contracts.md
-      adapter-contracts.md
     ux/
-      chat-experience-spec.md
-      interaction-motion-spec.md
+    protocol/
 ```
 
-## 4) Monolith + Module Strategy
-- Monolith Part (`packages/app-core`):
-  - App lifecycle, route control, global state shell, feature host, protocol binding.
-  - No feature-specific rendering logic inside core.
-- Modular Part (`packages/features/*`):
-  - Each feature self-contained: `ui + local state + contracts`.
-  - Registered into `feature-host` through manifest.
-- Stitch Rule:
-  - `ui-core` used by all features.
-  - `platform-adapters` consumed only through `app-core/contracts`.
-  - `features/*` never call native platform APIs directly.
+## 6) UX Architecture (Mode-Based Layout)
+### A) Normal Chat Mode
+- Header: optional global controls/tabs
+- Left panel: chat history, workspace switch, settings entry
+- Center: chat thread + composer
+- Right panel: context/tools/inspector (toggle)
 
-## 5) UI System Blueprint (AI Chat Class UX)
-- Visual System:
-  - Tokenized typography, spacing, radius, elevation, motion durations.
-  - Theming with light/dark + brand semantic palette.
-- Core Surfaces:
-  - Left rail (workspace/history/agents), primary chat canvas, right context panel.
-  - Mobile variant: bottom nav + sheets + focus composer.
-- Chat Essentials:
-  - Streaming message blocks, composer with attachment slots, tool-call cards, retry/regenerate, pinned context.
-  - Message actions: copy, edit, branch, summarize, reference.
-- Performance UX:
-  - skeleton states, optimistic transitions, incremental rendering, list virtualization.
+### B) Coding Mode (VS Code Style)
+- Header: open file tabs + mode switch
+- Left panel: file tree, project explorer, search
+- Center: editor/pages area
+- Right panel: AI chat + run/debug/context
 
-## 6) Reusable Contract Design (Engine-Isolated for Now)
-- `CapabilityProvider` contract in UI layer (mock + stub enabled for phase-1).
-- `PermissionBroker` contract for request/check/revoke workflow and denial recovery UI.
-- `InferenceRouter` contract represented as UI-side strategy only (no real engine binding in phase-1).
-- `Protocol` package owns command/event schema versions to avoid tight coupling.
+### C) Mobile Focus Mode
+- Default: only chat window
+- Left drawer: history/settings/workspace
+- Right drawer: context/tools
+- Compact header and gesture-friendly toggles
 
-## 7) Build + Release Design (Single Codebase, Multi Artifact)
-- One codebase, separate outputs:
-  - Windows `.exe`
-  - macOS `.app/.dmg`
-  - Linux `.AppImage/.deb` (as configured)
-  - Android `.apk/.aab`
-  - iOS `.ipa`
-  - Web static/PWA bundle
-- GitHub Actions matrix can build all with platform runners and signing secrets.
+User preference controls:
+- Per-mode panel visibility
+- Right panel default on/off
+- Header density and tab behavior
+- Mobile drawer behavior
 
-## 8) Phase Plan (UI-Only First)
-- Phase A: `ui-core` + app layout shell + navigation system.
-- Phase B: chat feature UI (streaming mock, composer, thread states).
-- Phase C: settings/workspace/history/agents UI modules.
-- Phase D: platform adapter mocks + permission UX flows.
-- Phase E: polish (motion, responsiveness, a11y, perf budgets).
-- Phase F: only after UI lock, start engine connectivity phase.
+## 7) Feature Evolution Matrix
+### Now (MVP Foundation)
+- Core chat UX with streaming
+- History and thread controls
+- Mode-based layout engine
+- Settings shell and workspace shell
+- Permission UX (mocked adapters)
 
-## 9) Non-Goals (Current Stage)
-- No direct engine wiring.
-- No production inference runtime.
-- No deep OS privileged actions implementation.
+### Next (3-6 months)
+- Coding mode workflows
+- Multi-agent run timeline
+- Memory and knowledge panels
+- Tool cards and execution tracing
+- Business/org controls v1
 
-## 10) Definition of Done (UI Foundation)
-- Shared design system in place and consumed by all app shells.
-- Chat-class UI working across desktop/mobile/web shells with mock data.
-- Adapter contracts and protocol versioning finalized.
-- CI build matrix structure prepared for multi-platform artifacts.
+### Later (6-12 months)
+- Advanced automation studio
+- Marketplace/integration ecosystem
+- Enterprise audit/compliance surfaces
+- Deeper native capability packs per OS
+- Multi-model orchestration dashboards
+
+## 8) Capability and Permission Model
+Capability contract:
+- `request(capability)`
+- `status(capability)`
+- `revoke(capability)`
+- `subscribe(events)`
+
+Rules:
+- Sensitive native actions require explicit permission.
+- Denied state must return typed fallback for UI.
+- All privileged actions create audit events.
+- Platform support differences are resolved in adapter layer, not UI.
+
+## 9) AI-Agent Workflow Model
+Required workflow abilities:
+- Planner/Worker/Verifier role orchestration
+- Step graph execution and re-run
+- Human approval checkpoints
+- Retry/fallback branches
+- Traceable logs and telemetry metrics
+
+System boundaries:
+- `features/workflows`: UI, editors, run controls
+- `runtime-bridge/tool-gateway`: tool execution contracts
+- `protocol/events`: queued/running/blocked/failed/done streams
+
+## 10) Performance and Reliability Targets
+Performance budgets:
+- Desktop cold start target: <= 1.8s
+- First interactive target: <= 900ms
+- Stream frame drop budget: < 2%
+- Controlled idle memory baseline per shell
+
+Reliability requirements:
+- Typed error contracts across boundaries
+- Reconnect-safe streaming sessions
+- Feature failure isolation (no global shell crash)
+- Graceful degraded modes on unsupported capabilities
+
+## 11) Code Quality and Reusability Rules
+- Primitive -> composite -> feature-view component layering
+- Shared utilities only in dedicated shared package
+- No cross-feature hidden dependency
+- Protocol changes require version bump and compatibility test
+- Comments explain intent/constraints, not obvious code
+
+## 12) Testing and CI/CD
+Test layers:
+- Unit: contracts, stores, reducers, utils
+- Integration: feature <-> app-core, adapters <-> contracts
+- E2E: mode switches, chat flow, permission flow, mobile drawers
+- Performance: startup, stream smoothness, memory drift
+- Security: blocked native commands and permission bypass checks
+
+CI/CD gates:
+- Multi-platform matrix build (web/desktop/mobile)
+- Contract compatibility checks
+- UI regression snapshots
+- Platform artifact outputs (exe/app/dmg/deb/appimage/apk/aab/ipa/web)
+
+## 13) Delivery Phases (Execution-Ready)
+Phase A: foundation
+- workspace setup, ui-core tokens/primitives, app-core shell
+
+Phase B: layout engine
+- normal/coding/mobile mode framework + panel orchestration
+
+Phase C: chat experience
+- streaming UI, history, composer, tool cards, context panel
+
+Phase D: workflow + agents
+- role timeline, run console, retry and approval surfaces
+
+Phase E: capability shell
+- permission broker UX + adapter-backed capability matrix
+
+Phase F: hardening
+- performance tuning, reliability, a11y, security guardrails
+
+Phase G: engine bridge
+- connect runtime-bridge with existing Rust engine contracts
+
+## 14) Definition of Done (Design Stage)
+Design is complete when:
+- Mode-based layout behavior is locked.
+- Folder boundaries and module ownership are final.
+- Feature evolution path (Now/Next/Later) is clear.
+- Permission and capability contracts are fixed.
+- Performance/reliability/security gates are measurable.
+
+## 15) Strategic Summary
+This design gives you what you asked for:
+- Today: clean, flexible, premium chat-first app structure
+- Tomorrow: coding, agents, business, automation modules without rewrites
+- Always: Rust-native power preserved with lightweight cross-platform UX

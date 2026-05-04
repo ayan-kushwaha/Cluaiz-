@@ -3,6 +3,9 @@
 
 $ErrorActionPreference = "Stop"
 
+# 🛡️ Security: Enforce TLS 1.2 for secure downloads
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
 # 1. 📍 Configuration: The Sovereign Hub
 $DefaultHub = "$HOME\.cluaiz"
 $HubPath = Read-Host -Prompt "Enter Cluaiz Hub Directory [Default: $DefaultHub]"
@@ -44,7 +47,13 @@ $CliUrl = "https://github.com/cluaiz/cluaiz/releases/download/$Version/cluaiz-wi
 $CliPath = Join-Path $BinPath "cluaiz.exe"
 
 Write-Host "📥 Fetching Cluaiz CLI ($Version)..." -ForegroundColor Cyan
-Invoke-WebRequest -Uri $CliUrl -OutFile $CliPath
+try {
+    Invoke-WebRequest -Uri $CliUrl -OutFile $CliPath
+} catch {
+    Write-Host "`n⚠️  Note: Could not download binary from GitHub Releases (yet)." -ForegroundColor Yellow
+    Write-Host "You can build the CLI locally using: 'cargo build --release -p cli'" -ForegroundColor White
+    Write-Host "Then move 'target/release/cli.exe' to '$CliPath'`n" -ForegroundColor White
+}
 
 Write-Host "`n🎉 Sovereign Hub Established!" -ForegroundColor Green
 Write-Host "Type 'cluaiz' in a new terminal to ignite the Neural Engine.`n" -ForegroundColor White
