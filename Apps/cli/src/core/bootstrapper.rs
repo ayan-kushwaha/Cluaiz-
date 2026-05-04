@@ -9,8 +9,7 @@ pub struct Bootstrapper;
 impl Bootstrapper {
     /// 🚀 SOVEREIGN BOOTSTRAP: Ensures the Neural Engine is present and initialized.
     pub async fn ignite() -> Result<()> {
-        let root_path = HardwareGovernor::resolve_base_path();
-        let engine_dir = root_path.join("engine");
+        let engine_dir = HardwareGovernor::resolve_engine_path();
         
         let engine_name = if cfg!(windows) { "cluaiz-engine.exe" } else { "cluaiz-engine" };
         let engine_path = engine_dir.join(engine_name);
@@ -20,8 +19,8 @@ impl Bootstrapper {
             Self::download_engine(&engine_path).await?;
             Self::trigger_setup(&engine_path)?;
         } else {
-            // Verify if system_control.bin exists in workspace, if not, trigger setup anyway
-            let bin_truth = HardwareGovernor::resolve_workspace_path().join("system_control.bin");
+            // Verify if system_control.bin exists in Hub, if not, trigger setup anyway
+            let bin_truth = HardwareGovernor::resolve_interface_path().join("system_control.bin");
             if !bin_truth.exists() {
                 println!("  {} [Sovereign] System Truth missing. Re-calibrating Silicon...", "🛠️".yellow());
                 Self::trigger_setup(&engine_path)?;

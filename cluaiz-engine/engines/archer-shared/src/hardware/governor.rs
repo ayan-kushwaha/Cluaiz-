@@ -171,13 +171,57 @@ impl HardwareGovernor {
             return PathBuf::from(root);
         }
 
-        dirs::config_dir()
+        dirs::home_dir()
             .unwrap_or_else(|| PathBuf::from("."))
-            .join("Cluaiz")
+            .join(".cluaiz")
     }
 
-    pub fn resolve_workspace_path() -> PathBuf {
-        Self::resolve_base_path().join("workspace")
+    pub fn resolve_apps_path() -> PathBuf {
+        let path = Self::resolve_base_path().join("apps");
+        let _ = std::fs::create_dir_all(&path);
+        path
+    }
+
+    pub fn resolve_app_path(name: &str) -> PathBuf {
+        let path = Self::resolve_apps_path().join(name);
+        let _ = std::fs::create_dir_all(&path);
+        path
+    }
+
+    pub fn resolve_engine_path() -> PathBuf {
+        let path = Self::resolve_base_path().join("engine");
+        let _ = std::fs::create_dir_all(&path);
+        path
+    }
+
+    pub fn resolve_interface_path() -> PathBuf {
+        let path = Self::resolve_base_path().join("interface-engines");
+        let _ = std::fs::create_dir_all(&path);
+        path
+    }
+
+    pub fn resolve_booster_path() -> PathBuf {
+        let path = Self::resolve_engine_path().join("booster");
+        let _ = std::fs::create_dir_all(&path);
+        path
+    }
+
+    pub fn resolve_vault_path() -> PathBuf {
+        let path = Self::resolve_base_path().join("vault");
+        let _ = std::fs::create_dir_all(&path);
+        path
+    }
+
+    pub fn resolve_skills_path() -> PathBuf {
+        let path = Self::resolve_base_path().join("skills");
+        let _ = std::fs::create_dir_all(&path);
+        path
+    }
+
+    pub fn resolve_bin_gateway() -> PathBuf {
+        let path = Self::resolve_base_path().join("bin");
+        let _ = std::fs::create_dir_all(&path);
+        path
     }
 
     // ─── 🚀 SYSTEM CONTROL (BINARY TRUTH) ───
@@ -185,7 +229,7 @@ impl HardwareGovernor {
     /// 🏛️ Loads the sovereign hardware fingerprint from the binary truth (.bin).
     /// If missing, it triggers an automatic "Self-Healing" recovery scan.
     pub fn load_binary_truth() -> anyhow::Result<SystemControl> {
-        let path = Self::resolve_workspace_path().join("system_control.bin");
+        let path = Self::resolve_interface_path().join("system_control.bin");
         
         if !path.exists() {
             println!("🛠️ [Self-Healing] Kernel Binary Missing. Regenerating...");
@@ -206,7 +250,7 @@ impl HardwareGovernor {
     }
 
     pub fn load_system_control() -> anyhow::Result<SystemControl> {
-        let base = Self::resolve_workspace_path();
+        let base = Self::resolve_interface_path();
         let path = base.join("system_control.json");
         let bin_path = base.join("system_control.bin");
         
@@ -231,10 +275,27 @@ impl HardwareGovernor {
         Ok(control)
     }
 
+    pub fn save_system_control(control: &SystemControl) -> anyhow::Result<()> {
+        let base = Self::resolve_interface_path();
+        std::fs::create_dir_all(&base)?;
+
+        let json_path = base.join("system_control.json");
+        let bin_path = base.join("system_control.bin");
+
+        let json_data = serde_json::to_string_pretty(control)?;
+        std::fs::write(json_path, json_data)?;
+
+        let bytes = rkyv::to_bytes::<_, 1024>(control)
+            .map_err(|e| anyhow::anyhow!("Binary Serialization Failed: {}", e))?;
+        std::fs::write(bin_path, bytes.as_slice())?;
+
+        Ok(())
+    }
+
     // ─── 🚀 BOOSTER CONTROL (USER SETTINGS) ───
 
     pub fn load_booster_settings() -> anyhow::Result<BoosterControl> {
-        let path = Self::resolve_base_path().join("booster").join("system_booster.json");
+        let path = Self::resolve_booster_path().join("system_booster.json");
         if !path.exists() {
             return Ok(BoosterControl::default());
         }

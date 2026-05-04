@@ -1,27 +1,26 @@
-# 🏛️ Cluaiz Sovereign Genesis: Windows Installer
-# Role: Establishes the Sovereign Hub, Sets Environment Variables, and Provisions the CLI.
+# Cluaiz-OS: Sovereign Hub Installer (Windows)
+# 🏛️ Architecture: Sovereign Kernel Partitioning
 
 $ErrorActionPreference = "Stop"
+$HubPath = Join-Path $HOME ".cluaiz"
 
-# 🛡️ Security: Enforce TLS 1.2 for secure downloads
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+Write-Host "🏛️ CLUAIZ-OS: SOVEREIGN NEURAL KERNEL INSTALLER" -ForegroundColor Cyan
+Write-Host "--------------------------------------------------" -ForegroundColor Gray
 
-# 1. 📍 Configuration: The Sovereign Hub
-$DefaultHub = "$HOME\.cluaiz"
-$HubPath = Read-Host -Prompt "Enter Cluaiz Hub Directory [Default: $DefaultHub]"
-if ([string]::IsNullOrWhiteSpace($HubPath)) { $HubPath = $DefaultHub }
-
-# Expand environment variables if any
-$HubPath = [System.Environment]::ExpandEnvironmentVariables($HubPath)
+# 1. 🛡️ Check Privileges
+$IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if (-not $IsAdmin) {
+    Write-Warning "⚠️ Running without Admin privileges. Global PATH updates may require a terminal restart."
+}
 
 Write-Host "`n🚀 Establishing Sovereign Hub at: $HubPath" -ForegroundColor Cyan
 
-# 2. 📂 Create Structure
-$Folders = @("bin", "engine", "workspace", "models")
+# 2. 📂 Create Sovereign Entry Points
+$Folders = @("bin", "apps/cli")
 foreach ($f in $Folders) {
     $path = Join-Path $HubPath $f
     if (-not (Test-Path $path)) {
-        New-Item -ItemType Directory -Path $path | Out-Null
+        New-Item -ItemType Directory -Path $path -Force | Out-Null
         Write-Host "✅ Created folder: $f" -ForegroundColor DarkGray
     }
 }
@@ -40,19 +39,38 @@ if ($OldPath -notlike "*$BinPath*") {
     $env:Path = "$env:Path;$BinPath"
 }
 
-# 4. 📥 Download CLI (The Orchestrator)
-$Version = "v0.1.0"
-$Arch = if ([System.Environment]::Is64BitOperatingSystem) { "x64" } else { "x86" }
-$CliUrl = "https://github.com/cluaiz/cluaiz/releases/download/$Version/cluaiz-win-$Arch.exe"
-$CliPath = Join-Path $BinPath "cluaiz.exe"
+# 4. 📥 Download CLI (The Sovereign Orchestrator)
+$ManifestUrl = "https://raw.githubusercontent.com/cluaiz/cluaiz/main/cli-manifest.json"
+$AppPath = Join-Path $HubPath "apps/cli/cluaiz.exe"
+$BinLink = Join-Path $HubPath "bin/cluaiz.exe"
 
-Write-Host "📥 Fetching Cluaiz CLI ($Version)..." -ForegroundColor Cyan
 try {
-    Invoke-WebRequest -Uri $CliUrl -OutFile $CliPath
-} catch {
-    Write-Host "`n⚠️  Note: Could not download binary from GitHub Releases (yet)." -ForegroundColor Yellow
+    Write-Host "📡 Fetching Sovereign CLI Manifest..." -ForegroundColor Yellow
+    $Manifest = Invoke-RestMethod -Uri $ManifestUrl
+    
+    $Arch = if ([System.Environment]::Is64BitOperatingSystem) { "win-x64" } else { "win-arm64" }
+    $CliUrl = $Manifest.binaries.$Arch
+
+    if ($null -eq $CliUrl) {
+        throw "Could not find binary for $Arch in manifest."
+    }
+
+    Write-Host "📥 Downloading Cluaiz CLI ($Arch)..." -ForegroundColor Yellow
+    Invoke-WebRequest -Uri $CliUrl -OutFile $AppPath
+
+    # 🔗 Create Hard Link for Global Access
+    if (-not (Test-Path $BinLink)) {
+        Write-Host "🔗 Establishing Global Hard Link..." -ForegroundColor Green
+        cmd /c mklink /H "$BinLink" "$AppPath" | Out-Null
+    }
+
+    Write-Host "`n✅ Cluaiz-OS Sovereign Hub Initialized Successfully!" -ForegroundColor Cyan
+    Write-Host "🚀 Restart your terminal and type 'cluaiz' to ignite." -ForegroundColor Green
+}
+catch {
+    Write-Host "`n⚠️  Note: Could not retrieve dynamic manifest or binary." -ForegroundColor Yellow
+    Write-Host "Error: $($_.Exception.Message)" -ForegroundColor DarkGray
     Write-Host "You can build the CLI locally using: 'cargo build --release -p cli'" -ForegroundColor White
-    Write-Host "Then move 'target/release/cli.exe' to '$CliPath'`n" -ForegroundColor White
 }
 
 Write-Host "`n🎉 Sovereign Hub Established!" -ForegroundColor Green

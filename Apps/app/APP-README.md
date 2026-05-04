@@ -268,3 +268,10 @@ This design gives you what you asked for:
 - Today: clean, flexible, premium chat-first app structure
 - Tomorrow: coding, agents, business, automation modules without rewrites
 - Always: Rust-native power preserved with lightweight cross-platform UX
+
+## 16) Styling Policy (Locked)
+- Primary styling system: Tailwind CSS + design tokens.
+- Component styling: utility classes + reusable variants (`cva`, `clsx`, `tailwind-merge`).
+- SCSS policy: not default. Allowed only for rare complex animation/layout cases that cannot stay maintainable in utility+token model.
+- No mixed random styling systems per feature. Keep one consistent pipeline.
+- Old frontend migration baseline: Tailwind + Radix + motion patterns are preferred references.

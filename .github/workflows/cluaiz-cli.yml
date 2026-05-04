@@ -13,9 +13,9 @@ permissions:
   packages: write
 
 jobs:
-  # ─── STAGE 1: CLI Compilation (EXTENDED MATRIX) ────────────────────
+  # ─── STAGE 1: CLI Compilation (EXTENDED MATRIX - PC ONLY) ──────────
   build-cli:
-    name: 🖥️ Build CLI [${{ matrix.target }}]
+    name: 🖥️ Build CLI [${{ matrix.suffix }}]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -77,12 +77,12 @@ jobs:
           SUFFIX="${{ matrix.suffix }}"
           EXT="${{ matrix.ext }}"
           
-          ORIGINAL="target/${{ matrix.target }}/release/cli"
           if [ "$EXT" == "exe" ]; then
             ORIGINAL="target/${{ matrix.target }}/release/cli.exe"
-            DEST="target/${{ matrix.target }}/release/cluaiz-${SUFFIX}.exe"
+            DEST="target/${{ matrix.target }}/release/cluaiz.exe"
           else
-            DEST="target/${{ matrix.target }}/release/cluaiz-${SUFFIX}"
+            ORIGINAL="target/${{ matrix.target }}/release/cli"
+            DEST="target/${{ matrix.target }}/release/cluaiz"
           fi
           
           mv "$ORIGINAL" "$DEST"
@@ -96,7 +96,7 @@ jobs:
           tag_name: cli-v0.1.0
           name: "Cluaiz CLI v0.1.0"
           body: |
-            Sovereign Neural Interface CLI.
+            Cluaiz CLI
             
             ### 🖥️ Quick Installation
             
@@ -110,7 +110,8 @@ jobs:
             curl -fsSL https://raw.githubusercontent.com/cluaiz/cluaiz/main/install.sh | bash
             ```
             
-            *Manual binaries are available below for custom setups.*
+            ### 📦 Manual Setup
+            Download the binary for your architecture and place it in your `/Cluaiz/apps/cli/` directory.
           draft: false
           prerelease: false
         env:
@@ -118,7 +119,7 @@ jobs:
 
   # ─── STAGE 2: CLI Manifest Generation ──────────────────────────────
   publish-cli-manifest:
-    name: Publish CLI Manifest
+    name: 📂 Publish CLI Manifest
     needs: build-cli
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/cli-') || github.event_name == 'workflow_dispatch'
@@ -143,6 +144,15 @@ jobs:
           }
           EOF
 
+      - name: 🚀 Upload Manifest to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: cli-manifest.json
+          tag_name: cli-v0.1.0
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: 📦 Publish to GHCR
         run: |
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
@@ -151,6 +161,7 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           
           echo "FROM scratch" > Dockerfile
+          echo "LABEL org.opencontainers.image.source=https://github.com/${{ github.repository }}" >> Dockerfile
           echo "LABEL org.opencontainers.image.description='Sovereign Neural Interface CLI for Cluaiz-OS'" >> Dockerfile
           echo "COPY cli-manifest.json /" >> Dockerfile
           

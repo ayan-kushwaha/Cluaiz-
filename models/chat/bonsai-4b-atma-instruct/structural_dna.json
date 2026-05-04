@@ -19,8 +19,9 @@
   },
   "preferred_runtime": "runtimeB",
   "heterogeneous_map": null,
+  "max_context_length": 65536,
   "dynamic_attributes": {
-    "bit_depth": "1",
-    "context_window": "64k"
+    "context_window": "64k",
+    "bit_depth": "1"
   }
 }
