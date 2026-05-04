@@ -1,5 +1,5 @@
-# CLUAIZ CORE INFRASTRUCTURE - VERSION 1.0.8
-# Industrial Standard Deployment Script
+# CLUAIZ CORE INFRASTRUCTURE - VERSION 1.1.2
+# Industrial Standard Deployment Script (CURL ENHANCED)
 
 param ([string]$Version = "latest")
 
@@ -11,28 +11,37 @@ $BOLD = "$([char]27)[1m"; $CYAN = "$([char]27)[36m"; $GRAY = "$([char]27)[90m"; 
 
 function Write-Step ([string]$msg) { Write-Host "  $GRAY[*] $msg$NC" }
 function Write-Success ([string]$msg) { Write-Host "  $GREEN[OK] $msg$NC" }
-function Write-Warn ([string]$msg) { Write-Host "  $YELLOW[!] $msg$NC" }
 function Write-Fail ([string]$msg) { Write-Host "  $RED[ERR] $msg$NC" -ForegroundColor Red }
 
-# --- Robust Download Engine ---
+# --- Robust Download Engine (CURL BASED) ---
 function Invoke-SovereignDownload ([string]$url, [string]$path) {
+    if (-not $url) { throw "Download URL is null." }
+    $dir = Split-Path $path
+    if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+    
     $MaxRetries = 3
     $RetryCount = 0
     $Success = $false
     
     while (-not $Success -and $RetryCount -lt $MaxRetries) {
         try {
-            Invoke-WebRequest -Uri $url -OutFile $path -ErrorAction Stop
+            # Use curl.exe if available (Win10+), otherwise fallback to iwr
+            if (Get-Command "curl.exe" -ErrorAction SilentlyContinue) {
+                curl.exe -L -o "$path" "$url" --retry 3 --retry-delay 2 --silent
+                if ($LASTEXITCODE -ne 0) { throw "curl exit code: $LASTEXITCODE" }
+            } else {
+                Invoke-WebRequest -Uri $url -OutFile $path -ErrorAction Stop
+            }
             $Success = $true
         }
         catch {
             $RetryCount++
-            Write-Host "  $YELLOW[!] Download interrupted. Retrying ($RetryCount/$MaxRetries)...$NC"
+            Write-Host "  $YELLOW[!] Download attempt $RetryCount failed. Retrying...$NC"
             Start-Sleep -Seconds 2
         }
     }
     
-    if (-not $Success) { throw "Download failed after $MaxRetries attempts: $url" }
+    if (-not $Success) { throw "Artifact retrieval failed after $MaxRetries attempts: $url" }
 }
 
 # --- Security ---
@@ -40,14 +49,14 @@ function Invoke-SovereignDownload ([string]$url, [string]$path) {
 
 # --- Header ---
 Clear-Host
-Write-Host "`n  $BOLD CLUAIZ CORE INFRASTRUCTURE (V1.0.8) $NC"
-Write-Host "  $GRAY Silicon-to-Registry Synchronizer $NC`n"
+Write-Host "`n  $BOLD CLUAIZ CORE INFRASTRUCTURE (V1.1.2) $NC"
+Write-Host "  $GRAY Industrial CURL Deployment $NC`n"
 
 try {
-    $HubPath = Join-Path $HOME ".cluaiz"
+    $HubPath = if ($env:CLUAIZ_ROOT) { $env:CLUAIZ_ROOT } else { Join-Path $HOME ".cluaiz" }
     $Repo = "cluaiz/cluaiz"
 
-    # 1. Workspace
+    # 1. Provisioning
     Write-Step "Provisioning environment..."
     $Folders = @("bin", "apps/cli", "engine", "interface-engines", "interface-engines/kernels", "interface-engines/drivers")
     foreach ($f in $Folders) {
@@ -55,15 +64,7 @@ try {
         if (-not (Test-Path $path)) { New-Item -ItemType Directory -Path $path -Force | Out-Null }
     }
 
-    # 2. Path
-    $BinPath = Join-Path $HubPath "bin"
-    [System.Environment]::SetEnvironmentVariable("CLUAIZ_ROOT", $HubPath, "User")
-    $OldPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
-    if ($OldPath -notlike "*$BinPath*") {
-        [System.Environment]::SetEnvironmentVariable("Path", "$OldPath;$BinPath", "User")
-    }
-
-    # 3. Registry Discovery
+    # 2. Registry Handshake
     Write-Step "Resolving artifacts from registry..."
     $Releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases"
     $Arch = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "win-arm64" } else { "win-x64" }
@@ -77,6 +78,7 @@ try {
     Write-Step "Retrieving CLI ($Arch)..."
     Invoke-SovereignDownload -url $CliBins.($Arch) -path (Join-Path $HubPath "apps/cli/cluaiz.exe")
     
+    $BinPath = Join-Path $HubPath "bin"
     $BinLink = Join-Path $BinPath 'cluaiz.exe'
     if (Test-Path $BinLink) { Remove-Item $BinLink -Force }
     cmd /c mklink /H "$BinLink" "$(Join-Path $HubPath 'apps/cli/cluaiz.exe')" | Out-Null
@@ -89,11 +91,7 @@ try {
     
     Write-Step "Retrieving Neural Engine..."
     $EUrl = $EngBins.($Arch) -replace "latest-engine", "$($EngRel.tag_name)"
-    $EngineLocalPath = Join-Path $HubPath "interface-engines/cluaiz-engine.dll"
-    Invoke-SovereignDownload -url $EUrl -path $EngineLocalPath
-    
-    # Backward compatibility for older CLI binaries
-    Copy-Item $EngineLocalPath (Join-Path $HubPath "engine/cluaiz-engine.dll") -Force
+    Invoke-SovereignDownload -url $EUrl -path (Join-Path $HubPath "engine/cluaiz-engine.dll")
 
     # --- Kernel Deployment ---
     $KerRel = $Releases | Where-Object { $_.tag_name -like "kernel-v*" } | Select-Object -First 1
@@ -105,10 +103,16 @@ try {
     if (-not $KUrlRaw) { $KUrlRaw = $KerBins.llama.("$Arch-cpu") }
     
     if ($KUrlRaw) {
-        # Auto-Correction for hardcoded tag mismatches in manifest
         $KUrl = $KUrlRaw -replace "latest-kernels", "$($KerRel.tag_name)"
         Write-Step "Retrieving Neural Kernel..."
         Invoke-SovereignDownload -url $KUrl -path (Join-Path $HubPath "interface-engines/kernels/archer_llama.dll")
+    }
+
+    # Environment Path Update
+    [System.Environment]::SetEnvironmentVariable("CLUAIZ_ROOT", $HubPath, "User")
+    $OldPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+    if ($OldPath -notlike "*$BinPath*") {
+        [System.Environment]::SetEnvironmentVariable("Path", "$OldPath;$BinPath", "User")
     }
 
     Write-Host ""
