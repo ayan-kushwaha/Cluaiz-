@@ -70,9 +70,14 @@ jobs:
       - name: Build Engine (Sovereign Core)
         shell: bash
         run: |
-          if [ "${{ matrix.target }}" == "aarch64-unknown-linux-gnu" ] || [[ "${{ matrix.target }}" == *"-android"* ]]; then
+          if [[ "${{ matrix.target }}" == *"-android"* ]]; then
+            cargo install cross --git https://github.com/cross-rs/cross
+            cross build --release --target ${{ matrix.target }} -p engines --no-default-features
+          elif [ "${{ matrix.target }}" == "aarch64-unknown-linux-gnu" ]; then
             cargo install cross --git https://github.com/cross-rs/cross
             cross build --release --target ${{ matrix.target }} -p engines
+          elif [ "${{ matrix.target }}" == "aarch64-apple-ios" ]; then
+            cargo build --release --target ${{ matrix.target }} -p engines --no-default-features
           else
             cargo build --release --target ${{ matrix.target }} -p engines
           fi

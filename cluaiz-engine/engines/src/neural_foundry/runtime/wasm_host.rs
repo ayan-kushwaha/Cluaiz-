@@ -1,17 +1,27 @@
 use anyhow::Result;
 use std::path::Path;
+#[cfg(feature = "wasm-runtime")]
 use wasmtime::*;
+#[cfg(feature = "wasm-runtime")]
 use wasmtime_wasi::preview1::{self, WasiP1Ctx};
+#[cfg(feature = "wasm-runtime")]
 use wasmtime_wasi::WasiCtxBuilder;
 use archer_shared::neural::graph::NeuralGraph;
 
 use std::sync::Mutex;
 
+#[cfg(feature = "wasm-runtime")]
 pub struct WasmHost {
     engine: Engine,
     result_pool: Mutex<Vec<u8>>,
 }
 
+#[cfg(not(feature = "wasm-runtime"))]
+pub struct WasmHost {
+    _dummy: Mutex<Vec<u8>>,
+}
+
+#[cfg(feature = "wasm-runtime")]
 struct CluaizWasmState {
     wasi: WasiP1Ctx,
 }
@@ -23,6 +33,7 @@ impl Default for WasmHost {
 }
 
 impl WasmHost {
+    #[cfg(feature = "wasm-runtime")]
     pub fn new() -> Self {
         let mut config = Config::new();
         config.async_support(true);
@@ -32,7 +43,15 @@ impl WasmHost {
         }
     }
 
+    #[cfg(not(feature = "wasm-runtime"))]
+    pub fn new() -> Self {
+        Self {
+            _dummy: Mutex::new(Vec::new()),
+        }
+    }
+
     /// Executes a WASM function with proper string ABI and WASI sandboxing.
+    #[cfg(feature = "wasm-runtime")]
     pub async fn execute_skill_logic(
         &self,
         wasm_path: &Path,
@@ -129,6 +148,16 @@ impl WasmHost {
         );
 
         Ok(response)
+    }
+
+    #[cfg(not(feature = "wasm-runtime"))]
+    pub async fn execute_skill_logic(
+        &self,
+        _wasm_path: &Path,
+        _func_name: &str,
+        _params: &str,
+    ) -> Result<String> {
+        Err(anyhow::anyhow!("WASM Runtime is disabled on this platform."))
     }
 }
 
