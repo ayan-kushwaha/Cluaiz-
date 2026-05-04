@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 use archer_shared::HardwareGovernor;
 use color_eyre::{Result, eyre::eyre};
@@ -9,20 +9,19 @@ pub struct Bootstrapper;
 impl Bootstrapper {
     /// 🚀 SOVEREIGN BOOTSTRAP: Ensures the Neural Engine is present and initialized.
     pub async fn ignite() -> Result<()> {
-        let control = HardwareGovernor::load_system_control().map_err(|e| eyre!(e))?;
-        let root_path = PathBuf::from(&control.context.cluaiz_root);
+        let root_path = HardwareGovernor::resolve_base_path();
         let engine_dir = root_path.join("engine");
         
         let engine_name = if cfg!(windows) { "cluaiz-engine.exe" } else { "cluaiz-engine" };
         let engine_path = engine_dir.join(engine_name);
 
         if !engine_path.exists() {
-            println!("  {} [Sovereign] Neural Engine missing in cluaiz_root. Initiating retrieval...", "📡".blue());
+            println!("  {} [Sovereign] Neural Engine missing in Hub. Initiating retrieval...", "📡".blue());
             Self::download_engine(&engine_path).await?;
             Self::trigger_setup(&engine_path)?;
         } else {
-            // Verify if system_control.bin exists, if not, trigger setup anyway
-            let bin_truth = HardwareGovernor::resolve_base_path().join("interface-engines").join("system_control.bin");
+            // Verify if system_control.bin exists in workspace, if not, trigger setup anyway
+            let bin_truth = HardwareGovernor::resolve_workspace_path().join("system_control.bin");
             if !bin_truth.exists() {
                 println!("  {} [Sovereign] System Truth missing. Re-calibrating Silicon...", "🛠️".yellow());
                 Self::trigger_setup(&engine_path)?;

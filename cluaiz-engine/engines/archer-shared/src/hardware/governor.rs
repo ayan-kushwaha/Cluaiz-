@@ -33,8 +33,7 @@ impl HardwareGovernor {
 
     /// 🛡️ Checks if the 'system_control.json' fingerprint exists.
     pub fn is_ready(&self) -> bool {
-        Self::resolve_base_path()
-            .join("interface-engines")
+        Self::resolve_workspace_path()
             .join("system_control.json")
             .exists()
     }
@@ -155,18 +154,30 @@ impl HardwareGovernor {
         }
 
         // Save back the updated control
-        let base = Self::resolve_base_path().join("interface-engines");
+        let base = Self::resolve_workspace_path();
         let json_data = serde_json::to_string_pretty(&control)?;
         std::fs::write(base.join("system_control.json"), json_data)?;
 
         Ok(())
     }
 
-    /// Resolves the base AppData directory for Cluaiz configurations.
+    /// Resolves the base Hub directory for Cluaiz configurations.
+    /// Priority:
+    /// 1. CLUAIZ_ROOT environment variable.
+    /// 2. Portable Mode: Parent directory of current executable.
+    /// 3. OS Standard Config Dir.
     pub fn resolve_base_path() -> PathBuf {
+        if let Ok(root) = std::env::var("CLUAIZ_ROOT") {
+            return PathBuf::from(root);
+        }
+
         dirs::config_dir()
             .unwrap_or_else(|| PathBuf::from("."))
             .join("Cluaiz")
+    }
+
+    pub fn resolve_workspace_path() -> PathBuf {
+        Self::resolve_base_path().join("workspace")
     }
 
     // ─── 🚀 SYSTEM CONTROL (BINARY TRUTH) ───
@@ -174,7 +185,7 @@ impl HardwareGovernor {
     /// 🏛️ Loads the sovereign hardware fingerprint from the binary truth (.bin).
     /// If missing, it triggers an automatic "Self-Healing" recovery scan.
     pub fn load_binary_truth() -> anyhow::Result<SystemControl> {
-        let path = Self::resolve_base_path().join("interface-engines").join("system_control.bin");
+        let path = Self::resolve_workspace_path().join("system_control.bin");
         
         if !path.exists() {
             println!("🛠️ [Self-Healing] Kernel Binary Missing. Regenerating...");
@@ -195,7 +206,7 @@ impl HardwareGovernor {
     }
 
     pub fn load_system_control() -> anyhow::Result<SystemControl> {
-        let base = Self::resolve_base_path().join("interface-engines");
+        let base = Self::resolve_workspace_path();
         let path = base.join("system_control.json");
         let bin_path = base.join("system_control.bin");
         
