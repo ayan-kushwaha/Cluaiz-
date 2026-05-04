@@ -115,7 +115,7 @@ impl EngineManager {
                 .map_err(|e| anyhow::anyhow!("Binary Mapping Failed (libloading): {}", e))?;
             
             // 🎯 Phase 1: Symbol Validation
-            let _init: Symbol<unsafe extern "C" fn() -> *const i8> = lib.get(b"archer_kernel_init")
+            let _init: Symbol<unsafe extern "C" fn() -> *const std::os::raw::c_char> = lib.get(b"archer_kernel_init")
                 .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'archer_kernel_init' symbol missing."))?;
 
             tracing::info!("✅ [Linker] 7ns Handshake Complete. Kernel Linked.");
@@ -131,7 +131,7 @@ impl EngineManager {
             .ok_or_else(|| anyhow::anyhow!("Linker Error: No active kernel linked."))?;
         
         unsafe {
-            let instantiate_fn: Symbol<unsafe extern "C" fn(*const i8) -> *mut std::ffi::c_void> = 
+            let instantiate_fn: Symbol<unsafe extern "C" fn(*const std::os::raw::c_char) -> *mut std::ffi::c_void> = 
                 lib.get(b"archer_kernel_instantiate")
                 .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'archer_kernel_instantiate' symbol missing."))?;
             
