@@ -13,7 +13,7 @@ permissions:
   packages: write
 
 jobs:
-  # ─── STAGE 1: CLI Compilation (EXTENDED MATRIX - PC ONLY) ──────────
+  # ─── STAGE 1: CLI Compilation (EXTENDED MATRIX  PC ONLY) ──────────
   build-cli:
     name: 🖥️ Build CLI [${{ matrix.suffix }}]
     runs-on: ${{ matrix.os }}
