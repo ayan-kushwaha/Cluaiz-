@@ -53,10 +53,14 @@ try {
     $RawArch = $env:PROCESSOR_ARCHITECTURE
     $Arch = if ($RawArch -eq "ARM64") { "win-arm64" } else { "win-x64" }
 
-    # --- CLI ---
     $CliRelease = $AllReleases | Where-Object { $_.tag_name -like "cli-v*" } | Select-Object -First 1
-    if ($null -eq $CliRelease) { throw "CLI artifact not found." }
-    $CliManifest = Invoke-RestMethod -Uri ($CliRelease.assets | Where-Object { $_.name -eq "cli-manifest.json" }).browser_download_url
+    if ($null -eq $CliRelease) { throw "CLI release tag not found." }
+    $CliTag = $CliRelease.tag_name
+    $CliManifestUrl = "https://github.com/$Repo/releases/download/$CliTag/cli-manifest.json"
+    
+    $CliManifest = Invoke-WebRequest -Uri $CliManifestUrl -UseBasicParsing | Select-Object -ExpandProperty Content | ConvertFrom-Json
+    
+    if ($null -eq $CliManifest.binaries) { throw "CLI manifest is structurally invalid." }
     
     Write-Step "Retrieving Cluaiz CLI ($Arch)..."
     $CliUrl = $CliManifest.binaries.($Arch)
@@ -68,8 +72,12 @@ try {
 
     # --- Engine ---
     $EngineRelease = $AllReleases | Where-Object { $_.tag_name -like "engine-v*" } | Select-Object -First 1
-    if ($null -eq $EngineRelease) { throw "Engine artifact not found." }
-    $EngineManifest = Invoke-RestMethod -Uri ($EngineRelease.assets | Where-Object { $_.name -eq "engine-manifest.json" }).browser_download_url
+    if ($null -eq $EngineRelease) { throw "Engine release tag not found." }
+    $EngineTag = $EngineRelease.tag_name
+    $EngineManifestUrl = "https://github.com/$Repo/releases/download/$EngineTag/engine-manifest.json"
+    
+    $EngineManifest = Invoke-WebRequest -Uri $EngineManifestUrl -UseBasicParsing | Select-Object -ExpandProperty Content | ConvertFrom-Json
+    if ($null -eq $EngineManifest.binaries) { throw "Engine manifest is structurally invalid." }
     
     Write-Step "Retrieving Neural Engine..."
     $EngineUrl = $EngineManifest.binaries.($Arch)
@@ -78,8 +86,12 @@ try {
 
     # --- Default Kernel ---
     $KernelRelease = $AllReleases | Where-Object { $_.tag_name -like "kernel-v*" } | Select-Object -First 1
-    if ($null -eq $KernelRelease) { throw "Kernel artifact not found." }
-    $KernelManifest = Invoke-RestMethod -Uri ($KernelRelease.assets | Where-Object { $_.name -eq "kernel-manifest.json" }).browser_download_url
+    if ($null -eq $KernelRelease) { throw "Kernel release tag not found." }
+    $KernelTag = $KernelRelease.tag_name
+    $KernelManifestUrl = "https://github.com/$Repo/releases/download/$KernelTag/kernel-manifest.json"
+    
+    $KernelManifest = Invoke-WebRequest -Uri $KernelManifestUrl -UseBasicParsing | Select-Object -ExpandProperty Content | ConvertFrom-Json
+    if ($null -eq $KernelManifest.kernels) { throw "Kernel manifest is structurally invalid." }
     
     $Key = "$($Arch)-cuda"
     $KernelUrl = $KernelManifest.kernels.llama.($Key)
