@@ -18,13 +18,13 @@ function Write-Fail ([string]$msg) { Write-Host "  $RED[ERR] $msg$NC" -Foregroun
 
 function Get-SovereignManifest ([string]$url) {
     try {
-        $content = Invoke-WebRequest -Uri $url -UseBasicParsing -ErrorAction Stop | Select-Object -ExpandProperty Content
+        $response = Invoke-WebRequest -Uri $url -UseBasicParsing -ErrorAction Stop
+        $content = [System.Text.Encoding]::UTF8.GetString($response.Content)
         return $content | ConvertFrom-Json
     }
     catch {
-        Write-Fail "Failed to parse manifest from $url"
-        Write-Host "  DEBUG: Received content snippet: $($content.Substring(0, [Math]::Min(100, $content.Length)))" -ForegroundColor Gray
-        throw "Manifest retrieval failed."
+        Write-Fail "Failed to resolve manifest from $url"
+        return $null
     }
 }
 
