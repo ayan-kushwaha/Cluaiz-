@@ -5,6 +5,7 @@
 set -e
 HUB_PATH="$HOME/.cluaiz"
 REPO="cluaiz/cluaiz"
+VERSION="${1:-latest}"
 
 echo -e "\033[0;36m🏛️ CLUAIZ-OS: SOVEREIGN NEURAL KERNEL INSTALLER\033[0m"
 echo -e "\033[0;90m--------------------------------------------------\033[0m"
@@ -29,24 +30,35 @@ fi
 APP_PATH="$HUB_PATH/apps/cli/cluaiz"
 BIN_LINK="$HUB_PATH/bin/cluaiz"
 
-echo -e "\033[0;33m📡 Fetching Latest Sovereign Release...\033[0m"
+if [ "$VERSION" == "latest" ]; then
+    echo -e "\033[0;33m📡 Fetching Latest Sovereign Release...\033[0m"
+    RELEASE_DATA=$(curl -s "https://api.github.com/repos/$REPO/releases")
+    TARGET_TAG=$(echo "$RELEASE_DATA" | grep -oE '"tag_name": "cli-v[^"]+"' | head -1 | cut -d'"' -f4)
+else
+    # Support both v0.1.0 and cli-v0.1.0
+    [[ "$VERSION" != "cli-"* ]] && VERSION="cli-$VERSION"
+    echo -e "\033[0;33m📡 Fetching Specific Sovereign Release: $VERSION...\033[0m"
+    RELEASE_DATA=$(curl -s "https://api.github.com/repos/$REPO/releases/tags/$VERSION")
+    TARGET_TAG=$(echo "$RELEASE_DATA" | grep -oE '"tag_name": "[^"]+"' | head -1 | cut -d'"' -f4)
+fi
 
-# 🔍 Find latest release tag via GitHub API
-RELEASE_JSON=$(curl -s "https://api.github.com/repos/$REPO/releases")
-LATEST_TAG=$(echo "$RELEASE_JSON" | grep -oE '"tag_name": "cli-v[^"]+"' | head -1 | cut -d'"' -f4)
-
-if [ -z "$LATEST_TAG" ]; then
-    echo -e "\033[0;31m❌ No CLI releases found starting with 'cli-v*'.\033[0m"
+if [ -z "$TARGET_TAG" ]; then
+    echo -e "\033[0;31m❌ Targeted release not found.\033[0m"
     exit 1
 fi
 
-echo -e "\033[0;32m✨ Detected Release: $LATEST_TAG\033[0m"
+echo -e "\033[0;32m✨ Targeted Release: $TARGET_TAG\033[0m"
 
-# 🔍 Find manifest asset URL
-MANIFEST_URL=$(echo "$RELEASE_JSON" | grep -oE '"browser_download_url": "[^"]+cli-manifest.json"' | head -1 | cut -d'"' -f4)
+# 🔍 Find manifest asset URL from release data
+if [ "$VERSION" == "latest" ]; then
+    # For latest, we already have the full list in RELEASE_DATA, need to find the specific release's asset
+    MANIFEST_URL=$(echo "$RELEASE_DATA" | grep -A 20 "\"tag_name\": \"$TARGET_TAG\"" | grep -oE '"browser_download_url": "[^"]+cli-manifest.json"' | head -1 | cut -d'"' -f4)
+else
+    MANIFEST_URL=$(echo "$RELEASE_DATA" | grep -oE '"browser_download_url": "[^"]+cli-manifest.json"' | head -1 | cut -d'"' -f4)
+fi
 
 if [ -z "$MANIFEST_URL" ]; then
-    echo -e "\033[0;31m❌ cli-manifest.json not found in release $LATEST_TAG.\033[0m"
+    echo -e "\033[0;31m❌ cli-manifest.json not found for $TARGET_TAG.\033[0m"
     exit 1
 fi
 

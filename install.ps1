@@ -1,6 +1,10 @@
 # Cluaiz-OS: Sovereign Hub Installer (Windows)
 # 🏛️ Architecture: Sovereign Kernel Partitioning
 
+param (
+    [string]$Version = "latest"
+)
+
 $ErrorActionPreference = "Stop"
 $HubPath = Join-Path $HOME ".cluaiz"
 $Repo = "cluaiz/cluaiz"
@@ -45,18 +49,23 @@ $AppPath = Join-Path $HubPath "apps/cli/cluaiz.exe"
 $BinLink = Join-Path $HubPath "bin/cluaiz.exe"
 
 try {
-    Write-Host "📡 Fetching Latest Sovereign Release..." -ForegroundColor Yellow
-    
-    # 🔍 Find the latest CLI release tag
-    $Releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases"
-    $CliRelease = $Releases | Where-Object { $_.tag_name -like "cli-v*" } | Select-Object -First 1
+    if ($Version -eq "latest") {
+        Write-Host "📡 Fetching Latest Sovereign Release..." -ForegroundColor Yellow
+        $Releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases"
+        $CliRelease = $Releases | Where-Object { $_.tag_name -like "cli-v*" } | Select-Object -First 1
+    } else {
+        # Ensure version has 'cli-' prefix if it's just vX.Y.Z
+        $TargetTag = if ($Version -notlike "cli-*") { "cli-$Version" } else { $Version }
+        Write-Host "📡 Fetching Specific Sovereign Release: $TargetTag" -ForegroundColor Yellow
+        $CliRelease = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/tags/$TargetTag"
+    }
     
     if ($null -eq $CliRelease) {
-        throw "No CLI releases found starting with 'cli-v*'."
+        throw "Could not find target CLI release."
     }
 
     $Tag = $CliRelease.tag_name
-    Write-Host "✨ Detected Release: $Tag" -ForegroundColor Green
+    Write-Host "✨ Targeted Release: $Tag" -ForegroundColor Green
 
     # 🔍 Find the manifest asset
     $ManifestAsset = $CliRelease.assets | Where-Object { $_.name -eq "cli-manifest.json" }
