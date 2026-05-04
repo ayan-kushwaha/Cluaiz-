@@ -4,6 +4,9 @@ version.workspace = true
 edition.workspace = true
 authors.workspace = true
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [[bin]]
 name = "calibrate"
 path = "src/bin/calibrate.rs"
