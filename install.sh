@@ -35,7 +35,7 @@ fi
 
 # 3. Registry Discovery
 write_step "Discovering latest neural artifacts..."
-ALL_RELEASES=$(curl -s "https://api.github.com/repos/$REPO/releases")
+ALL_RELEASES=$(curl -s "https://api.github.com/repos/$Repo/releases")
 
 OS_TYPE=$(uname -s | tr '[:upper:]' '[:lower:]')
 ARCH_TYPE=$(uname -m)
@@ -52,21 +52,44 @@ esac
 PLATFORM="$OS-$ARCH"
 
 # --- A. CLI Download ---
-CLI_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+cli-manifest.json"' | head -1 | cut -d'"' -f4 | xargs curl -s | grep -oE "\"$PLATFORM\": \"[^\"]+\"" | cut -d'"' -f4)
+CLI_MANIFEST_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+cli-manifest.json"' | head -1 | cut -d'"' -f4)
+CLI_URL=$(curl -sL "$CLI_MANIFEST_URL" | grep -oE "\"$PLATFORM\": \"[^\"]+\"" | cut -d'"' -f4)
 write_step "Downloading CLI ($PLATFORM)..."
 curl -sL "$CLI_URL" -o "$HUB_PATH/apps/cli/cluaiz"
 chmod +x "$HUB_PATH/apps/cli/cluaiz"
 ln -sf "$HUB_PATH/apps/cli/cluaiz" "$HUB_PATH/bin/cluaiz"
 
 # --- B. Engine Download ---
-ENGINE_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+engine-manifest.json"' | head -1 | cut -d'"' -f4 | xargs curl -s | grep -oE "\"$PLATFORM\": \"[^\"]+\"" | cut -d'"' -f4)
+ENGINE_MANIFEST_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+engine-manifest.json"' | head -1 | cut -d'"' -f4)
+ENGINE_URL=$(curl -sL "$ENGINE_MANIFEST_URL" | grep -oE "\"$PLATFORM\": \"[^\"]+\"" | cut -d'"' -f4)
 write_step "Downloading Neural Engine..."
 curl -sL "$ENGINE_URL" -o "$HUB_PATH/interface-engines/cluaiz-engine.$EXT"
 
-# --- C. Kernel Sync (Default Llama) ---
-KERNEL_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+kernel-manifest.json"' | head -1 | cut -d'"' -f4 | xargs curl -s | grep -oE "\"$PLATFORM-cpu\": \"[^\"]+\"" | cut -d'"' -f4)
-write_step "Provisioning Neural Kernels..."
-curl -sL "$KERNEL_URL" -o "$HUB_PATH/interface-engines/kernels/libarcher_llama.$EXT"
+# --- C. Kernel Sync (Hardware Aware) ---
+KERNEL_MANIFEST_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+kernel-manifest.json"' | head -1 | cut -d'"' -f4)
+MANIFEST_CONTENT=$(curl -sL "$KERNEL_MANIFEST_URL")
+
+# Smart detection: Try CUDA then Metal then OpenVINO then CPU
+if [[ "$OS" == "mac" ]]; then
+    BACKEND="metal"
+else
+    # Linux logic: default to cuda for x64, fallback to openvino
+    BACKEND="cuda"
+    [[ "$PLATFORM" == "linux-arm64" ]] && BACKEND="cpu"
+fi
+
+KERNEL_URL=$(echo "$MANIFEST_CONTENT" | grep -oE "\"$PLATFORM-$BACKEND\": \"[^\"]+\"" | cut -d'"' -f4 || echo "")
+if [ -z "$KERNEL_URL" ] && [ "$OS" == "linux" ]; then
+    BACKEND="openvino"
+    KERNEL_URL=$(echo "$MANIFEST_CONTENT" | grep -oE "\"$PLATFORM-$BACKEND\": \"[^\"]+\"" | cut -d'"' -f4 || echo "")
+fi
+
+write_step "Provisioning Neural Kernel ($BACKEND)..."
+if [ -n "$KERNEL_URL" ]; then
+    curl -sL "$KERNEL_URL" -o "$HUB_PATH/interface-engines/kernels/libarcher_llama.$EXT"
+else
+    write_error "No compatible kernel found for $PLATFORM"
+fi
 
 echo -e "\n  ${GREEN}${BOLD}[COMPLETE] Sovereign stack initialized.${NC}"
 echo -e "  ${GRAY}Path: $HUB_PATH${NC}\n"

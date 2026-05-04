@@ -53,7 +53,9 @@ try {
     $CliManifest = Invoke-RestMethod -Uri ($CliRelease.assets | Where-Object { $_.name -eq "cli-manifest.json" }).browser_download_url
     Write-Step "Downloading CLI ($Arch)..."
     Invoke-WebRequest -Uri $CliManifest.binaries.$Arch -OutFile (Join-Path $HubPath "apps/cli/cluaiz.exe") -ProgressAction SilentlyContinue
-    cmd /c mklink /H "$(Join-Path $BinPath 'cluaiz.exe')" "$(Join-Path $HubPath 'apps/cli/cluaiz.exe')" | Out-Null
+    $BinLink = Join-Path $BinPath 'cluaiz.exe'
+    if (Test-Path $BinLink) { Remove-Item $BinLink -Force }
+    cmd /c mklink /H "$BinLink" "$(Join-Path $HubPath 'apps/cli/cluaiz.exe')" | Out-Null
 
     # --- B. Engine Download ---
     $EngineRelease = $AllReleases | Where-Object { $_.tag_name -like "engine-v*" } | Select-Object -First 1
@@ -75,5 +77,5 @@ try {
 }
 catch {
     Write-Error "Deployment failed: $($_.Exception.Message)"
-    exit 1
+    return
 }
