@@ -145,6 +145,6 @@ impl EngineManager {
     }
 
     fn get_system_control_path(&self) -> PathBuf {
-        HardwareGovernor::resolve_workspace_path().join("system_control.json")
+        HardwareGovernor::resolve_interface_path().join("system_control.json")
     }
 }
