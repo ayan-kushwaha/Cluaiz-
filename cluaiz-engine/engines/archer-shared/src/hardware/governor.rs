@@ -33,7 +33,7 @@ impl HardwareGovernor {
 
     /// 🛡️ Checks if the 'system_control.json' fingerprint exists.
     pub fn is_ready(&self) -> bool {
-        Self::resolve_workspace_path()
+        Self::resolve_interface_path()
             .join("system_control.json")
             .exists()
     }
@@ -154,7 +154,7 @@ impl HardwareGovernor {
         }
 
         // Save back the updated control
-        let base = Self::resolve_workspace_path();
+        let base = Self::resolve_interface_path();
         let json_data = serde_json::to_string_pretty(&control)?;
         std::fs::write(base.join("system_control.json"), json_data)?;
 
