@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  packages: write
 
 jobs:
   # ─── STAGE 1: Engine Compilation (HYPER MATRIX) ────────────────────
@@ -103,11 +104,10 @@ jobs:
           DEST="target/${{ matrix.target }}/release/cluaiz-engine-${VERSION}-${SUFFIX}.${EXT}"
           mv "$SRC" "$DEST"
           echo "binary_path=${DEST}" >> $GITHUB_OUTPUT
-          echo "binary_name=cluaiz-engine-${VERSION}-${SUFFIX}.${EXT}" >> $GITHUB_OUTPUT
 
       - name: 🚀 Release to GitHub
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/engine-') || github.event_name == 'workflow_dispatch'
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
         with:
           files: ${{ steps.naming.outputs.binary_path }}
           tag_name: engine-v0.1.0
@@ -117,7 +117,6 @@ jobs:
             
             ### 🚀 Activation
             The engine is automatically managed by the Cluaiz CLI.
-            ```bash
           draft: false
           prerelease: false
         env:
@@ -128,7 +127,7 @@ jobs:
     name: 📂 Publish Engine Manifest
     needs: build-engine
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/engine-') || github.event_name == 'workflow_dispatch'
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout Cluaiz
         uses: actions/checkout@v4
@@ -178,3 +177,5 @@ jobs:
           docker push $IMAGE_ID:v0.1.0
           docker tag $IMAGE_ID:v0.1.0 $IMAGE_ID:latest
           docker push $IMAGE_ID:latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

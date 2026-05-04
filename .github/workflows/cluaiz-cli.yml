@@ -116,10 +116,9 @@ jobs:
             
             ### 📦 Manual Setup
             Download the binary for your architecture and place it in your `/Cluaiz/apps/cli/` directory.
-dispatch'
             Download the binary for your architecture and place it in your `$CLUAIZ_ROOT/bin/` directory.
-      - name: Checkout Cluaiz
-        uses: actions/checkout@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate CLI Manifest JSON
         run: |
