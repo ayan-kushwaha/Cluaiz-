@@ -1,4 +1,4 @@
-# CLUAIZ CORE INFRASTRUCTURE - VERSION 1.0.5
+# CLUAIZ CORE INFRASTRUCTURE - VERSION 1.0.6
 # Industrial Standard Deployment Script
 
 param ([string]$Version = "latest")
@@ -13,13 +13,13 @@ function Write-Step ([string]$msg) { Write-Host "  $GRAY[*] $msg$NC" }
 function Write-Success ([string]$msg) { Write-Host "  $GREEN[OK] $msg$NC" }
 function Write-Fail ([string]$msg) { Write-Host "  $RED[ERR] $msg$NC" -ForegroundColor Red }
 
-# --- Security & Protocol ---
+# --- Security ---
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
 
 # --- Header ---
 Clear-Host
-Write-Host "`n  $BOLD CLUAIZ CORE INFRASTRUCTURE (V1.0.5) $NC"
-Write-Host "  $GRAY Standard Deployment Sequence $NC`n"
+Write-Host "`n  $BOLD CLUAIZ CORE INFRASTRUCTURE (V1.0.6) $NC"
+Write-Host "  $GRAY Local-First Deployment Sequence $NC`n"
 
 try {
     $HubPath = Join-Path $HOME ".cluaiz"
@@ -52,12 +52,12 @@ try {
     $CliManifest = Invoke-RestMethod -Uri $CliUrl
     
     $CliBins = if ($CliManifest.binaries) { $CliManifest.binaries } else { $CliManifest.assets }
-    if (-not $CliBins) { throw "X01: Artifact map missing in CLI manifest." }
+    if (-not $CliBins) { throw "ERR_CLI_MAP_MISSING: Manifest structure incompatible." }
     
     Write-Step "Retrieving CLI ($Arch)..."
-    $CliDownloadUrl = $CliBins.($Arch)
-    if (-not $CliDownloadUrl) { throw "CLI binary for $Arch missing in manifest." }
-    Invoke-WebRequest -Uri $CliDownloadUrl -OutFile (Join-Path $HubPath "apps/cli/cluaiz.exe")
+    $CliDUrl = $CliBins.($Arch)
+    if (-not $CliDUrl) { throw "ERR_CLI_BIN_MISSING: Arch $Arch not found." }
+    Invoke-WebRequest -Uri $CliDUrl -OutFile (Join-Path $HubPath "apps/cli/cluaiz.exe")
     
     $BinLink = Join-Path $BinPath 'cluaiz.exe'
     if (Test-Path $BinLink) { Remove-Item $BinLink -Force }
@@ -69,21 +69,23 @@ try {
     $EngManifest = Invoke-RestMethod -Uri $EngUrl
     
     $EngBins = if ($EngManifest.binaries) { $EngManifest.binaries } else { $EngManifest.assets }
-    if (-not $EngBins) { throw "X02: Artifact map missing in Engine manifest." }
+    if (-not $EngBins) { throw "ERR_ENG_MAP_MISSING: Manifest structure incompatible." }
     
     Write-Step "Retrieving Neural Engine..."
-    $EngDownloadUrl = $EngBins.($Arch)
-    if (-not $EngDownloadUrl) { throw "Engine binary for $Arch missing in manifest." }
-    Invoke-WebRequest -Uri $EngDownloadUrl -OutFile (Join-Path $HubPath "interface-engines/cluaiz-engine.dll")
+    $EngDUrl = $EngBins.($Arch)
+    if (-not $EngDUrl) { throw "ERR_ENG_BIN_MISSING: Arch $Arch not found." }
+    Invoke-WebRequest -Uri $EngDUrl -OutFile (Join-Path $HubPath "interface-engines/cluaiz-engine.dll")
 
     # --- Kernel Deployment ---
     $KerRel = $Releases | Where-Object { $_.tag_name -like "kernel-v*" } | Select-Object -First 1
     $KerUrl = "https://github.com/$Repo/releases/download/$($KerRel.tag_name)/kernel-manifest.json"
     $KerManifest = Invoke-RestMethod -Uri $KerUrl
     
-    if (-not $KerManifest.kernels) { throw "X03: Kernel map missing in manifest." }
-    $KUrl = $KerManifest.kernels.llama.("$Arch-cuda")
-    if (-not $KUrl) { $KUrl = $KerManifest.kernels.llama.("$Arch-cpu") }
+    $KerBins = if ($KerManifest.kernels) { $KerManifest.kernels } else { $KerManifest.assets }
+    if (-not $KerBins) { throw "ERR_KER_MAP_MISSING: Manifest structure incompatible." }
+    
+    $KUrl = $KerBins.llama.("$Arch-cuda")
+    if (-not $KUrl) { $KUrl = $KerBins.llama.("$Arch-cpu") }
     
     if ($KUrl) {
         Write-Step "Retrieving Neural Kernel..."
@@ -98,7 +100,7 @@ try {
 catch {
     Write-Host ""
     Write-Fail "Deployment failed: $($_.Exception.Message)"
-    Write-Host "`n  [Troubleshoot] Check your connection or GitHub release state." -ForegroundColor Gray
+    Write-Host "`n  [Troubleshoot] This might be a registry sync issue." -ForegroundColor Gray
     Write-Host "  Press any key to exit..." -ForegroundColor Gray
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }
