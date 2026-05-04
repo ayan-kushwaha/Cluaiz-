@@ -59,7 +59,9 @@ try {
     $CliManifest = Invoke-RestMethod -Uri ($CliRelease.assets | Where-Object { $_.name -eq "cli-manifest.json" }).browser_download_url
     
     Write-Step "Retrieving Cluaiz CLI ($Arch)..."
-    Invoke-WebRequest -Uri $CliManifest.binaries.$Arch -OutFile (Join-Path $HubPath "apps/cli/cluaiz.exe")
+    $CliUrl = $CliManifest.binaries.($Arch)
+    if ($null -eq $CliUrl -or $CliUrl -eq "") { throw "CLI binary URL not found for $Arch in manifest." }
+    Invoke-WebRequest -Uri $CliUrl -OutFile (Join-Path $HubPath "apps/cli/cluaiz.exe")
     $BinLink = Join-Path $BinPath 'cluaiz.exe'
     if (Test-Path $BinLink) { Remove-Item $BinLink -Force }
     cmd /c mklink /H "$BinLink" "$(Join-Path $HubPath 'apps/cli/cluaiz.exe')" | Out-Null
@@ -70,7 +72,9 @@ try {
     $EngineManifest = Invoke-RestMethod -Uri ($EngineRelease.assets | Where-Object { $_.name -eq "engine-manifest.json" }).browser_download_url
     
     Write-Step "Retrieving Neural Engine..."
-    Invoke-WebRequest -Uri $EngineManifest.binaries.$Arch -OutFile (Join-Path $HubPath "interface-engines/cluaiz-engine.dll")
+    $EngineUrl = $EngineManifest.binaries.($Arch)
+    if ($null -eq $EngineUrl -or $EngineUrl -eq "") { throw "Engine binary URL not found for $Arch in manifest." }
+    Invoke-WebRequest -Uri $EngineUrl -OutFile (Join-Path $HubPath "interface-engines/cluaiz-engine.dll")
 
     # --- Default Kernel ---
     $KernelRelease = $AllReleases | Where-Object { $_.tag_name -like "kernel-v*" } | Select-Object -First 1
@@ -78,10 +82,13 @@ try {
     $KernelManifest = Invoke-RestMethod -Uri ($KernelRelease.assets | Where-Object { $_.name -eq "kernel-manifest.json" }).browser_download_url
     
     $Key = "$($Arch)-cuda"
-    $KernelUrl = $KernelManifest.kernels.llama.$Key
-    if ($null -eq $KernelUrl) { $KernelUrl = $KernelManifest.kernels.llama."$($Arch)-cpu" }
+    $KernelUrl = $KernelManifest.kernels.llama.($Key)
+    if ($null -eq $KernelUrl -or $KernelUrl -eq "") { 
+        $Key = "$($Arch)-cpu"
+        $KernelUrl = $KernelManifest.kernels.llama.($Key)
+    }
     
-    if ($null -ne $KernelUrl) {
+    if ($null -ne $KernelUrl -and $KernelUrl -ne "") {
         Write-Step "Retrieving Neural Kernel..."
         Invoke-WebRequest -Uri $KernelUrl -OutFile (Join-Path $HubPath "interface-engines/kernels/archer_llama.dll")
     }
