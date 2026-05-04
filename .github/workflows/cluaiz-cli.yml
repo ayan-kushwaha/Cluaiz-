@@ -77,7 +77,13 @@ jobs:
         id: naming
         shell: bash
         run: |
-          VERSION="${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'dev' }}"
+          # 💎 Sovereign Versioning Logic (Uniform across all stages)
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION="${{ github.ref_name }}"
+          else
+            VERSION="dev"
+          fi
+          
           SUFFIX="${{ matrix.suffix }}"
           EXT="${{ matrix.ext }}"
           
@@ -129,17 +135,25 @@ jobs:
       - name: Generate CLI Manifest JSON
         shell: bash
         run: |
-          VERSION="${{ github.ref_name || 'dev' }}"
+          # 💎 Sovereign Versioning Logic (Must match Stage 1)
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION="${{ github.ref_name }}"
+          else
+            VERSION="dev"
+          fi
+          
+          TAG="cli-v0.1.0"
+          
           cat <<EOF > cli-manifest.json
           {
             "version": "$VERSION",
             "binaries": {
-              "win-x64": "https://github.com/${{ github.repository }}/releases/download/cli-v0.1.0/cluaiz-$VERSION-win-x64.exe",
-              "win-arm64": "https://github.com/${{ github.repository }}/releases/download/cli-v0.1.0/cluaiz-$VERSION-win-arm64.exe",
-              "linux-x64": "https://github.com/${{ github.repository }}/releases/download/cli-v0.1.0/cluaiz-$VERSION-linux-x64",
-              "linux-arm64": "https://github.com/${{ github.repository }}/releases/download/cli-v0.1.0/cluaiz-$VERSION-linux-arm64",
-              "mac-arm64": "https://github.com/${{ github.repository }}/releases/download/cli-v0.1.0/cluaiz-$VERSION-mac-arm64",
-              "mac-x64": "https://github.com/${{ github.repository }}/releases/download/cli-v0.1.0/cluaiz-$VERSION-mac-x64"
+              "win-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-$VERSION-win-x64.exe",
+              "win-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-$VERSION-win-arm64.exe",
+              "linux-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-$VERSION-linux-x64",
+              "linux-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-$VERSION-linux-arm64",
+              "mac-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-$VERSION-mac-arm64",
+              "mac-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-$VERSION-mac-x64"
             }
           }
           EOF
