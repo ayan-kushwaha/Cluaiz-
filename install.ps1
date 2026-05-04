@@ -1,4 +1,4 @@
-# CLUAIZ CORE INFRASTRUCTURE - VERSION 1.0.7
+# CLUAIZ CORE INFRASTRUCTURE - VERSION 1.0.8
 # Industrial Standard Deployment Script
 
 param ([string]$Version = "latest")
@@ -11,6 +11,7 @@ $BOLD = "$([char]27)[1m"; $CYAN = "$([char]27)[36m"; $GRAY = "$([char]27)[90m"; 
 
 function Write-Step ([string]$msg) { Write-Host "  $GRAY[*] $msg$NC" }
 function Write-Success ([string]$msg) { Write-Host "  $GREEN[OK] $msg$NC" }
+function Write-Warn ([string]$msg) { Write-Host "  $YELLOW[!] $msg$NC" }
 function Write-Fail ([string]$msg) { Write-Host "  $RED[ERR] $msg$NC" -ForegroundColor Red }
 
 # --- Robust Download Engine ---
@@ -39,8 +40,8 @@ function Invoke-SovereignDownload ([string]$url, [string]$path) {
 
 # --- Header ---
 Clear-Host
-Write-Host "`n  $BOLD CLUAIZ CORE INFRASTRUCTURE (V1.0.7) $NC"
-Write-Host "  $GRAY Industrial Recovery Deployment $NC`n"
+Write-Host "`n  $BOLD CLUAIZ CORE INFRASTRUCTURE (V1.0.8) $NC"
+Write-Host "  $GRAY Silicon-to-Registry Synchronizer $NC`n"
 
 try {
     $HubPath = Join-Path $HOME ".cluaiz"
@@ -62,7 +63,7 @@ try {
         [System.Environment]::SetEnvironmentVariable("Path", "$OldPath;$BinPath", "User")
     }
 
-    # 3. Registry
+    # 3. Registry Discovery
     Write-Step "Resolving artifacts from registry..."
     $Releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases"
     $Arch = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "win-arm64" } else { "win-x64" }
@@ -71,9 +72,7 @@ try {
     $CliRel = $Releases | Where-Object { $_.tag_name -like "cli-v*" } | Select-Object -First 1
     $CliUrl = "https://github.com/$Repo/releases/download/$($CliRel.tag_name)/cli-manifest.json"
     $CliManifest = Invoke-RestMethod -Uri $CliUrl
-    
     $CliBins = if ($CliManifest.binaries) { $CliManifest.binaries } else { $CliManifest.assets }
-    if (-not $CliBins) { throw "ERR_CLI_MAP_MISSING" }
     
     Write-Step "Retrieving CLI ($Arch)..."
     Invoke-SovereignDownload -url $CliBins.($Arch) -path (Join-Path $HubPath "apps/cli/cluaiz.exe")
@@ -86,25 +85,24 @@ try {
     $EngRel = $Releases | Where-Object { $_.tag_name -like "engine-v*" } | Select-Object -First 1
     $EngUrl = "https://github.com/$Repo/releases/download/$($EngRel.tag_name)/engine-manifest.json"
     $EngManifest = Invoke-RestMethod -Uri $EngUrl
-    
     $EngBins = if ($EngManifest.binaries) { $EngManifest.binaries } else { $EngManifest.assets }
-    if (-not $EngBins) { throw "ERR_ENG_MAP_MISSING" }
     
     Write-Step "Retrieving Neural Engine..."
-    Invoke-SovereignDownload -url $EngBins.($Arch) -path (Join-Path $HubPath "interface-engines/cluaiz-engine.dll")
+    $EUrl = $EngBins.($Arch) -replace "latest-engine", "$($EngRel.tag_name)"
+    Invoke-SovereignDownload -url $EUrl -path (Join-Path $HubPath "interface-engines/cluaiz-engine.dll")
 
     # --- Kernel Deployment ---
     $KerRel = $Releases | Where-Object { $_.tag_name -like "kernel-v*" } | Select-Object -First 1
     $KerUrl = "https://github.com/$Repo/releases/download/$($KerRel.tag_name)/kernel-manifest.json"
     $KerManifest = Invoke-RestMethod -Uri $KerUrl
-    
     $KerBins = if ($KerManifest.kernels) { $KerManifest.kernels } else { $KerManifest.assets }
-    if (-not $KerBins) { throw "ERR_KER_MAP_MISSING" }
     
-    $KUrl = $KerBins.llama.("$Arch-cuda")
-    if (-not $KUrl) { $KUrl = $KerBins.llama.("$Arch-cpu") }
+    $KUrlRaw = $KerBins.llama.("$Arch-cuda")
+    if (-not $KUrlRaw) { $KUrlRaw = $KerBins.llama.("$Arch-cpu") }
     
-    if ($KUrl) {
+    if ($KUrlRaw) {
+        # Auto-Correction for hardcoded tag mismatches in manifest
+        $KUrl = $KUrlRaw -replace "latest-kernels", "$($KerRel.tag_name)"
         Write-Step "Retrieving Neural Kernel..."
         Invoke-SovereignDownload -url $KUrl -path (Join-Path $HubPath "interface-engines/kernels/archer_llama.dll")
     }
@@ -117,7 +115,7 @@ try {
 catch {
     Write-Host ""
     Write-Fail "Deployment failed: $($_.Exception.Message)"
-    Write-Host "`n  [Troubleshoot] This might be a network timeout. Check your connection." -ForegroundColor Gray
+    Write-Host "`n  [Troubleshoot] Check your connection or GitHub release state." -ForegroundColor Gray
     Write-Host "  Press any key to exit..." -ForegroundColor Gray
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }
