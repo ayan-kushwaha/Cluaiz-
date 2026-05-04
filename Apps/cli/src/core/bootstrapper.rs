@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use archer_shared::HardwareGovernor;
-use anyhow::{Result, anyhow};
+use color_eyre::{Result, eyre::eyre};
 use colored::Colorize;
 
 pub struct Bootstrapper;
@@ -9,7 +9,7 @@ pub struct Bootstrapper;
 impl Bootstrapper {
     /// 🚀 SOVEREIGN BOOTSTRAP: Ensures the Neural Engine is present and initialized.
     pub async fn ignite() -> Result<()> {
-        let control = HardwareGovernor::load_system_control()?;
+        let control = HardwareGovernor::load_system_control().map_err(|e| eyre!(e))?;
         let root_path = PathBuf::from(&control.context.cluaiz_root);
         let engine_dir = root_path.join("engine");
         
@@ -42,10 +42,10 @@ impl Bootstrapper {
         println!("  {} [Sovereign] Downloading Engine from: {}", "📥".cyan(), url);
 
         let response = reqwest::get(url).await
-            .map_err(|e| anyhow!("Failed to connect to Sovereign Registry: {}", e))?;
+            .map_err(|e| eyre!("Failed to connect to Sovereign Registry: {}", e))?;
 
         if !response.status().is_success() {
-            return Err(anyhow!("Registry Error: Server returned status {}", response.status()));
+            return Err(eyre!("Registry Error: Server returned status {}", response.status()));
         }
 
         let content = response.bytes().await?;
@@ -69,10 +69,10 @@ impl Bootstrapper {
         let status = Command::new(engine_path)
             .arg("--setup")
             .status()
-            .map_err(|e| anyhow!("Failed to execute engine setup: {}", e))?;
+            .map_err(|e| eyre!("Failed to execute engine setup: {}", e))?;
 
         if !status.success() {
-            return Err(anyhow!("Engine setup failed with status: {}", status));
+            return Err(eyre!("Engine setup failed with status: {}", status));
         }
 
         Ok(())
@@ -94,6 +94,6 @@ impl Bootstrapper {
         #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
         return Ok(format!("{}/cluaiz-engine-mac-arm64", base));
 
-        Err(anyhow!("Sovereign Registry: Platform not supported in this build."))
+        Err(eyre!("Sovereign Registry: Platform not supported in this build."))
     }
 }
