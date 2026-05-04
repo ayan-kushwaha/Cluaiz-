@@ -3,6 +3,7 @@
 
 $ErrorActionPreference = "Stop"
 $HubPath = Join-Path $HOME ".cluaiz"
+$Repo = "cluaiz/cluaiz"
 
 Write-Host "🏛️ CLUAIZ-OS: SOVEREIGN NEURAL KERNEL INSTALLER" -ForegroundColor Cyan
 Write-Host "--------------------------------------------------" -ForegroundColor Gray
@@ -40,14 +41,34 @@ if ($OldPath -notlike "*$BinPath*") {
 }
 
 # 4. 📥 Download CLI (The Sovereign Orchestrator)
-$ManifestUrl = "https://raw.githubusercontent.com/cluaiz/cluaiz/main/cli-manifest.json"
 $AppPath = Join-Path $HubPath "apps/cli/cluaiz.exe"
 $BinLink = Join-Path $HubPath "bin/cluaiz.exe"
 
 try {
-    Write-Host "📡 Fetching Sovereign CLI Manifest..." -ForegroundColor Yellow
+    Write-Host "📡 Fetching Latest Sovereign Release..." -ForegroundColor Yellow
+    
+    # 🔍 Find the latest CLI release tag
+    $Releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases"
+    $CliRelease = $Releases | Where-Object { $_.tag_name -like "cli-v*" } | Select-Object -First 1
+    
+    if ($null -eq $CliRelease) {
+        throw "No CLI releases found starting with 'cli-v*'."
+    }
+
+    $Tag = $CliRelease.tag_name
+    Write-Host "✨ Detected Release: $Tag" -ForegroundColor Green
+
+    # 🔍 Find the manifest asset
+    $ManifestAsset = $CliRelease.assets | Where-Object { $_.name -eq "cli-manifest.json" }
+    if ($null -eq $ManifestAsset) {
+        throw "cli-manifest.json not found in release $Tag."
+    }
+
+    $ManifestUrl = $ManifestAsset.browser_download_url
+    Write-Host "📡 Downloading Manifest from Release Assets..." -ForegroundColor Yellow
     $Manifest = Invoke-RestMethod -Uri $ManifestUrl
     
+    # Determine Arch
     $Arch = if ([System.Environment]::Is64BitOperatingSystem) { "win-x64" } else { "win-arm64" }
     $CliUrl = $Manifest.binaries.$Arch
 
@@ -59,19 +80,17 @@ try {
     Invoke-WebRequest -Uri $CliUrl -OutFile $AppPath
 
     # 🔗 Create Hard Link for Global Access
-    if (-not (Test-Path $BinLink)) {
-        Write-Host "🔗 Establishing Global Hard Link..." -ForegroundColor Green
-        cmd /c mklink /H "$BinLink" "$AppPath" | Out-Null
-    }
+    if (Test-Path $BinLink) { Remove-Item $BinLink -Force }
+    Write-Host "🔗 Establishing Global Hard Link..." -ForegroundColor Green
+    cmd /c mklink /H "$BinLink" "$AppPath" | Out-Null
 
     Write-Host "`n✅ Cluaiz-OS Sovereign Hub Initialized Successfully!" -ForegroundColor Cyan
     Write-Host "🚀 Restart your terminal and type 'cluaiz' to ignite." -ForegroundColor Green
 }
 catch {
-    Write-Host "`n⚠️  Note: Could not retrieve dynamic manifest or binary." -ForegroundColor Yellow
+    Write-Host "`n⚠️ Sovereign Hub initialization encountered a pulse error." -ForegroundColor Yellow
     Write-Host "Error: $($_.Exception.Message)" -ForegroundColor DarkGray
     Write-Host "You can build the CLI locally using: 'cargo build --release -p cli'" -ForegroundColor White
 }
 
-Write-Host "`n🎉 Sovereign Hub Established!" -ForegroundColor Green
-Write-Host "Type 'cluaiz' in a new terminal to ignite the Neural Engine.`n" -ForegroundColor White
+Write-Host "`n🎉 Installation sequence complete." -ForegroundColor Cyan
