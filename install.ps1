@@ -89,7 +89,11 @@ try {
     
     Write-Step "Retrieving Neural Engine..."
     $EUrl = $EngBins.($Arch) -replace "latest-engine", "$($EngRel.tag_name)"
-    Invoke-SovereignDownload -url $EUrl -path (Join-Path $HubPath "interface-engines/cluaiz-engine.dll")
+    $EngineLocalPath = Join-Path $HubPath "interface-engines/cluaiz-engine.dll"
+    Invoke-SovereignDownload -url $EUrl -path $EngineLocalPath
+    
+    # Backward compatibility for older CLI binaries
+    Copy-Item $EngineLocalPath (Join-Path $HubPath "engine/cluaiz-engine.dll") -Force
 
     # --- Kernel Deployment ---
     $KerRel = $Releases | Where-Object { $_.tag_name -like "kernel-v*" } | Select-Object -First 1
