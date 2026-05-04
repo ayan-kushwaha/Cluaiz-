@@ -136,7 +136,7 @@ impl EngineManager {
                 .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'archer_kernel_instantiate' symbol missing."))?;
             
             let c_path = std::ffi::CString::new(model_path)?;
-            let _engine_ptr = instantiate_fn(c_path.as_ptr());
+            let _engine_ptr = instantiate_fn(c_path.as_ptr() as *const std::os::raw::c_char);
             
             tracing::info!("🚀 [Linker] Neural Kernel Instantiated at Bare-Metal level.");
         }

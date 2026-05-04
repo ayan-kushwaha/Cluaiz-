@@ -20,6 +20,7 @@ clap = { version = "4", features = ["derive"] }
 inquire = "0.7"
 indicatif = "0.17"
 colored = "2.1"
+reqwest = { version = "0.12", features = ["json", "blocking", "stream"] }
 sysinfo = "0.30"
 figlet-rs = "1.0.0"
 strum = { version = "0.26", features = ["derive"] }

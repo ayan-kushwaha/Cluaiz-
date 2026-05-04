@@ -55,15 +55,23 @@ pub fn render_stream(app: &AppState, area: Rect, buf: &mut Buffer) {
 
     // ── LIVE PULSE BAR ───────────────────────────────────────────────
     if let Ok(pulse) = app.live_pulse.pulse.read() {
-        let pulse_line = Line::from(vec![
+        let mut gpu_spans = vec![Span::styled(" │ GPU: ", Style::default().fg(Color::DarkGray))];
+        if let Some(gpu) = pulse.gpus.get(0) {
+            gpu_spans.push(Span::styled(format!("{:>4.1}% {:>4.1}°C {:>4.1}W", gpu.utilization_pct, gpu.temperature_c, gpu.power_draw_watts), Style::default().fg(Color::Green)));
+        } else {
+            gpu_spans.push(Span::styled("OFFLINE", Style::default().fg(Color::Red)));
+        }
+
+        let mut spans = vec![
             Span::styled("  ⚡ SOVEREIGN PULSE  ", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
             Span::styled("│ CPU: ", Style::default().fg(Color::DarkGray)),
             Span::styled(format!("{:>4.1}% {:>4.1}°C", pulse.cpu.utilization_pct, pulse.cpu.temperature_c), Style::default().fg(Color::Cyan)),
             Span::styled(" │ RAM: ", Style::default().fg(Color::DarkGray)),
             Span::styled(format!("{:>4.1} GB", pulse.ram.used_gb), Style::default().fg(Color::Magenta)),
-            Span::styled(" │ GPU: ", Style::default().fg(Color::DarkGray)),
-            Span::styled(format!("{:>4.1}% {:>4.1}°C {:>4.1}W", pulse.gpu.utilization_pct, pulse.gpu.temperature_c, pulse.gpu.power_draw_watts), Style::default().fg(Color::Green)),
-        ]);
+        ];
+        spans.extend(gpu_spans);
+
+        let pulse_line = Line::from(spans);
         Paragraph::new(pulse_line).render(Rect::new(area.x + left_margin, area.bottom().saturating_sub(1), view_width, 1), buf);
     }
 }
