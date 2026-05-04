@@ -51,9 +51,13 @@ try {
     $CliUrl = "https://github.com/$Repo/releases/download/$($CliRel.tag_name)/cli-manifest.json"
     $CliManifest = Invoke-RestMethod -Uri $CliUrl
     
-    if (-not $CliManifest.binaries) { throw "X01: CLI binary map missing in manifest." }
+    $CliBins = if ($CliManifest.binaries) { $CliManifest.binaries } else { $CliManifest.assets }
+    if (-not $CliBins) { throw "X01: Artifact map missing in CLI manifest." }
+    
     Write-Step "Retrieving CLI ($Arch)..."
-    Invoke-WebRequest -Uri $CliManifest.binaries.($Arch) -OutFile (Join-Path $HubPath "apps/cli/cluaiz.exe")
+    $CliDownloadUrl = $CliBins.($Arch)
+    if (-not $CliDownloadUrl) { throw "CLI binary for $Arch missing in manifest." }
+    Invoke-WebRequest -Uri $CliDownloadUrl -OutFile (Join-Path $HubPath "apps/cli/cluaiz.exe")
     
     $BinLink = Join-Path $BinPath 'cluaiz.exe'
     if (Test-Path $BinLink) { Remove-Item $BinLink -Force }
@@ -64,9 +68,13 @@ try {
     $EngUrl = "https://github.com/$Repo/releases/download/$($EngRel.tag_name)/engine-manifest.json"
     $EngManifest = Invoke-RestMethod -Uri $EngUrl
     
-    if (-not $EngManifest.binaries) { throw "X02: Engine binary map missing in manifest." }
+    $EngBins = if ($EngManifest.binaries) { $EngManifest.binaries } else { $EngManifest.assets }
+    if (-not $EngBins) { throw "X02: Artifact map missing in Engine manifest." }
+    
     Write-Step "Retrieving Neural Engine..."
-    Invoke-WebRequest -Uri $EngManifest.binaries.($Arch) -OutFile (Join-Path $HubPath "interface-engines/cluaiz-engine.dll")
+    $EngDownloadUrl = $EngBins.($Arch)
+    if (-not $EngDownloadUrl) { throw "Engine binary for $Arch missing in manifest." }
+    Invoke-WebRequest -Uri $EngDownloadUrl -OutFile (Join-Path $HubPath "interface-engines/cluaiz-engine.dll")
 
     # --- Kernel Deployment ---
     $KerRel = $Releases | Where-Object { $_.tag_name -like "kernel-v*" } | Select-Object -First 1
