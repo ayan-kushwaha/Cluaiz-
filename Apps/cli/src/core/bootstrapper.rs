@@ -19,8 +19,8 @@ impl Bootstrapper {
         let engine_path = engine_dir.join(engine_name);
 
         if !engine_path.exists() {
-            println!("  {} [Sovereign] Neural Engine missing in Hub. Initiating retrieval...", "📡".blue());
-            Self::download_engine(&engine_path).await?;
+            println!("  {} [Sovereign] Neural Engine missing. Please run the Cluaiz Installer.", "📡".red());
+            return Err(eyre!("Neural Engine not found. Installation is incomplete."));
         }
 
         // --- FULL STACK SYNC: Kernels & Drivers ---

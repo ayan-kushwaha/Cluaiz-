@@ -189,9 +189,7 @@ impl HardwareGovernor {
     }
 
     pub fn resolve_engine_path() -> PathBuf {
-        let path = Self::resolve_base_path().join("engine");
-        let _ = std::fs::create_dir_all(&path);
-        path
+        Self::resolve_interface_path()
     }
 
     pub fn resolve_interface_path() -> PathBuf {
