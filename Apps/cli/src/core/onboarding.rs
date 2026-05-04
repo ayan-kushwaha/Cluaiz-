@@ -52,7 +52,8 @@ impl OnboardingEngine {
                 }
                 None => {
                     // 🛰️ SILICON READINESS GUARD
-                    let binary_path = archer_llama::router::BinaryRouter::resolve_binary();
+                    let os_str = if cfg!(windows) { "windows" } else { "linux" };
+                    let binary_path = engines::runtime::execution::provisioner::BinaryProvisioner::resolve_local_kernel_path(os_str, &archer_shared::hardware::schema::BackendDriver::CPU).unwrap_or_default();
 
                     if !binary_path.exists() {
                         println!("  {} [Onboarding] Neural Core still forging. Holding transition until Silicon is ready...", "⏳".yellow());
@@ -288,7 +289,7 @@ impl OnboardingEngine {
                     } else {
                         archer_shared::hardware::schema::BackendDriver::CPU
                     };
-                    let binary_path = archer_llama::router::BinaryRouter::resolve_binary();
+                    let binary_path = engines::runtime::execution::provisioner::BinaryProvisioner::resolve_local_kernel_path(os, &driver).unwrap_or_default();
 
                     println!(
                         "  {} [Onboarding] Igniting Neural Core Provisioner for [{:?}]...",
