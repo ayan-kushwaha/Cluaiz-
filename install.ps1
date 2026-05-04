@@ -6,6 +6,7 @@ param (
 )
 
 $ErrorActionPreference = "Stop"
+$ProgressPreference = 'SilentlyContinue'
 
 # --- UI Matrix ---
 $BOLD = "$([char]27)[1m"; $CYAN = "$([char]27)[36m"; $GRAY = "$([char]27)[90m"; $GREEN = "$([char]27)[32m"; $YELLOW = "$([char]27)[33m"; $RED = "$([char]27)[31m"; $NC = "$([char]27)[0m"
@@ -52,7 +53,7 @@ try {
     $CliRelease = $AllReleases | Where-Object { $_.tag_name -like "cli-v*" } | Select-Object -First 1
     $CliManifest = Invoke-RestMethod -Uri ($CliRelease.assets | Where-Object { $_.name -eq "cli-manifest.json" }).browser_download_url
     Write-Step "Downloading CLI ($Arch)..."
-    Invoke-WebRequest -Uri $CliManifest.binaries.$Arch -OutFile (Join-Path $HubPath "apps/cli/cluaiz.exe") -ProgressAction SilentlyContinue
+    Invoke-WebRequest -Uri $CliManifest.binaries.$Arch -OutFile (Join-Path $HubPath "apps/cli/cluaiz.exe")
     $BinLink = Join-Path $BinPath 'cluaiz.exe'
     if (Test-Path $BinLink) { Remove-Item $BinLink -Force }
     cmd /c mklink /H "$BinLink" "$(Join-Path $HubPath 'apps/cli/cluaiz.exe')" | Out-Null
@@ -61,7 +62,7 @@ try {
     $EngineRelease = $AllReleases | Where-Object { $_.tag_name -like "engine-v*" } | Select-Object -First 1
     $EngineManifest = Invoke-RestMethod -Uri ($EngineRelease.assets | Where-Object { $_.name -eq "engine-manifest.json" }).browser_download_url
     Write-Step "Downloading Neural Engine..."
-    Invoke-WebRequest -Uri $EngineManifest.binaries.$Arch -OutFile (Join-Path $HubPath "interface-engines/cluaiz-engine.dll") -ProgressAction SilentlyContinue
+    Invoke-WebRequest -Uri $EngineManifest.binaries.$Arch -OutFile (Join-Path $HubPath "interface-engines/cluaiz-engine.dll")
 
     # --- C. Kernel Sync (Default Llama) ---
     $KernelRelease = $AllReleases | Where-Object { $_.tag_name -like "kernel-v*" } | Select-Object -First 1
@@ -70,7 +71,7 @@ try {
     # Defaulting to CPU/CUDA based on architecture for first-run
     $KernelUrl = $KernelManifest.kernels.llama."$Arch-cuda" 
     if ($null -eq $KernelUrl) { $KernelUrl = $KernelManifest.kernels.llama."$Arch-cpu" }
-    Invoke-WebRequest -Uri $KernelUrl -OutFile (Join-Path $HubPath "interface-engines/kernels/archer_llama.dll") -ProgressAction SilentlyContinue
+    Invoke-WebRequest -Uri $KernelUrl -OutFile (Join-Path $HubPath "interface-engines/kernels/archer_llama.dll")
 
     Write-Host "`n  $GREEN$BOLD [COMPLETE] Sovereign stack initialized.$NC"
     Write-Host "  $GRAY Path: $HubPath $NC`n"
