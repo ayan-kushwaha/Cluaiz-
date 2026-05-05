@@ -61,13 +61,12 @@ impl App {
                         print!("\x1B[2J\x1B[1;1H"); // Clear and home
                         crate::assets::logos::logo::print_native_logo(self.state.logo_index);
                         println!();
-                        println!("  {} {}", "CLUAIZ".cyan().bold(), "v0.0.1 Beta".bright_black());
-                        println!("  {} {}", "Running your AI on:".dimmed(), "http://localhost:8080 ↗".cyan().bold());
-                        println!();
-                        println!(); 
+                        println!("  {} {}", "CLUAIZ".cyan().bold(), "v0.1.0".bright_black());
+                        println!("  {} {}", "API Gateway: ".dimmed(), "http://0.0.0.0:8000 ↗".cyan().bold());
+                        println!("  {} {}", "Dashboard:   ".dimmed(), "http://0.0.0.0:3030 ↗".yellow().bold());
                         self.state.printed_logo = true;
                     }
-
+ 
                     // ── 2. Background Event Processing ──
                     while let Ok(event) = self.rx.try_recv() {
                         self.handle_kernel_event(event).await;

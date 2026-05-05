@@ -29,8 +29,7 @@ impl Bootstrapper {
         // Verify if system_control.bin exists in Hub
         let bin_truth = HardwareGovernor::resolve_interface_path().join("system_control.bin");
         if !bin_truth.exists() {
-            println!("  {} [Cluaiz] Calibrating Hardware...", "⚙️".yellow());
-            // Setup logic for DLLs will be handled via libloading/calibrate
+            // Background calibration happens here
         }
 
         Ok(())
