@@ -8,6 +8,12 @@ on:
       - 'v*'
   workflow_dispatch:
 
+# 🚀 INDUSTRIAL CONCURRENCY: Automatically cancel older runs of the same branch/tag 
+# to prevent runner queue saturation.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
   packages: write
