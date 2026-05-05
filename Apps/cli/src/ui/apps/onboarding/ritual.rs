@@ -1,5 +1,5 @@
 //! ═══════════════════════════════════════════════════════════════════════
-//!  Sovereign Onboarding Ritual — Single Continuous Flow Renderer
+//!  Cluaiz Onboarding Ritual — Single Continuous Flow Renderer
 //! ═══════════════════════════════════════════════════════════════════════
 //!  ONE page. Steps appear sequentially with animations.
 //!  Completed steps collapse to 1-line summaries.
@@ -19,16 +19,16 @@ use crate::core::onboarding::textwrap;
 // ── About Text ────────────────────────────────────────────────────────
 
 const ABOUT_TEXT: &str = "\
-Archer Sovereign — The Pinnacle of Neural Orchestration. \
+Archer Cluaiz — The Pinnacle of Core Orchestration. \
 An open-source, local-first AI runtime built for absolute privacy and zero-latency intelligence. \
-Archer runs advanced neural models directly on your hardware — \
+Archer runs advanced Core models directly on your hardware — \
 no cloud, no tracking, no compromises. Whether you are a researcher pushing the boundaries of AI, \
 a business owner automating operations, or a creator seeking an intelligent companion, \
-Archer delivers sovereign computing power at your fingertips. \
+Archer delivers Cluaiz computing power at your fingertips. \
 Built with Rust for bare-metal performance, Archer supports multi-model orchestration, \
 hardware-optimized inference with GPU acceleration, and a modular architecture \
 that adapts to your exact needs. Your data never leaves your machine. \
-Your models run under your control. Welcome to the future of Sovereign AI.";
+Your models run under your control. Welcome to the future of Cluaiz AI.";
 
 // ── Main Entry Point ──────────────────────────────────────────────────
 
@@ -152,14 +152,14 @@ fn render_logo_step(state: &mut AppState, area: Rect, buf: &mut Buffer) {
 
     // Tagline (fade in after 30 frames)
     if state.frame_counter > 30 {
-        Paragraph::new("SOVEREIGN NEURAL ENGINE")
+        Paragraph::new("Cluaiz Core ENGINE")
             .style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD | Modifier::REVERSED))
             .render(Rect::new(area.x + left_margin, chunks[3].y, area.width, 1), buf);
     }
 
     // Version
     if state.frame_counter > 50 {
-        Paragraph::new("v1.0.0-SOVEREIGN │ ARCHER CORE V10")
+        Paragraph::new("v1.0.0-Cluaiz │ ARCHER CORE V10")
             .style(Style::default().fg(Color::DarkGray))
             .render(Rect::new(area.x + left_margin, chunks[4].y, area.width, 1), buf);
     }
@@ -168,7 +168,7 @@ fn render_logo_step(state: &mut AppState, area: Rect, buf: &mut Buffer) {
     if state.frame_counter > 80 {
         let cycle = (state.frame_counter as f32 / 15.0).sin() * 0.5 + 0.5;
         let alpha = (cycle * 255.0) as u8;
-        Paragraph::new("[ PRESS ENTER TO IGNITE THE NEURAL CORE ]")
+        Paragraph::new("[ PRESS ENTER TO IGNITE THE Core CORE ]")
             .style(Style::default().fg(Color::Rgb(alpha, alpha, 255)).add_modifier(Modifier::BOLD))
             .render(Rect::new(area.x + left_margin + 2, chunks[6].y, area.width, 1), buf);
     }
@@ -189,7 +189,7 @@ fn render_welcome_step(state: &mut AppState, area: Rect, buf: &mut Buffer) {
     let left_margin = 2;
 
     // Title
-    Paragraph::new("⚡ Welcome to Archer Sovereign CLI")
+    Paragraph::new("⚡ Welcome to Archer Cluaiz CLI")
         .style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))
         .render(Rect::new(area.x + left_margin, chunks[1].y, area.width, 1), buf);
 
@@ -341,7 +341,7 @@ fn render_usage_step(state: &mut AppState, area: Rect, buf: &mut Buffer) {
     let selected = state.menu_state.selected().unwrap_or(0);
 
     // Title
-    Paragraph::new(format!("👋 Hey {}! How will you use Archer Sovereign?",
+    Paragraph::new(format!("👋 Hey {}! How will you use Archer Cluaiz?",
         state.user_profile.auth.display_name))
         .style(Style::default().fg(Color::White).add_modifier(Modifier::BOLD))
         .render(Rect::new(area.x + lm, area.y + 1, area.width, 1), buf);
@@ -378,7 +378,7 @@ fn render_personal_profile(state: &mut AppState, area: Rect, buf: &mut Buffer) {
     let lm = 2u16;
     let input_w = 46u16.min(area.width.saturating_sub(lm + 2));
 
-    Paragraph::new("👤 What's your name, Sovereign?")
+    Paragraph::new("👤 What's your name, Cluaiz?")
         .style(Style::default().fg(Color::White).add_modifier(Modifier::BOLD))
         .render(Rect::new(area.x + lm, area.y + 1, area.width, 1), buf);
 
@@ -527,7 +527,7 @@ fn render_model_step(state: &mut AppState, area: Rect, buf: &mut Buffer) {
     let opt_w = 52u16.min(area.width.saturating_sub(lm + 2));
     let selected = state.menu_state.selected().unwrap_or(0);
 
-    Paragraph::new("🧠 SELECT YOUR NEURAL MODELS")
+    Paragraph::new("🧠 SELECT YOUR Core MODELS")
         .style(Style::default().fg(Color::White).add_modifier(Modifier::BOLD))
         .render(Rect::new(area.x + lm, area.y + 1, area.width, 1), buf);
 
@@ -560,12 +560,12 @@ fn render_model_step(state: &mut AppState, area: Rect, buf: &mut Buffer) {
 fn render_complete_step(state: &mut AppState, area: Rect, buf: &mut Buffer) {
     let lm = 2u16;
 
-    Paragraph::new(" 🧿 SOVEREIGN NEURAL ENGINE — ONLINE ")
+    Paragraph::new(" 🧿 Cluaiz Core ENGINE — ONLINE ")
         .style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD | Modifier::REVERSED))
         .render(Rect::new(area.x + lm, area.y + 1, area.width.saturating_sub(lm), 1), buf);
 
     let summary = format!(
-        "  Identity : {}\n  Mode     : {}\n  Hardware : Verified ✓\n\n  Welcome to the future of Sovereign AI, {}.",
+        "  Identity : {}\n  Mode     : {}\n  Hardware : Verified ✓\n\n  Welcome to the future of Cluaiz AI, {}.",
         state.user_profile.display_name(),
         state.user_profile.account_type,
         state.user_profile.display_name(),

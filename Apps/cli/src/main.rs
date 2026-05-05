@@ -17,7 +17,7 @@ use crate::core::app::App;
 #[tokio::main]
 async fn main() -> Result<()> {
     // 🚀 SILENCE THE VOID: Redirect all logs to file to prevent TUI corruption
-    if let Ok(log_file) = File::create("cluaiz_neural.log") {
+    if let Ok(log_file) = File::create("cluaiz_Core.log") {
         let _ = tracing_subscriber::fmt()
             .with_writer(log_file)
             .with_ansi(false)
@@ -26,16 +26,16 @@ async fn main() -> Result<()> {
 
     color_eyre::install()?;
 
-    // 🚀 SOVEREIGN BOOTSTRAP: Ensure Neural Engine is ready before anything else
+    // 🚀 Cluaiz BOOTSTRAP: Ensure Core Engine is ready before anything else
     crate::core::bootstrapper::Bootstrapper::ignite().await?;
 
-    // 📡 SILICON IGNITION: Fire up the Watchtower Telemetry Server
+    // 📡 Hardware IGNITION: Fire up the Watchtower Telemetry Server
     engines::telemetry::ignite_watchtower();
 
     // ── CLI ARGUMENTS PROCESSING ──────────────────────────────────────────
     let args: Vec<String> = std::env::args().collect();
     if args.iter().any(|arg| arg == "--benchmark") {
-        engines::telemetry::health_check::SovereignHealthChecker::run_full_benchmark();
+        engines::telemetry::health_check::CluaizHealthChecker::run_full_benchmark();
         return Ok(());
     }
 
@@ -56,7 +56,7 @@ async fn main() -> Result<()> {
         hook(info);
     }));
 
-    // ── SOVEREIGN PRIMARY FLOW ──────────────────────────────────────────
+    // ── Cluaiz PRIMARY FLOW ──────────────────────────────────────────
     // FlowEngine::new() enters Alternate Screen + Raw Mode automatically.
     let app = App::new(profile_over)?;
 
@@ -67,7 +67,7 @@ async fn main() -> Result<()> {
     // 🧠 Background Initialization: Load recommendations asynchronously
     spawn(async move {
         let _models = tokio::task::spawn_blocking(move || {
-            engines::NeuralRoster::get_recommendations(&hardware.to_silicon_truth(), ram)
+            engines::CoreRoster::get_recommendations(&hardware.to_Hardware_truth(), ram)
         }).await.unwrap_or_default();
         
         let _ = tx.send(DownloadEvent::Complete("INITIAL_LOAD".to_string())).await;
@@ -75,7 +75,7 @@ async fn main() -> Result<()> {
 
     let app_result = app.run().await;
 
-    // ── SOVEREIGN TEARDOWN ────────────────────────────────────────────
+    // ── Cluaiz TEARDOWN ────────────────────────────────────────────
     let _ = crate::core::flow::FlowEngine::restore();
 
     app_result

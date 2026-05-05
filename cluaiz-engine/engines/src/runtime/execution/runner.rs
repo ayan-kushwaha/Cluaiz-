@@ -1,37 +1,37 @@
 //! ═══════════════════════════════════════════════════════════════════════
-//!  CURE Engine: Universal Runner (Sovereign)
+//!  CURE Engine: Universal Runner (Cluaiz)
 //! ═══════════════════════════════════════════════════════════════════════
 
 use anyhow::Result;
 use candle_core::Device;
-use crate::runtime::execution::sampler::NeuralSampler;
+use crate::runtime::execution::sampler::CoreSampler;
 use archer_shared::ModelWeightsWrapper;
 use tokenizers::Tokenizer;
 
 
 #[derive(Debug, Clone)]
-pub struct SovereignMetrics {
+pub struct CluaizMetrics {
     pub ttft_ms: f64,
     pub tps: f64,
     pub total_tokens: usize,
     pub total_time_ms: f64,
 }
 
-pub struct SovereignRunner {
+pub struct CluaizRunner {
     pub model: ModelWeightsWrapper,
     pub tokenizer: Tokenizer,
-    pub sampler: NeuralSampler,
+    pub sampler: CoreSampler,
     pub bos_token_id: Option<u32>,
     pub device: Device,
 }
 
-impl SovereignRunner {
-    pub fn new(model: ModelWeightsWrapper, tokenizer: Tokenizer, sampler: NeuralSampler, bos_token_id: Option<u32>, device: Device) -> Self {
+impl CluaizRunner {
+    pub fn new(model: ModelWeightsWrapper, tokenizer: Tokenizer, sampler: CoreSampler, bos_token_id: Option<u32>, device: Device) -> Self {
         Self { model, tokenizer, sampler, bos_token_id, device }
     }
 
-    /// 🔗 Instant Recall: Injects neural sovereign signals before generation.
-    pub fn inject_neural_signals(&mut self, signals: Vec<archer_shared::hardware::memory::kv_cache::stitching::SovereignSignal>) -> Result<()> {
+    /// 🔗 Instant Recall: Injects Core Cluaiz signals before generation.
+    pub fn inject_Core_signals(&mut self, signals: Vec<archer_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Result<()> {
         self.model.inject_signals(signals)
     }
 
@@ -40,8 +40,8 @@ impl SovereignRunner {
         prompt: &str,
         max_tokens: usize,
         mut callback: impl FnMut(String) + Send + 'static,
-    ) -> Result<SovereignMetrics> {
-        // 🛰️ SOVEREIGN BOOSTER SYNC: Load truth from Governor before generation
+    ) -> Result<CluaizMetrics> {
+        // 🛰️ Cluaiz BOOSTER SYNC: Load truth from Governor before generation
         let booster = archer_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
         self.model.apply_booster(&booster)?;
         
@@ -77,7 +77,7 @@ impl SovereignRunner {
             0.0
         };
 
-        Ok(SovereignMetrics {
+        Ok(CluaizMetrics {
             ttft_ms: 0.0, // Model TTFT placeholder for now
             tps,
             total_tokens: actual_tokens,

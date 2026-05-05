@@ -6,7 +6,7 @@ use wasmtime::*;
 use wasmtime_wasi::preview1::{self, WasiP1Ctx};
 #[cfg(feature = "wasm-runtime")]
 use wasmtime_wasi::WasiCtxBuilder;
-use archer_shared::neural::graph::NeuralGraph;
+use archer_shared::Core::graph::CoreGraph;
 
 use std::sync::Mutex;
 
@@ -61,30 +61,30 @@ impl WasmHost {
         let module = Module::from_file(&self.engine, wasm_path)
             .map_err(|e| anyhow::anyhow!("WASM Module Load Error [{}]: {}", wasm_path.display(), e))?;
 
-        // 🧠 Mission 12: Chronicle Neural Skill Initiation
+        // 🧠 Mission 12: Chronicle Core Skill Initiation
         let skill_id = wasm_path.file_stem().and_then(|s| s.to_str()).unwrap_or("unknown_skill");
-        let _ = NeuralGraph::chronicle_pulse(
-            "Neural Skill Execution Initiated",
+        let _ = CoreGraph::chronicle_pulse(
+            "Core Skill Execution Initiated",
             skill_id,
             &format!("Binary: {:?}, Function: {}", wasm_path, func_name)
         );
         
-        // 🏗️ Sovereign Sandbox: Restricted WASI Context
+        // 🏗️ Cluaiz Sandbox: Restricted WASI Context
         let mut wasi_builder = WasiCtxBuilder::new();
         
         // 1. Inherit Stdio for kernel telemetry
         wasi_builder.inherit_stdout().inherit_stderr();
 
-        // 2. Map Skill-Specific Virtual Directory (Sovereign Immunity)
+        // 2. Map Skill-Specific Virtual Directory (Cluaiz Immunity)
         if let Some(skill_root) = wasm_path.parent() {
             tracing::info!("🔒 [Sandbox] Mapping virtual jail: {:?}", skill_root);
             // We pre-open the skill's root directory as "." for the guest
             let _ = wasi_builder.preopened_dir(skill_root, ".", wasmtime_wasi::DirPerms::all(), wasmtime_wasi::FilePerms::all());
         }
 
-        // 3. Inject Cluaiz-OS Environment (Sovereign Context)
+        // 3. Inject Cluaiz-OS Environment (Cluaiz Context)
         wasi_builder.env("CLUAIZ_VERSION", "0.0.1");
-        wasi_builder.env("SOVEREIGN_MODE", "ACTIVE");
+        wasi_builder.env("Cluaiz_MODE", "ACTIVE");
 
         let wasi = wasi_builder.build_p1();
         
@@ -118,14 +118,14 @@ impl WasmHost {
             .get_func(&mut store, func_name)
             .ok_or_else(|| anyhow::anyhow!("WASM Function '{}' not found", func_name))?;
 
-        // Call with pointer and length (Sovereign ABI)
+        // Call with pointer and length (Cluaiz ABI)
         let mut results = [Val::I32(0)];
         if let Err(e) = func.call_async(
             &mut store, 
             &[Val::I32(param_ptr as i32), Val::I32(param_bytes.len() as i32)], 
             &mut results
         ).await {
-            let _ = NeuralGraph::chronicle_pulse("Neural Skill Execution Failed", skill_id, &format!("Error: {}", e));
+            let _ = CoreGraph::chronicle_pulse("Core Skill Execution Failed", skill_id, &format!("Error: {}", e));
             return Err(e);
         }
 
@@ -141,8 +141,8 @@ impl WasmHost {
         let null_pos = pool.iter().position(|&b| b == 0).unwrap_or(pool.len());
         let response = String::from_utf8_lossy(&pool[..null_pos]).to_string();
 
-        let _ = NeuralGraph::chronicle_pulse(
-            "Neural Skill Execution Success",
+        let _ = CoreGraph::chronicle_pulse(
+            "Core Skill Execution Success",
             skill_id,
             &format!("Response Length: {} bytes", response.len())
         );
@@ -166,18 +166,18 @@ mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn test_neural_pulse_generation() {
-        println!("🚀 Testing Sovereign Neural Pulse...");
+    async fn test_Core_pulse_generation() {
+        println!("🚀 Testing Cluaiz Core Pulse...");
         let activity = "Foundry Simulation Pulse";
         let skill_id = "test_skill_v1";
         
-        let result = archer_shared::neural::graph::NeuralGraph::chronicle_pulse(
+        let result = archer_shared::Core::graph::CoreGraph::chronicle_pulse(
             activity,
             skill_id,
             "Metadata: [Simulation Mode Active]"
         );
 
-        assert!(result.is_ok(), "Neural Graph should be writable");
+        assert!(result.is_ok(), "Core Graph should be writable");
         println!("✅ Pulse Chronicled in thing.ai.nurale.md");
     }
 }

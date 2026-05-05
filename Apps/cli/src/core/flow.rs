@@ -2,7 +2,7 @@ use crate::core::state::AppState;
 use crate::theme::Theme;
 use ratatui::{layout::Rect, Frame};
 
-/// 🛰️ SOVEREIGN FLOW ENGINE (Legacy/Passthrough)
+/// 🛰️ Cluaiz FLOW ENGINE (Legacy/Passthrough)
 /// In the Streaming Era, FlowEngine only manages terminal restoration.
 pub struct FlowEngine { }
 

@@ -1,5 +1,5 @@
 //! ═══════════════════════════════════════════════════════════════════════
-//!  CURE Engine: Neural Sampler (Sovereign)
+//!  CURE Engine: Core Sampler (Cluaiz)
 //! ═══════════════════════════════════════════════════════════════════════
 
 use candle_core::{Result, Tensor};
@@ -11,14 +11,14 @@ use serde::{Serialize, Deserialize};
 pub enum InferenceMode { Turbo, Classic, Auto }
 
 #[derive(Debug, Clone)]
-pub struct NeuralSampler {
+pub struct CoreSampler {
     pub temperature: f32,
     pub top_p: f32,
     pub repeat_penalty: f32,
     pub seed: u64,
 }
 
-impl NeuralSampler {
+impl CoreSampler {
     pub fn new(seed: u64, temp: f32, top_p: f32, penalty: f32) -> Self {
         Self { seed, temperature: temp, top_p, repeat_penalty: penalty }
     }

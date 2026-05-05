@@ -1,4 +1,4 @@
-use crate::neural_foundry::registry::SkillRegistry;
+use crate::Core_foundry::registry::SkillRegistry;
 
 pub struct SkillRouter {}
 
@@ -13,10 +13,10 @@ impl SkillRouter {
         Self {}
     }
 
-    /// Selects ALL relevant skills for a given prompt (Neural Fusion Mode).
+    /// Selects ALL relevant skills for a given prompt (Core Fusion Mode).
     /// Uses the dynamic registry and KERNEL TELEMETRY to find compute-aware matches.
     pub fn match_intent(&self, prompt: &str, registry: &SkillRegistry) -> Vec<String> {
-        // 🛰️ Sovereign Linkage: Get real-time silicon pressure
+        // 🛰️ Cluaiz Linkage: Get real-time Hardware pressure
         let pulse = archer_shared::hardware::telemetry::get_pulse();
         let pulse_lock = pulse.pulse.read().unwrap();
         

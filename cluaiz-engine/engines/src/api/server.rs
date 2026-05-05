@@ -1,4 +1,4 @@
-//! archer-server: The Sovereign Telemetry Bridge.
+//! archer-server: The Cluaiz Telemetry Bridge.
 //! Bare-metal HTTP implementation over Tokio for 0.0ms engine impact.
 
 use std::sync::Arc;
@@ -57,7 +57,7 @@ async fn handle_connection(mut stream: TcpStream, state: Arc<ObservableHardwareS
         stream.write_all(response.as_bytes()).await?;
     } 
     else if request.starts_with("GET /dashboard") {
-        let dashboard_html = include_str!("Sovereign_Dashboard.html");
+        let dashboard_html = include_str!("Cluaiz_Dashboard.html");
         let response_header = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n";
         let response = format!(
             "{}Content-Length: {}\r\n\r\n{}",

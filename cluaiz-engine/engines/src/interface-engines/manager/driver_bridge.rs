@@ -1,5 +1,5 @@
 /// Driver Bridge
-/// Verifies the presence and compatibility of silicon-specific drivers (CUDA, ROCm, Metal).
+/// Verifies the presence and compatibility of Hardware-specific drivers (CUDA, ROCm, Metal).
 pub struct DriverBridge;
 
 impl Default for DriverBridge {

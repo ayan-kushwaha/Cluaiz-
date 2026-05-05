@@ -101,7 +101,7 @@ impl RegistryTable {
         idx: usize,
         model: &ModelRecommendation,
         w: &ColumnWidths,
-        hardware: &archer_shared::hardware::schema::profiles::SovereignProfile,
+        hardware: &archer_shared::hardware::schema::profiles::CluaizProfile,
     ) -> String {
         let size = format!("{:.1} GB", model.manifest.download_size_gb);
         let ram = format!("{:.1} GB", model.manifest.ram_required_gb);
@@ -157,7 +157,7 @@ impl RegistryTable {
 
     pub fn calculate_health(
         model: &ModelRecommendation,
-        hardware: &archer_shared::hardware::schema::profiles::SovereignProfile,
+        hardware: &archer_shared::hardware::schema::profiles::CluaizProfile,
     ) -> (colored::ColoredString, i32, String) {
         let report = archer_shared::hardware::speed_checker::predict_performance(
             &model.manifest.parameters,

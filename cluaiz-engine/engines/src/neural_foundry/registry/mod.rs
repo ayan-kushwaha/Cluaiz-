@@ -1,5 +1,5 @@
-// cluaiz-engine: Neural Foundry - Registry
-// Manages the lifecycle of sovereign skills.
+// cluaiz-engine: Core Foundry - Registry
+// Manages the lifecycle of Cluaiz skills.
 
 pub mod scanner;
 
@@ -16,11 +16,11 @@ pub struct SkillManifest {
     pub triggers: Triggers,
     pub permissions: Permissions,
     pub soul_type: String,
-    pub neural_metadata: NeuralMetadata,
+    pub Core_metadata: CoreMetadata,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct NeuralMetadata {
+pub struct CoreMetadata {
     pub token_count: usize,
     pub head_dim: usize,
     pub layer_count: Option<usize>,
@@ -44,7 +44,7 @@ pub struct Permissions {
 pub struct Skill {
     pub manifest: SkillManifest,
     pub path: PathBuf,
-    pub soul_path: Option<PathBuf>, // 🧠 The .atma neural tensor path
+    pub soul_path: Option<PathBuf>, // 🧠 The .atma Core tensor path
     pub logic_path: Option<PathBuf>, // ⚙️ The .wasm execution logic path
 }
 
@@ -84,7 +84,7 @@ impl SkillRegistry {
                 if let Ok(manifest) = serde_json::from_str::<SkillManifest>(&content) {
                     let skill_dir = manifest_path.parent().unwrap();
                     
-                    // 🧠 Detect Neural Soul (.atma)
+                    // 🧠 Detect Core Soul (.atma)
                     let soul_path = skill_dir.join("soul.atma");
                     let soul = if soul_path.exists() { Some(soul_path) } else { None };
 
@@ -103,21 +103,21 @@ impl SkillRegistry {
         }
     }
 
-    /// 🛰️ Sovereign Pull: Downloads and installs a skill from the Global Hub.
+    /// 🛰️ Cluaiz Pull: Downloads and installs a skill from the Global Hub.
     pub async fn pull_skill(skill_id: &str) -> anyhow::Result<()> {
         let index_url = "https://github.com/cluaiz/cluaiz/releases/download/latest-library/skills_index.json";
         
-        println!("🛰️ [Neural-Foundry] Connecting to Sovereign Skill Hub...");
+        println!("🛰️ [Core-Foundry] Connecting to Cluaiz Skill Hub...");
         
         let client = reqwest::Client::new();
         let resp = client.get(index_url).send().await?.json::<serde_json::Value>().await?;
         
         let skills = resp["available_skills"].as_array().ok_or(anyhow::anyhow!("Invalid library index format"))?;
         let skill_entry = skills.iter().find(|s| s["id"] == skill_id)
-            .ok_or(anyhow::anyhow!("Skill ID '{}' not found in Sovereign Library", skill_id))?;
+            .ok_or(anyhow::anyhow!("Skill ID '{}' not found in Cluaiz Library", skill_id))?;
             
         let download_url = skill_entry["download_url"].as_str().unwrap();
-        println!("📦 [Neural-Foundry] Downloading Neural Package: {}", download_url);
+        println!("📦 [Core-Foundry] Downloading Core Package: {}", download_url);
         
         // Binary Download & Extraction Logic (using zip-extract)
         Ok(())

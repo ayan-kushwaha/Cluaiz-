@@ -1,9 +1,9 @@
 use std::path::PathBuf;
 
 
-/// Reads `cluaiz_root` securely via the Sovereign Hardware Governor.
+/// Reads `cluaiz_root` securely via the Cluaiz Hardware Governor.
 /// This uses the binary truth (`system_control.bin`) as the ultimate source,
-/// exactly as the Sovereign Architecture intends. Zero custom hardcoding.
+/// exactly as the Cluaiz Architecture intends. Zero custom hardcoding.
 fn read_cluaiz_root() -> Option<PathBuf> {
     match archer_shared::HardwareGovernor::load_system_control() {
         Ok(control) => Some(PathBuf::from(control.context.cluaiz_root)),
@@ -65,10 +65,10 @@ impl KernelLoader {
         // 1. PRIMARY: Read cluaiz_root from system_control.json — the Single Source of Truth.
         //    Path pattern: <cluaiz_root>/interface-engines/<file_name>
         if let Some(cluaiz_root) = read_cluaiz_root() {
-            let sovereign_path = cluaiz_root.join("interface-engines").join(&file_name);
-            if sovereign_path.exists() {
-                tracing::info!("🎯 [KernelLoader] Sovereign path resolved: {:?}", sovereign_path);
-                return sovereign_path;
+            let Cluaiz_path = cluaiz_root.join("interface-engines").join(&file_name);
+            if Cluaiz_path.exists() {
+                tracing::info!("🎯 [KernelLoader] Cluaiz path resolved: {:?}", Cluaiz_path);
+                return Cluaiz_path;
             }
         }
 
@@ -77,7 +77,7 @@ impl KernelLoader {
         dev_path.push("target");
         dev_path.push("release");
         dev_path.push(&file_name);
-        tracing::warn!("⚠️ [KernelLoader] Sovereign path not found. Falling back to dev path: {:?}", dev_path);
+        tracing::warn!("⚠️ [KernelLoader] Cluaiz path not found. Falling back to dev path: {:?}", dev_path);
         dev_path
     }
 }

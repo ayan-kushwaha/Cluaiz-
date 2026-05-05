@@ -54,7 +54,7 @@ fn generate_repo(name: &str) -> String {
 
 fn generate_detailed_description(name: &str, params: &str, strength: &str, arch: &str, bit_depth: &str, tokens: &str) -> String {
     format!(
-        "This is the highly optimized {}, featuring a robust {} parameter architecture built by leading AI engineers. Designed explicitly to master the trait of '{}', this model pushes the boundaries of modern neural networks. Unlike legacy architectures, it operates perfectly at the {} layer, meaning its memory management is flawlessly optimized for the local Cluaiz CURE engine without compromising zero-shot reasoning. \
+        "This is the highly optimized {}, featuring a robust {} parameter architecture built by leading AI engineers. Designed explicitly to master the trait of '{}', this model pushes the boundaries of modern Core networks. Unlike legacy architectures, it operates perfectly at the {} layer, meaning its memory management is flawlessly optimized for the local Cluaiz CURE engine without compromising zero-shot reasoning. \
         It has been rigorously scaled and pre-trained across a staggering {} corpus, absorbing dense human knowledge spanning logic, mathematics, multi-language translation, and coding syntax. The {} backbone ensures that token processing speeds and semantic latency remain ultra-low. For end-users seeking absolute data privacy and autonomous intelligence at the edge, this specific model guarantees an elite balance between extreme cross-platform speed and deep contextual understanding. Highly recommended for heavy edge execution and next-generation inference loops.",
         name, params, strength, bit_depth, tokens, arch
     )

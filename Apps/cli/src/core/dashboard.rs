@@ -22,7 +22,7 @@ impl DashboardEngine {
         tx: &mpsc::Sender<DownloadEvent>,
         mode: &mut crate::app_enums::Mode,
     ) -> Result<()> {
-        // ── 🔒 SOVEREIGN RENDER CONFIG ──
+        // ── 🔒 Cluaiz RENDER CONFIG ──
         let config = RenderConfig::default()
             .with_prompt_prefix(
                 Styled::new(">")
@@ -31,26 +31,26 @@ impl DashboardEngine {
             )
             .with_answered_prompt_prefix(Styled::new(">").with_fg(Color::LightCyan));
 
-        // ── 🧬 ATOMIC NEURAL DISCOVERY (Sovereign Startup Scan) ──
+        // ── 🧬 ATOMIC Core DISCOVERY (Cluaiz Startup Scan) ──
         if state.sorted_models.is_empty() {
-            println!("  {} Scanning Neural Sanctum...", "🧬".cyan());
-            state.sorted_models = engines::NeuralRoster::get_recommendations(
-                &state.hardware.to_silicon_truth(),
+            println!("  {} Scanning Core Sanctum...", "🧬".cyan());
+            state.sorted_models = engines::CoreRoster::get_recommendations(
+                &state.hardware.to_Hardware_truth(),
                 state.ram_gb,
             );
             println!(
-                "  {} Discovery Complete: Found {} neural assets.",
+                "  {} Discovery Complete: Found {} Core assets.",
                 "✅".green(),
                 state.sorted_models.len()
             );
         }
 
-        // ── 📡 SOVEREIGN TELEMETRY IGNITION (Ghost Observer Singleton) ──
+        // ── 📡 Cluaiz TELEMETRY IGNITION (Ghost Observer Singleton) ──
         let state_pulse = archer_shared::hardware::telemetry::get_pulse();
         let pulse_ref = state_pulse.clone();
         let start_time = std::time::Instant::now();
 
-        // 📡 SOVEREIGN PULSE CONTROL: Visibility gate to prevent chat history bleeding
+        // 📡 Cluaiz PULSE CONTROL: Visibility gate to prevent chat history bleeding
         let show_dashboard = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(true));
         let show_ref = show_dashboard.clone();
  
@@ -112,7 +112,7 @@ impl DashboardEngine {
                     let (_cols, rows) = terminal::size().unwrap_or((80, 24));
                     
                     if y + 1 >= rows {
-                        // 🚀 NEURAL SCROLL: Force a scroll up to keep prompt and dashboard separated
+                        // 🚀 Core SCROLL: Force a scroll up to keep prompt and dashboard separated
                         let _ = execute!(stdout, terminal::ScrollUp(1), cursor::MoveUp(1));
                         y -= 1; 
                     }
@@ -132,13 +132,13 @@ impl DashboardEngine {
                         style::Print(Stylize::dim(format!(" │ {:.1}GHz", cpu_ghz))),
                         style::Print(Stylize::dim(") │ ")),
 
-                        // GPU Pulse: Silicon Pressure Audit
+                        // GPU Pulse: Hardware Pressure Audit
                         style::Print(Stylize::dim("GPU: ")),
                         style::Print(Stylize::dim(format!("{:.0}°C ({:.0}%)", gpu_temp, vram_pct))),
                         style::Print(Stylize::dim(format!(" │ {:.1}/{:.0}GB", vram_used, vram_total))),
                         style::Print(Stylize::dim(") │ ")),
 
-                        // RAM Pulse: Neural Buffer Load
+                        // RAM Pulse: Core Buffer Load
                         style::Print(Stylize::dim("RAM: ")),
                         style::Print(Stylize::dim(format!("{:.1}GB ({:.0}%)", ram_used, ram_pct))),
                         style::Print(Stylize::dim(") │ ")),
@@ -159,7 +159,7 @@ impl DashboardEngine {
 
         loop {
             show_dashboard.store(true, std::sync::atomic::Ordering::SeqCst);
-            println!(); // 🧿 SOVEREIGN BUFFER: Create space for surgical anchor
+            println!(); // 🧿 Cluaiz BUFFER: Create space for surgical anchor
             let input = Text::new("")
                 .with_placeholder("Type your message or @ & / for menu")
                 .with_render_config(config.clone())
@@ -230,14 +230,14 @@ impl DashboardEngine {
                         print!("{} Thinking", Stylize::cyan("🤖"));
                         let _ = std::io::Write::flush(&mut std::io::stdout());
 
-                        // ── 🤖 REAL NEURAL STREAMING ────────────────────────
+                        // ── 🤖 REAL Core STREAMING ────────────────────────
                         let full_response =
                             std::sync::Arc::new(std::sync::Mutex::new(String::new()));
                         let full_clone = full_response.clone();
                         let mut first_token = true;
 
                         let stream_result = tokio::task::block_in_place(|| {
-                            let mut lock = state.neural_engine.router.blocking_lock();
+                            let mut lock = state.Core_engine.router.blocking_lock();
                             lock.generate_stream(
                                 &final_message,
                                 256,
@@ -392,8 +392,8 @@ impl DashboardEngine {
             if let Some(path_str) = &model.manifest.local_path {
                 let path = std::path::PathBuf::from(path_str);
 
-                // 🧬 SOVEREIGN SILICON DETECTION
-                let profile = archer_shared::hardware::get_sovereign_profile();
+                // 🧬 Cluaiz Hardware DETECTION
+                let profile = archer_shared::hardware::get_Cluaiz_profile();
                 let device = if profile.compute.has_gpu {
                     match profile.compute.primary_driver {
                         archer_shared::hardware::schema::profiles::BackendDriver::CUDA => {
@@ -409,12 +409,12 @@ impl DashboardEngine {
                 };
 
                 println!(
-                    "  {} [Silicon Dispatch] Using device: {:?}",
+                    "  {} [Hardware Dispatch] Using device: {:?}",
                     "🧪".cyan(),
                     device
                 );
 
-                // 🧬 SOVEREIGN DISPATCH:
+                // 🧬 Cluaiz DISPATCH:
                 // High bit-depth -> Native Rust (Candle)
                 // 1-bit BitNet -> MANDATORY Llama (Binary)
                 let runtime = if model.manifest.bit_depth < 2.0 {
@@ -425,13 +425,13 @@ impl DashboardEngine {
 
                 let result = tokio::task::block_in_place(|| {
                     let handle = tokio::runtime::Handle::current();
-                    match handle.block_on(engines::NeuralRouter::load_model(
+                    match handle.block_on(engines::CoreRouter::load_model(
                         path,
                         runtime.clone(),
                         &device,
                     )) {
                         Ok(router) => {
-                            let mut lock = state.neural_engine.router.blocking_lock();
+                            let mut lock = state.Core_engine.router.blocking_lock();
                             *lock = router;
                             Ok(())
                         }
@@ -443,13 +443,13 @@ impl DashboardEngine {
                             {
                                 let path_inner = std::path::PathBuf::from(path_str);
                                 handle
-                                    .block_on(engines::NeuralRouter::load_model(
+                                    .block_on(engines::CoreRouter::load_model(
                                         path_inner,
                                         archer_shared::BackendType::RuntimeA,
                                         &device,
                                     ))
                                     .map(|router| {
-                                        let mut lock = state.neural_engine.router.blocking_lock();
+                                        let mut lock = state.Core_engine.router.blocking_lock();
                                         *lock = router;
                                     })
                             } else {
@@ -461,7 +461,7 @@ impl DashboardEngine {
 
                 match result {
                     Ok(_) => {
-                        state.neural_engine.is_loaded = true;
+                        state.Core_engine.is_loaded = true;
                         state._active_model_id = Some(model.manifest.id.clone());
                         println!("  {} Mounted successfully.", "✅".green());
                     }

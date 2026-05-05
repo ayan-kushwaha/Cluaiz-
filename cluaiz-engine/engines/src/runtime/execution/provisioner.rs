@@ -1,5 +1,5 @@
-//! 🏛️ Silicon Kernel: Automated Binary Provisioner
-//! Handles the on-demand retrieval of hardware-optimized neural executables.
+//! 🏛️ Hardware Kernel: Automated Binary Provisioner
+//! Handles the on-demand retrieval of hardware-optimized Core executables.
 
 use std::path::{Path, PathBuf};
 use archer_shared::hardware::schema::BackendDriver;
@@ -13,9 +13,9 @@ impl BinaryProvisioner {
         let target_path = Self::resolve_local_kernel_path(os, driver)?;
         
         if target_path.exists() {
-            // 🛡️ [Provisioner] Sovereign Integrity Check (Hash Verification)
+            // 🛡️ [Provisioner] Cluaiz Integrity Check (Hash Verification)
             if Self::verify_integrity(&target_path).is_ok() {
-                info!("✅ [Provisioner] Sovereign Binary verified & sealed: {:?}", target_path);
+                info!("✅ [Provisioner] Cluaiz Binary verified & sealed: {:?}", target_path);
                 return Ok(target_path);
             } else {
                 warn!("⚠️ [Provisioner] Binary integrity compromise detected. Re-provisioning...");
@@ -25,21 +25,21 @@ impl BinaryProvisioner {
 
         info!("📡 [Provisioner] Secure Retrieval Initiated for [{:?}] on [{}]...", driver, os);
         
-        let download_url = Self::get_sovereign_url(os, driver)?;
+        let download_url = Self::get_Cluaiz_url(os, driver)?;
         
         if let Some(parent) = target_path.parent() {
             std::fs::create_dir_all(parent)?;
         }
 
         let client = reqwest::Client::builder()
-            .user_agent("Archer-Sovereign/1.0")
+            .user_agent("Archer-Cluaiz/1.0")
             .build()?;
 
         let response = client.get(&download_url).send().await
-            .map_err(|e| anyhow!("Sovereign Registry Link Failure: {}", e))?;
+            .map_err(|e| anyhow!("Cluaiz Registry Link Failure: {}", e))?;
 
         if !response.status().is_success() {
-            return Err(anyhow!("Sovereign Registry Rejected Request (Status: {}). Check your connection or system auth.", response.status()));
+            return Err(anyhow!("Cluaiz Registry Rejected Request (Status: {}). Check your connection or system auth.", response.status()));
         }
 
         let content = response.bytes().await?;
@@ -57,11 +57,11 @@ impl BinaryProvisioner {
             std::fs::set_permissions(&target_path, perms)?;
         }
 
-        info!("🎉 [Provisioner] Sovereign Core Mounted: {:?}", target_path);
+        info!("🎉 [Provisioner] Cluaiz Core Mounted: {:?}", target_path);
         Ok(target_path)
     }
 
-    /// 🏛️ SOVEREIGN PATH RESOLUTION: Maps Engine + OS + Arch to the official CURE hierarchy.
+    /// 🏛️ Cluaiz PATH RESOLUTION: Maps Engine + OS + Arch to the official CURE hierarchy.
     pub fn resolve_local_kernel_path(os: &str, driver: &BackendDriver) -> Result<PathBuf> {
         let workspace_root = std::env::current_dir().unwrap_or_default();
         let kernels_root = workspace_root.join("interface-engines");
@@ -95,12 +95,12 @@ impl BinaryProvisioner {
     }
 
     fn verify_bytes_integrity(_bytes: &[u8], _os: &str, _driver: &BackendDriver) -> Result<()> {
-        // 🧬 [Engine] Cross-referencing against the Neural Seal Registry
+        // 🧬 [Engine] Cross-referencing against the Core Seal Registry
         Ok(())
     }
 
-    fn get_sovereign_url(os: &str, driver: &BackendDriver) -> Result<String> {
-        // 🏛️ OFFICIAL CURE SOVEREIGN REGISTRY (Version Locked)
+    fn get_Cluaiz_url(os: &str, driver: &BackendDriver) -> Result<String> {
+        // 🏛️ OFFICIAL CURE Cluaiz REGISTRY (Version Locked)
         let base_url = "https://registry.cluaiz.os/v1/kernels";
         
         let engine_type = if matches!(driver, BackendDriver::CPU) { "bitnet" } else { "llama" };
@@ -116,7 +116,7 @@ impl BinaryProvisioner {
         // Structure: repo/engine/os/arch/binary
         let url = format!("{}/{}/{}/{}/archer_{}.{}", base_url, engine_type, os, arch, engine_type, ext);
         
-        info!("🧬 [Provisioner] Sovereign URL Resolved: {}", url);
+        info!("🧬 [Provisioner] Cluaiz URL Resolved: {}", url);
         Ok(url)
     }
 

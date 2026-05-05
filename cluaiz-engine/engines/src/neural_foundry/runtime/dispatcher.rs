@@ -1,4 +1,4 @@
-// cluaiz-engine: Neural Foundry - Dispatcher
+// cluaiz-engine: Core Foundry - Dispatcher
 // The main orchestrator for skill execution flows.
 
 pub struct Dispatcher {}

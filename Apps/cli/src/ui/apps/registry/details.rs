@@ -68,7 +68,7 @@ pub fn show_details(
     println!("{}", "│".cyan());
     lines_printed += 1;
 
-    let desc_title = " NEURAL DESCRIPTION ";
+    let desc_title = " Core DESCRIPTION ";
     let mid_line = format!("├─{}────────────────────────────────────", desc_title);
     println!("{}", mid_line.cyan());
     lines_printed += 1;
@@ -215,7 +215,7 @@ pub fn show_details(
                     }
 
                     if !aborted {
-                        println!("\n\n  {} {}", "✔".green(), "Neural matrix materialized locally.".white().bold());
+                        println!("\n\n  {} {}", "✔".green(), "Core matrix materialized locally.".white().bold());
                         std::thread::sleep(std::time::Duration::from_millis(1500));
                         rec.is_cached = true;
                     } else {

@@ -9,7 +9,7 @@ use crate::theme::Theme;
 
 pub fn render_widget(_app: &mut AppState, _theme: &Theme, area: Rect, buf: &mut Buffer) {
     let text = "\
-📚 OS Neural Documentation
+📚 OS Core Documentation
 
 [ Navigation ]
 - ← / → Arrow   : Switch Terminal Tabs (Chat / Menu)
@@ -18,8 +18,8 @@ pub fn render_widget(_app: &mut AppState, _theme: &Theme, area: Rect, buf: &mut 
 - Esc           : Back / Quit Application
 
 [ Philosophies ]
-1. Sovereign Execution   : No telemetry. Your data stays on-device.
-2. Sovereign Intelligence  : local-first models optimized for your hardware.
+1. Cluaiz Execution   : No telemetry. Your data stays on-device.
+2. Cluaiz Intelligence  : local-first models optimized for your hardware.
 3. Pure Rust Architecture: Zero-latency, memory-safe, high-performance.
 
 [ Commands ]
@@ -32,7 +32,7 @@ pub fn render_widget(_app: &mut AppState, _theme: &Theme, area: Rect, buf: &mut 
         .block(Block::default()
             .borders(Borders::ALL)
             .border_style(Style::default().fg(Color::DarkGray))
-            .title(" 📚 Cluaiz Neural OS Help "));
+            .title(" 📚 Cluaiz Core OS Help "));
     
     widget.render(area, buf);
 }

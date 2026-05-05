@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use crate::models::manager::client::RegistryClient;
 use crate::models::manager::installer::ModelInstaller;
-use crate::models::manager::auditor::{SiliconAuditor, HealthStatus};
+use crate::models::manager::auditor::{HardwareAuditor, HealthStatus};
 
 pub mod client;
 pub mod installer;
@@ -29,12 +29,12 @@ pub struct ModelManifest {
     pub assets: Vec<ModelAsset>,
 }
 
-/// The Sovereign Model Manager
+/// The Cluaiz Model Manager
 /// Responsible for model discovery, health auditing, and atomic installation.
 pub struct ModelManager {
     client: RegistryClient,
     installer: ModelInstaller,
-    auditor: SiliconAuditor,
+    auditor: HardwareAuditor,
     base_models_dir: PathBuf,
 }
 
@@ -43,7 +43,7 @@ impl ModelManager {
         Self {
             client: RegistryClient::new(registry_url),
             installer: ModelInstaller::new(base_models_dir.clone()),
-            auditor: SiliconAuditor,
+            auditor: HardwareAuditor,
             base_models_dir,
         }
     }
@@ -61,10 +61,10 @@ impl ModelManager {
         let manifest: ModelManifest = serde_json::from_str(&manifest_json)
             .map_err(|e| format!("Manifest Parse Error: {}", e))?;
 
-        // 2. Hardware Audit (Silicon Truth)
+        // 2. Hardware Audit (Hardware Truth)
         let status = self.audit_model_health(manifest.ram_required_gb, manifest.requires_gpu);
         if status == HealthStatus::Disabled {
-            return Err("Sovereign Audit Failed: Insufficient hardware resources for this model.".to_string());
+            return Err("Cluaiz Audit Failed: Insufficient hardware resources for this model.".to_string());
         }
 
         // 3. Construct Categorized Path (SSD)
@@ -81,7 +81,7 @@ impl ModelManager {
         let installer = ModelInstaller::new(model_path.clone());
 
         // 6. Pull Weights from Hugging Face
-        println!("🚀 Sovereign Pull: Starting download of {} weights...", manifest.name);
+        println!("🚀 Cluaiz Pull: Starting download of {} weights...", manifest.name);
         installer.download_weights(&manifest.download_url, &format!("{}.gguf", manifest.id)).await?;
 
         // 7. Pull Supplemental Assets (tokenizer, config)

@@ -41,13 +41,13 @@ pub fn render_stream(app: &AppState, area: Rect, buf: &mut Buffer) {
         .render(Rect::new(area.x + left_margin, area.y, view_width, visible_height), buf);
 
     // ── PROMPT AREA ──────────────────────────────────────────────────
-    let is_loading = app.is_deleting || !app.neural_engine.is_loaded;
+    let is_loading = app.is_deleting || !app.Core_engine.is_loaded;
     let prompt_char = if is_loading { "…" } else { "❯" };
     let prompt_color = if is_loading { Color::Yellow } else { Color::Cyan };
 
     let prompt_line = Line::from(vec![
         Span::styled(format!(" {} ", prompt_char), Style::default().fg(prompt_color).add_modifier(Modifier::BOLD)),
-        Span::styled(if is_loading { "Initializing Neural Weights..." } else { &app._chat_input }, Style::default().fg(if is_loading { Color::DarkGray } else { Color::White })),
+        Span::styled(if is_loading { "Initializing Core Weights..." } else { &app._chat_input }, Style::default().fg(if is_loading { Color::DarkGray } else { Color::White })),
     ]);
 
     // Render Input
@@ -63,7 +63,7 @@ pub fn render_stream(app: &AppState, area: Rect, buf: &mut Buffer) {
         }
 
         let mut spans = vec![
-            Span::styled("  ⚡ SOVEREIGN PULSE  ", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
+            Span::styled("  ⚡ Cluaiz PULSE  ", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
             Span::styled("│ CPU: ", Style::default().fg(Color::DarkGray)),
             Span::styled(format!("{:>4.1}% {:>4.1}°C", pulse.cpu.utilization_pct, pulse.cpu.temperature_c), Style::default().fg(Color::Cyan)),
             Span::styled(" │ RAM: ", Style::default().fg(Color::DarkGray)),

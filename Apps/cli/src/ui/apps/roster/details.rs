@@ -104,7 +104,7 @@ pub fn render_widget(app: &mut AppState, _theme: &Theme, area: Rect, buf: &mut B
             .wrap(Wrap { trim: true })
             .block(
                 Block::default()
-                    .title(" NEURAL DESCRIPTION ")
+                    .title(" Core DESCRIPTION ")
                     .borders(Borders::TOP)
                     .border_style(Style::default().fg(Color::DarkGray)),
             ),

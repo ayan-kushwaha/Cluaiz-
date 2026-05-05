@@ -1,4 +1,4 @@
-// cluaiz-engine: Neural Foundry - The Sovereign Engine Core
+// cluaiz-engine: Core Foundry - The Cluaiz Engine Core
 // Final integration of Registry, Intelligence, Runtime, and Security.
 
 pub mod registry;
@@ -12,18 +12,18 @@ use runtime::wasm_host::WasmHost;
 use runtime::mcp_gateway::McpGateway;
 use security::guard::{PermissionGuard, PermissionLevel};
 use tracing::{info, warn};
-use archer_shared::hardware::memory::kv_cache::stitching::SovereignSignal;
-use neural_core::interfaces::memory_contract::{MappedBuffer, SovereignBuffer};
+use archer_shared::hardware::memory::kv_cache::stitching::CluaizSignal;
+use Core_core::interfaces::memory_contract::{MappedBuffer, CluaizBuffer};
 use std::sync::{Mutex, Arc};
 
 const MAX_ACTIVE_SKILLS: usize = 3;
 
 pub struct IntentResult {
     pub responses: Vec<String>,
-    pub signals: Vec<SovereignSignal>,
+    pub signals: Vec<CluaizSignal>,
 }
 
-pub struct NeuralFoundry {
+pub struct CoreFoundry {
     pub registry: SkillRegistry,
     pub router: SkillRouter,
     pub wasm_runtime: WasmHost,
@@ -32,13 +32,13 @@ pub struct NeuralFoundry {
     pub active_skill_ids: Mutex<Vec<String>>,
 }
 
-impl Default for NeuralFoundry {
+impl Default for CoreFoundry {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl NeuralFoundry {
+impl CoreFoundry {
     pub fn new() -> Self {
         Self {
             registry: SkillRegistry::new(),
@@ -52,11 +52,11 @@ impl NeuralFoundry {
 
     /// Initializes the foundry by scanning the skills directory.
     pub fn initialize(&mut self, skills_dir: &str) {
-        println!("[CLUAIZ] Initializing Neural Foundry from: {}", skills_dir);
+        println!("[CLUAIZ] Initializing Core Foundry from: {}", skills_dir);
         self.registry.load_from_directory(skills_dir);
     }
 
-    /// The Sovereign Flow: Prompt -> Multi-Route -> Execute
+    /// The Cluaiz Flow: Prompt -> Multi-Route -> Execute
     pub async fn process_intent(&self, prompt: &str) -> anyhow::Result<IntentResult> {
         let skill_ids = self.router.match_intent(prompt, &self.registry);
         let mut result = IntentResult { responses: Vec::new(), signals: Vec::new() };
@@ -65,11 +65,11 @@ impl NeuralFoundry {
             return Ok(result);
         }
 
-        info!("🧬 [NeuralFoundry] Multi-Skill Fusion Active: {} skills detected.", skill_ids.len());
+        info!("🧬 [CoreFoundry] Multi-Skill Fusion Active: {} skills detected.", skill_ids.len());
 
         for (i, skill_id) in skill_ids.iter().enumerate() {
             if i >= MAX_ACTIVE_SKILLS {
-                warn!("⚠️ [NeuralFoundry] Max active skills reached. Skipping remaining skills.");
+                warn!("⚠️ [CoreFoundry] Max active skills reached. Skipping remaining skills.");
                 break;
             }
 
@@ -91,14 +91,14 @@ impl NeuralFoundry {
                 }
             }
 
-            // 3. Map Sovereign Signal (Zero-Copy)
+            // 3. Map Cluaiz Signal (Zero-Copy)
             let kv_cache_path = skill.path.join("state.kv-cache");
             if kv_cache_path.exists() {
                 if let Ok(mapped_buffer) = MappedBuffer::from_file(&kv_cache_path) {
-                    result.signals.push(SovereignSignal {
+                    result.signals.push(CluaizSignal {
                         raw_data: Arc::new(mapped_buffer),
-                        token_count: skill.manifest.neural_metadata.token_count,
-                        head_dim: skill.manifest.neural_metadata.head_dim,
+                        token_count: skill.manifest.Core_metadata.token_count,
+                        head_dim: skill.manifest.Core_metadata.head_dim,
                     });
                 }
             }
@@ -109,7 +109,7 @@ impl NeuralFoundry {
             if logic_path.exists() {
                 match self.wasm_runtime.execute_skill_logic(&logic_path, "run", prompt).await {
                     Ok(resp) => result.responses.push(resp),
-                    Err(e) => tracing::error!("⚠️ [NeuralFoundry] Logic failed for '{}': {}", skill_id, e),
+                    Err(e) => tracing::error!("⚠️ [CoreFoundry] Logic failed for '{}': {}", skill_id, e),
                 }
             }
         }

@@ -6,9 +6,9 @@ use tracing::info;
 pub struct AutonomousDiscovery;
 
 impl AutonomousDiscovery {
-    /// Deep-scans the models directory for Sovereign Handshake units.
-    pub fn index_sovereign_models(base_path: &Path) -> Vec<ModelManifest> {
-        info!("🔍 Autonomous Discovery: Scouring {:?} for neural units...", base_path);
+    /// Deep-scans the models directory for Cluaiz Handshake units.
+    pub fn index_Cluaiz_models(base_path: &Path) -> Vec<ModelManifest> {
+        info!("🔍 Autonomous Discovery: Scouring {:?} for Core units...", base_path);
         let mut models = Vec::new();
 
         if !base_path.exists() { return models; }
@@ -16,7 +16,7 @@ impl AutonomousDiscovery {
         // Recursive scan for model_manifest.json
         Self::scan_recursive(base_path, &mut models);
 
-        info!("✅ Discovery Complete: Identified {} local neural assets.", models.len());
+        info!("✅ Discovery Complete: Identified {} local Core assets.", models.len());
         models
     }
 
@@ -32,7 +32,7 @@ impl AutonomousDiscovery {
                             if let Ok(mut manifest) = serde_json::from_str::<ModelManifest>(&content) {
                                 manifest.local_path = Some(path.to_string_lossy().to_string());
                                 
-                                // 🧬 SOVEREIGN DNA HEALING: Trigger regeneration if DNA is missing or has nulls
+                                // 🧬 Cluaiz DNA HEALING: Trigger regeneration if DNA is missing or has nulls
                                 let mut needs_healing = !dna_path.exists();
                                 if !needs_healing {
                                     if let Ok(dna_str) = fs::read_to_string(&dna_path) {
@@ -61,7 +61,7 @@ impl AutonomousDiscovery {
         }
     }
 
-    /// 🩹 SOVEREIGN REPAIR: Probes GGUF weights to extract full-power architectural DNA.
+    /// 🩹 Cluaiz REPAIR: Probes GGUF weights to extract full-power architectural DNA.
     fn repair_dna_from_local(dir: &Path, manifest: &ModelManifest) -> std::result::Result<(), String> {
         let weight_path = fs::read_dir(dir).map_err(|e| e.to_string())?
             .flatten()
@@ -99,7 +99,7 @@ impl AutonomousDiscovery {
                 let dna_path = dir.join("structural_dna.json");
                 if let Ok(json) = serde_json::to_string_pretty(&dna) {
                     let _ = fs::write(dna_path, json);
-                    info!("✅ DNA SEALED (GHOST): '{}' is now Sovereign-Verified.", manifest.id);
+                    info!("✅ DNA SEALED (GHOST): '{}' is now Cluaiz-Verified.", manifest.id);
                 }
             } else if let Ok(mut file) = std::fs::File::open(&wp) {
                 // NOTE: Standard models are probed normally.
@@ -119,7 +119,7 @@ impl AutonomousDiscovery {
                     let dna_path = dir.join("structural_dna.json");
                     if let Ok(json) = serde_json::to_string_pretty(&dna) {
                         let _ = fs::write(dna_path, json);
-                        info!("✅ DNA SEALED: '{}' is now Sovereign-Verified.", manifest.id);
+                        info!("✅ DNA SEALED: '{}' is now Cluaiz-Verified.", manifest.id);
                     }
                 }
             }

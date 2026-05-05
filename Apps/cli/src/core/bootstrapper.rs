@@ -7,7 +7,7 @@ use colored::Colorize;
 pub struct Bootstrapper;
 
 impl Bootstrapper {
-    /// 🚀 SOVEREIGN BOOTSTRAP: Ensures the Neural Engine is present and initialized.
+    /// 🚀 Cluaiz BOOTSTRAP: Ensures the Core Engine is present and initialized.
     pub async fn ignite() -> Result<()> {
         #[cfg(windows)]
         let _ = colored::control::set_virtual_terminal(true);
@@ -24,7 +24,7 @@ impl Bootstrapper {
         }
 
         // --- FULL STACK SYNC: Kernels & Drivers ---
-        Self::sync_neural_stack().await?;
+        Self::sync_Core_stack().await?;
 
         // Verify if system_control.bin exists in Hub
         let bin_truth = HardwareGovernor::resolve_interface_path().join("system_control.bin");
@@ -43,10 +43,10 @@ impl Bootstrapper {
             std::fs::create_dir_all(parent)?;
         }
 
-        println!("  {} [Sovereign] Downloading Engine from: {}", "📥".cyan(), url);
+        println!("  {} [Cluaiz] Downloading Engine from: {}", "📥".cyan(), url);
 
         let response = reqwest::get(url).await
-            .map_err(|e| eyre!("Failed to connect to Sovereign Registry: {}", e))?;
+            .map_err(|e| eyre!("Failed to connect to Cluaiz Registry: {}", e))?;
 
         if !response.status().is_success() {
             return Err(eyre!("Registry Error: Server returned status {}", response.status()));
@@ -63,12 +63,12 @@ impl Bootstrapper {
             std::fs::set_permissions(dest, perms)?;
         }
 
-        println!("  {} [Sovereign] Engine binary mounted and sealed.", "✅".green());
+        println!("  {} [Cluaiz] Engine binary mounted and sealed.", "✅".green());
         Ok(())
     }
 
     fn trigger_setup(engine_path: &Path) -> Result<()> {
-        println!("  {} [Sovereign] Igniting Hardware Calibration...", "🔥".red());
+        println!("  {} [Cluaiz] Igniting Hardware Calibration...", "🔥".red());
         
         let status = Command::new(engine_path)
             .arg("--setup")
@@ -82,7 +82,7 @@ impl Bootstrapper {
         Ok(())
     }
 
-    async fn sync_neural_stack() -> Result<()> {
+    async fn sync_Core_stack() -> Result<()> {
         let hub_path = HardwareGovernor::resolve_hub_path();
         let control_path = hub_path.join("interface-engines/system_control.json");
         
@@ -91,7 +91,7 @@ impl Bootstrapper {
         }
 
         let control_data: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&control_path)?)?;
-        let has_nvidia = control_data["silicon_truth"]["accelerators"]["gpus"]
+        let has_nvidia = control_data["Hardware_truth"]["accelerators"]["gpus"]
             .as_array()
             .map(|gpus| gpus.iter().any(|g| g["vendor"].as_str() == Some("NVIDIA_CORP")))
             .unwrap_or(false);
@@ -133,7 +133,7 @@ impl Bootstrapper {
         }
 
         let response = reqwest::get(url).await
-            .map_err(|e| eyre!("Failed to connect to Sovereign Registry: {}", e))?;
+            .map_err(|e| eyre!("Failed to connect to Cluaiz Registry: {}", e))?;
 
         if !response.status().is_success() {
             return Err(eyre!("Registry Error: {} returned {}", url, response.status()));
@@ -160,6 +160,6 @@ impl Bootstrapper {
         #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
         return Ok(format!("{}/cluaiz-engine-dev-mac-arm64.dylib", base));
 
-        Err(eyre!("Sovereign Registry: Platform not supported in this build."))
+        Err(eyre!("Cluaiz Registry: Platform not supported in this build."))
     }
 }

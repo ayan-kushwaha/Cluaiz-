@@ -89,8 +89,8 @@ impl App {
             }
             DownloadEvent::Complete(id) => {
                 if id == "INITIAL_LOAD" {
-                    self.state.sorted_models = engines::NeuralRoster::get_recommendations(
-                        &self.state.hardware.to_silicon_truth(), self.state.ram_gb
+                    self.state.sorted_models = engines::CoreRoster::get_recommendations(
+                        &self.state.hardware.to_Hardware_truth(), self.state.ram_gb
                     );
                 } else if self.state.downloading_id.as_ref() == Some(&id) {
                     let name = self.state.sorted_models.iter()
@@ -100,8 +100,8 @@ impl App {
 
                     self.state.downloading_id = None;
                     self.state.activity_stream.push(ActivityBlock::DownloadComplete(name));
-                    self.state.sorted_models = engines::NeuralRoster::get_recommendations(
-                        &self.state.hardware.to_silicon_truth(), self.state.ram_gb
+                    self.state.sorted_models = engines::CoreRoster::get_recommendations(
+                        &self.state.hardware.to_Hardware_truth(), self.state.ram_gb
                     );
                 }
             }

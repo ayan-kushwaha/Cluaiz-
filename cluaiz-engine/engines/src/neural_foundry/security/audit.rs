@@ -1,4 +1,4 @@
-// cluaiz-engine/engines/src/neural_foundry/security/audit.rs
+// cluaiz-engine/engines/src/Core_foundry/security/audit.rs
 pub struct AuditLog {}
 impl Default for AuditLog {
     fn default() -> Self {

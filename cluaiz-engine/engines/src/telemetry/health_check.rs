@@ -1,12 +1,12 @@
-use crate::hardware::{SiliconTruth, StorageSubsystem};
+use crate::hardware::{HardwareTruth, StorageSubsystem};
 use sysinfo::System;
 
-pub struct SovereignHealthChecker;
+pub struct CluaizHealthChecker;
 
-impl SovereignHealthChecker {
+impl CluaizHealthChecker {
     /// Conducts a macro-benchmark of the entire system on first boot
-    pub fn execute_initial_diagnostic(mut profile: SiliconTruth) -> SiliconTruth {
-        println!("🩺 [Sovereign Health] Initiating Deep Profiling Sequence...");
+    pub fn execute_initial_diagnostic(mut profile: HardwareTruth) -> HardwareTruth {
+        println!("🩺 [Cluaiz Health] Initiating Deep Profiling Sequence...");
 
         // 1. RAM Profiling via sysinfo (Lightweight)
         let mut sys = System::new();
@@ -47,10 +47,10 @@ impl SovereignHealthChecker {
 
     /// Runs a deep manual benchmark consisting of a 50MB disk I/O write/read test
     pub fn run_full_benchmark() {
-        println!("🚀 [Sovereign Benchmark] Initiating Deep Hardware Diagnostics...");
+        println!("🚀 [Cluaiz Benchmark] Initiating Deep Hardware Diagnostics...");
         let start = std::time::Instant::now();
         
-        let path = std::path::Path::new(".sovereign_io_bench.tmp");
+        let path = std::path::Path::new(".Cluaiz_io_bench.tmp");
         let payload = vec![0u8; 50 * 1024 * 1024]; // 50MB payload
         
         if let Ok(mut file) = std::fs::File::create(path) {
@@ -69,7 +69,7 @@ impl SovereignHealthChecker {
         
         let _ = std::fs::remove_file(path);
         
-        println!("✅ [Sovereign Benchmark] Storage Speed: {:.1} MB/s", speed_mbps);
-        println!("✅ [Sovereign Benchmark] Complete in {:.2}s", duration.as_secs_f64());
+        println!("✅ [Cluaiz Benchmark] Storage Speed: {:.1} MB/s", speed_mbps);
+        println!("✅ [Cluaiz Benchmark] Complete in {:.2}s", duration.as_secs_f64());
     }
 }

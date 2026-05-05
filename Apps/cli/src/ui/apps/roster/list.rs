@@ -41,6 +41,6 @@ pub fn render(f: &mut Frame, app: &AppState, area: Rect) {
         .collect();
 
     let list = List::new(items)
-        .block(Block::default().borders(Borders::ALL).title(" Neural Roster [Enter to Install] "));
+        .block(Block::default().borders(Borders::ALL).title(" Core Roster [Enter to Install] "));
     f.render_widget(list, area);
 }

@@ -51,13 +51,13 @@ impl OnboardingEngine {
                     }
                 }
                 None => {
-                    // 🛰️ SILICON READINESS GUARD
+                    // 🛰️ Hardware READINESS GUARD
                     let os_str = if cfg!(windows) { "windows" } else { "linux" };
                     let binary_path = engines::runtime::execution::provisioner::BinaryProvisioner::resolve_local_kernel_path(os_str, &archer_shared::hardware::schema::BackendDriver::CPU).unwrap_or_default();
 
                     if !binary_path.exists() {
-                        println!("  {} [Onboarding] Neural Core still forging. Holding transition until Silicon is ready...", "⏳".yellow());
-                        state.onboarding_status = "SYNCING NEURAL CORE...".to_string();
+                        println!("  {} [Onboarding] Core Core still forging. Holding transition until Hardware is ready...", "⏳".yellow());
+                        state.onboarding_status = "SYNCING Core CORE...".to_string();
                         // We stay on the Complete step until the next tick/input
                         return;
                     } else {
@@ -126,8 +126,8 @@ impl OnboardingEngine {
                     KeyCode::Enter => match state.auth_mode {
                         AuthMode::Google => {
                             state.user_profile.auth = ::archer_shared::auth::dummy_google_auth(
-                                "sovereign@cluaiz.os",
-                                "Sovereign User",
+                                "Cluaiz@cluaiz.os",
+                                "Cluaiz User",
                             );
                             Self::advance(state);
                         }
@@ -278,7 +278,7 @@ impl OnboardingEngine {
                 if key.code == KeyCode::Enter {
                     state.user_profile.hardware_completed = true;
 
-                    // 🚀 NEURAL IGNITION: Trigger Background Provisioning
+                    // 🚀 Core IGNITION: Trigger Background Provisioning
                     let os = if cfg!(windows) { "windows" } else { "linux" };
                     let driver = if let Some(d) = state.hardware.active_drivers.get(0) {
                         match d.driver_id.as_str() {
@@ -292,7 +292,7 @@ impl OnboardingEngine {
                     let binary_path = engines::runtime::execution::provisioner::BinaryProvisioner::resolve_local_kernel_path(os, &driver).unwrap_or_default();
 
                     println!(
-                        "  {} [Onboarding] Igniting Neural Core Provisioner for [{:?}]...",
+                        "  {} [Onboarding] Igniting Core Core Provisioner for [{:?}]...",
                         "🔥".red(),
                         driver
                     );

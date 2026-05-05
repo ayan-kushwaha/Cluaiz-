@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use tokio::io::AsyncWriteExt;
 use futures_util::StreamExt;
 
-/// Sovereign Installer
+/// Cluaiz Installer
 /// Handles the atomic download and verification of model weights from Hugging Face.
 pub struct ModelInstaller {
     target_dir: PathBuf,

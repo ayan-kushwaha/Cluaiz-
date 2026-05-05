@@ -1,6 +1,6 @@
-//! 🛰️ Sovereign NPU Bridge
+//! 🛰️ Cluaiz NPU Bridge
 //! Activation layer for hardware-native AI accelerators (NPU, TPU, DSP).
-//! This bridge maps Neural Dispatcher intents to silicon-specific execution paths.
+//! This bridge maps Core Dispatcher intents to Hardware-specific execution paths.
 
 use anyhow::Result;
 use archer_shared::hardware::schema::profiles::{NpuSubsystem, TpuSubsystem};
@@ -26,7 +26,7 @@ impl NpuBridge {
 
         // TODO: Implement DirectML/CoreML handoff here
         // For Phase 1 of Mission 9, we just signal that the bridge is active.
-        tracing::info!("🛰️ [NPU-Bridge] Native Activation: Routing to silicon accelerator...");
+        tracing::info!("🛰️ [NPU-Bridge] Native Activation: Routing to Hardware accelerator...");
         
         Ok("SUCCESS_NPU_BYPASS".into())
     }

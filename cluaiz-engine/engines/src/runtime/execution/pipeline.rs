@@ -1,19 +1,19 @@
 //! ═══════════════════════════════════════════════════════════════════════
-//!  CURE Engine: Asynchronous Neural Pipeline (Async Double-Buffering)
+//!  CURE Engine: Asynchronous Core Pipeline (Async Double-Buffering)
 //! ═══════════════════════════════════════════════════════════════════════
 
 use std::sync::Arc;
 use tokio::sync::mpsc;
-use crate::runtime::execution::runner::{SovereignRunner, SovereignMetrics};
-use archer_shared::SovereignContext;
+use crate::runtime::execution::runner::{CluaizRunner, CluaizMetrics};
+use archer_shared::CluaizContext;
 
-pub struct NeuralPipeline {
-    pub runner: SovereignRunner,
-    pub context: SovereignContext,
+pub struct CorePipeline {
+    pub runner: CluaizRunner,
+    pub context: CluaizContext,
 }
 
-impl NeuralPipeline {
-    pub fn new(runner: SovereignRunner, context: SovereignContext) -> Self {
+impl CorePipeline {
+    pub fn new(runner: CluaizRunner, context: CluaizContext) -> Self {
         Self { runner, context }
     }
 

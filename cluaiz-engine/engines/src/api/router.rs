@@ -1,43 +1,43 @@
-//! router.rs: The Neural Dispatcher.
+//! router.rs: The Core Dispatcher.
 //! Routes prompts to the appropriate backend based on model architecture.
 
 use std::path::PathBuf;
 use crate::utils::healer::AutoHealer;
-use archer_shared::{UnifiedBackend, BackendType, SovereignContext, StructuralDNA, TemplateManager, ModelWeightsWrapper};
-use crate::runtime::execution::hub::SiliconOrchestrator;
+use archer_shared::{UnifiedBackend, BackendType, CluaizContext, StructuralDNA, TemplateManager, ModelWeightsWrapper};
+use crate::runtime::execution::hub::HardwareOrchestrator;
 use candle_core::Device;
 
 pub enum Backend {
     Empty(DummyBackend),
-    Sovereign(ModelWeightsWrapper),
+    Cluaiz(ModelWeightsWrapper),
 }
 
 impl UnifiedBackend for Backend {
     fn generate(&mut self, prompt: &str, max_tokens: usize) -> Result<String, String> {
         match self {
             Self::Empty(b) => b.generate(prompt, max_tokens),
-            Self::Sovereign(b) => b.generate(prompt, max_tokens),
+            Self::Cluaiz(b) => b.generate(prompt, max_tokens),
         }
     }
     fn prefill(&mut self, prompt: &str) -> anyhow::Result<()> {
         match self {
             Self::Empty(b) => b.prefill(prompt),
-            Self::Sovereign(b) => b.prefill(prompt),
+            Self::Cluaiz(b) => b.prefill(prompt),
         }
     }
 
     fn evaluate_tps(&self) -> f64 {
         match self {
             Self::Empty(b) => b.evaluate_tps(),
-            Self::Sovereign(b) => b.evaluate_tps(),
+            Self::Cluaiz(b) => b.evaluate_tps(),
         }
     }
 }
 
-impl archer_shared::SovereignInference for Backend {
+impl archer_shared::CluaizInference for Backend {
     fn forward_raw(&mut self, inputs: &[u32], pos: usize) -> anyhow::Result<Vec<f32>> {
         match self {
-            Self::Sovereign(b) => b.forward_raw(inputs, pos),
+            Self::Cluaiz(b) => b.forward_raw(inputs, pos),
             Self::Empty(_) => Err(anyhow::anyhow!("Empty backend")),
         }
     }
@@ -50,30 +50,30 @@ impl archer_shared::SovereignInference for Backend {
         callback: Box<dyn FnMut(String) + Send + 'static>,
     ) -> anyhow::Result<()> {
         match self {
-            Self::Sovereign(b) => b.generate_stream(prompt, max_tokens, tokenizer, callback),
+            Self::Cluaiz(b) => b.generate_stream(prompt, max_tokens, tokenizer, callback),
             Self::Empty(_) => Err(anyhow::anyhow!("Empty backend")),
         }
     }
 }
 
-pub struct NeuralRouter {
+pub struct CoreRouter {
     pub active_backend: Backend,
     pub tokenizer: Option<tokenizers::Tokenizer>,
-    pub foundry: crate::neural_foundry::NeuralFoundry,
+    pub foundry: crate::Core_foundry::CoreFoundry,
 }
 
-impl Default for NeuralRouter {
+impl Default for CoreRouter {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl NeuralRouter {
+impl CoreRouter {
     pub fn new() -> Self {
         Self { 
             active_backend: Backend::Empty(DummyBackend),
             tokenizer: None,
-            foundry: crate::neural_foundry::NeuralFoundry::new(),
+            foundry: crate::Core_foundry::CoreFoundry::new(),
         }
     }
 
@@ -83,20 +83,20 @@ impl NeuralRouter {
             let _ = AutoHealer::heal_missing_tokenizer(&repo_id, parent).await;
         }
 
-        // [SOVEREIGN ALIGNMENT]: Bootstrapping context with default DNA and Templates
+        // [Cluaiz ALIGNMENT]: Bootstrapping context with default DNA and Templates
         let mut dna = StructuralDNA::default();
         dna.preferred_runtime = Some(runtime);
         
-        let context = SovereignContext::boot(
+        let context = CluaizContext::boot(
             dna,
             TemplateManager::default(),
         );
 
-        // 🚀 THE SOVEREIGN HANDSHAKE: Dispatching to the Dynamic Linker
-        println!("🧬 [Router] Dispatching to SiliconOrchestrator for dynamic linkage...");
-        let engine = SiliconOrchestrator::instantiate(&path.to_string_lossy(), context)
+        // 🚀 THE Cluaiz HANDSHAKE: Dispatching to the Dynamic Linker
+        println!("🧬 [Router] Dispatching to HardwareOrchestrator for dynamic linkage...");
+        let engine = HardwareOrchestrator::instantiate(&path.to_string_lossy(), context)
             .await
-            .map_err(|e| format!("Sovereign Handshake Failure: {}", e))?;
+            .map_err(|e| format!("Cluaiz Handshake Failure: {}", e))?;
 
         let (tokenizer, t_error) = if let Some(p) = path.parent() {
             let t_path = p.join("tokenizer.json");
@@ -116,12 +116,12 @@ impl NeuralRouter {
             println!("🗣️ [Router] Voice initialization fail: {}", err);
         }
 
-        let mut foundry = crate::neural_foundry::NeuralFoundry::new();
+        let mut foundry = crate::Core_foundry::CoreFoundry::new();
         // Load skills from a standard location (this could be configurable)
         foundry.initialize("skills");
 
         Ok(Self { 
-            active_backend: Backend::Sovereign(engine), 
+            active_backend: Backend::Cluaiz(engine), 
             tokenizer,
             foundry 
         })
@@ -137,16 +137,16 @@ impl NeuralRouter {
         max_tokens: usize,
         callback: Box<dyn FnMut(String) + Send + 'static>,
     ) -> Result<(), String> {
-        // 🧪 SOVEREIGN HANDSHAKE: Check for skills before generation
+        // 🧪 Cluaiz HANDSHAKE: Check for skills before generation
         let rt = tokio::runtime::Handle::current();
         let intent_result = rt.block_on(self.foundry.process_intent(prompt))
             .map_err(|e| format!("Skill Discovery Error: {}", e))?;
 
         match &mut self.active_backend {
-            Backend::Sovereign(b) => {
-                // If neural signals (skill souls) were identified, inject them into the kernel
+            Backend::Cluaiz(b) => {
+                // If Core signals (skill souls) were identified, inject them into the kernel
                 if !intent_result.signals.is_empty() {
-                    println!("💉 [Router] Injecting {} neural signals into active backend...", intent_result.signals.len());
+                    println!("💉 [Router] Injecting {} Core signals into active backend...", intent_result.signals.len());
                     b.inject_signals(intent_result.signals).map_err(|e| format!("Signal Injection Failure: {}", e))?;
                 }
 
@@ -157,7 +157,7 @@ impl NeuralRouter {
                     Err("Tokenizer not loaded.".to_string())
                 }
             },
-            Backend::Empty(_) => Err("Neural weights not loaded.".to_string()),
+            Backend::Empty(_) => Err("Core weights not loaded.".to_string()),
         }
     }
 }
@@ -165,13 +165,13 @@ impl NeuralRouter {
 pub struct DummyBackend;
 impl archer_shared::UnifiedBackend for DummyBackend {
     fn generate(&mut self, _prompt: &str, _max_tokens: usize) -> Result<String, String> {
-        Err("Neural weights not loaded.".to_string())
+        Err("Core weights not loaded.".to_string())
     }
     fn prefill(&mut self, _prompt: &str) -> anyhow::Result<()> { Ok(()) }
     fn evaluate_tps(&self) -> f64 { 0.0 }
 }
 
-impl archer_shared::SovereignInference for DummyBackend {
+impl archer_shared::CluaizInference for DummyBackend {
     fn forward_raw(&mut self, _inputs: &[u32], _pos: usize) -> anyhow::Result<Vec<f32>> {
         Err(anyhow::anyhow!("Dummy backend"))
     }

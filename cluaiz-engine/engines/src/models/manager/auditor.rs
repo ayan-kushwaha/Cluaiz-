@@ -2,11 +2,11 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use archer_shared::hardware::schema::profiles::SystemControl;
 
-/// Silicon Health Auditor
+/// Hardware Health Auditor
 /// Enforces the 5/10 TPS Rule and VRAM safety.
-pub struct SiliconAuditor;
+pub struct HardwareAuditor;
 
-impl SiliconAuditor {
+impl HardwareAuditor {
     /// Audits hardware performance for a model based on manifest specs
     pub fn audit_performance(&self, ram_required: f32, requires_gpu: bool) -> HealthStatus {
         let config_path = self.get_system_control_path();
@@ -24,12 +24,12 @@ impl SiliconAuditor {
     }
 
     fn evaluate_hardware(&self, control: &SystemControl, req_ram: f32, req_gpu: bool) -> HealthStatus {
-        // 🚀 Sovereign Logic: Extract VRAM from the first GPU (Primary)
-        let vram_available = control.silicon_truth.accelerators.gpus.first()
+        // 🚀 Cluaiz Logic: Extract VRAM from the first GPU (Primary)
+        let vram_available = control.Hardware_truth.accelerators.gpus.first()
             .map(|g| g.vram_available_gb)
             .unwrap_or(0.0) as f32;
         
-        let system_ram = control.silicon_truth.memory.total_capacity_gb as f32;
+        let system_ram = control.Hardware_truth.memory.total_capacity_gb as f32;
 
         if req_gpu {
             if req_ram <= vram_available {

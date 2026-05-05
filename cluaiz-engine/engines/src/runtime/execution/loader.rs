@@ -2,11 +2,11 @@ use std::path::Path;
 use anyhow::{Result, anyhow};
 use tokenizers::Tokenizer;
 use crate::models::registry::Provisioner;
-use crate::runtime::execution::hub::SiliconOrchestrator as NeuralHub;
-use archer_shared::{ModelWeightsWrapper, SovereignContext, StructuralDNA, TemplateManager};
+use crate::runtime::execution::hub::HardwareOrchestrator as CoreHub;
+use archer_shared::{ModelWeightsWrapper, CluaizContext, StructuralDNA, TemplateManager};
 use archer_shared::utils::GGUFProber;
 
-/// GGUFLoader: Lightweight orchestrator for quantized neural models.
+/// GGUFLoader: Lightweight orchestrator for quantized Core models.
 pub struct GGUFLoader;
 
 impl GGUFLoader {
@@ -18,7 +18,7 @@ impl GGUFLoader {
         let arch = metadata.get("general.architecture")
             .ok_or_else(|| anyhow!("Registry Alert: Architecture metadata missing in GGUF file."))?;
         
-        // [SOVEREIGN CLEAN]: Replaced tracing::info with println for editor stability
+        // [Cluaiz CLEAN]: Replaced tracing::info with println for editor stability
         println!("🔍 Autonomous Discovery: Probed architecture '{}' via Native Prober", arch);
 
         // 2. Extract Special Tokens (Resilient Handshake)
@@ -30,23 +30,23 @@ impl GGUFLoader {
         let dna_path = model_dir.join("structural_dna.json");
         let architectural_dna = if dna_path.exists() {
              StructuralDNA::load(&dna_path)
-                .map_err(|load_err| anyhow!("Sovereign Boot Failure: DNA corrupt. Detail: {}", load_err))?
+                .map_err(|load_err| anyhow!("Cluaiz Boot Failure: DNA corrupt. Detail: {}", load_err))?
         } else {
              StructuralDNA::default()
         };
 
         let tokenizer_path = Provisioner::ensure_assets(model_dir, hf_repo, None, "tokenizer.json").await?;
         let tokenizer = Tokenizer::from_file(tokenizer_path)
-            .map_err(|e| anyhow!("Neural Hardware Error: Failed to load tokenizer: {}", e))?;
+            .map_err(|e| anyhow!("Core Hardware Error: Failed to load tokenizer: {}", e))?;
 
-        // 🧬 SOVEREIGN ACTIVATION: Dynamic Context Bootstrapping
-        let sovereign_context = SovereignContext::boot(
+        // 🧬 Cluaiz ACTIVATION: Dynamic Context Bootstrapping
+        let Cluaiz_context = CluaizContext::boot(
             architectural_dna,
             TemplateManager::default()
         );
  
-        // 4. Delegate Instantiation to the Neural Hub (Universal DNA Dispatch)
-        let model = NeuralHub::instantiate(path.to_string_lossy().as_ref(), sovereign_context).await?;
+        // 4. Delegate Instantiation to the Core Hub (Universal DNA Dispatch)
+        let model = CoreHub::instantiate(path.to_string_lossy().as_ref(), Cluaiz_context).await?;
   
         Ok((model, tokenizer, bos_token_id))
     }

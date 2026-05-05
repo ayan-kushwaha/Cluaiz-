@@ -74,7 +74,7 @@ impl ModelDownloader {
 
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(3600))
-            .user_agent("Cluaiz-Neural-OS/1.0 (Production Registry)")
+            .user_agent("Cluaiz-Core-OS/1.0 (Production Registry)")
             .default_headers({
                 let mut headers = reqwest::header::HeaderMap::new();
                 headers.insert(reqwest::header::REFERER, "https://huggingface.co/".parse().unwrap_or(reqwest::header::HeaderValue::from_static("https://huggingface.co/")));
@@ -111,15 +111,15 @@ impl ModelDownloader {
             }
             
             // 🧬 DNA HANDSHAKE: Generate structural_dna.json with Binary Trace
-            let _ = Self::generate_sovereign_dna(&m, &dest_dir, &weight_path);
+            let _ = Self::generate_Cluaiz_dna(&m, &dest_dir, &weight_path);
         }
 
         Ok(weight_path)
     }
 
     /// 🧬 DNA GENERATOR: Creates the structural backbone for the engine's loader by probing the binary.
-    fn generate_sovereign_dna(manifest: &ModelManifest, dest_dir: &std::path::Path, weight_path: &std::path::Path) -> Result<(), String> {
-        info!("🧬 [DNA] Generating sovereign architectural backbone for '{}'", manifest.id);
+    fn generate_Cluaiz_dna(manifest: &ModelManifest, dest_dir: &std::path::Path, weight_path: &std::path::Path) -> Result<(), String> {
+        info!("🧬 [DNA] Generating Cluaiz architectural backbone for '{}'", manifest.id);
         
         let mut signature = archer_shared::KernelSignature::default();
         signature.is_multimodal = manifest.has_vision;
@@ -150,7 +150,7 @@ impl ModelDownloader {
         dna.dynamic_attributes.insert("training_tokens".to_string(), manifest.training_tokens.clone());
         dna.dynamic_attributes.insert("category".to_string(), manifest.category.clone());
 
-        // 🔍 BINARY PROBE: Extracting truth directly from GGUF Silicon (Framework-Free)
+        // 🔍 BINARY PROBE: Extracting truth directly from GGUF Hardware (Framework-Free)
         if weight_path.exists() {
             info!("🧬 [DNA] Probing weight binary: {:?}", weight_path);
             if let Ok((metadata, tensor_infos)) = archer_shared::utils::GGUFProber::probe(weight_path) {

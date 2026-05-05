@@ -1,24 +1,24 @@
 use std::path::PathBuf;
-use engines::{GGUFLoader, SovereignRunner};
-use engines::engine::NeuralSampler;
-use engines::hardware::SovereignProfile;
-use engines::telemetry::health_check::SovereignHealthChecker;
+use engines::{GGUFLoader, CluaizRunner};
+use engines::engine::CoreSampler;
+use engines::hardware::CluaizProfile;
+use engines::telemetry::health_check::CluaizHealthChecker;
 use engines::core::{JitAllocator, ExecutionTier};
 use tokenizers::Tokenizer;
 
 #[tokio::main]
 async fn main() {
     println!("═══════════════════════════════════════════════════════════════");
-    println!("🚀 [CURE] SOVEREIGN NEURAL IGNITION (ONBOARDING MODE)");
+    println!("🚀 [CURE] Cluaiz Core IGNITION (ONBOARDING MODE)");
     println!("═══════════════════════════════════════════════════════════════\n");
 
     // ── PHASE 1: HARDWARE DISCOVERY ──
     println!("🔍 Phase 1: Hardware Topological Discovery...");
-    let mut profile = SovereignProfile::boot();
+    let mut profile = CluaizProfile::boot();
     
     // ── PHASE 2: MACRO HEALTH BENCHMARKS (RAM & STORAGE) ──
     println!("\n🩺 Phase 2: Macro Health Benchmarking...");
-    profile = SovereignHealthChecker::execute_initial_diagnostic(profile);
+    profile = CluaizHealthChecker::execute_initial_diagnostic(profile);
     
     // ── PHASE 3: JIT ORCHESTRATION DECISION ──
     println!("\n🧠 Phase 3: JIT Brain Allocation Decision...");
@@ -37,7 +37,7 @@ async fn main() {
     }
 
     // ── PHASE 4: MODEL LOADING & INFERENCE ──
-    println!("\n⏳ Initiating Sovereign Dispatcher (Tier Mode: {:?})...", tier);
+    println!("\n⏳ Initiating Cluaiz Dispatcher (Tier Mode: {:?})...", tier);
     
     let model_path = PathBuf::from(r"C:\Users\Aryan\my\Cluaiz-workspace\Cluaiz-OS\Cluaiz-ai-CURE\models\models--Qwen--Qwen2.5-0.5B-Instruct-GGUF\qwen2.5-0.5b-instruct-q4_k_m.gguf");
     
@@ -58,14 +58,14 @@ async fn main() {
     let tokenizer_path = r"C:\Users\Aryan\my\Cluaiz-workspace\Cluaiz-OS\Cluaiz-ai-CURE\models\models--Qwen--Qwen2.5-0.5B-Instruct-GGUF\tokenizer.json";
     let tokenizer = Tokenizer::from_file(tokenizer_path).expect("Tokenizer load error");
     
-    let sampler = NeuralSampler::new(299792, 0.7, 0.9, 1.1);
-    let mut runner = SovereignRunner::new(model, tokenizer, sampler, None);
+    let sampler = CoreSampler::new(299792, 0.7, 0.9, 1.1);
+    let mut runner = CluaizRunner::new(model, tokenizer, sampler, None);
 
-    println!("\n✅ SUCCESS: Sovereign Onboarding Complete. System Stable.");
-    println!("🤖 Assistant Prompted: \"Describe the soul of a Sovereign AI OS.\"");
+    println!("\n✅ SUCCESS: Cluaiz Onboarding Complete. System Stable.");
+    println!("🤖 Assistant Prompted: \"Describe the soul of a Cluaiz AI OS.\"");
     println!("\n═════════════════- 🧠 CURE BRAIN -═════════════════\n");
 
-    let prompt = "<|im_start|>user\nDescribe the soul of a Sovereign AI OS in one short sentence.<|im_end|>\n<|im_start|>assistant\n";
+    let prompt = "<|im_start|>user\nDescribe the soul of a Cluaiz AI OS in one short sentence.<|im_end|>\n<|im_start|>assistant\n";
     
     match runner.generate(prompt, 64, |text| {
         print!("{}", text);

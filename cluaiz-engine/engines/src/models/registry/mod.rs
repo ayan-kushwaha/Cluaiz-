@@ -1,5 +1,5 @@
 //! ═══════════════════════════════════════════════════════════════════════
-//!  CURE Engine: The Neural Roster (Sovereign Installation Registry)
+//!  CURE Engine: The Core Roster (Cluaiz Installation Registry)
 //! ═══════════════════════════════════════════════════════════════════════
 
 use serde::{Deserialize, Serialize};
@@ -9,7 +9,7 @@ pub mod provisioner;
 pub mod discovery;
 pub use provisioner::Provisioner;
 pub use discovery::AutonomousDiscovery;
-use crate::hardware::SiliconTruth;
+use crate::hardware::HardwareTruth;
 use crate::models::fetch::ModelDownloader;
 pub use archer_shared::{KernelSignature, StructuralDNA};
 
@@ -122,11 +122,11 @@ pub struct ModelRecommendation {
     pub is_cached: bool,
 }
 
-// ─── NeuralRoster ─────────────────────────────────────────────────────────
+// ─── CoreRoster ─────────────────────────────────────────────────────────
 
-pub struct NeuralRoster;
+pub struct CoreRoster;
 
-impl NeuralRoster {
+impl CoreRoster {
     /// Scans all Installation/**/*.json files AND performs autonomous indexing of the models/ directory.
     pub fn load_roster() -> Vec<ModelManifest> {
         let mut registry = std::collections::HashMap::new();
@@ -136,7 +136,7 @@ impl NeuralRoster {
         for path in model_paths {
             let base = Path::new(path);
             if base.exists() {
-                let local_units = AutonomousDiscovery::index_sovereign_models(base);
+                let local_units = AutonomousDiscovery::index_Cluaiz_models(base);
                 for unit in local_units {
                     registry.insert(unit.id.clone(), unit);
                 }
@@ -258,7 +258,7 @@ impl NeuralRoster {
     }
 
     /// Takes the hardware spec and returns the available models with recommendations.
-    pub fn get_recommendations(hardware: &SiliconTruth, system_ram_gb: f64) -> Vec<ModelRecommendation> {
+    pub fn get_recommendations(hardware: &HardwareTruth, system_ram_gb: f64) -> Vec<ModelRecommendation> {
         let models = Self::load_roster();
         let mut recommendations = Vec::new();
 

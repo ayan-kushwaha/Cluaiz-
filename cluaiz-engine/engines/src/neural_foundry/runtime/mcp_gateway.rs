@@ -1,4 +1,4 @@
-// cluaiz-engine: Neural Foundry - MCP Gateway
+// cluaiz-engine: Core Foundry - MCP Gateway
 // Logic to handle external tool calls via MCP servers.
 
 use anyhow::Result;

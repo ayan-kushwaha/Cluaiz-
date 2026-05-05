@@ -1,5 +1,5 @@
 /// ═══════════════════════════════════════════════════════════════════════
-///  CURE Engine: GGUF Neural Audit Binary v2.0
+///  CURE Engine: GGUF Core Audit Binary v2.0
 ///  Raw GGUF header inspection - no model load, no tokenizer needed.
 ///  Tests which dtype each tensor uses and catches incompatible types.
 /// ═══════════════════════════════════════════════════════════════════════
@@ -77,7 +77,7 @@ fn inspect(path: PathBuf, model_name: &str) {
 
 fn main() {
     println!("╔══════════════════════════════════════════════════════════════╗");
-    println!("║   CURE ENGINE: NEURAL WEIGHT AUDIT PROTOCOL v2.0            ║");
+    println!("║   CURE ENGINE: Core WEIGHT AUDIT PROTOCOL v2.0            ║");
     println!("║   Diagnosing: Target Custom GGUF Architectures              ║");
     println!("╚══════════════════════════════════════════════════════════════╝\n");
 
@@ -99,6 +99,6 @@ fn main() {
     inspect(target, "User Custom Model");
 
     println!("\n╔══════════════════════════════════════════════════════════════╗");
-    println!("║   NEURAL AUDIT COMPLETE                                      ║");
+    println!("║   Core AUDIT COMPLETE                                      ║");
     println!("╚══════════════════════════════════════════════════════════════╝\n");
 }

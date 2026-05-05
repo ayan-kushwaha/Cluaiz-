@@ -1,4 +1,4 @@
-//! archer-top: The Sovereign Silicon Watchtower (CLI).
+//! archer-top: The Cluaiz Hardware Watchtower (CLI).
 //! High-speed, terminal-native monitoring for the CURE Engine.
 
 use archer_shared::hardware::telemetry;
@@ -7,14 +7,14 @@ use std::thread;
 use std::time::Duration;
 
 fn main() -> anyhow::Result<()> {
-    // 🏛️ Initialize the Sovereign Governor (Triggers Calibration if JSON is missing)
+    // 🏛️ Initialize the Cluaiz Governor (Triggers Calibration if JSON is missing)
     let _governor = archer_shared::HardwareGovernor::start();
     
     let sensor = telemetry::get_pulse();
     let mut stdout = stdout();
 
     println!("\x1B[2J\x1B[H"); // Clear screen
-    println!("🧿 ARCHER SILICON WATCHTOWER V6.0 - [GHOST MODE ACTIVE]");
+    println!("🧿 ARCHER Hardware WATCHTOWER V6.0 - [GHOST MODE ACTIVE]");
     println!("══════════════════════════════════════════════════════════");
 
     loop {
@@ -26,7 +26,7 @@ fn main() -> anyhow::Result<()> {
 
         // 2. Render UI (ANSI Express)
         print!("\x1B[H"); // Move to top
-        println!("🧿 ARCHER SILICON WATCHTOWER V6.0 - Silicon Pulse Target: LOCAL");
+        println!("🧿 ARCHER Hardware WATCHTOWER V6.0 - Hardware Pulse Target: LOCAL");
         println!("══════════════════════════════════════════════════════════");
 
         // CPU Grid (Per-Core Audit)
@@ -43,13 +43,13 @@ fn main() -> anyhow::Result<()> {
         }
 
         // VRAM & Global Sensors
-        println!("\n\n[SILICON DIODES]");
+        println!("\n\n[Hardware DIODES]");
         let vram_bar = render_bar(vram_usage, 40);
         println!(" VRAM Pressure: [{}] {}%", vram_bar, vram_usage);
         println!(" CPU Thermal:   {:.1}°C", reading_celsius);
 
-        // Neural Metrics
-        println!("\n[NEURAL KERNEL METRICS]");
+        // Core Metrics
+        println!("\n[Core KERNEL METRICS]");
         println!(" Relay Latency:  {} ms", pulse.relay_latency_ms);
         println!(" context Cache:  {} MB", pulse.kv_cache_footprint_mb);
         println!(" Disk Load:      {} MB/s", pulse.storage_throughput_mbps);

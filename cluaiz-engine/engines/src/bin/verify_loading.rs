@@ -1,10 +1,10 @@
-use engines::models::registry::NeuralRoster;
+use engines::models::registry::CoreRoster;
 
 fn main() {
-    println!("🚀 [ROSTER DIAGNOSTIC] Initiating Sovereign Registry Scan...");
+    println!("🚀 [ROSTER DIAGNOSTIC] Initiating Cluaiz Registry Scan...");
     
     // We run the same function the TUI calls
-    let manifests = NeuralRoster::load_roster();
+    let manifests = CoreRoster::load_roster();
     
     println!("--------------------------------------------------");
     if manifests.is_empty() {

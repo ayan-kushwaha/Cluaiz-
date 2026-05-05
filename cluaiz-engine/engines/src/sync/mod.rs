@@ -3,7 +3,7 @@ use std::time::Duration;
 use std::thread;
 use serde::{Serialize, Deserialize};
 
-/// 🧠 Sovereign Sync Identity
+/// 🧠 Cluaiz Sync Identity
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DeviceIdentity {
     pub device_id: String,
@@ -12,22 +12,22 @@ pub struct DeviceIdentity {
     pub last_seen: u64,
 }
 
-/// 🛰️ Sovereign P2P Manager
+/// 🛰️ Cluaiz P2P Manager
 /// Handles device discovery and brain fragment synchronization.
-pub struct SovereignSync {
+pub struct CluaizSync {
     discovery_port: u16,
 }
 
-impl Default for SovereignSync {
+impl Default for CluaizSync {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl SovereignSync {
+impl CluaizSync {
     pub fn new() -> Self {
         Self {
-            discovery_port: 7711, // Industrial Sovereign Port
+            discovery_port: 7711, // Industrial Cluaiz Port
         }
     }
 

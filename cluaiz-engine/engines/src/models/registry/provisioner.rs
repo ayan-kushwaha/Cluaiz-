@@ -46,7 +46,7 @@ impl Provisioner {
         }
 
         Err(anyhow!(
-            "Sovereign Registry Alert: Failed to provision required asset '{}' from all sources.",
+            "Cluaiz Registry Alert: Failed to provision required asset '{}' from all sources.",
             filename
         ))
     }

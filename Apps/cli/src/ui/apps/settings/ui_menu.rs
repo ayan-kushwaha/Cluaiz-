@@ -22,7 +22,7 @@ pub fn render_menu(app: &AppState, theme: &Theme, area: Rect, buf: &mut Buffer) 
 
     // ── 2. MENU OPTIONS (Flowing List) ────────────────────────────────
     let menu_options = [
-        ("🧬", "Hardware DNA & Identity", "Kernel specs and silicon signature"),
+        ("🧬", "Hardware DNA & Identity", "Kernel specs and Hardware signature"),
         ("👤", "User Profile & Locale", "Identity mapping and regional sets"),
         ("🎛️", "System Core & Reset", "Core engine parameters and recovery"),
     ];

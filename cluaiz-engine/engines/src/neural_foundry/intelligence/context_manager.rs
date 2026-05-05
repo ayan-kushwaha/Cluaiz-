@@ -1,5 +1,5 @@
-// cluaiz-engine: Neural Foundry - Context Manager
-// Manages the state of neural injections (KV-Stitching).
+// cluaiz-engine: Core Foundry - Context Manager
+// Manages the state of Core injections (KV-Stitching).
 
 pub struct ContextManager {}
 

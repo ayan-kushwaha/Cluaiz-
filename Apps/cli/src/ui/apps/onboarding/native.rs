@@ -29,7 +29,7 @@ pub fn run_native_flow() -> Result<UserProfile> {
     match auth_choice {
         "Sign in with Google" => {
             profile.auth.method = AuthMethod::Google;
-            profile.auth.email = "sovereign@cluaiz.os".to_string();
+            profile.auth.email = "Cluaiz@cluaiz.os".to_string();
             println!("✓ Authenticated via Google as {}", profile.auth.email);
         }
         "Sign in with Email" => {
@@ -46,7 +46,7 @@ pub fn run_native_flow() -> Result<UserProfile> {
 
     // ── Step 4: Usage Choice ──────────────────────────────────────────────
     let usage = Select::new(
-        "👋 How will you use Archer Sovereign?",
+        "👋 How will you use Archer Cluaiz?",
         vec!["Personal AI Assistant", "Business & Teams"],
     )
     .prompt()?;
@@ -67,7 +67,7 @@ pub fn run_native_flow() -> Result<UserProfile> {
         }
         _ => {
             profile.account_type = AccountType::Personal;
-            profile.identity.name = Text::new("👤 What is your name, Sovereign?").prompt()?;
+            profile.identity.name = Text::new("👤 What is your name, Cluaiz?").prompt()?;
         }
     }
 
@@ -75,13 +75,13 @@ pub fn run_native_flow() -> Result<UserProfile> {
     println!("\n📡 INITIATING BARE-METAL CALIBRATION");
 
     // 🧬 probe hardware
-    use ::archer_shared::hardware::{HardwareGovernor, get_sovereign_profile};
+    use ::archer_shared::hardware::{HardwareGovernor, get_Cluaiz_profile};
 
     if let Err(e) = HardwareGovernor::auto_calibrate() {
         println!("  {} [Onboarding] Calibration failed: {:?}", "❌".red(), e);
     }
 
-    let stats = get_sovereign_profile();
+    let stats = get_Cluaiz_profile();
 
     let mut sys = sysinfo::System::new();
     sys.refresh_memory();
@@ -133,9 +133,9 @@ pub fn run_native_flow() -> Result<UserProfile> {
     let _ = ::archer_shared::profile::save_profile(&profile);
     let _ = ::archer_shared::onboarding::seed_workspace(&profile);
 
-    println!("\n🧿 ARCHER SOVEREIGN — ONLINE");
+    println!("\n🧿 ARCHER Cluaiz — ONLINE");
     println!(
-        "Welcome to the future of Sovereign AI, {}.\n",
+        "Welcome to the future of Cluaiz AI, {}.\n",
         profile.display_name()
     );
 
@@ -166,7 +166,7 @@ fn render_logo() -> Result<()> {
         println!("\r");
     }
 
-    println!("\r\nARCHER SOVEREIGN CORE V10\r");
+    println!("\r\nARCHER Cluaiz CORE V10\r");
     println!("\r");
     let _ = stdout().flush();
 
@@ -176,11 +176,11 @@ fn render_logo() -> Result<()> {
 
 fn render_welcome() -> Result<()> {
     let manifesto = vec![
-        "Archer Sovereign — The Pinnacle of Neural Orchestration.",
+        "Archer Cluaiz — The Pinnacle of Core Orchestration.",
         "-------------------------------------------------------",
         "",
-        "Archer is a decentralized neural orchestration engine designed for high-performance,",
-        "privacy-critical applications. Your neural weights and conversation data",
+        "Archer is a decentralized Core orchestration engine designed for high-performance,",
+        "privacy-critical applications. Your Core weights and conversation data",
         "remain strictly confined to your hardware ecosystem.",
         "",
         "COMMENCING SYSTEM INITIALIZATION...",

@@ -51,15 +51,15 @@ pub enum AppMode {
 }
 
 #[derive(Clone)]
-pub struct NeuralEngine {
-    pub router: Arc<tokio::sync::Mutex<engines::NeuralRouter>>,
+pub struct CoreEngine {
+    pub router: Arc<tokio::sync::Mutex<engines::CoreRouter>>,
     pub is_loaded: bool,
 }
 
-impl NeuralEngine {
+impl CoreEngine {
     pub fn new() -> Self {
         Self { 
-            router: Arc::new(tokio::sync::Mutex::new(engines::NeuralRouter::new())),
+            router: Arc::new(tokio::sync::Mutex::new(engines::CoreRouter::new())),
             is_loaded: false,
         }
     }
@@ -68,7 +68,7 @@ impl NeuralEngine {
         let device = candle_core::Device::Cpu;
         let backend = engines::BackendType::RuntimeB;
         
-        match engines::NeuralRouter::load_model(path, backend, &device).await {
+        match engines::CoreRouter::load_model(path, backend, &device).await {
             Ok(router) => {
                 let mut lock = self.router.lock().await;
                 *lock = router;
@@ -131,7 +131,7 @@ pub struct AppState {
     pub _active_tab: Tab,
     pub active_app: MenuApp,
     pub _menu_app: MenuApp,
-    pub hardware: ::archer_shared::hardware::schema::profiles::SovereignProfile,
+    pub hardware: ::archer_shared::hardware::schema::profiles::CluaizProfile,
     pub ram_gb: f64,
     pub sorted_models: Vec<engines::ModelRecommendation>,
     pub roster_state: TableState,
@@ -151,7 +151,7 @@ pub struct AppState {
     pub download_bytes_per_sec: f64,
     pub download_eta_seconds: u64,
     pub download_start_time: Option<std::time::Instant>,
-    pub neural_engine: NeuralEngine,
+    pub Core_engine: CoreEngine,
     pub _purpose: String,
     pub _active_model_id: Option<String>,
     pub _chat_history: Vec<(String, String)>,
@@ -273,7 +273,7 @@ impl AppState {
     }
 
     pub fn new(profile_override: Option<::archer_shared::profile::UserProfile>) -> Self {
-        let hardware = ::archer_shared::hardware::get_sovereign_profile();
+        let hardware = ::archer_shared::hardware::get_Cluaiz_profile();
 
         let mut sys = sysinfo::System::new();
         sys.refresh_memory();
@@ -303,7 +303,7 @@ impl AppState {
 
         Self {
             os_state,
-            username: "Sovereign".to_string(),
+            username: "Cluaiz".to_string(),
             frame_counter: 0,
             _active_tab: Tab::All,
             active_app: MenuApp::None,
@@ -328,7 +328,7 @@ impl AppState {
             download_bytes_per_sec: 0.0,
             download_eta_seconds: 0,
             download_start_time: None,
-            neural_engine: NeuralEngine::new(),
+            Core_engine: CoreEngine::new(),
             _purpose: String::new(),
             _active_model_id: None,
             _chat_history: Vec::new(),

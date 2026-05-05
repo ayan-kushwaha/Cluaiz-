@@ -1,5 +1,5 @@
-// cluaiz-engine: Neural Foundry - Skill Scanner
-// Scans the sovereign skills directory for package manifests.
+// cluaiz-engine: Core Foundry - Skill Scanner
+// Scans the Cluaiz skills directory for package manifests.
 
 use std::path::{Path, PathBuf};
 use std::fs;
