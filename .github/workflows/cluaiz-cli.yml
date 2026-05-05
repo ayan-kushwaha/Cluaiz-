@@ -88,10 +88,10 @@ jobs:
           EXT="${{ matrix.ext }}"
           
           if [ "$EXT" == "exe" ]; then
-            ORIGINAL="target/${{ matrix.target }}/release/cli.exe"
+            ORIGINAL="target/${{ matrix.target }}/release/cluaiz.exe"
             DEST="target/${{ matrix.target }}/release/cluaiz-${VERSION}-${SUFFIX}.exe"
           else
-            ORIGINAL="target/${{ matrix.target }}/release/cli"
+            ORIGINAL="target/${{ matrix.target }}/release/cluaiz"
             DEST="target/${{ matrix.target }}/release/cluaiz-${VERSION}-${SUFFIX}"
           fi
           
