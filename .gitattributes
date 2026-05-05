@@ -23,5 +23,5 @@
 # *.s text eol=lf
 
 # --- Exclude desktop frontend UI from language stats ---
-Apps/desktop/frontend/** linguist-documentation=true
-Apps/desktop/frontend/** linguist-vendored=true
+# Apps/desktop/frontend/** linguist-documentation=true
+# Apps/desktop/frontend/** linguist-vendored=true

@@ -1,5 +1,5 @@
 #!/bin/bash
-# CLUAIZ Core Infrastructure Installer (Unix/macOS)
+# CLUAIZ Core Infrastructure Installer - VERSION 0.1.0
 # Industrial Standard Deployment Script
 
 set -euo pipefail
@@ -16,12 +16,12 @@ write_error() { echo -e "  ${RED}[ERR] $1${NC}"; }
 
 # --- Header ---
 clear
-echo -e "\n  ${BOLD}CLUAIZ CORE INFRASTRUCTURE${NC}"
+echo -e "\n  ${BOLD}CLUAIZ CORE INFRASTRUCTURE (V0.1.0)${NC}"
 echo -e "  ${GRAY}Standard Deployment Sequence${NC}\n"
 
 # 1. Environment Provisioning
 write_step "Provisioning environment..."
-mkdir -p "$HUB_PATH/bin" "$HUB_PATH/apps/cli" "$HUB_PATH/interface-engines/kernels" "$HUB_PATH/interface-engines/drivers"
+mkdir -p "$HUB_PATH/bin" "$HUB_PATH/apps/cli" "$HUB_PATH/engine" "$HUB_PATH/interface-engines/kernels" "$HUB_PATH/interface-engines/drivers"
 
 # 2. System Integration
 if [[ ":$PATH:" != *":$HUB_PATH/bin:"* ]]; then
@@ -64,7 +64,7 @@ ln -sf "$HUB_PATH/apps/cli/cluaiz" "$HUB_PATH/bin/cluaiz"
 ENGINE_MANIFEST_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+engine-manifest.json"' | head -1 | cut -d'"' -f4)
 ENGINE_URL=$(curl -sL "$ENGINE_MANIFEST_URL" | grep -oE "\"$PLATFORM\": \"[^\"]+\"" | cut -d'"' -f4)
 write_step "Retrieving Neural Engine..."
-curl -sL "$ENGINE_URL" -o "$HUB_PATH/interface-engines/cluaiz-engine.$EXT"
+curl -sL "$ENGINE_URL" -o "$HUB_PATH/engine/cluaiz-engine.$EXT"
 
 # --- Default Kernel ---
 KERNEL_MANIFEST_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+kernel-manifest.json"' | head -1 | cut -d'"' -f4)

@@ -1,4 +1,4 @@
-# CLUAIZ CORE INFRASTRUCTURE - VERSION 1.1.2
+# CLUAIZ CORE INFRASTRUCTURE - VERSION 0.1.0
 # Industrial Standard Deployment Script (CURL ENHANCED)
 
 param ([string]$Version = "latest")
@@ -49,7 +49,7 @@ function Invoke-SovereignDownload ([string]$url, [string]$path) {
 
 # --- Header ---
 Clear-Host
-Write-Host "`n  $BOLD CLUAIZ CORE INFRASTRUCTURE (V1.1.2) $NC"
+Write-Host "`n  $BOLD CLUAIZ CORE INFRASTRUCTURE (V0.1.0) $NC"
 Write-Host "  $GRAY Industrial CURL Deployment $NC`n"
 
 try {
