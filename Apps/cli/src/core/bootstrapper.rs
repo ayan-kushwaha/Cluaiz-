@@ -19,8 +19,8 @@ impl Bootstrapper {
         let engine_path = engine_dir.join(engine_name);
 
         if !engine_path.exists() {
-            println!("  {} [Sovereign] Neural Engine missing. Please run the Cluaiz Installer.", "📡".red());
-            return Err(eyre!("Neural Engine not found. Installation is incomplete."));
+            println!("  {} [Cluaiz] Core Engine missing. Please run the Installer.", "🛠️".red());
+            return Err(eyre!("Core Engine not found."));
         }
 
         // --- FULL STACK SYNC: Kernels & Drivers ---
@@ -29,7 +29,7 @@ impl Bootstrapper {
         // Verify if system_control.bin exists in Hub
         let bin_truth = HardwareGovernor::resolve_interface_path().join("system_control.bin");
         if !bin_truth.exists() {
-            println!("  {} [Sovereign] System Truth missing. Re-calibrating Silicon...", "🛠️".yellow());
+            println!("  {} [Cluaiz] Calibrating Hardware...", "⚙️".yellow());
             // Setup logic for DLLs will be handled via libloading/calibrate
         }
 
@@ -105,7 +105,7 @@ impl Bootstrapper {
         let kernel_path = kernel_dir.join(format!("archer_llama.{}", kernel_ext));
 
         if !kernel_path.exists() {
-            println!("  {} [Sovereign] Syncing Neural Kernel ({})...", "🧠".magenta(), backend);
+            println!("  {} [Cluaiz] Retrieving Core Kernel ({})...", "📦".magenta(), backend);
             let url = format!("https://github.com/cluaiz/cluaiz/releases/download/kernel-v0.1.0/archer_llama-dev-{}-{}.{}", platform, backend, kernel_ext);
             Self::download_asset(&url, &kernel_path).await?;
         }
@@ -115,7 +115,7 @@ impl Bootstrapper {
             let driver_dir = hub_path.join("interface-engines/drivers");
             let driver_tag = driver_dir.join("cuda.tag");
             if !driver_tag.exists() {
-                println!("  {} [Sovereign] Deploying Hardware Driver (CUDA)...", "🏎️".yellow());
+                println!("  {} [Cluaiz] Deploying Hardware Driver (CUDA)...", "🏎️".yellow());
                 let url = "https://github.com/cluaiz/cluaiz/releases/download/drivers-v0.1.0/cluaiz-driver-cuda.zip";
                 let zip_path = driver_dir.join("driver.zip");
                 Self::download_asset(url, &zip_path).await?;

@@ -9,15 +9,31 @@ $ProgressPreference = 'SilentlyContinue'
 # --- UI Matrix ---
 $BOLD = "$([char]27)[1m"; $CYAN = "$([char]27)[36m"; $GRAY = "$([char]27)[90m"; $GREEN = "$([char]27)[32m"; $YELLOW = "$([char]27)[33m"; $RED = "$([char]27)[31m"; $NC = "$([char]27)[0m"
 
-function Write-Step ([string]$msg) { Write-Host "  $GRAY[*] $msg$NC" }
-function Write-Success ([string]$msg) { Write-Host "  $GREEN[OK] $msg$NC" }
-function Write-Fail ([string]$msg) { Write-Host "  $RED[ERR] $msg$NC" -ForegroundColor Red }
+# Professional UI Helpers
+function Write-Step ([string]$msg) {
+    Write-Host -NoNewline "  $GRAY[ ] $msg...$NC"
+}
+
+function Complete-Step {
+    Write-Host -NoNewline "`r  $GREEN[✓]$NC"
+    Write-Host ""
+}
+
+function Write-Success ([string]$msg) { 
+    Write-Host "`n  $GREEN[OK] $msg$NC" 
+}
+
+function Write-Fail ([string]$msg) { 
+    Write-Host "`n  $RED[ERR] $msg$NC" -ForegroundColor Red 
+}
 
 # --- Robust Download Engine (CURL BASED) ---
-function Invoke-SovereignDownload ([string]$url, [string]$path) {
+function Invoke-CluaizDownload ([string]$url, [string]$path, [string]$label) {
     if (-not $url) { throw "Download URL is null." }
     $dir = Split-Path $path
     if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+    
+    Write-Step "$label"
     
     $MaxRetries = 3
     $RetryCount = 0
@@ -25,7 +41,6 @@ function Invoke-SovereignDownload ([string]$url, [string]$path) {
     
     while (-not $Success -and $RetryCount -lt $MaxRetries) {
         try {
-            # Use curl.exe if available (Win10+), otherwise fallback to iwr
             if (Get-Command "curl.exe" -ErrorAction SilentlyContinue) {
                 curl.exe -L -o "$path" "$url" --retry 3 --retry-delay 2 --silent
                 if ($LASTEXITCODE -ne 0) { throw "curl exit code: $LASTEXITCODE" }
@@ -36,12 +51,12 @@ function Invoke-SovereignDownload ([string]$url, [string]$path) {
         }
         catch {
             $RetryCount++
-            Write-Host "  $YELLOW[!] Download attempt $RetryCount failed. Retrying...$NC"
             Start-Sleep -Seconds 2
         }
     }
     
-    if (-not $Success) { throw "Artifact retrieval failed after $MaxRetries attempts: $url" }
+    if (-not $Success) { throw "Artifact retrieval failed: $url" }
+    Complete-Step
 }
 
 # --- Security ---
@@ -50,24 +65,26 @@ function Invoke-SovereignDownload ([string]$url, [string]$path) {
 # --- Header ---
 Clear-Host
 Write-Host "`n  $BOLD CLUAIZ CORE INFRASTRUCTURE (V0.1.0) $NC"
-Write-Host "  $GRAY Industrial CURL Deployment $NC`n"
+Write-Host "  $GRAY Industrial Deployment Layer $NC`n"
 
 try {
     $HubPath = if ($env:CLUAIZ_ROOT) { $env:CLUAIZ_ROOT } else { Join-Path $HOME ".cluaiz" }
     $Repo = "cluaiz/cluaiz"
 
     # 1. Provisioning
-    Write-Step "Provisioning environment..."
+    Write-Step "Provisioning environment"
     $Folders = @("bin", "apps/cli", "engine", "interface-engines", "interface-engines/kernels", "interface-engines/drivers")
     foreach ($f in $Folders) {
         $path = Join-Path $HubPath $f
         if (-not (Test-Path $path)) { New-Item -ItemType Directory -Path $path -Force | Out-Null }
     }
+    Complete-Step
 
-    # 2. Registry Handshake
-    Write-Step "Resolving artifacts from registry..."
+    # 2. Registry Discovery
+    Write-Step "Resolving artifacts"
     $Releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases"
     $Arch = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "win-arm64" } else { "win-x64" }
+    Complete-Step
 
     # --- CLI Deployment ---
     $CliRel = $Releases | Where-Object { $_.tag_name -like "cli-v*" } | Select-Object -First 1
@@ -75,8 +92,7 @@ try {
     $CliManifest = Invoke-RestMethod -Uri $CliUrl
     $CliBins = if ($CliManifest.binaries) { $CliManifest.binaries } else { $CliManifest.assets }
     
-    Write-Step "Retrieving CLI ($Arch)..."
-    Invoke-SovereignDownload -url $CliBins.($Arch) -path (Join-Path $HubPath "apps/cli/cluaiz.exe")
+    Invoke-CluaizDownload -url $CliBins.($Arch) -path (Join-Path $HubPath "apps/cli/cluaiz.exe") -label "Retrieving CLI ($Arch)"
     
     $BinPath = Join-Path $HubPath "bin"
     $BinLink = Join-Path $BinPath 'cluaiz.exe'
@@ -89,9 +105,8 @@ try {
     $EngManifest = Invoke-RestMethod -Uri $EngUrl
     $EngBins = if ($EngManifest.binaries) { $EngManifest.binaries } else { $EngManifest.assets }
     
-    Write-Step "Retrieving Neural Engine..."
     $EUrl = $EngBins.($Arch) -replace "latest-engine", "$($EngRel.tag_name)"
-    Invoke-SovereignDownload -url $EUrl -path (Join-Path $HubPath "engine/cluaiz-engine.dll")
+    Invoke-CluaizDownload -url $EUrl -path (Join-Path $HubPath "engine/cluaiz-engine.dll") -label "Retrieving Core Engine"
 
     # --- Kernel Deployment ---
     $KerRel = $Releases | Where-Object { $_.tag_name -like "kernel-v*" } | Select-Object -First 1
@@ -104,26 +119,24 @@ try {
     
     if ($KUrlRaw) {
         $KUrl = $KUrlRaw -replace "latest-kernels", "$($KerRel.tag_name)"
-        Write-Step "Retrieving Neural Kernel..."
-        Invoke-SovereignDownload -url $KUrl -path (Join-Path $HubPath "interface-engines/kernels/archer_llama.dll")
+        Invoke-CluaizDownload -url $KUrl -path (Join-Path $HubPath "interface-engines/kernels/archer_llama.dll") -label "Retrieving Core Kernel"
     }
 
     # Environment Path Update
     [System.Environment]::SetEnvironmentVariable("CLUAIZ_ROOT", $HubPath, "User")
     $OldPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
     if ($OldPath -notlike "*$BinPath*") {
-        [System.Environment]::SetEnvironmentVariable("Path", "$OldPath;$BinPath", "User")
+        $NewPath = "$OldPath;$BinPath"
+        [System.Environment]::SetEnvironmentVariable("Path", $NewPath, "User")
     }
 
-    Write-Host ""
     Write-Success "Deployment successful."
-    Write-Host "  Launching Cluaiz CLI..."
+    Write-Host "  Launching CLI..." -ForegroundColor Gray
     & "$BinLink"
 }
 catch {
-    Write-Host ""
     Write-Fail "Deployment failed: $($_.Exception.Message)"
-    Write-Host "`n  [Troubleshoot] Check your connection or GitHub release state." -ForegroundColor Gray
+    Write-Host "`n  [Troubleshoot] Check your connection." -ForegroundColor Gray
     Write-Host "  Press any key to exit..." -ForegroundColor Gray
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }

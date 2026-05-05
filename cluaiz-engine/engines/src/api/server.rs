@@ -19,8 +19,7 @@ impl TelemetryServer {
     pub async fn start(self, port: u16) -> anyhow::Result<()> {
         let addr = format!("0.0.0.0:{}", port);
         let listener = TcpListener::bind(&addr).await?;
-        println!("📡 Sovereign Telemetry Bridge active on {}", addr);
-        println!("🔗 Dashboard link: http://localhost:{}/dashboard", port);
+        println!("  {} Local Dashboard: http://localhost:{}/dashboard", "📊".cyan(), port);
 
         loop {
             let (stream, _) = listener.accept().await?;
