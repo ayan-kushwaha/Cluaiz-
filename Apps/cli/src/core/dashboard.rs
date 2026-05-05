@@ -33,15 +33,9 @@ impl DashboardEngine {
 
         // ── 🧬 ATOMIC Core DISCOVERY (Cluaiz Startup Scan) ──
         if state.sorted_models.is_empty() {
-            println!("  {} Scanning Core Sanctum...", "🧬".cyan());
             state.sorted_models = engines::CoreRoster::get_recommendations(
                 &state.hardware.to_Hardware_truth(),
                 state.ram_gb,
-            );
-            println!(
-                "  {} Discovery Complete: Found {} Core assets.",
-                "✅".green(),
-                state.sorted_models.len()
             );
         }
 
@@ -158,15 +152,16 @@ impl DashboardEngine {
         });
 
         loop {
-            show_dashboard.store(true, std::sync::atomic::Ordering::SeqCst);
-            println!(); // 🧿 Cluaiz BUFFER: Create space for surgical anchor
+            // 🛑 ATOMIC SILENCE: Disable telemetry bar while user is typing to prevent ANSI clashes (E.g. 5;14m glitches)
+            show_dashboard.store(false, std::sync::atomic::Ordering::SeqCst);
+            
             let input = Text::new("")
                 .with_placeholder("Type your message or @ & / for menu")
                 .with_render_config(config.clone())
                 .prompt();
             
-            // 🛑 ATOMIC PURGE: Immediately silence dashboard and clear its line before chat output
-            show_dashboard.store(false, std::sync::atomic::Ordering::SeqCst);
+            // 🚀 RE-IGNITE: Telemetry resumes once input is submitted
+            show_dashboard.store(true, std::sync::atomic::Ordering::SeqCst);
             if let Ok((_x, y)) = crossterm::cursor::position() {
                 let mut stdout = std::io::stdout();
                 let _ = crossterm::execute!(stdout, crossterm::cursor::MoveTo(0, y + 1), crossterm::terminal::Clear(crossterm::terminal::ClearType::CurrentLine));
