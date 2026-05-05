@@ -8,12 +8,6 @@ on:
       - 'v*'
   workflow_dispatch:
 
-# 🚀 INDUSTRIAL CONCURRENCY: Automatically cancel older runs of the same branch/tag 
-# to prevent runner queue saturation.
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 permissions:
   contents: write
   packages: write
@@ -69,10 +63,8 @@ jobs:
         shell: bash
         run: |
           if [ "${{ matrix.target }}" == "aarch64-unknown-linux-gnu" ]; then
-            # 🚀 INDUSTRIAL OPTIMIZATION: Use pre-compiled cross to save 5+ minutes
-            curl -L https://github.com/cross-rs/cross/releases/download/v0.2.5/cross-x86_64-unknown-linux-musl.tar.gz | tar xz
-            chmod +x cross
-            ./cross build --release --target ${{ matrix.target }} -p cli
+            cargo install cross --git https://github.com/cross-rs/cross
+            cross build --release --target ${{ matrix.target }} -p cli
           else
             cargo build --release --target ${{ matrix.target }} -p cli
           fi
