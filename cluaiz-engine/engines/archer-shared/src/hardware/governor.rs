@@ -33,7 +33,7 @@ impl HardwareGovernor {
 
     /// 🛡️ Checks if the 'system_control.json' fingerprint exists.
     pub fn is_ready(&self) -> bool {
-        Self::resolve_interface_path()
+        Self::resolve_engine_path()
             .join("system_control.json")
             .exists()
     }
@@ -154,7 +154,7 @@ impl HardwareGovernor {
         }
 
         // Save back the updated control
-        let base = Self::resolve_interface_path();
+        let base = Self::resolve_engine_path();
         let json_data = serde_json::to_string_pretty(&control)?;
         std::fs::write(base.join("system_control.json"), json_data)?;
 
@@ -229,7 +229,7 @@ impl HardwareGovernor {
     /// 🏛️ Loads the sovereign hardware fingerprint from the binary truth (.bin).
     /// If missing, it triggers an automatic "Self-Healing" recovery scan.
     pub fn load_binary_truth() -> anyhow::Result<SystemControl> {
-        let path = Self::resolve_interface_path().join("system_control.bin");
+        let path = Self::resolve_engine_path().join("system_control.bin");
         
         if !path.exists() {
             println!("🛠️ [Self-Healing] Kernel Binary Missing. Regenerating...");
@@ -250,7 +250,7 @@ impl HardwareGovernor {
     }
 
     pub fn load_system_control() -> anyhow::Result<SystemControl> {
-        let base = Self::resolve_interface_path();
+        let base = Self::resolve_engine_path();
         let path = base.join("system_control.json");
         let bin_path = base.join("system_control.bin");
         
@@ -276,7 +276,7 @@ impl HardwareGovernor {
     }
 
     pub fn save_system_control(control: &SystemControl) -> anyhow::Result<()> {
-        let base = Self::resolve_interface_path();
+        let base = Self::resolve_engine_path();
         std::fs::create_dir_all(&base)?;
 
         let json_path = base.join("system_control.json");
@@ -295,7 +295,7 @@ impl HardwareGovernor {
     // ─── 🚀 BOOSTER CONTROL (USER SETTINGS) ───
 
     pub fn load_booster_settings() -> anyhow::Result<BoosterControl> {
-        let path = Self::resolve_booster_path().join("system_booster.json");
+        let path = Self::resolve_engine_path().join("system_booster.json");
         if !path.exists() {
             return Ok(BoosterControl::default());
         }
@@ -305,9 +305,9 @@ impl HardwareGovernor {
     }
 
     pub fn save_booster_settings(control: &BoosterControl) -> anyhow::Result<()> {
-        let base = Self::resolve_hub_path().join("booster");
+        let base = Self::resolve_engine_path();
         std::fs::create_dir_all(&base)?;
-
+        
         let json_path = base.join("system_booster.json");
         let bin_path = base.join("system_booster.bin");
 

@@ -64,6 +64,11 @@ impl App {
                         println!("  {} {}", "CLUAIZ".cyan().bold(), "v0.1.0".bright_black());
                         println!("  {} {}", "API Gateway: ".dimmed(), "http://0.0.0.0:8000 ↗".cyan().bold());
                         println!("  {} {}", "Dashboard:   ".dimmed(), "http://0.0.0.0:3030 ↗".yellow().bold());
+<<<<<<< HEAD
+=======
+                        println!();
+                        println!(); 
+>>>>>>> a16f349 (Industrial Sync: Unified Pathing, Telemetry v0.1.0, and Installer Hardening)
                         self.state.printed_logo = true;
                     }
  

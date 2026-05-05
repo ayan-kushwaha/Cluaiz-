@@ -511,7 +511,7 @@ impl HardwareOrchestrator {
     }
 
     pub fn persist_sovereign_state(control: &SystemControl) -> anyhow::Result<()> {
-        let base = crate::hardware::governor::HardwareGovernor::resolve_hub_path().join("interface-engines");
+        let base = crate::hardware::governor::HardwareGovernor::resolve_engine_path();
         std::fs::create_dir_all(&base)?;
 
         let json_path = base.join("system_control.json");

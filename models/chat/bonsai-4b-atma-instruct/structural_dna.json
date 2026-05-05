@@ -21,7 +21,7 @@
   "heterogeneous_map": null,
   "max_context_length": 65536,
   "dynamic_attributes": {
-    "context_window": "64k",
-    "bit_depth": "1"
+    "bit_depth": "1",
+    "context_window": "64k"
   }
 }

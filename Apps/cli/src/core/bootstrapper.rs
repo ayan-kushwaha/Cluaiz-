@@ -81,9 +81,14 @@ impl Bootstrapper {
         Ok(())
     }
 
+<<<<<<< HEAD
     async fn sync_Core_stack() -> Result<()> {
         let hub_path = HardwareGovernor::resolve_hub_path();
         let control_path = hub_path.join("interface-engines/system_control.json");
+=======
+    async fn sync_neural_stack() -> Result<()> {
+        let control_path = HardwareGovernor::resolve_engine_path().join("system_control.json");
+>>>>>>> a16f349 (Industrial Sync: Unified Pathing, Telemetry v0.1.0, and Installer Hardening)
         
         if !control_path.exists() {
             return Ok(()); // Wait for first calibration
@@ -99,7 +104,7 @@ impl Bootstrapper {
         let platform = if cfg!(windows) { "win-x64" } else if cfg!(target_os = "macos") { "mac-arm64" } else { "linux-x64" };
 
         // 1. Kernel Sync
-        let kernel_dir = hub_path.join("interface-engines/kernels");
+        let kernel_dir = HardwareGovernor::resolve_hub_path().join("interface-engines/kernels");
         let kernel_ext = if cfg!(windows) { "dll" } else if cfg!(target_os = "macos") { "dylib" } else { "so" };
         let kernel_path = kernel_dir.join(format!("archer_llama.{}", kernel_ext));
 
@@ -111,7 +116,7 @@ impl Bootstrapper {
 
         // 2. Driver Sync (If needed)
         if has_nvidia {
-            let driver_dir = hub_path.join("interface-engines/drivers");
+            let driver_dir = HardwareGovernor::resolve_hub_path().join("interface-engines/drivers");
             let driver_tag = driver_dir.join("cuda.tag");
             if !driver_tag.exists() {
                 println!("  {} [Cluaiz] Deploying Hardware Driver (CUDA)...", "🏎️".yellow());
