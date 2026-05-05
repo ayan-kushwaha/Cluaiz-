@@ -9,11 +9,7 @@ use std::time::Duration;
 pub fn run_native_flow() -> Result<UserProfile> {
     let mut profile = UserProfile::new();
 
-    // ── Step 1: Logo Animation ────────────────────────────────────────────
-    render_logo()?;
-
-    // ── Step 2: Welcome + About ──────────────────────────────────────────
-    render_welcome()?;
+    println!("  {} [Cluaiz] Initializing Core Infrastructure...", "🧪".cyan());
 
     // ── Step 3: Auth ──────────────────────────────────────────────────────
     let auth_choice = Select::new(
@@ -142,56 +138,3 @@ pub fn run_native_flow() -> Result<UserProfile> {
     Ok(profile)
 }
 
-fn render_logo() -> Result<()> {
-    println!("\x1B[2J\x1B[1;1H"); // Clear screen
-
-    let (width, _height) = crossterm::terminal::size().unwrap_or((100, 30));
-    let mut buf = ratatui::buffer::Buffer::empty(ratatui::layout::Rect::new(0, 0, width, 16));
-    logo::render_best_fit_logo(
-        &mut buf,
-        ratatui::layout::Rect::new(0, 0, width, 15),
-        ratatui::prelude::Color::Cyan,
-    );
-
-    for y in 0..15 {
-        for x in 0..width {
-            let cell = &buf[(x, y)];
-            let symbol = cell.symbol();
-            if symbol != " " {
-                print!("\x1B[36;1m{}\x1B[0m", symbol); // Direct ANSI for Cyan Bold
-            } else {
-                print!(" ");
-            }
-        }
-        println!("\r");
-    }
-
-    println!("\r\nARCHER Cluaiz CORE V10\r");
-    println!("\r");
-    let _ = stdout().flush();
-
-    std::thread::sleep(Duration::from_millis(1500));
-    Ok(())
-}
-
-fn render_welcome() -> Result<()> {
-    let manifesto = vec![
-        "Archer Cluaiz — The Pinnacle of Core Orchestration.",
-        "-------------------------------------------------------",
-        "",
-        "Archer is a decentralized Core orchestration engine designed for high-performance,",
-        "privacy-critical applications. Your Core weights and conversation data",
-        "remain strictly confined to your hardware ecosystem.",
-        "",
-        "COMMENCING SYSTEM INITIALIZATION...",
-        "",
-    ];
-
-    for line in manifesto {
-        println!("  {}", line);
-        std::thread::sleep(Duration::from_millis(50));
-    }
-
-    println!("\n");
-    Ok(())
-}

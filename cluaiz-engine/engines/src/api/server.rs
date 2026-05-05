@@ -19,7 +19,6 @@ impl TelemetryServer {
     pub async fn start(self, port: u16) -> anyhow::Result<()> {
         let addr = format!("0.0.0.0:{}", port);
         let listener = TcpListener::bind(&addr).await?;
-        println!("  Local Dashboard: http://localhost:{}/dashboard", port);
 
         loop {
             let (stream, _) = listener.accept().await?;

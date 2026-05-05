@@ -182,6 +182,11 @@ try {
     }
 
     Write-Host ("`n  " + $GREEN + "[DONE] Deployment successful." + $NC)
+    
+    # 🧬 Pre-Flight Calibration: Generate SiliconTruth before first boot
+    Write-Host '>_ Synchronizing Hardware DNA...' -ForegroundColor Cyan
+    & $BinLink --calibrate
+    
     Write-Host '>_ Launching Cluaiz CLI...' -ForegroundColor Gray
     & $BinLink
 }

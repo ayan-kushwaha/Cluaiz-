@@ -5,6 +5,7 @@ use color_eyre::Result;
 use std::fs::File;
 use tokio::spawn;
 use engines::DownloadEvent;
+use colored::Colorize;
 
 mod core;
 mod ui;
@@ -36,6 +37,14 @@ async fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
     if args.iter().any(|arg| arg == "--benchmark") {
         engines::telemetry::health_check::CluaizHealthChecker::run_full_benchmark();
+        return Ok(());
+    }
+
+    if args.iter().any(|arg| arg == "--calibrate") {
+        println!("  {} [Cluaiz] Commencing Hardware DNA Extraction...", "🧬".cyan());
+        archer_shared::hardware::HardwareGovernor::auto_calibrate()
+            .map_err(|e| color_eyre::eyre::eyre!("Calibration failed: {}", e))?;
+        println!("  {} [Cluaiz] SiliconTruth synchronized.", "✅".green());
         return Ok(());
     }
 
