@@ -93,10 +93,13 @@ impl SystemPerformanceLive {
         }
 
         // 3. Storage Throughput (Real SSD Audit)
-        let total_disk_usage: u64 = sys.disks().iter().map(|d| d.total_space()).sum::<u64>();
+        let disks = sysinfo::Disks::new_with_refreshed_list();
+        let networks = sysinfo::Networks::new_with_refreshed_list();
+
+        let total_disk_usage: u64 = disks.iter().map(|d| d.total_space()).sum::<u64>();
         if total_disk_usage > 0 {
             // Basic throughput estimation based on activity
-            pulse.storage_throughput_mbps = sys.networks().iter().map(|(_, data)| data.received() + data.transmitted()).sum::<u64>() / 1024 / 1024;
+            pulse.storage_throughput_mbps = networks.iter().map(|(_, data)| data.received() + data.transmitted()).sum::<u64>() / 1024 / 1024;
         }
 
         // 4. Accelerators (GPU/NPU/TPU)
