@@ -4,13 +4,13 @@ pub mod system_control_manager;
 
 // 🧬 Cluaiz Profile Unification: Re-exporting from archer-shared/schema
 pub use archer_shared::hardware::schema::profiles::{
-    HardwareTruth, 
+    SiliconTruth, 
     MemorySubsystem, 
     StorageSubsystem, 
     CpuSubsystem,
     Accelerators
 };
-pub use archer_shared::hardware::schema::metrics::HardwareMetrics;
+pub use archer_shared::hardware::schema::metrics::SiliconMetrics;
 
 pub struct HardwareDetector;
 impl Default for HardwareDetector {
@@ -23,7 +23,7 @@ impl HardwareDetector {
     pub fn new() -> Self { Self }
 
     /// 🏛️ Executes the physical hardware detection protocol.
-    pub fn detect(&self) -> HardwareTruth {
+    pub fn detect(&self) -> SiliconTruth {
         system_control_manager::detect_hardware()
     }
 }

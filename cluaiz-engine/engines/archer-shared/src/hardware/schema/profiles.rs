@@ -198,3 +198,7 @@ pub struct EngineDriver {
     pub status: String,
     pub version: Option<String>,
 }
+
+/// 🧬 Cluaiz Bridge Alias: CluaizProfile is the canonical name for SovereignProfile.
+/// Kept for backward compat during naming migration.
+pub type CluaizProfile = SovereignProfile;

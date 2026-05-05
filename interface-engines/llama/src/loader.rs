@@ -1,7 +1,7 @@
 //! Sovereign Implementation B: Core Loader.
 
 use archer_shared::backend::signature::{BackendType, KernelSignature};
-use archer_shared::backend::context::SovereignContext;
+use archer_shared::backend::context::CluaizContext;
 use archer_shared::backend::traits::ModelWeightsWrapper;
 use std::sync::Arc;
 use crate::config::RuntimeBConfig;
@@ -29,7 +29,7 @@ impl RuntimeBLoader {
                 signature,
                 Arc::new(
                     |model_load_path: &str,
-                     sovereign_context: SovereignContext| {
+                     sovereign_context: CluaizContext| {
                         // Dynamic param resolution
                         let _params = RuntimeBConfig::resolve(&sovereign_context.dna);
                         

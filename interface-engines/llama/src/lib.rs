@@ -2,7 +2,7 @@
 //! This kernel is loaded dynamically by the SiliconOrchestrator.
 
 use anyhow::Result;
-use archer_shared::{SovereignContext, SovereignInference, UnifiedBackend};
+use archer_shared::{CluaizContext, CluaizInference, UnifiedBackend};
 use std::sync::Arc;
 use tokenizers::Tokenizer;
 use neural_core::interfaces::memory_contract::SovereignBuffer;
@@ -19,12 +19,12 @@ pub use asm_kernels::BareMetalMath;
 
 pub struct RuntimeB {
     pub model_path: String,
-    pub context: SovereignContext,
+    pub context: CluaizContext,
     pub lucebox: Option<Arc<ffi::lucebox::LuceboxBridge>>,
 }
 
 impl RuntimeB {
-    pub fn new(path: &str, context: SovereignContext) -> Self {
+    pub fn new(path: &str, context: CluaizContext) -> Self {
         Self {
             model_path: path.to_string(),
             context,
@@ -57,7 +57,7 @@ impl UnifiedBackend for RuntimeB {
     }
 }
 
-impl SovereignInference for RuntimeB {
+impl CluaizInference for RuntimeB {
     fn forward_raw(&mut self, _input_ids: &[u32], _pos: usize) -> Result<Vec<f32>> {
         Err(anyhow::anyhow!("FFI forward optimized via ASM kernels"))
     }
@@ -84,7 +84,7 @@ impl SovereignInference for RuntimeB {
     }
 
     /// 💉 Neural Injection Hook: Injects multiple pre-encoded skill states into the Llama cache.
-    fn inject_signals(&mut self, signals: Vec<archer_shared::hardware::memory::kv_cache::stitching::SovereignSignal>) -> Result<()> {
+    fn inject_signals(&mut self, signals: Vec<archer_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Result<()> {
         let max_ctx = self.context.dna.max_context_length.unwrap_or(4096);
         let mut current_offset = 0;
 
@@ -103,7 +103,7 @@ impl SovereignInference for RuntimeB {
                 // 🛑 Positional Guard
                 if current_offset + token_count > max_ctx {
                     tracing::error!("❌ [Llama-Engine] Positional Collision: Signal {} exceeds remaining context space.", i);
-                    return Err(anyhow::anyhow!("SovereignSignal: Context Overflow at Skill {}", i));
+                    return Err(anyhow::anyhow!("CluaizSignal: Context Overflow at Skill {}", i));
                 }
 
                 println!("🧵 [Llama-Engine] Stitching Skill {} ({} tokens) at offset {}.", i, token_count, current_offset);
@@ -162,7 +162,7 @@ pub extern "C" fn archer_kernel_instantiate(
         .to_string_lossy()
         .into_owned();
     let dna = archer_shared::StructuralDNA::default();
-    let context = SovereignContext::boot(dna, archer_shared::TemplateManager::default());
+    let context = CluaizContext::boot(dna, archer_shared::TemplateManager::default());
 
     let engine = Box::new(RuntimeB::new(&path, context));
     Box::into_raw(engine)

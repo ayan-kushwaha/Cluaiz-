@@ -1,6 +1,6 @@
 //! Sovereign Implementation B: Acceleration Pipeline (With Binary Fallback).
 
-use archer_shared::backend::context::SovereignContext;
+use archer_shared::backend::context::CluaizContext;
 use std::process::{Command, Stdio};
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
@@ -11,7 +11,7 @@ pub struct RuntimeBPipeline;
 impl RuntimeBPipeline {
     pub async fn execute_stream(
         model_path: &str,
-        context: &SovereignContext,
+        context: &CluaizContext,
         prompt: &str,
         _max_tokens: usize,
         mut callback: Box<dyn FnMut(String) + Send + 'static>,
@@ -116,7 +116,7 @@ impl RuntimeBPipeline {
 
     pub fn execute_stream_internal(
         _model_path: &str,
-        _context: &SovereignContext,
+        _context: &CluaizContext,
         _prompt: &str,
         _max_tokens: usize,
         _callback: Box<dyn FnMut(String) + Send + 'static>,

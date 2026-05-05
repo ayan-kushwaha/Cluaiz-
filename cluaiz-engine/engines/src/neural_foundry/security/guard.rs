@@ -1,7 +1,7 @@
 // cluaiz-engine: Core Foundry - Security Guard
 // Implements the 4-tier permission hierarchy for Cluaiz skills.
 
-use crate::Core_foundry::registry::SkillManifest;
+use crate::neural_foundry::registry::SkillManifest;
 use anyhow::{Result, anyhow};
 use std::sync::Mutex;
 use tracing::warn;

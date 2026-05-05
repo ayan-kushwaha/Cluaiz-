@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
-use crate::backend::context::SovereignContext;
+use crate::backend::context::CluaizContext;
 use crate::backend::traits::ModelWeightsWrapper;
 
 /// ArcConstructor: The factory closure signature for instantiating model architectures.
@@ -8,7 +8,7 @@ use crate::backend::traits::ModelWeightsWrapper;
 /// Removed candle-core dependencies to allow for truly agnostic engine backends.
 pub type ArcConstructor = std::sync::Arc<dyn Fn(
     &str,                // load_path
-    SovereignContext,     // system context
+    CluaizContext,     // system context
 ) -> anyhow::Result<ModelWeightsWrapper> + Send + Sync>;
 
 

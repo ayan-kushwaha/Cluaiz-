@@ -24,7 +24,7 @@ impl Bootstrapper {
         }
 
         // --- FULL STACK SYNC: Kernels & Drivers ---
-        Self::sync_Core_stack().await?;
+        Self::sync_neural_stack().await?;
 
         // Verify if system_control.bin exists in Hub
         let bin_truth = HardwareGovernor::resolve_interface_path().join("system_control.bin");
@@ -81,14 +81,8 @@ impl Bootstrapper {
         Ok(())
     }
 
-<<<<<<< HEAD
-    async fn sync_Core_stack() -> Result<()> {
-        let hub_path = HardwareGovernor::resolve_hub_path();
-        let control_path = hub_path.join("interface-engines/system_control.json");
-=======
     async fn sync_neural_stack() -> Result<()> {
         let control_path = HardwareGovernor::resolve_engine_path().join("system_control.json");
->>>>>>> a16f349 (Industrial Sync: Unified Pathing, Telemetry v0.1.0, and Installer Hardening)
         
         if !control_path.exists() {
             return Ok(()); // Wait for first calibration

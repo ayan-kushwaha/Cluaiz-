@@ -12,8 +12,8 @@ pub trait UnifiedBackend {
     fn evaluate_tps(&self) -> f64;
 }
 
-/// SovereignInference: The advanced streaming iteration interface.
-pub trait SovereignInference: Send + Sync + UnifiedBackend {
+/// CluaizInference: The advanced streaming iteration interface.
+pub trait CluaizInference: Send + Sync + UnifiedBackend {
     /// Returns a generic response from a forward pass (implementation dependent)
     fn forward_raw(&mut self, input_ids: &[u32], pos: usize) -> Result<Vec<f32>>;
     
@@ -27,7 +27,7 @@ pub trait SovereignInference: Send + Sync + UnifiedBackend {
     ) -> Result<()>;
 
     /// 🔗 Signal Injection Hook: Injects multiple pre-encoded neural states directly into hardware cache.
-    fn inject_signals(&mut self, _signals: Vec<crate::hardware::memory::kv_cache::stitching::SovereignSignal>) -> Result<()> {
+    fn inject_signals(&mut self, _signals: Vec<crate::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Result<()> {
         tracing::warn!("⚠️ [Backend] Multi-Signal injection Not Implemented for this kernel.");
         Ok(())
     }
@@ -49,7 +49,7 @@ pub trait SovereignInference: Send + Sync + UnifiedBackend {
 }
 
 /// Dynamic trait alias bridging generic hardware kernels
-pub type ModelWeightsWrapper = Box<dyn SovereignInference + Send + Sync>;
+pub type ModelWeightsWrapper = Box<dyn CluaizInference + Send + Sync>;
 
 
 // ─── Expert Dispatcher (MoE Routing Protocol) ──────────────────────────────

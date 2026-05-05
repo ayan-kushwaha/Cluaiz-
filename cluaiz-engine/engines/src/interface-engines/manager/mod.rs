@@ -41,22 +41,23 @@ impl EngineManager {
         // 🚀 Cluaiz Detection Logic: The Triple Handshake
         let os = control.identity.os_target.to_lowercase();
         let arch = control.identity.architecture.to_lowercase();
-        let gpu_vendor = control.Hardware_truth.accelerators.gpus.first().map(|g| g.vendor.to_lowercase());
-        let has_drivers = !control.Hardware_truth.active_drivers.is_empty();
+        let gpu_vendor = control.silicon_truth.accelerators.gpus.first().map(|g| g.vendor.to_lowercase());
+        let has_drivers = !control.silicon_truth.active_drivers.is_empty();
 
         println!("🎯 Engine Prep: OS={}, Arch={}, GPU={:?}, Drivers={}", os, arch, gpu_vendor, has_drivers);
 
         // 🧠 Mission 12: Chronicle Core Activity
-        let _ = archer_shared::Core::graph::CoreGraph::chronicle_pulse(
-            "Hardware Handshake & Engine Preparation",
-            engine_type,
-            &format!("OS: {}, GPU: {:?}", os, gpu_vendor)
-        );
+        // Temporarily commented out due to missing CoreGraph in archer_shared
+        // let _ = archer_shared::Core::graph::CoreGraph::chronicle_pulse(
+        //     "Hardware Handshake & Engine Preparation",
+        //     engine_type,
+        //     &format!("OS: {}, GPU: {:?}", os, gpu_vendor)
+        // );
 
         // 1. Resolve Hardware Suffix based on Deep Probing
         let suffix = match (os.as_str(), arch.as_str()) {
             // --- Apple Hardware (Metal Mastery) ---
-            ("macos", "aarch64") if gpu_vendor.as_ref().is_some_and(|v| v.contains("apple")) => "metal",
+            ("macos", "aarch64") if gpu_vendor.as_ref().map(|v| v.contains("apple")).unwrap_or(false) => "metal",
             
             // --- Linux/Windows High-Performance Targets ---
             ("linux", _) | ("windows", _) if gpu_vendor.is_some() => {

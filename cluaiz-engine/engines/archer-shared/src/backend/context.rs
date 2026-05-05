@@ -4,15 +4,15 @@ use crate::hardware::HardwareGovernor;
 use crate::prompting::templater::TemplateManager;
 
 
-/// The core intelligence payload bridging system state and the kernel wrappers.
+/// CluaizContext: The unified state object bridging user intent, system truth, and active models.
 #[derive(Clone)]
-pub struct SovereignContext {
+pub struct CluaizContext {
     pub dna: StructuralDNA,
     pub governor: HardwareGovernor,
     pub templater: TemplateManager,
 }
 
-impl SovereignContext {
+impl CluaizContext {
     /// Initialize a high-performance sovereign context
     pub fn boot(dna: StructuralDNA, templater: TemplateManager) -> Self {
         let governor = HardwareGovernor::start();

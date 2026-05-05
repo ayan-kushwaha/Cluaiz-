@@ -1,11 +1,11 @@
-use crate::hardware::{HardwareTruth, StorageSubsystem};
+use crate::hardware::{SiliconTruth, StorageSubsystem};
 use sysinfo::System;
 
 pub struct CluaizHealthChecker;
 
 impl CluaizHealthChecker {
     /// Conducts a macro-benchmark of the entire system on first boot
-    pub fn execute_initial_diagnostic(mut profile: HardwareTruth) -> HardwareTruth {
+    pub fn execute_initial_diagnostic(mut profile: SiliconTruth) -> SiliconTruth {
         println!("🩺 [Cluaiz Health] Initiating Deep Profiling Sequence...");
 
         // 1. RAM Profiling via sysinfo (Lightweight)

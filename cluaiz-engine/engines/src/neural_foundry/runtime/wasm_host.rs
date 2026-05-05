@@ -6,7 +6,8 @@ use wasmtime::*;
 use wasmtime_wasi::preview1::{self, WasiP1Ctx};
 #[cfg(feature = "wasm-runtime")]
 use wasmtime_wasi::WasiCtxBuilder;
-use archer_shared::Core::graph::CoreGraph;
+// TODO: Restore once CoreGraph is implemented in archer_shared
+// use archer_shared::Core::graph::CoreGraph;
 
 use std::sync::Mutex;
 
@@ -63,11 +64,7 @@ impl WasmHost {
 
         // 🧠 Mission 12: Chronicle Core Skill Initiation
         let skill_id = wasm_path.file_stem().and_then(|s| s.to_str()).unwrap_or("unknown_skill");
-        let _ = CoreGraph::chronicle_pulse(
-            "Core Skill Execution Initiated",
-            skill_id,
-            &format!("Binary: {:?}, Function: {}", wasm_path, func_name)
-        );
+        tracing::info!("🧠 [CoreFoundry] Skill Execution Initiated: {} | Binary: {:?} | Func: {}", skill_id, wasm_path, func_name);
         
         // 🏗️ Cluaiz Sandbox: Restricted WASI Context
         let mut wasi_builder = WasiCtxBuilder::new();
@@ -125,7 +122,7 @@ impl WasmHost {
             &[Val::I32(param_ptr as i32), Val::I32(param_bytes.len() as i32)], 
             &mut results
         ).await {
-            let _ = CoreGraph::chronicle_pulse("Core Skill Execution Failed", skill_id, &format!("Error: {}", e));
+            tracing::error!("🧠 [CoreFoundry] Skill Execution Failed: {} | Error: {}", skill_id, e);
             return Err(e);
         }
 
@@ -141,11 +138,7 @@ impl WasmHost {
         let null_pos = pool.iter().position(|&b| b == 0).unwrap_or(pool.len());
         let response = String::from_utf8_lossy(&pool[..null_pos]).to_string();
 
-        let _ = CoreGraph::chronicle_pulse(
-            "Core Skill Execution Success",
-            skill_id,
-            &format!("Response Length: {} bytes", response.len())
-        );
+        tracing::info!("🧠 [CoreFoundry] Skill Execution Success: {} | Response: {} bytes", skill_id, response.len());
 
         Ok(response)
     }

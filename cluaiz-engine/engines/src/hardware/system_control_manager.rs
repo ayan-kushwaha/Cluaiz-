@@ -1,10 +1,10 @@
-use super::HardwareTruth;
+use super::SiliconTruth;
 use anyhow::Result;
-use archer_shared::hardware::{get_Hardware_state, HardwareGovernor};
+use archer_shared::hardware::{governor::HardwareGovernor, system_control::HardwareOrchestrator};
 
 /// 🏛️ Performs a deep surgical scan of the host Hardware.
-pub fn detect_hardware() -> HardwareTruth {
-    get_Hardware_state()
+pub fn detect_hardware() -> SiliconTruth {
+    HardwareOrchestrator::probe().silicon_truth
 }
 
 /// 🛡️ Checks if the 'system_control.json' fingerprint exists.
@@ -13,14 +13,14 @@ pub fn has_config() -> bool {
 }
 
 /// 🧠 Reads the current hardware configuration.
-pub fn read_config() -> Result<HardwareTruth> {
+pub fn read_config() -> Result<SiliconTruth> {
     // The governor maintains the system_control.json state.
     // For engine-level access, we provide the live Hardware profile.
-    Ok(get_Hardware_state())
+    Ok(HardwareOrchestrator::probe().silicon_truth)
 }
 
 /// 📁 Persists the Hardware fingerprint to disk via the Governor.
-pub fn save_config(_profile: &HardwareTruth) -> Result<()> {
+pub fn save_config(_profile: &SiliconTruth) -> Result<()> {
     HardwareGovernor::auto_calibrate().map_err(|e| anyhow::anyhow!(e))?;
     Ok(())
 }

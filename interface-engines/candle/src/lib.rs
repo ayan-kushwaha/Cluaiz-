@@ -2,7 +2,7 @@
 //! Hardware-Adaptive Neural Runtime built on Candle.
 
 use anyhow::Result;
-use archer_shared::{SovereignInference, UnifiedBackend};
+use archer_shared::{CluaizInference, UnifiedBackend};
 use candle_core::{Device, Result as CandleResult, Tensor};
 use std::path::PathBuf;
 use tokenizers::Tokenizer;
@@ -58,7 +58,7 @@ impl CandleEngine {
     }
 }
 
-impl SovereignInference for CandleEngine {
+impl CluaizInference for CandleEngine {
     fn forward_raw(&mut self, _input_ids: &[u32], _pos: usize) -> Result<Vec<f32>> {
         Ok(vec![0.0; 1024])
     }
@@ -82,7 +82,7 @@ impl SovereignInference for CandleEngine {
     }
 
     /// 💉 Neural Injection Hook: Injects multiple skill states into the Candle tensor buffers.
-    fn inject_signals(&mut self, signals: Vec<archer_shared::hardware::memory::kv_cache::stitching::SovereignSignal>) -> Result<()> {
+    fn inject_signals(&mut self, signals: Vec<archer_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Result<()> {
         for signal in signals {
             println!("💉 [Candle-Engine] Skill Injection: Loading {} neural states into memory.", signal.token_count);
         }

@@ -1,4 +1,4 @@
-use crate::Core_foundry::registry::SkillRegistry;
+use crate::neural_foundry::registry::SkillRegistry;
 
 pub struct SkillRouter {}
 
@@ -31,7 +31,7 @@ impl SkillRouter {
 
             // 1. Semantic Trigger Match
             for trigger in &skill.manifest.triggers.semantic {
-                if prompt_lower.contains(&trigger.to_lowercase()) {
+                if prompt_lower.contains(trigger.to_lowercase().as_str()) {
                     is_matched = true;
                     break;
                 }

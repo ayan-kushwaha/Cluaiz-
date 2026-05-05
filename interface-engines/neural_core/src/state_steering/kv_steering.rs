@@ -6,7 +6,7 @@ use std::sync::Arc;
 use anyhow::{Result, anyhow};
 use crate::interfaces::memory_contract::{SovereignBuffer, MappedBuffer};
 use archer_shared::hardware::schema::profiles::SiliconTruth;
-use archer_shared::hardware::memory::kv_cache::stitching::SovereignSignal;
+use archer_shared::hardware::memory::kv_cache::stitching::CluaizSignal;
 
 /// 🏛️ SovereignMapper
 /// Handles the mapping of .kv-cache or .gguf files based on hardware capabilities.
@@ -50,18 +50,18 @@ impl SovereignMapper {
 }
 
 /// 🚥 KVStitcher
-/// High-level engine for preparing SovereignSignals for the Foundry.
+/// High-level engine for preparing CluaizSignals for the Foundry.
 pub struct KVStitcher;
 
 impl KVStitcher {
-    pub fn prepare_signal(skill_path: &Path, token_count: usize, head_dim: usize) -> Result<SovereignSignal> {
+    pub fn prepare_signal(skill_path: &Path, token_count: usize, head_dim: usize) -> Result<CluaizSignal> {
         if !skill_path.exists() {
             return Err(anyhow!("❌ Skill file not found: {:?}", skill_path));
         }
 
         let buffer = MappedBuffer::from_file(skill_path)?;
         
-        Ok(SovereignSignal {
+        Ok(CluaizSignal {
             raw_data: Arc::new(buffer),
             token_count,
             head_dim,

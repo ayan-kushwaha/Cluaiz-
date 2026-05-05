@@ -59,7 +59,7 @@ impl archer_shared::CluaizInference for Backend {
 pub struct CoreRouter {
     pub active_backend: Backend,
     pub tokenizer: Option<tokenizers::Tokenizer>,
-    pub foundry: crate::Core_foundry::CoreFoundry,
+    pub foundry: crate::neural_foundry::CoreFoundry,
 }
 
 impl Default for CoreRouter {
@@ -73,7 +73,7 @@ impl CoreRouter {
         Self { 
             active_backend: Backend::Empty(DummyBackend),
             tokenizer: None,
-            foundry: crate::Core_foundry::CoreFoundry::new(),
+            foundry: crate::neural_foundry::CoreFoundry::new(),
         }
     }
 
@@ -116,7 +116,7 @@ impl CoreRouter {
             println!("🗣️ [Router] Voice initialization fail: {}", err);
         }
 
-        let mut foundry = crate::Core_foundry::CoreFoundry::new();
+        let mut foundry = crate::neural_foundry::CoreFoundry::new();
         // Load skills from a standard location (this could be configurable)
         foundry.initialize("skills");
 

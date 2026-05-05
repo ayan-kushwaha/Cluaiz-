@@ -9,7 +9,7 @@ pub mod provisioner;
 pub mod discovery;
 pub use provisioner::Provisioner;
 pub use discovery::AutonomousDiscovery;
-use crate::hardware::HardwareTruth;
+use crate::hardware::SiliconTruth;
 use crate::models::fetch::ModelDownloader;
 pub use archer_shared::{KernelSignature, StructuralDNA};
 
@@ -258,7 +258,7 @@ impl CoreRoster {
     }
 
     /// Takes the hardware spec and returns the available models with recommendations.
-    pub fn get_recommendations(hardware: &HardwareTruth, system_ram_gb: f64) -> Vec<ModelRecommendation> {
+    pub fn get_recommendations(hardware: &SiliconTruth, system_ram_gb: f64) -> Vec<ModelRecommendation> {
         let models = Self::load_roster();
         let mut recommendations = Vec::new();
 

@@ -25,11 +25,11 @@ impl HardwareAuditor {
 
     fn evaluate_hardware(&self, control: &SystemControl, req_ram: f32, req_gpu: bool) -> HealthStatus {
         // 🚀 Cluaiz Logic: Extract VRAM from the first GPU (Primary)
-        let vram_available = control.Hardware_truth.accelerators.gpus.first()
+        let vram_available = control.silicon_truth.accelerators.gpus.first()
             .map(|g| g.vram_available_gb)
             .unwrap_or(0.0) as f32;
         
-        let system_ram = control.Hardware_truth.memory.total_capacity_gb as f32;
+        let system_ram = control.silicon_truth.memory.total_capacity_gb as f32;
 
         if req_gpu {
             if req_ram <= vram_available {
@@ -52,7 +52,7 @@ impl HardwareAuditor {
     }
 
     fn get_system_control_path(&self) -> PathBuf {
-        archer_shared::HardwareGovernor::resolve_engine_path().join("system_control.json")
+        archer_shared::hardware::governor::HardwareGovernor::resolve_engine_path().join("system_control.json")
     }
 }
 
