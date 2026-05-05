@@ -2,7 +2,7 @@
   "family": "Ternary-Bonsai (1.58-bit Neural Cluster)",
   "models": [
     {
-      "id": "ternary-bonsai-8b-it",
+      "id": "bonsai1.58:8b",
       "name": "Bonsai 8B (1.58-bit)",
       "architecture": "Bonsai (1.58-bit)",
       "parameters": "8.19B",
@@ -33,7 +33,7 @@
       ]
     },
     {
-      "id": "ternary-bonsai-4b-it",
+      "id": "bonsai1.58:4b",
       "name": "Bonsai 4B (1.58-bit)",
       "architecture": "Bonsai (1.58-bit)",
       "parameters": "4.0B",
@@ -64,7 +64,7 @@
       ]
     },
     {
-      "id": "ternary-bonsai-1.7b-it",
+      "id": "bonsai1.58:1.7b",
       "name": "Bonsai 1.7B (1.58-bit)",
       "architecture": "Bonsai (1.58-bit)",
       "parameters": "1.7B",

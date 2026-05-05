@@ -2,7 +2,7 @@
   "family": "Gemma 1.1",
   "models": [
     {
-      "id": "gemma-1.1-2b-it",
+      "id": "gemma1.1:2b",
       "name": "Gemma 1.1 2B",
       "architecture": "Gemma 1.1",
       "parameters": "2B",
@@ -33,7 +33,7 @@
       ]
     },
     {
-      "id": "gemma-1.1-7b-it",
+      "id": "gemma1.1:7b",
       "name": "Gemma 1.1 7B",
       "architecture": "Gemma 1.1",
       "parameters": "7B",

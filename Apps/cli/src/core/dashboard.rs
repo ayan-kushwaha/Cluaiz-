@@ -323,6 +323,23 @@ impl DashboardEngine {
                 print!("\x1B[2J\x1B[1;1H");
                 state.printed_logo = false;
             }
+            cmd if cmd.starts_with("run ") => {
+                let model_id = &cmd[4..];
+                println!("  {} Silicon Dispatch: '{}'...", "🧬".cyan(), model_id);
+                
+                let manager = engines::models::manager::ModelManager::new(
+                    engines::models::registry::REGISTRY_URL.to_string(),
+                    std::path::PathBuf::from("models")
+                );
+
+                tokio::task::block_in_place(|| {
+                    let rt = tokio::runtime::Handle::current();
+                    match rt.block_on(manager.pull_model(model_id)) {
+                        Ok(_) => println!("  {} Sovereign Link Established.", "✅".green()),
+                        Err(e) => println!("  {} Dispatch Failed: {}", "❌".red(), e),
+                    }
+                });
+            }
             _ => {
                 println!("  {} Unknown command: /{}", "❌".red(), cmd);
             }

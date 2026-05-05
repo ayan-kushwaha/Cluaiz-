@@ -12,6 +12,7 @@ pub use discovery::AutonomousDiscovery;
 use crate::hardware::SiliconTruth;
 use crate::models::fetch::ModelDownloader;
 pub use archer_shared::{KernelSignature, StructuralDNA};
+use reqwest;
 
 // ─── Installation JSON Schema ──────────────────────────────────────────────
 
@@ -126,8 +127,28 @@ pub struct ModelRecommendation {
 
 pub struct CoreRoster;
 
+pub const REGISTRY_URL: &str = "https://cdn.jsdelivr.net/gh/cluaiz/cluaiz@main/models.json";
+
 impl CoreRoster {
-    /// Scans all Installation/**/*.json files AND performs autonomous indexing of the models/ directory.
+    /// 🌐 Fetches an external models.json registry from a URL (Default: jsDelivr).
+    pub async fn fetch_external_registry(url: Option<&str>) -> Result<Vec<ModelManifest>, String> {
+        let fetch_url = url.unwrap_or(REGISTRY_URL);
+        let client = reqwest::Client::builder()
+            .user_agent("Cluaiz-Core-OS/1.0")
+            .timeout(std::time::Duration::from_secs(10))
+            .build()
+            .map_err(|e| e.to_string())?;
+
+        let response = client.get(fetch_url).send().await.map_err(|e| e.to_string())?;
+        if !response.status().is_success() {
+            return Err(format!("Registry fetch failed: HTTP {}", response.status()));
+        }
+
+        let file: RosterFile = response.json().await.map_err(|e| e.to_string())?;
+        Ok(file.models)
+    }
+
+    /// Scans the local Cluaiz Library recursively and merges with the Sovereign Registry.
     pub fn load_roster() -> Vec<ModelManifest> {
         let mut registry = std::collections::HashMap::new();
 
@@ -135,36 +156,36 @@ impl CoreRoster {
         let model_paths = vec!["models", "../models", "../../models", "../../../models"];
         for path in model_paths {
             let base = Path::new(path);
-            if base.exists() {
+            if base.exists() && base.is_dir() {
                 let local_units = AutonomousDiscovery::index_Cluaiz_models(base);
                 for unit in local_units {
-                    registry.insert(unit.id.clone(), unit);
+                    registry.insert(unit.id.to_lowercase(), unit);
                 }
                 break; 
             }
         }
 
-        // 2. Load Installation Templates (Downloadable/Available)
+        // 2. Load Cluaiz Library (The Sovereign Source)
         let mut templates = Vec::new();
         let search_paths = vec![
-            "src/models/Installation", 
-            "../engines/src/models/Installation", 
-            "engines/src/models/Installation",
-            "cluaiz-engine/engines/src/models/Installation",
-            "../cluaiz-engine/engines/src/models/Installation",
-            "../../cluaiz-engine/engines/src/models/Installation"
+            "models/library",
+            "../models/library",
+            "../../models/library",
+            "cluaiz-engine/models/library",
+            "../cluaiz-engine/models/library"
         ];
         
         let mut base_dir = None;
         for p in search_paths {
             let candidate = std::path::PathBuf::from(p);
-            if candidate.exists() { 
+            if candidate.exists() && candidate.is_dir() { 
                 base_dir = Some(candidate); 
                 break; 
             }
         }
 
         if let Some(base) = base_dir {
+            // 🔍 RECURSIVE SURGICAL SCAN: Family -> Version -> JSON
             if let Ok(families) = fs::read_dir(&base) {
                 for family_entry in families.flatten() {
                     let family_path = family_entry.path();
@@ -173,10 +194,22 @@ impl CoreRoster {
 
                     if let Ok(versions) = fs::read_dir(&family_path) {
                         for version_entry in versions.flatten() {
-                            let json_path = version_entry.path();
-                            if json_path.extension().and_then(|e| e.to_str()) != Some("json") { continue; }
-                            if let Ok(batch) = Self::load_installation_file(&json_path, &family_name) {
-                                templates.extend(batch);
+                            let version_path = version_entry.path();
+                            if version_path.is_dir() {
+                                if let Ok(files) = fs::read_dir(&version_path) {
+                                    for file_entry in files.flatten() {
+                                        let json_path = file_entry.path();
+                                        if json_path.extension().and_then(|e| e.to_str()) == Some("json") {
+                                            if let Ok(batch) = Self::load_installation_file(&json_path, &family_name) {
+                                                templates.extend(batch);
+                                            }
+                                        }
+                                    }
+                                }
+                            } else if version_path.extension().and_then(|e| e.to_str()) == Some("json") {
+                                if let Ok(batch) = Self::load_installation_file(&version_path, &family_name) {
+                                    templates.extend(batch);
+                                }
                             }
                         }
                     }
@@ -186,17 +219,9 @@ impl CoreRoster {
 
         // 3. Merge: Local Units take precedence over online templates
         for template in templates {
-            let template_id_lower = template.id.to_lowercase();
-            let mut found = false;
-            for local_id in registry.keys() {
-                let local_id: &String = local_id;
-                if local_id.to_lowercase() == template_id_lower {
-                    found = true;
-                    break;
-                }
-            }
-            if !found {
-                registry.insert(template.id.clone(), template);
+            let id_key = template.id.to_lowercase();
+            if !registry.contains_key(&id_key) {
+                registry.insert(id_key, template);
             }
         }
 

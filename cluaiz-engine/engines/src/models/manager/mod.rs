@@ -1,33 +1,12 @@
-use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use crate::models::manager::client::RegistryClient;
 use crate::models::manager::installer::ModelInstaller;
 use crate::models::manager::auditor::{HardwareAuditor, HealthStatus};
+use crate::models::registry::ModelManifest;
 
 pub mod client;
 pub mod installer;
 pub mod auditor;
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModelAsset {
-    pub name: String,
-    pub url: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModelManifest {
-    pub id: String,
-    pub name: String,
-    pub architecture: String,
-    pub parameters: String,
-    pub ram_required_gb: f32,
-    pub download_size_gb: f32,
-    pub download_url: String,
-    pub category: String,
-    pub requires_gpu: bool,
-    pub context_window: String,
-    pub assets: Vec<ModelAsset>,
-}
 
 /// The Cluaiz Model Manager
 /// Responsible for model discovery, health auditing, and atomic installation.
@@ -53,45 +32,51 @@ impl ModelManager {
         self.client.fetch_index().await
     }
 
-    /// Installation: Pull a specific model variant from Hugging Face
-    /// Syntax: bonsai:v1.1-bonsai-4b-atma-instruct
-    pub async fn pull_model(&self, family: &str, version: &str, id: &str) -> Result<(), String> {
-        // 1. Fetch Manifest from Registry (GitHub/Cloudflare)
-        let manifest_json = self.client.fetch_manifest(family, version, id).await?;
-        let manifest: ModelManifest = serde_json::from_str(&manifest_json)
-            .map_err(|e| format!("Manifest Parse Error: {}", e))?;
+    /// Installation: Pull a specific model by its Unified ID (e.g., bonsai:8b)
+    pub async fn pull_model(&self, model_id: &str) -> Result<(), String> {
+        // 1. Resolve Metadata: Local Library -> Sovereign Registry (jsDelivr)
+        let roster = crate::models::registry::CoreRoster::load_roster();
+        let mut manifest = roster.into_iter().find(|m| m.id.to_lowercase() == model_id.to_lowercase());
 
-        // 2. Hardware Audit (Hardware Truth)
-        let status = self.audit_model_health(manifest.ram_required_gb, manifest.requires_gpu);
+        if manifest.is_none() {
+            println!("🌐 [Manager] ID not found locally. Fetching Sovereign Registry...");
+            let remote_models = crate::models::registry::CoreRoster::fetch_external_registry(None).await?;
+            manifest = remote_models.into_iter().find(|m| m.id.to_lowercase() == model_id.to_lowercase());
+        }
+
+        let manifest = manifest.ok_or_else(|| format!("ID '{}' not found in any registry.", model_id))?;
+
+        // 2. Hardware Audit
+        let status = self.audit_model_health(manifest.ram_required_gb as f32, manifest.requires_gpu);
         if status == HealthStatus::Disabled {
             return Err("Cluaiz Audit Failed: Insufficient hardware resources for this model.".to_string());
         }
 
-        // 3. Construct Categorized Path (SSD)
-        // Pattern: [base_dir]/[category]/[id]
+        // 3. Construct Path: [base_dir]/[category]/[id]
         let mut model_path = self.base_models_dir.clone();
         model_path.push(&manifest.category);
         model_path.push(&manifest.id);
 
-        // 4. Create Directory surgically
         tokio::fs::create_dir_all(&model_path).await
             .map_err(|e| format!("Failed to create model directory: {}", e))?;
 
-        // 5. Initialize Installer for this specific path
+        // 4. Initialize Installer
         let installer = ModelInstaller::new(model_path.clone());
 
-        // 6. Pull Weights from Hugging Face
-        println!("🚀 Cluaiz Pull: Starting download of {} weights...", manifest.name);
-        installer.download_weights(&manifest.download_url, &format!("{}.gguf", manifest.id)).await?;
+        // 5. Pull Weights (The standard GGUF)
+        println!("🚀 Cluaiz Pull: Starting download of {}...", manifest.name);
+        installer.download_weights(&manifest.download_url, &manifest.huggingface_filename).await?;
 
-        // 7. Pull Supplemental Assets (tokenizer, config)
-        let asset_pairs: Vec<(String, String)> = manifest.assets.into_iter()
+        // 6. Pull Assets
+        let asset_pairs: Vec<(String, String)> = manifest.assets.clone().into_iter()
             .map(|a| (a.name, a.url))
             .collect();
         installer.pull_assets(asset_pairs).await?;
 
-        // 8. Save local manifest
+        // 7. Save local manifest (Persistence)
         let local_manifest_path = model_path.join("model_manifest.json");
+        let manifest_json = serde_json::to_string_pretty(&manifest)
+            .map_err(|e| format!("JSON Serialize Error: {}", e))?;
         tokio::fs::write(local_manifest_path, manifest_json).await
             .map_err(|e| format!("Failed to save local manifest: {}", e))?;
 

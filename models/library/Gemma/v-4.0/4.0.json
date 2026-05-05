@@ -2,7 +2,7 @@
   "family": "Gemma 4.0",
   "models": [
     {
-      "id": "gemma-4-E2B-it",
+      "id": "gemma4:e2b",
       "name": "Gemma 4 E2B",
       "architecture": "Gemma 4",
       "parameters": "Effective 2B",
@@ -33,7 +33,7 @@
       ]
     },
     {
-      "id": "gemma-4-E4B-it",
+      "id": "gemma4:e4b",
       "name": "Gemma 4 E4B",
       "architecture": "Gemma 4",
       "parameters": "Effective 4B",
@@ -64,7 +64,7 @@
       ]
     },
     {
-      "id": "gemma-4-26B-A4B-it",
+      "id": "gemma4:26b-a4b",
       "name": "Gemma 4 26B-A4B MoE",
       "architecture": "Gemma 4 (MoE)",
       "parameters": "26B Total / 4B Active",

@@ -2,7 +2,7 @@
   "family": "Bonsai (PrismML)",
   "models": [
     {
-      "id": "bonsai-8b-ll-instruct",
+      "id": "bonsai1:8b", 
       "name": "Bonsai 8B (1-bit)",
       "architecture": "Bonsai (1-bit)",
       "parameters": "8.19B",
@@ -33,7 +33,7 @@
       ]
     },
     {
-      "id": "bonsai-4b-atma-instruct",
+      "id": "bonsai1:4b",
       "name": "Bonsai 4B (1-bit)",
       "architecture": "Bonsai (1-bit)",
       "parameters": "4.0B",
@@ -64,7 +64,7 @@
       ]
     },
     {
-      "id": "bonsai-1.7b-prism-instruct",
+      "id": "bonsai1:1.7b",
       "name": "Bonsai 1.7B (1-bit)",
       "architecture": "Bonsai (1-bit)",
       "parameters": "1.7B",

@@ -7,6 +7,7 @@ use futures_util::StreamExt;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use crate::models::registry::ModelManifest;
+use indicatif::{ProgressBar, ProgressStyle};
 
 #[derive(Debug, Clone)]
 pub enum DownloadEvent {
@@ -128,13 +129,6 @@ impl ModelDownloader {
         }
 
         let bit_val = manifest.bit_depth;
-        let mut preferred_runtime = Some(archer_shared::backend::signature::BackendType::RuntimeA); // Default: Candle
-
-        if bit_val < 2.0 {
-            signature.is_bitnet = true;
-            // 🧠 ARCHER STEERING: BitNet models perform best on Llama.cpp (RuntimeB)
-            preferred_runtime = Some(archer_shared::backend::signature::BackendType::RuntimeB);
-        }
 
         let mut dna = crate::models::registry::StructuralDNA::create_skeleton(
             manifest.id.clone(),
@@ -173,16 +167,10 @@ impl ModelDownloader {
         client: &reqwest::Client,
         url: &str,
         dest_path: &std::path::Path,
-        tx: mpsc::Sender<DownloadEvent>,
-        abort: Arc<AtomicBool>
+        _tx: mpsc::Sender<DownloadEvent>,
+        abort: std::sync::Arc<std::sync::atomic::AtomicBool>
     ) -> Result<(), String> {
-        let response = client.get(url).send().await.map_err(|e| {
-            if e.is_status() && e.status() == Some(reqwest::StatusCode::NOT_FOUND) {
-                format!("ERROR: 404 Not Found at {}", url)
-            } else if e.is_status() && e.status() == Some(reqwest::StatusCode::UNAUTHORIZED) {
-                "ERROR: 401 Unauthorized (Access Token Required for Gated Repo)".to_string()
-            } else { format!("Connection Error: {}", e) }
-        })?;
+        let response = client.get(url).send().await.map_err(|e| e.to_string())?;
 
         if !response.status().is_success() {
             return Err(format!("Download failed for {}: HTTP {}", url, response.status()));
@@ -192,12 +180,17 @@ impl ModelDownloader {
         let mut downloaded: u64 = 0;
         let mut file = tokio::fs::File::create(dest_path).await.map_err(|e| e.to_string())?;
 
-        let start_time = Instant::now();
-        let mut last_update = Instant::now();
+        // 🚀 NATIVE PROGRESS: The Hugging Face style bar
+        let pb = ProgressBar::new(total_size);
+        pb.set_style(ProgressStyle::default_bar()
+            .template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {bytes}/{total_bytes} ({eta})")
+            .unwrap()
+            .progress_chars("#>-"));
+
         let mut stream = response.bytes_stream();
 
         while let Some(item) = stream.next().await {
-            if abort.load(Ordering::SeqCst) {
+            if abort.load(std::sync::atomic::Ordering::SeqCst) {
                 drop(file);
                 let _ = std::fs::remove_file(dest_path);
                 return Err("ABORTED".to_string());
@@ -206,16 +199,10 @@ impl ModelDownloader {
             let chunk = item.map_err(|e| e.to_string())?;
             file.write_all(&chunk).await.map_err(|e| e.to_string())?;
             downloaded += chunk.len() as u64;
-
-            if last_update.elapsed().as_millis() > 100 {
-                let progress = if total_size > 0 { downloaded as f32 / total_size as f32 } else { 0.0 };
-                let elapsed = start_time.elapsed().as_secs_f64();
-                let speed = if elapsed > 0.0 { downloaded as f64 / elapsed } else { 0.0 };
-                let eta = if speed > 0.0 { (total_size.saturating_sub(downloaded) as f64 / speed) as u64 } else { 0 };
-                let _ = tx.send(DownloadEvent::Progress(progress, downloaded, total_size, speed, eta)).await;
-                last_update = Instant::now();
-            }
+            pb.set_position(downloaded);
         }
+        
+        pb.finish_with_message("Download Complete");
         Ok(())
     }
 
