@@ -66,17 +66,16 @@ jobs:
             cp -r inference-drivers/drivers/$DRIVER_TYPE/* artifacts/ || true
           fi
           
-          # 🛡️ Artifact Guard: Ensure zip never fails even if binaries are missing
-          if [ ! -f artifacts/* ]; then
-             echo "Sovereign Silicon Placeholder" > artifacts/.silicon_keep
+          # Fallback placeholder if still empty (for dev logs)
+          if [ -z "$(ls -A artifacts)" ]; then
+             echo "Sovereign Driver Package (Empty)" > artifacts/info.txt
           fi
         shell: bash
 
       - name: 📦 Zip Driver
         run: |
           mkdir -p dist/drivers
-          # Zip all content, including hidden files to avoid "Nothing to do" error
-          cd artifacts && zip -r "../../dist/drivers/cluaiz-driver-${{ matrix.driver }}.zip" .
+          zip -j "dist/drivers/cluaiz-driver-${{ matrix.driver }}.zip" artifacts/*
         shell: bash
 
       - name: Release Drivers
