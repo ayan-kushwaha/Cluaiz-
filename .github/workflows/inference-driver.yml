@@ -72,11 +72,6 @@ jobs:
           fi
         shell: bash
 
-      - name: 📦 Zip Driver
-        run: |
-          mkdir -p dist/drivers
-          zip -j "dist/drivers/cluaiz-driver-${{ matrix.driver }}.zip" artifacts/*
-        shell: bash
 
       - name: Release Drivers
         uses: softprops/action-gh-release@v2
