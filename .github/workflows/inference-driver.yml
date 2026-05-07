@@ -82,9 +82,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/drivers-') || github.event_name == 'workflow_dispatch'
         with:
-          files: dist/drivers/*.zip
-          tag_name: ${{ github.ref_name || 'drivers-latest' }}
-          name: "Cluaiz Drivers ${{ github.ref_name || 'Latest' }}"
+          files: artifacts/*
+          tag_name: ${{ github.ref_name == 'main' && 'drivers-v0.1.0' || github.ref_name }}
+          name: "Cluaiz Raw Drivers ${{ github.ref_name || 'Latest' }}"
           draft: false
           prerelease: false
         env:
@@ -101,28 +101,32 @@ jobs:
 
       - name: Generate Manifest
         run: |
-          # 🎯 SYNC STRATEGY: VERSION must match the tag_name used in build-drivers
           VERSION="${{ github.ref_name }}"
           if [[ "$VERSION" == "main" || "$VERSION" == "master" ]]; then
             VERSION="drivers-v0.1.0"
           fi
           
-          echo "Generating manifest for Sync-Version: $VERSION"
+          echo "Generating Raw Manifest for Version: $VERSION"
+          
+          # 🎯 Extension Mapping Strategy
+          EXT_WIN=".dll"
+          EXT_LINUX=".so"
+          EXT_MAC=".dylib"
           
           cat <<EOF > driver-manifest.json
           {
             "version": "$VERSION",
             "install_root": "/Cluaiz/drivers/",
             "drivers": {
-              "cuda": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-cuda.zip",
-              "metal": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-metal.zip",
-              "rocm": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-rocm.zip",
-              "vulkan": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-vulkan.zip",
-              "openvino": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-openvino.zip",
-              "qnn": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-qnn.zip",
-              "tpu": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-tpu.zip",
-              "cpu-blas": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-cpu-blas.zip",
-              "ghost": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-ghost.zip"
+              "cuda": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-cuda$EXT_WIN",
+              "metal": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-metal$EXT_MAC",
+              "rocm": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-rocm$EXT_LINUX",
+              "vulkan": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-vulkan$EXT_WIN",
+              "openvino": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-openvino$EXT_LINUX",
+              "qnn": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-qnn$EXT_WIN",
+              "tpu": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-tpu$EXT_LINUX",
+              "cpu-blas": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-cpu-blas$EXT_LINUX",
+              "ghost": "https://github.com/${{ github.repository }}/releases/download/$VERSION/cluaiz-driver-ghost$EXT_LINUX"
             },
             "automation": {
               "status": "ready",
