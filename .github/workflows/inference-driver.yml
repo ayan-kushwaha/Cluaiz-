@@ -101,13 +101,13 @@ jobs:
 
       - name: Generate Manifest
         run: |
-          # 🎯 VERSION STRATEGY: Use the tag name. Fallback only if manually triggered.
+          # 🎯 SYNC STRATEGY: VERSION must match the tag_name used in build-drivers
           VERSION="${{ github.ref_name }}"
           if [[ "$VERSION" == "main" || "$VERSION" == "master" ]]; then
             VERSION="drivers-v0.1.0"
           fi
           
-          echo "Generating manifest for Version: $VERSION"
+          echo "Generating manifest for Sync-Version: $VERSION"
           
           cat <<EOF > driver-manifest.json
           {
@@ -135,6 +135,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: driver-manifest.json
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name == 'main' && 'drivers-v0.1.0' || github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
