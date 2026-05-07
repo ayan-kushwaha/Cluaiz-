@@ -12,7 +12,7 @@ use crate::ui::apps::registry::table::{RegistryTable, ColumnWidths};
 pub struct RegistryApp;
 
 impl RegistryApp {
-    pub fn show(state: &mut AppState, tx: &mpsc::Sender<DownloadEvent>) -> Result<()> {
+    pub fn show(state: &mut AppState, tx: &mpsc::UnboundedSender<DownloadEvent>) -> Result<()> {
         if state.sorted_models.is_empty() {
             state.sorted_models = engines::CoreRoster::get_recommendations(&state.hardware.to_Hardware_truth(), state.ram_gb);
         }

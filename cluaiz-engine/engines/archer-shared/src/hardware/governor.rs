@@ -72,9 +72,18 @@ impl HardwareGovernor {
             .lock()
             .map_err(|_| anyhow::anyhow!("Arbiter Lock Poisoned"))?;
 
-        // If total_vram is 0, we might need a quick calibration
+        // If total_vram is 0, we try to load from the existing System Truth first (Fast)
         if arbiter.total_vram_gb == 0.0 {
-            let _ = Self::auto_calibrate();
+            if let Ok(control) = Self::load_system_control() {
+                let total = control.silicon_truth.accelerators.gpus.iter()
+                    .map(|g| g.vram_available_gb)
+                    .sum::<f64>();
+                arbiter.total_vram_gb = total;
+                tracing::info!("⚖️ [Arbiter] VRAM Truth synchronized from System Control: {:.2}GB", total);
+            } else {
+                // Only calibrate if absolutely no truth is found (Slow fallback)
+                let _ = Self::auto_calibrate();
+            }
         }
 
         let available = arbiter.total_vram_gb - arbiter.allocated_vram_gb;

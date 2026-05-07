@@ -17,21 +17,38 @@ pub struct App {
     pub tab: crate::app_enums::Tab,
     pub mode: Mode,
     pub theme: Theme,
-    pub tx: mpsc::Sender<DownloadEvent>,
-    pub rx: mpsc::Receiver<DownloadEvent>,
-    pub _inf_tx: mpsc::Sender<InferenceEvent>,
+    pub tx: mpsc::UnboundedSender<DownloadEvent>,
+    pub rx: mpsc::UnboundedReceiver<DownloadEvent>,
+    pub _inf_tx: mpsc::UnboundedSender<InferenceEvent>,
     pub _abort_handle: Option<Arc<AtomicBool>>,
     pub _last_frame_time: Instant,
     pub flow: FlowEngine,
 }
 
 impl App {
-    pub fn new(profile_override: Option<UserProfile>) -> color_eyre::Result<Self> {
-        let (tx, rx) = mpsc::channel(32);
-        let (inf_tx, inf_rx) = mpsc::channel(32);
+    pub fn new(profile_override: Option<UserProfile>, auto_start_model: Option<engines::models::registry::ModelManifest>) -> color_eyre::Result<Self> {
+        let (tx, rx) = mpsc::unbounded_channel();
+        let (inf_tx, _inf_rx) = mpsc::unbounded_channel();
         let flow = FlowEngine::new()?;
+        let mut state = AppState::new(profile_override);
+        
+        if let Some(m) = auto_start_model {
+            let model_id = m.id.clone();
+            let model_name = m.name.clone();
+            state._active_model_id = Some(model_id.clone());
+            state.activity_stream.push(ActivityBlock::ModelMounted(model_name.clone()));
+            
+            // Fast-track the model to sorted_models at the top
+            state.sorted_models.insert(0, engines::models::registry::ModelRecommendation {
+                manifest: m,
+                status: "Optimal".to_string(),
+                is_cached: true,
+            });
+            state.roster_state.select(Some(0));
+        }
+
         let app = Self {
-            state: AppState::new(profile_override),
+            state,
             tab: crate::app_enums::Tab::All,
             mode: Mode::Running,
             theme: Theme::default(),
@@ -42,7 +59,7 @@ impl App {
             _last_frame_time: Instant::now(),
             flow,
         };
-        let _ = inf_rx;
+        let _ = _inf_rx;
         Ok(app)
     }
 
@@ -54,6 +71,33 @@ impl App {
                     self.state.os_state = OsState::Dashboard;
                 }
                 OsState::Dashboard => {
+                    // ── 0. Auto-Pilot Linkage (Sovereign Mount) ──
+                    if !self.state.auto_mount_triggered {
+                        // 🔍 Auto-Selection: Pick first available model if none active
+                        if self.state._active_model_id.is_none() {
+                            if let Some(model) = self.state.sorted_models.iter().find(|m| m.is_cached) {
+                                self.state._active_model_id = Some(model.manifest.id.clone());
+                            }
+                        }
+
+                        if let Some(active_id) = &self.state._active_model_id {
+                            if let Some(model) = self.state.sorted_models.iter().find(|m| &m.manifest.id == active_id) {
+                                if let Some(local_path) = engines::models::fetch::ModelDownloader::get_cached_path(
+                                    &model.manifest.category,
+                                    &model.manifest.id,
+                                    &model.manifest.huggingface_filename
+                                ) {
+                                    self.state.auto_mount_triggered = true;
+                                    let engine = self.state.Core_engine.clone();
+                                    println!("  {} Mounting auto-selected model: {}", "⚙️".yellow(), model.manifest.name);
+                                    tokio::spawn(async move {
+                                        let _ = engine.load_model(local_path).await;
+                                    });
+                                }
+                            }
+                        }
+                    }
+
                     // ── 1. Unified Interface Initialization ──
                     if !self.state.printed_logo {
                         let _ = crossterm::execute!(std::io::stdout(), crossterm::terminal::LeaveAlternateScreen);
@@ -68,43 +112,15 @@ impl App {
                     }
  
                     // ── 2. Background Event Processing ──
-                    while let Ok(event) = self.rx.try_recv() {
-                        self.handle_kernel_event(event).await;
-                    }
+                    self.state.handle_events(&mut self.rx);
                     crate::ui::apps::stream::commit_to_stdout(&mut self.state);
 
                     // ── 3. Native Dashboard Interaction ──
-                    DashboardEngine::run_native(&mut self.state, &self.tx, &mut self.mode)?;
+                    DashboardEngine::run_native(&mut self.state, &self.tx, &mut self.rx, &mut self.mode)?;
                 }
             }
         }
         Ok(())
     }
 
-    async fn handle_kernel_event(&mut self, event: DownloadEvent) {
-        match event {
-            DownloadEvent::Progress(prog, _current, _total, _speed, _eta) => {
-                self.state.download_progress = prog as f64;
-            }
-            DownloadEvent::Complete(id) => {
-                if id == "INITIAL_LOAD" {
-                    self.state.sorted_models = engines::CoreRoster::get_recommendations(
-                        &self.state.hardware.to_Hardware_truth(), self.state.ram_gb
-                    );
-                } else if self.state.downloading_id.as_ref() == Some(&id) {
-                    let name = self.state.sorted_models.iter()
-                        .find(|m| m.manifest.id == id)
-                        .map(|m| m.manifest.name.clone())
-                        .unwrap_or_else(|| id.clone());
-
-                    self.state.downloading_id = None;
-                    self.state.activity_stream.push(ActivityBlock::DownloadComplete(name));
-                    self.state.sorted_models = engines::CoreRoster::get_recommendations(
-                        &self.state.hardware.to_Hardware_truth(), self.state.ram_gb
-                    );
-                }
-            }
-            _ => {}
-        }
-    }
 }

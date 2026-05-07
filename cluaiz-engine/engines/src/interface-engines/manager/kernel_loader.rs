@@ -59,25 +59,47 @@ impl KernelLoader {
             _ => "bin",
         };
 
-        // Build the canonical file name (matches CI/CD build output)
-        let file_name = format!("archer_{}.{}", kernel_name, ext);
+        // We try multiple potential naming conventions and subdirectories
+        let mut candidates = Vec::new();
+        
+        // 1. Full Hardware-Suffixed (e.g. archer_llama-cuda.dll)
+        candidates.push(format!("archer_{}.{}", kernel_name, ext));
+        
+        // 2. Simple Base (e.g. archer_llama.dll)
+        if kernel_name.contains('-') {
+            let base_name = kernel_name.split('-').next().unwrap_or(kernel_name);
+            candidates.push(format!("archer_{}.{}", base_name, ext));
+        }
 
-        // 1. PRIMARY: Read cluaiz_root from system_control.json — the Single Source of Truth.
-        //    Path pattern: <cluaiz_root>/interface-engines/<file_name>
+        // 3. System Truth: Read cluaiz_root
         if let Some(cluaiz_root) = read_cluaiz_root() {
-            let Cluaiz_path = cluaiz_root.join("interface-engines").join(&file_name);
-            if Cluaiz_path.exists() {
-                tracing::info!("🎯 [KernelLoader] Cluaiz path resolved: {:?}", Cluaiz_path);
-                return Cluaiz_path;
+            let base_link = cluaiz_root.join("interface-engines");
+            
+            for file_name in &candidates {
+                // Check root interface-engines/
+                let path = base_link.join(file_name);
+                if path.exists() {
+                    tracing::info!("🎯 [KernelLoader] Cluaiz path resolved: {:?}", path);
+                    return path;
+                }
+                
+                // Check kernels/ subdirectory
+                let path_kernels = base_link.join("kernels").join(file_name);
+                if path_kernels.exists() {
+                    tracing::info!("🎯 [KernelLoader] Cluaiz path resolved (kernels/): {:?}", path_kernels);
+                    return path_kernels;
+                }
             }
         }
 
-        // 2. FALLBACK: Local development build output (for dev/testing only).
+        // 4. FALLBACK: Local development build output
         let mut dev_path = self.base_dir.clone();
         dev_path.push("target");
         dev_path.push("release");
-        dev_path.push(&file_name);
-        tracing::warn!("⚠️ [KernelLoader] Cluaiz path not found. Falling back to dev path: {:?}", dev_path);
+        let fallback_file = format!("archer_{}.{}", kernel_name, ext);
+        dev_path.push(&fallback_file);
+        
+        tracing::warn!("⚠️ [KernelLoader] Cluaiz path not found for {}. Falling back to dev path: {:?}", kernel_name, dev_path);
         dev_path
     }
 }

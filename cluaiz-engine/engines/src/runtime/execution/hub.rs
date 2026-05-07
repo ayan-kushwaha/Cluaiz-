@@ -22,7 +22,7 @@ impl HardwareOrchestrator {
 
         // 2. Identify Engine Type based on DNA Signature
         let engine_type = if Cluaiz_context.dna.signature.is_bitnet {
-            "bitnet"
+            "candle" // BitNet uses the optimized candle kernel
         } else if Cluaiz_context.dna.signature.has_experts {
             "llama" // MOE optimized llama kernel
         } else {

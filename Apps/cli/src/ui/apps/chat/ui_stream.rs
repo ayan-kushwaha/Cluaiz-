@@ -41,7 +41,7 @@ pub fn render_stream(app: &AppState, area: Rect, buf: &mut Buffer) {
         .render(Rect::new(area.x + left_margin, area.y, view_width, visible_height), buf);
 
     // ── PROMPT AREA ──────────────────────────────────────────────────
-    let is_loading = app.is_deleting || !app.Core_engine.is_loaded;
+    let is_loading = app.is_deleting || !app.Core_engine.is_loaded.load(std::sync::atomic::Ordering::SeqCst);
     let prompt_char = if is_loading { "…" } else { "❯" };
     let prompt_color = if is_loading { Color::Yellow } else { Color::Cyan };
 

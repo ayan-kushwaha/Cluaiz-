@@ -3,8 +3,9 @@
 //! ═══════════════════════════════════════════════════════════════════════
 
 use serde::{Deserialize, Serialize};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::fs;
+use tracing::{info, warn};
 pub mod provisioner;
 pub mod discovery;
 pub use provisioner::Provisioner;
@@ -24,6 +25,7 @@ pub struct ModelAsset {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InstallationModel {
+    #[serde(default)]
     pub id: String,
     pub name: String,
     #[serde(default)]
@@ -127,14 +129,14 @@ pub struct ModelRecommendation {
 
 pub struct CoreRoster;
 
-pub const REGISTRY_URL: &str = "https://cdn.jsdelivr.net/gh/cluaiz/cluaiz@main/models.json";
+pub const REGISTRY_URL: &str = "https://cdn.jsdelivr.net/gh/cluaiz/cluaiz@main/models/library/registry.json";
 
 impl CoreRoster {
     /// 🌐 Fetches an external models.json registry from a URL (Default: jsDelivr).
     pub async fn fetch_external_registry(url: Option<&str>) -> Result<Vec<ModelManifest>, String> {
         let fetch_url = url.unwrap_or(REGISTRY_URL);
         let client = reqwest::Client::builder()
-            .user_agent("Cluaiz-Core-OS/1.0")
+            .user_agent("Cluaiz/1.0")
             .timeout(std::time::Duration::from_secs(10))
             .build()
             .map_err(|e| e.to_string())?;
@@ -144,8 +146,18 @@ impl CoreRoster {
             return Err(format!("Registry fetch failed: HTTP {}", response.status()));
         }
 
-        let file: RosterFile = response.json().await.map_err(|e| e.to_string())?;
-        Ok(file.models)
+        let json_val: serde_json::Value = response.json().await.map_err(|e| e.to_string())?;
+        let mut manifests = Vec::new();
+
+        if let Some(routing) = json_val.get("routing").and_then(|r| r.as_object()) {
+            for (id, _path) in routing {
+                // For the index, we might just return empty manifests or placeholders
+                // but ideally, the remote should also point to the full JSONs.
+                // For now, let's just parse what we can.
+            }
+        }
+        
+        Ok(manifests)
     }
 
     /// Scans the local Cluaiz Library recursively and merges with the Sovereign Registry.
@@ -153,15 +165,26 @@ impl CoreRoster {
         let mut registry = std::collections::HashMap::new();
 
         // 1. Load Autonomous Local Units (The Index Master)
-        let model_paths = vec!["models", "../models", "../../models", "../../../models"];
+        let mut model_paths = vec![
+            "models".to_string(), 
+            "../models".to_string(), 
+            "../../models".to_string(), 
+            "../../../models".to_string()
+        ];
+        
+        if let Some(home) = dirs::home_dir() {
+            model_paths.push(home.join(".cluaiz").join("models").to_string_lossy().to_string());
+        }
+
         for path in model_paths {
-            let base = Path::new(path);
+            let base = Path::new(&path);
             if base.exists() && base.is_dir() {
+                info!("🔍 [Roster] Scanning unit path: {}", path);
                 let local_units = AutonomousDiscovery::index_Cluaiz_models(base);
                 for unit in local_units {
+                    info!("✅ [Roster] Discovered local unit: {}", unit.id);
                     registry.insert(unit.id.to_lowercase(), unit);
                 }
-                break; 
             }
         }
 
@@ -179,6 +202,7 @@ impl CoreRoster {
         for p in search_paths {
             let candidate = std::path::PathBuf::from(p);
             if candidate.exists() && candidate.is_dir() { 
+                info!("📚 [Roster] Library source found at: {}", p);
                 base_dir = Some(candidate); 
                 break; 
             }
@@ -232,52 +256,73 @@ impl CoreRoster {
 
     fn load_installation_file(path: &Path, family_name: &str) -> Result<Vec<ModelManifest>, String> {
         let content = fs::read_to_string(path).map_err(|e| e.to_string())?;
-        let file: InstallationFile = serde_json::from_str(&content).map_err(|e| e.to_string())?;
+        let json_val: serde_json::Value = serde_json::from_str(&content).map_err(|e| {
+            // println!("❌ [Roster] Failed to parse {}: {}", path.display(), e);
+            e.to_string()
+        })?;
+        
+        let mut manifests = Vec::new();
+        
+        if let Some(obj) = json_val.as_object() {
+            for (key, value) in obj {
+                // 🛑 Skip Meta-Keys
+                if key == "family" || key == "version" || key == "registry_name" {
+                    continue;
+                }
 
-        let manifests = file.models.into_iter().map(|m| {
-            let gguf_filename = m.download_url
-                .split('/')
-                .next_back()
-                .map(|s| s.to_string())
-                .unwrap_or_else(|| format!("{}-Q4_K_M.gguf", m.id));
+                // 🧬 Each Key is an ID, Value is an Array of Model variants
+                if let Some(models_array) = value.as_array() {
+                    for m_val in models_array {
+                        let mut m: InstallationModel = serde_json::from_value(m_val.clone())
+                            .map_err(|e| format!("Parsing error in {}: {}", key, e))?;
+                        
+                        // 💉 INJECT ID from Key (The Sovereign Way)
+                        m.id = key.clone();
 
-            let input_modality = if m.context_window.contains("256k") || m.context_window.contains("128k") {
-                "Text + Vision".to_string()
-            } else {
-                "Text".to_string()
-            };
+                        let gguf_filename = m.download_url
+                            .split('/')
+                            .next_back()
+                            .map(|s| s.to_string())
+                            .unwrap_or_else(|| format!("{}-Q4_K_M.gguf", m.id));
 
-            ModelManifest {
-                id: m.id,
-                name: m.name,
-                architecture: m.architecture,
-                parameters: m.parameters,
-                training_tokens: m.training_tokens,
-                bit_depth: m.bit_depth,
-                ram_required_gb: m.ram_required_gb,
-                download_size_gb: m.download_size_gb,
-                huggingface_repo: m.huggingface_repo,
-                huggingface_filename: gguf_filename,
-                download_url: m.download_url,
-                description: m.description,
-                is_cloud_api: m.is_cloud_api,
-                requires_gpu: m.requires_gpu,
-                is_free_tier: true,
-                input_modality,
-                context_window: m.context_window,
-                family: family_name.to_string(),
-                category: m.category,
-                assets: m.assets,
-                local_path: None,
-                dna_path: None,
-                
-                // 🏛️ DNA MAPPING
-                has_vision: m.has_vision,
-                has_audio: m.has_audio,
-                expert_count: m.expert_count,
-                experts_per_token: m.experts_per_token,
+                        let input_modality = if m.context_window.contains("256k") || m.context_window.contains("128k") {
+                            "Text + Vision".to_string()
+                        } else {
+                            "Text".to_string()
+                        };
+
+                        manifests.push(ModelManifest {
+                            id: m.id,
+                            name: m.name,
+                            architecture: m.architecture,
+                            parameters: m.parameters,
+                            training_tokens: m.training_tokens,
+                            bit_depth: m.bit_depth,
+                            ram_required_gb: m.ram_required_gb,
+                            download_size_gb: m.download_size_gb,
+                            huggingface_repo: m.huggingface_repo,
+                            huggingface_filename: gguf_filename,
+                            download_url: m.download_url,
+                            description: m.description,
+                            is_cloud_api: m.is_cloud_api,
+                            requires_gpu: m.requires_gpu,
+                            is_free_tier: true,
+                            input_modality,
+                            context_window: m.context_window,
+                            family: family_name.to_string(),
+                            category: m.category,
+                            assets: m.assets,
+                            local_path: None,
+                            dna_path: None,
+                            has_vision: m.has_vision,
+                            has_audio: m.has_audio,
+                            expert_count: m.expert_count,
+                            experts_per_token: m.experts_per_token,
+                        });
+                    }
+                }
             }
-        }).collect();
+        }
 
         Ok(manifests)
     }
@@ -324,6 +369,7 @@ impl CoreRoster {
                 else { "Impossible".to_string() }
             };
 
+            info!("🧬 [Roster] Model {} Status: {}, Cached: {}", model.id, status, is_cached);
             recommendations.push(ModelRecommendation { manifest: model, status, is_cached });
         }
 
@@ -335,6 +381,7 @@ impl CoreRoster {
             score(&a.status).cmp(&score(&b.status))
         });
 
+        info!("📊 [Roster] Generated {} model recommendations for UI.", recommendations.len());
         recommendations
     }
 }

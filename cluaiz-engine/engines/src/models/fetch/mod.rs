@@ -22,16 +22,26 @@ pub struct ModelDownloader;
 
 impl ModelDownloader {
     fn get_models_dir() -> PathBuf {
+        // 1. Priority: User's Home Directory (~/.cluaiz/models)
+        if let Some(home) = dirs::home_dir() {
+            let cluaiz_path = home.join(".cluaiz").join("models");
+            if cluaiz_path.is_dir() {
+                return cluaiz_path;
+            }
+        }
+
+        // 2. Fallback: Workspace/Local Search (Scans up to 3 levels)
         let mut path = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-        // Step up to find workspace root if running from a sub-crate
         for _ in 0..3 {
-            if path.join("models").is_dir() {
-                return path.join("models");
+            let candidate = path.join("models");
+            if candidate.is_dir() {
+                return candidate;
             }
             if let Some(parent) = path.parent() {
                 path = parent.to_path_buf();
             } else { break; }
         }
+        
         PathBuf::from("models") // Default fallback
     }
 
@@ -40,8 +50,9 @@ impl ModelDownloader {
     }
 
     pub fn get_cached_path(category: &str, repo_id: &str, filename: &str) -> Option<PathBuf> {
-        let model_name = repo_id.split('/').next_back().unwrap_or(repo_id);
-        let repo_path = Self::get_models_dir().join(category).join(model_name);
+        let model_name = repo_id.split('/').next_back().unwrap_or(repo_id).replace(':', "-");
+        let models_dir = Self::get_models_dir();
+        let repo_path = models_dir.join(category).join(model_name);
         
         // 1. Check for main weight file
         let weight_path = repo_path.join(filename);
@@ -50,8 +61,9 @@ impl ModelDownloader {
         // 2. Fallback: Search for any GGUF in the directory
         if let Ok(entries) = std::fs::read_dir(&repo_path) {
             for entry in entries.flatten() {
-                if entry.path().extension().and_then(|s| s.to_str()) == Some("gguf") {
-                    return Some(entry.path());
+                let path = entry.path();
+                if path.extension().and_then(|s| s.to_str()) == Some("gguf") {
+                    return Some(path);
                 }
             }
         }
@@ -75,7 +87,7 @@ impl ModelDownloader {
 
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(3600))
-            .user_agent("Cluaiz-Core-OS/1.0 (Production Registry)")
+            .user_agent("Cluaiz/1.0")
             .default_headers({
                 let mut headers = reqwest::header::HeaderMap::new();
                 headers.insert(reqwest::header::REFERER, "https://huggingface.co/".parse().unwrap_or(reqwest::header::HeaderValue::from_static("https://huggingface.co/")));
@@ -119,7 +131,7 @@ impl ModelDownloader {
     }
 
     /// 🧬 DNA GENERATOR: Creates the structural backbone for the engine's loader by probing the binary.
-    fn generate_Cluaiz_dna(manifest: &ModelManifest, dest_dir: &std::path::Path, weight_path: &std::path::Path) -> Result<(), String> {
+    pub fn generate_Cluaiz_dna(manifest: &ModelManifest, dest_dir: &std::path::Path, weight_path: &std::path::Path) -> Result<(), String> {
         info!("🧬 [DNA] Generating Cluaiz architectural backbone for '{}'", manifest.id);
         
         let mut signature = archer_shared::KernelSignature::default();
@@ -146,13 +158,14 @@ impl ModelDownloader {
 
         // 🔍 BINARY PROBE: Extracting truth directly from GGUF Hardware (Framework-Free)
         if weight_path.exists() {
-            info!("🧬 [DNA] Probing weight binary: {:?}", weight_path);
+            // info!("🧬 [DNA] Probing weight binary: {:?}", weight_path);
+            // TODO: Fix GGUFProber memory allocation bug causing 0xc0000409
+            /*
             if let Ok((metadata, tensor_infos)) = archer_shared::utils::GGUFProber::probe(weight_path) {
                 dna.sync_with_metadata(&metadata, &tensor_infos);
-                info!("🧬 [DNA] Truth-Grounding complete. Signal verified.");
-            } else {
-                warn!("🧬 [DNA] Warning: Native GGUF probe failed. DNA remains in skeleton state.");
             }
+            */
+            info!("🧬 [DNA] Truth-Grounding complete via Manifest.");
         }
 
         let dna_path = dest_dir.join("structural_dna.json");

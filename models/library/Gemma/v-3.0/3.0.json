@@ -1,0 +1,99 @@
+{
+  "family": "Gemma 3.0",
+  "gemma3:1b": [
+    {
+      "name": "Gemma 3 1B",
+      "architecture": "Gemma 3",
+      "parameters": "1B",
+      "training_tokens": "Professional Grade",
+      "bit_depth": 4.0,
+      "ram_required_gb": 1.2,
+      "download_size_gb": 0.9,
+      "huggingface_repo": "google/gemma-3-1b-it",
+      "download_url": "https://huggingface.co/unsloth/gemma-3-1b-it-GGUF/resolve/main/gemma-3-1b-it-Q4_K_M.gguf",
+      "description": "Gemma 3 1B is a high-speed small language model optimized for mobile and edge deployment with 128K context support.",
+      "is_cloud_api": false,
+      "requires_gpu": false,
+      "context_window": "128k",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/unsloth/gemma-3-1b-it/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/unsloth/gemma-3-1b-it/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/unsloth/gemma-3-1b-it/resolve/main/tokenizer_config.json"
+        }
+      ]
+    }
+  ],
+  "gemma3:4b": [
+    {
+      "name": "Gemma 3 4B",
+      "architecture": "Gemma 3",
+      "parameters": "4B",
+      "training_tokens": "High Cognitive",
+      "bit_depth": 4.0,
+      "ram_required_gb": 4.2,
+      "download_size_gb": 3.2,
+      "huggingface_repo": "google/gemma-3-4b-it",
+      "download_url": "https://huggingface.co/unsloth/gemma-3-4b-it-GGUF/resolve/main/gemma-3-4b-it-Q4_K_M.gguf",
+      "description": "Gemma 3 4B offers a massive leap in reasoning performance, ideal for coding and structured technical instruction following.",
+      "is_cloud_api": false,
+      "requires_gpu": false,
+      "context_window": "128k",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/unsloth/gemma-3-4b-it/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/unsloth/gemma-3-4b-it/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/unsloth/gemma-3-4b-it/resolve/main/tokenizer_config.json"
+        }
+      ]
+    }
+  ],
+  "gemma3:12b": [
+    {
+      "name": "Gemma 3 12B",
+      "architecture": "Gemma 3",
+      "parameters": "12B",
+      "training_tokens": "Superior Logic",
+      "bit_depth": 4.0,
+      "ram_required_gb": 10.5,
+      "download_size_gb": 8.4,
+      "huggingface_repo": "google/gemma-3-12b-it",
+      "download_url": "https://huggingface.co/unsloth/gemma-3-12b-it-GGUF/resolve/main/gemma-3-12b-it-Q4_K_M.gguf",
+      "description": "The enterprise-ready Gemma 3 12B variant provides superior logical depth and high-fidelity creative output with 128K context window.",
+      "is_cloud_api": false,
+      "requires_gpu": true,
+      "context_window": "128k",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/unsloth/gemma-3-12b-it/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/unsloth/gemma-3-12b-it/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/unsloth/gemma-3-12b-it/resolve/main/tokenizer_config.json"
+        }
+      ]
+    }
+  ]
+}

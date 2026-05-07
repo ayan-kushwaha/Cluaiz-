@@ -17,7 +17,7 @@ pub fn show_details(
     rec: &mut ModelRecommendation,
     _total_ram: f64,
     breadcrumb: &str,
-    tx: &mpsc::Sender<DownloadEvent>,
+    tx: &mpsc::UnboundedSender<DownloadEvent>,
 ) -> Result<Option<String>> {
     let m = &rec.manifest;
     let mut lines_printed = 0;
@@ -154,7 +154,7 @@ pub fn show_details(
                         let _ = engines::ModelDownloader::download_gguf_async(
                             &category, &repo_id, &dl_url, &filename, assets, manifest, local_tx, abort_clone
                         ).await;
-                        let _ = tx_clone.send(DownloadEvent::Complete(mid)).await;
+                        let _ = tx_clone.send(DownloadEvent::Complete(mid));
                     });
 
                     let start = std::time::Instant::now();

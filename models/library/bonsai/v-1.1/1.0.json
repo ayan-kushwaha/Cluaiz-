@@ -1,8 +1,7 @@
 {
   "family": "Bonsai (PrismML)",
-  "models": [
+  "bonsai1:8b": [
     {
-      "id": "bonsai1:8b", 
       "name": "Bonsai 8B (1-bit)",
       "architecture": "Bonsai (1-bit)",
       "parameters": "8.19B",
@@ -31,9 +30,10 @@
           "url": "https://huggingface.co/prism-ml/Bonsai-8B-unpacked/resolve/main/tokenizer_config.json"
         }
       ]
-    },
+    }
+  ],
+  "bonsai1:4b": [
     {
-      "id": "bonsai1:4b",
       "name": "Bonsai 4B (1-bit)",
       "architecture": "Bonsai (1-bit)",
       "parameters": "4.0B",
@@ -62,9 +62,10 @@
           "url": "https://huggingface.co/prism-ml/Bonsai-4B-unpacked/resolve/main/tokenizer_config.json"
         }
       ]
-    },
+    }
+  ],
+  "bonsai1:1.7b": [
     {
-      "id": "bonsai1:1.7b",
       "name": "Bonsai 1.7B (1-bit)",
       "architecture": "Bonsai (1-bit)",
       "parameters": "1.7B",

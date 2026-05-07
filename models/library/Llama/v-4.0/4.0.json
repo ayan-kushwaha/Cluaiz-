@@ -1,0 +1,67 @@
+{
+  "family": "Llama 4.0",
+  "Llama-4-Scout-17B-16E-Instruct": [
+    {
+      "name": "Llama 4 17B 16E",
+      "architecture": "Llama 4 (MoE)",
+      "parameters": "17B (Active) / 16 Experts",
+      "training_tokens": "30 Trillion - 40 Trillion",
+      "bit_depth": 4.0,
+      "ram_required_gb": 12.5,
+      "download_size_gb": 9.8,
+      "huggingface_repo": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+      "download_url": "https://huggingface.co/bartowski/Llama-4-Scout-17B-16E-Instruct-GGUF/resolve/main/Llama-4-Scout-17B-16E-Instruct-Q4_K_M.gguf",
+      "description": "Llama 4 Scout is a 109B parameter natively multimodal Mixture-of-Experts (MoE) model. Trained on 40T tokens, it supports Text, Image, and Video reasoning with an industry-leading 10 million token context window.",
+      "is_cloud_api": false,
+      "requires_gpu": true,
+      "context_window": "10M",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/meta-llama/Llama-4-Scout-17B-16E-Instruct/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-4-Scout-17B-16E-Instruct/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-4-Scout-17B-16E-Instruct/resolve/main/tokenizer_config.json"
+        }
+      ]
+    }
+  ],
+  "Llama-4-Maverick-17B-128E-Instruct": [
+    {
+      "name": "Llama 4 17B 128E",
+      "architecture": "Llama 4 (MoE)",
+      "parameters": "17B (Active) / 128 Experts",
+      "training_tokens": "30 Trillion - 40 Trillion",
+      "bit_depth": 4.0,
+      "ram_required_gb": 22.8,
+      "download_size_gb": 18.5,
+      "huggingface_repo": "meta-llama/Llama-4-Maverick-17B-128E-Instruct",
+      "download_url": "https://huggingface.co/bartowski/Llama-4-Maverick-17B-128E-Instruct-GGUF/resolve/main/Llama-4-Maverick-17B-128E-Instruct-Q4_K_M.gguf",
+      "description": "Llama 4 Maverick is Meta's flagship 400B parameter natively multimodal MoE model. Trained on 30T-40T tokens, it offers advanced reasoning across Text, Image, and Video with a 1M token context window.",
+      "is_cloud_api": false,
+      "requires_gpu": true,
+      "context_window": "1M",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/meta-llama/Llama-4-Maverick-17B-128E-Instruct/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-4-Maverick-17B-128E-Instruct/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-4-Maverick-17B-128E-Instruct/resolve/main/tokenizer_config.json"
+        }
+      ]
+    }
+  ]
+}

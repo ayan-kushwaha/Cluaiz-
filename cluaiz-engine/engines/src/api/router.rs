@@ -83,8 +83,19 @@ impl CoreRouter {
             let _ = AutoHealer::heal_missing_tokenizer(&repo_id, parent).await;
         }
 
-        // [Cluaiz ALIGNMENT]: Bootstrapping context with default DNA and Templates
+        // [Cluaiz ALIGNMENT]: Bootstrapping context with local DNA and Templates
         let mut dna = StructuralDNA::default();
+        if let Some(parent) = path.parent() {
+            let dna_path = parent.join("structural_dna.json");
+            if dna_path.exists() {
+                if let Ok(content) = std::fs::read_to_string(&dna_path) {
+                    if let Ok(loaded_dna) = serde_json::from_str::<StructuralDNA>(&content) {
+                        dna = loaded_dna;
+                        println!("🧬 [Router] Neural DNA synchronized from local manifest.");
+                    }
+                }
+            }
+        }
         dna.preferred_runtime = Some(runtime);
         
         let context = CluaizContext::boot(
@@ -157,7 +168,7 @@ impl CoreRouter {
                     Err("Tokenizer not loaded.".to_string())
                 }
             },
-            Backend::Empty(_) => Err("Core weights not loaded.".to_string()),
+            Backend::Empty(_) => Err("Core weights not loaded. Please select a model with @ or wait for the Auto-Pilot handshake to complete.".to_string()),
         }
     }
 }

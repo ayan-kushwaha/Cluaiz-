@@ -8,7 +8,7 @@ pub struct AutonomousDiscovery;
 impl AutonomousDiscovery {
     /// Deep-scans the models directory for Cluaiz Handshake units.
     pub fn index_Cluaiz_models(base_path: &Path) -> Vec<ModelManifest> {
-        info!("🔍 Autonomous Discovery: Scouring {:?} for Core units...", base_path);
+        // info!("🔍 Autonomous Discovery: Scouring {:?} for Core units...", base_path);
         let mut models = Vec::new();
 
         if !base_path.exists() { return models; }
@@ -16,7 +16,7 @@ impl AutonomousDiscovery {
         // Recursive scan for model_manifest.json
         Self::scan_recursive(base_path, &mut models);
 
-        info!("✅ Discovery Complete: Identified {} local Core assets.", models.len());
+        // info!("✅ Discovery Complete: Identified {} local Core assets.", models.len());
         models
     }
 

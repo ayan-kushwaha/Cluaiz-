@@ -17,7 +17,7 @@ use crate::core::app::App;
 // ── Cluaiz CLI Definition ──────────────────────────────────────────────────
 
 #[derive(Parser)]
-#[command(name = "cluaiz", about = "Universal Neural Kernel", version = "0.1.0", disable_help_subcommand = true)]
+#[command(name = "cluaiz", about = "Cluaiz CLI", version = "0.1.0", disable_help_subcommand = true)]
 struct Cli {
     #[command(subcommand)]
     command: Option<CliCommand>,
@@ -47,35 +47,31 @@ async fn main() -> Result<()> {
     // the clean terminal UX.
 
     let raw_args: Vec<String> = std::env::args().collect();
+    let mut auto_start_model = None;
 
-    match raw_args.get(1).map(|s| s.as_str()) {
-        Some("help") | Some("-h") | Some("--help") => {
-            return crate::cli::help::print_help();
-        }
-        Some("run") => {
-            // Validate arg count before any heavy init
-            let model_id = match raw_args.get(2) {
-                Some(id) => id.clone(),
-                None => {
-                    println!(
-                        "\n  {} Usage: cluaiz run <model-id>\n  {} Example: cluaiz run bonsai:8b\n",
-                        "⚠️ ".yellow(),
-                        "💡".cyan()
-                    );
-                    return Ok(());
-                }
-            };
-            // Minimal init for network commands (log redirect only, no TUI bootstrap)
-            if let Ok(log_file) = File::create("cluaiz_Core.log") {
-                let _ = tracing_subscriber::fmt()
-                    .with_writer(log_file)
-                    .with_ansi(false)
-                    .try_init();
+    if let Some("run") = raw_args.get(1).map(|s| s.as_str()) {
+        let model_id = match raw_args.get(2) {
+            Some(id) => id.clone(),
+            None => {
+                println!(
+                    "\n  {} Usage: cluaiz run <model-id>\n  {} Example: cluaiz run bonsai:8b\n",
+                    "⚠️ ".yellow(),
+                    "💡".cyan()
+                );
+                return Ok(());
             }
-            color_eyre::install()?;
-            return crate::cli::run::execute(&model_id).await;
+        };
+        // Minimal init for network commands (log redirect only, no TUI bootstrap)
+        if let Ok(log_file) = File::create("cluaiz_Core.log") {
+            let _ = tracing_subscriber::fmt()
+                .with_writer(log_file)
+                .with_ansi(false)
+                .try_init();
         }
-        _ => {}
+        color_eyre::install()?;
+        auto_start_model = Some(crate::cli::run::execute(&model_id).await?);
+    } else if let Some("help") | Some("-h") | Some("--help") = raw_args.get(1).map(|s| s.as_str()) {
+        return crate::cli::help::print_help();
     }
 
     // ══ PHASE 2 — FULL BOOT (TUI Dashboard path) ══════════════════════════
@@ -105,7 +101,7 @@ async fn main() -> Result<()> {
     }
 
     if cli_args.calibrate {
-        println!("  {} [Cluaiz] Commencing Hardware DNA Extraction...", "🧬".cyan());
+        println!("  {} [Cluaiz] Calibrating hardware...", "🧬".cyan());
         archer_shared::hardware::HardwareGovernor::auto_calibrate()
             .map_err(|e| color_eyre::eyre::eyre!("Calibration failed: {}", e))?;
         println!("  {} [Cluaiz] SiliconTruth synchronized.", "✅".green());
@@ -128,7 +124,7 @@ async fn main() -> Result<()> {
     }));
 
     // ── Cluaiz PRIMARY FLOW ───────────────────────────────────────────────
-    let app = App::new(profile_over)?;
+    let app = App::new(profile_over, auto_start_model)?;
 
     let tx = app.tx.clone();
     let hardware = app.state.hardware.clone();
@@ -140,7 +136,7 @@ async fn main() -> Result<()> {
             engines::CoreRoster::get_recommendations(&hardware.to_Hardware_truth(), ram)
         }).await.unwrap_or_default();
 
-        let _ = tx.send(DownloadEvent::Complete("INITIAL_LOAD".to_string())).await;
+        let _ = tx.send(DownloadEvent::Complete("INITIAL_LOAD".to_string()));
     });
 
     let app_result = app.run().await;

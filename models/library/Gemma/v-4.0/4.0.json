@@ -1,8 +1,7 @@
 {
   "family": "Gemma 4.0",
-  "models": [
+  "gemma4:e2b": [
     {
-      "id": "gemma4:e2b",
       "name": "Gemma 4 E2B",
       "architecture": "Gemma 4",
       "parameters": "Effective 2B",
@@ -20,7 +19,7 @@
       "assets": [
         {
           "name": "tokenizer.json",
-          "url": "https://huggingface.co/unsloth/gemma-4-E2B-it/resolve/main/tokenizer.json" 
+          "url": "https://huggingface.co/unsloth/gemma-4-E2B-it/resolve/main/tokenizer.json"
         },
         {
           "name": "config.json",
@@ -31,9 +30,10 @@
           "url": "https://huggingface.co/unsloth/gemma-4-E2B-it/resolve/main/tokenizer_config.json"
         }
       ]
-    },
+    }
+  ],
+  "gemma4:e4b": [
     {
-      "id": "gemma4:e4b",
       "name": "Gemma 4 E4B",
       "architecture": "Gemma 4",
       "parameters": "Effective 4B",
@@ -62,9 +62,10 @@
           "url": "https://huggingface.co/unsloth/gemma-4-E4B-it/resolve/main/tokenizer_config.json"
         }
       ]
-    },
+    }
+  ],
+  "gemma4:26b-a4b": [
     {
-      "id": "gemma4:26b-a4b",
       "name": "Gemma 4 26B-A4B MoE",
       "architecture": "Gemma 4 (MoE)",
       "parameters": "26B Total / 4B Active",

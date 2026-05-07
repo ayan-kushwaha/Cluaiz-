@@ -1,6 +1,6 @@
 # MISSION 7: STABILITY & CORRECTNESS HANDSHAKE
 
-- [x] `[x]` **Phase 1: WASM Stabilization**
+- [/] `[/]` **Phase 1: State Hardening**
     - [x] Add `wasmtime-wasi` dependency to `engines/Cargo.toml`.
     - [x] Implement WASI support in `wasm_host.rs`.
     - [x] Create string-passing ABI (Host <-> Guest).

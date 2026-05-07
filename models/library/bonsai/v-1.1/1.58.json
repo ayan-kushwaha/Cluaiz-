@@ -1,8 +1,7 @@
 {
   "family": "Ternary-Bonsai (1.58-bit Neural Cluster)",
-  "models": [
+  "bonsai1.58:8b": [
     {
-      "id": "bonsai1.58:8b",
       "name": "Bonsai 8B (1.58-bit)",
       "architecture": "Bonsai (1.58-bit)",
       "parameters": "8.19B",
@@ -31,9 +30,10 @@
           "url": "https://huggingface.co/prism-ml/Ternary-Bonsai-8B-unpacked/resolve/main/tokenizer_config.json"
         }
       ]
-    },
+    }
+  ],
+  "bonsai1.58:4b": [
     {
-      "id": "bonsai1.58:4b",
       "name": "Bonsai 4B (1.58-bit)",
       "architecture": "Bonsai (1.58-bit)",
       "parameters": "4.0B",
@@ -62,9 +62,10 @@
           "url": "https://huggingface.co/prism-ml/Ternary-Bonsai-4B-unpacked/resolve/main/tokenizer_config.json"
         }
       ]
-    },
+    }
+  ],
+  "bonsai1.58:1.7b": [
     {
-      "id": "bonsai1.58:1.7b",
       "name": "Bonsai 1.7B (1.58-bit)",
       "architecture": "Bonsai (1.58-bit)",
       "parameters": "1.7B",

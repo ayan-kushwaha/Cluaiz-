@@ -1,0 +1,98 @@
+{
+  "family": "Llama 2.0 (Legacy Chat Cluster)",
+  "models": [
+    {
+      "id": "llama-2-7b-chat-hf",
+      "name": "Llama 2 7B  ",
+      "architecture": "Llama 2",
+      "parameters": "7.0 Billion",
+      "training_tokens": "2.0 Trillion",
+      "bit_depth": 4.0,
+      "ram_required_gb": 8.0,
+      "download_size_gb": 3.8,
+      "huggingface_repo": "meta-llama/Llama-2-7b-chat-hf",
+      "download_url": "https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q4_K_M.gguf",
+      "description": "Llama 2 7B Chat-HF is the foundational legacy unit of the Llama ecosystem. Trained on 2 trillion tokens with a strict focus on dialogue safety and instruction following, it remains a gold standard for low-latency, stable inference. This specific 'HF-Chat' variant inherited the official Meta conversation refinements, making it ideal for standard chat interfaces on localized edge silicon. Despite being a legacy model with a 4096 context window, its architectural simplicity and weight distribution ensure zero-bottleneck performance on consumer-grade hardware. It serves as the baseline for evaluating reasoning evolution in later generations.",
+      "is_cloud_api": false,
+      "requires_gpu": false,
+      "context_window": "4k",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/resolve/main/tokenizer_config.json"
+        }
+      ]
+    },
+    {
+      "id": "llama-2-13b-chat-hf",
+      "name": "Llama 2 13B ",
+      "architecture": "Llama 2",
+      "parameters": "13.0 Billion",
+      "training_tokens": "2.0 Trillion",
+      "bit_depth": 4.0,
+      "ram_required_gb": 16.0,
+      "download_size_gb": 7.3,
+      "huggingface_repo": "meta-llama/Llama-2-13b-chat-hf",
+      "download_url": "https://huggingface.co/TheBloke/Llama-2-13B-Chat-GGUF/resolve/main/llama-2-13b-chat.Q4_K_M.gguf",
+      "description": "The 13B variant of the Llama 2 line represents the 'Golden Ratio' between parameter depth and inference speed. It offers a significant boost in semantic understanding and logical consistency compared to the 7B model while remaining deployable on professional workstations. It utilizes a similar 2 trillion token training base but benefits from higher dimensional embeddings and more attention heads, allowing for sharper instruction following in complex multi-step tasks. In Archer OS, this model functions as a reliable bridge for users needing deeper context synthesis without moving to the massive compute overhead of 70B clusters.",
+      "is_cloud_api": false,
+      "requires_gpu": true,
+      "context_window": "4k",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/meta-llama/Llama-2-13b-chat-hf/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-2-13b-chat-hf/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-2-13b-chat-hf/resolve/main/tokenizer_config.json"
+        }
+      ]
+    },
+    {
+      "id": "llama-2-70b-chat-hf",
+      "name": "Llama 2 70B ",
+      "architecture": "Llama 2",
+      "parameters": "70.0 Billion",
+      "training_tokens": "2.0 Trillion",
+      "bit_depth": 4.0,
+      "ram_required_gb": 64.0,
+      "download_size_gb": 35.5,
+      "huggingface_repo": "meta-llama/Llama-2-70b-chat-hf",
+      "download_url": "https://huggingface.co/TheBloke/Llama-2-70B-Chat-GGUF/resolve/main/llama-2-70b-chat.Q4_K_M.gguf",
+      "description": "Llama 2 70B is the massive anchor point of early Sovereign archival data. Featuring Grouped-Query Attention (GQA) for the first time in the Llama lineage, it was designed for high-throughput enterprise reasoning. This model boasts the most extensive knowledge base of the v2 generation, capable of handling highly specialized technical domains and nuanced creative writing. While it requires substantial VRAM (64GB for Q4_K_M), it provides the most precise instruction following of the Llama 2 family. It remains a critical unit for researchers testing backwards compatibility and architectural efficiency across generations.",
+      "is_cloud_api": false,
+      "requires_gpu": true,
+      "context_window": "4k",
+      "category": "chat",
+      "assets": [
+        {
+          "name": "tokenizer.json",
+          "url": "https://huggingface.co/meta-llama/Llama-2-70b-chat-hf/resolve/main/tokenizer.json"
+        },
+        {
+          "name": "config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-2-70b-chat-hf/resolve/main/config.json"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "url": "https://huggingface.co/meta-llama/Llama-2-70b-chat-hf/resolve/main/tokenizer_config.json"
+        }
+      ]
+    }
+  ]
+}

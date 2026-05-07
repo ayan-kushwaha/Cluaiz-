@@ -50,32 +50,48 @@ pub enum AppMode {
     ContextPalette, // Triggered by @
 }
 
+use std::sync::atomic::{AtomicBool, Ordering};
+use tokio::sync::Mutex;
+
 #[derive(Clone)]
 pub struct CoreEngine {
-    pub router: Arc<tokio::sync::Mutex<engines::CoreRouter>>,
-    pub is_loaded: bool,
+    pub router: Arc<Mutex<engines::CoreRouter>>,
+    pub is_loaded: Arc<AtomicBool>,
+    pub loading_error: Arc<Mutex<Option<String>>>,
 }
 
 impl CoreEngine {
     pub fn new() -> Self {
         Self { 
             router: Arc::new(tokio::sync::Mutex::new(engines::CoreRouter::new())),
-            is_loaded: false,
+            is_loaded: Arc::new(AtomicBool::new(false)),
+            loading_error: Arc::new(Mutex::new(None)),
         }
     }
 
-    pub async fn load_model(&mut self, path: std::path::PathBuf) -> Result<(), String> {
+    pub async fn load_model(&self, path: std::path::PathBuf) -> Result<(), String> {
         let device = candle_core::Device::Cpu;
         let backend = engines::BackendType::RuntimeB;
+
+        // 🔄 Reset Linker State
+        self.is_loaded.store(false, Ordering::SeqCst);
+        {
+            let mut err_lock = self.loading_error.lock().await;
+            *err_lock = None;
+        }
         
         match engines::CoreRouter::load_model(path, backend, &device).await {
             Ok(router) => {
                 let mut lock = self.router.lock().await;
                 *lock = router;
-                self.is_loaded = true;
+                self.is_loaded.store(true, Ordering::SeqCst);
                 Ok(())
             }
-            Err(e) => Err(e),
+            Err(e) => {
+                let mut err_lock = self.loading_error.lock().await;
+                *err_lock = Some(e.clone());
+                Err(e)
+            }
         }
     }
 }
@@ -194,6 +210,7 @@ pub struct AppState {
     pub logo_index: usize,
     pub activity_stream: Vec<ActivityBlock>,
     pub onboarding_status: String,
+    pub auto_mount_triggered: bool,
 }
 
 
@@ -369,6 +386,36 @@ impl AppState {
             logo_index: crate::assets::logos::logo_gallery::LOGO_VARIANTS.len() - 1,
             activity_stream: Vec::new(),
             onboarding_status: "OPTIMIZED ✓".to_string(),
+            auto_mount_triggered: false,
+        }
+    }
+
+    pub fn handle_events(&mut self, rx: &mut tokio::sync::mpsc::UnboundedReceiver<engines::DownloadEvent>) {
+        while let Ok(event) = rx.try_recv() {
+            match event {
+                engines::DownloadEvent::Progress(prog, _current, _total, _speed, _eta) => {
+                    self.download_progress = prog as f64;
+                }
+                engines::DownloadEvent::Complete(id) => {
+                    if id == "INITIAL_LOAD" {
+                        self.sorted_models = engines::CoreRoster::get_recommendations(
+                            &self.hardware.to_Hardware_truth(), self.ram_gb
+                        );
+                    } else if self.downloading_id.as_ref() == Some(&id) {
+                        let name = self.sorted_models.iter()
+                            .find(|m| m.manifest.id == id)
+                            .map(|m| m.manifest.name.clone())
+                            .unwrap_or_else(|| id.clone());
+
+                        self.downloading_id = None;
+                        self.activity_stream.push(ActivityBlock::DownloadComplete(name));
+                        self.sorted_models = engines::CoreRoster::get_recommendations(
+                            &self.hardware.to_Hardware_truth(), self.ram_gb
+                        );
+                    }
+                }
+                _ => {}
+            }
         }
     }
 }

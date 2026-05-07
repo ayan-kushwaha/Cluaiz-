@@ -67,7 +67,7 @@ impl Bootstrapper {
     }
 
     fn trigger_setup(engine_path: &Path) -> Result<()> {
-        println!("  {} [Cluaiz] Igniting Hardware Calibration...", "🔥".red());
+        println!("  {} [Cluaiz] Initializing hardware...", "⚙️".yellow());
         
         let status = Command::new(engine_path)
             .arg("--setup")
@@ -103,7 +103,7 @@ impl Bootstrapper {
         let kernel_path = kernel_dir.join(format!("archer_llama.{}", kernel_ext));
 
         if !kernel_path.exists() {
-            println!("  {} [Cluaiz] Retrieving Core Kernel ({})...", "📦".magenta(), backend);
+            println!("  {} [Cluaiz] Downloading kernel ({})...", "📦".magenta(), backend);
             let url = format!("https://github.com/cluaiz/cluaiz/releases/download/kernel-v0.1.0/archer_llama-dev-{}-{}.{}", platform, backend, kernel_ext);
             Self::download_asset(&url, &kernel_path).await?;
         }

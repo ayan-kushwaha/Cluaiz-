@@ -8,6 +8,8 @@ use inquire::{
     Select, Text,
 };
 use std::io::{stdout, Write};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use tokio::sync::mpsc;
 
 // ── 📦 MODULAR APPS ──
@@ -19,17 +21,12 @@ pub struct DashboardEngine;
 impl DashboardEngine {
     pub fn run_native(
         state: &mut AppState,
-        tx: &mpsc::Sender<DownloadEvent>,
+        tx: &mpsc::UnboundedSender<DownloadEvent>,
+        rx: &mut mpsc::UnboundedReceiver<DownloadEvent>,
         mode: &mut crate::app_enums::Mode,
     ) -> Result<()> {
         // ── 🔒 Cluaiz RENDER CONFIG ──
-        let config = RenderConfig::default()
-            .with_prompt_prefix(
-                Styled::new(">")
-                    .with_fg(Color::LightCyan)
-                    .with_attr(Attributes::BOLD),
-            )
-            .with_answered_prompt_prefix(Styled::new(">").with_fg(Color::LightCyan));
+        let config = RenderConfig::default();
 
         // ── 🧬 ATOMIC Core DISCOVERY (Cluaiz Startup Scan) ──
         if state.sorted_models.is_empty() {
@@ -45,10 +42,13 @@ impl DashboardEngine {
         let start_time = std::time::Instant::now();
 
         // 📡 Cluaiz PULSE CONTROL: Visibility gate to prevent chat history bleeding
-        let show_dashboard = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(true));
+        let show_dashboard = Arc::new(AtomicBool::new(false));
         let show_ref = show_dashboard.clone();
  
+        let engine_ref = state.Core_engine.clone();
+ 
         std::thread::spawn(move || {
+            let engine = engine_ref;
             use crossterm::{
                 cursor, execute,
                 style::{self, Stylize},
@@ -94,7 +94,18 @@ impl DashboardEngine {
                 let uptime = start_time.elapsed().as_millis() / 500;
                 let is_blink_on = uptime % 2 == 0;
 
-                // 🚦 Status Dot Logic
+                // 🧠 Neural State Handshake
+                let is_loaded = engine.is_loaded.load(std::sync::atomic::Ordering::SeqCst);
+                let loading_err = engine.loading_error.blocking_lock();
+                
+                let (neural_label, neural_color) = if is_loaded {
+                    ("LIVE", style::Color::Green)
+                } else if loading_err.is_some() {
+                    ("LINK FAIL", style::Color::Red)
+                } else {
+                    ("LOADING...", style::Color::Yellow)
+                };
+
                 let status_dot = if is_blink_on { "●" } else { " " };
                 let cpu_color = if cpu < 50.0 { style::Color::Green } else if cpu < 80.0 { style::Color::Yellow } else { style::Color::Red };
                 let gpu_color = if (vram_pct as f32) < 50.0 { style::Color::Green } else if (vram_pct as f32) < 80.0 { style::Color::Yellow } else { style::Color::Red };
@@ -102,66 +113,90 @@ impl DashboardEngine {
                 let status_color = if cpu < 50.0 && (vram_pct as f32) < 50.0 { style::Color::Green } else if cpu < 80.0 || (vram_pct as f32) < 80.0 { style::Color::Yellow } else { style::Color::Red };
 
                 // Surgical Overwrite: Force-inject metrics into the prompt's footprint (Y+1)
-                if let Ok((_x, mut y)) = cursor::position() {
-                    let (_cols, rows) = terminal::size().unwrap_or((80, 24));
-                    
-                    if y + 1 >= rows {
-                        // 🚀 Core SCROLL: Force a scroll up to keep prompt and dashboard separated
-                        let _ = execute!(stdout, terminal::ScrollUp(1), cursor::MoveUp(1));
-                        y -= 1; 
-                    }
-
-                    let _ = execute!(
-                        stdout,
-                        cursor::SavePosition,
-                        cursor::MoveTo(0, y + 1),
-                        terminal::Clear(terminal::ClearType::CurrentLine),
-                        style::Print(Stylize::bold(Stylize::dim("[ "))),
-                        style::Print(Stylize::bold(status_dot.with(status_color))),
-                        style::Print(Stylize::bold(Stylize::dim(" LIVE │ "))),
+                if show_ref.load(Ordering::SeqCst) {
+                    if let Ok((_x, mut y)) = cursor::position() {
+                        let (_cols, rows) = terminal::size().unwrap_or((80, 24));
                         
-                        // CPU Pulse: Thermal & Load Sync
-                        style::Print(Stylize::dim("CPU: ")),
-                        style::Print(Stylize::dim(format!("{:.0}°C ({:.0}%)", cpu_temp, cpu))),
-                        style::Print(Stylize::dim(format!(" │ {:.1}GHz", cpu_ghz))),
-                        style::Print(Stylize::dim(") │ ")),
+                        if y + 1 >= rows {
+                            // 🚀 Core SCROLL: Force a scroll up to keep prompt and dashboard separated
+                            let _ = execute!(stdout, terminal::ScrollUp(1), cursor::MoveUp(1));
+                            y -= 1; 
+                        }
 
-                        // GPU Pulse: Hardware Pressure Audit
-                        style::Print(Stylize::dim("GPU: ")),
-                        style::Print(Stylize::dim(format!("{:.0}°C ({:.0}%)", gpu_temp, vram_pct))),
-                        style::Print(Stylize::dim(format!(" │ {:.1}/{:.0}GB", vram_used, vram_total))),
-                        style::Print(Stylize::dim(") │ ")),
+                        let _ = execute!(
+                            stdout,
+                            cursor::SavePosition,
+                            cursor::MoveTo(0, y + 1),
+                            terminal::Clear(terminal::ClearType::CurrentLine),
+                            style::Print(Stylize::bold(Stylize::dim("[ "))),
+                            style::Print(Stylize::bold(status_dot.with(status_color))),
+                            style::Print(Stylize::bold(format!(" {} │ ", neural_label).with(neural_color))),
+                            
+                            // CPU Pulse: Thermal & Load Sync
+                            style::Print(Stylize::dim("CPU: ")),
+                            style::Print(Stylize::dim(format!("{:.0}°C ({:.0}%)", cpu_temp, cpu))),
+                            style::Print(Stylize::dim(format!(" │ {:.1}GHz", cpu_ghz))),
+                            style::Print(Stylize::dim(") │ ")),
 
-                        // RAM Pulse: Core Buffer Load
-                        style::Print(Stylize::dim("RAM: ")),
-                        style::Print(Stylize::dim(format!("{:.1}GB ({:.0}%)", ram_used, ram_pct))),
-                        style::Print(Stylize::dim(") │ ")),
+                            // GPU Pulse: Hardware Pressure Audit
+                            style::Print(Stylize::dim("GPU: ")),
+                            style::Print(Stylize::dim(format!("{:.0}°C ({:.0}%)", gpu_temp, vram_pct))),
+                            style::Print(Stylize::dim(format!(" │ {:.1}/{:.0}GB", vram_used, vram_total))),
+                            style::Print(Stylize::dim(") │ ")),
 
-                        // TPS Pulse: Relay Latency Audit
-                        style::Print(Stylize::dim("TPS: ")),
-                        style::Print(Stylize::dim(format!("{:.1}", tps))),
-                        style::Print(Stylize::bold(Stylize::dim(" ]"))),
+                            // RAM Pulse: Core Buffer Load
+                            style::Print(Stylize::dim("RAM: ")),
+                            style::Print(Stylize::dim(format!("{:.1}GB ({:.0}%)", ram_used, ram_pct))),
+                            style::Print(Stylize::dim(") │ ")),
 
-                        cursor::RestorePosition
-                    );
-                    let _ = stdout.flush();
+                            // TPS Pulse: Relay Latency Audit
+                            style::Print(Stylize::dim("TPS: ")),
+                            style::Print(Stylize::dim(format!("{:.1}", tps))),
+                            style::Print(Stylize::bold(Stylize::dim(" ]"))),
+
+                            cursor::RestorePosition
+                        );
+                        let _ = stdout.flush();
+                    }
+                } else {
+                    // 🛑 SILENCE: Clear the dashboard line when deactivated
+                    if let Ok((_x, y)) = cursor::position() {
+                        let (_cols, rows) = terminal::size().unwrap_or((80, 24));
+                        if y + 1 < rows {
+                            let _ = execute!(
+                                stdout,
+                                cursor::SavePosition,
+                                cursor::MoveTo(0, y + 1),
+                                terminal::Clear(terminal::ClearType::CurrentLine),
+                                cursor::RestorePosition
+                            );
+                            let _ = stdout.flush();
+                        }
+                    }
                 }
 
-                std::thread::sleep(std::time::Duration::from_millis(100));
+                std::thread::sleep(std::time::Duration::from_millis(150));
             }
         });
+        // 🚀 CLUAIZ AUTO-BOOT: Activate the latest engine silently
+        let auto_boot_name = state.sorted_models.iter().filter(|m| m.is_cached).next().map(|m| m.manifest.name.clone());
+        if let Some(name) = auto_boot_name {
+            println!("\n  {} Auto-Booting Neural Kernel: {}...", "🚀".magenta(), name.bold());
+            let _ = Self::handle_model_switch(state, tx, rx, "", Some(&name));
+        }
 
         loop {
-            // 🛑 ATOMIC SILENCE: Disable telemetry bar while user is typing to prevent ANSI clashes (E.g. 5;14m glitches)
-            show_dashboard.store(false, std::sync::atomic::Ordering::SeqCst);
+            // 🚀 ACTIVATE: Show telemetry only when at the input prompt
+            show_dashboard.store(true, std::sync::atomic::Ordering::SeqCst);
             
             let input = Text::new("")
                 .with_placeholder("Type your message or @ & / for menu")
                 .with_render_config(config.clone())
                 .prompt();
+
+            // 🛑 DEACTIVATE: Hide telemetry immediately after input to keep the log clean
+            show_dashboard.store(false, std::sync::atomic::Ordering::SeqCst);
             
-            // 🚀 RE-IGNITE: Telemetry resumes once input is submitted
-            show_dashboard.store(true, std::sync::atomic::Ordering::SeqCst);
             if let Ok((_x, y)) = crossterm::cursor::position() {
                 let mut stdout = std::io::stdout();
                 let _ = crossterm::execute!(stdout, crossterm::cursor::MoveTo(0, y + 1), crossterm::terminal::Clear(crossterm::terminal::ClearType::CurrentLine));
@@ -209,8 +244,10 @@ impl DashboardEngine {
                             break;
                         }
                     } else if final_message.starts_with('@') {
-                        Self::handle_model_switch(state, tx, &final_message[1..])?;
+                        Self::handle_model_switch(state, tx, rx, &final_message[1..], None)?;
                     } else {
+                        // show_dashboard.store(true, std::sync::atomic::Ordering::SeqCst);
+                        
                         // ── 👤 USER MESSAGE ──
                         use crossterm::style::Stylize;
                         let icon = Stylize::bold(Stylize::cyan("👤"));
@@ -289,7 +326,7 @@ impl DashboardEngine {
 
     fn handle_command(
         state: &mut AppState,
-        tx: &mpsc::Sender<DownloadEvent>,
+        tx: &mpsc::UnboundedSender<DownloadEvent>,
         mode: &mut crate::app_enums::Mode,
         cmd: &str,
     ) -> Result<()> {
@@ -349,9 +386,12 @@ impl DashboardEngine {
 
     fn handle_model_switch(
         state: &mut AppState,
-        _tx: &mpsc::Sender<DownloadEvent>,
+        _tx: &mpsc::UnboundedSender<DownloadEvent>,
+        rx: &mut mpsc::UnboundedReceiver<DownloadEvent>,
         _filter: &str,
+        auto_boot_target: Option<&str>,
     ) -> Result<()> {
+        state.handle_events(rx);
         let config = RenderConfig::default()
             .with_prompt_prefix(
                 Styled::new("@")
@@ -360,34 +400,174 @@ impl DashboardEngine {
             )
             .with_highlighted_option_prefix(Styled::new("⮞").with_fg(Color::LightCyan));
 
-        let downloaded: Vec<_> = state.sorted_models.iter().filter(|m| m.is_cached).collect();
-
-        if downloaded.is_empty() {
-            println!(
-                "  {} No downloaded models found. Install from /menu.",
-                "ℹ️".blue()
-            );
-            return Ok(());
-        }
-
-        let options: Vec<String> = downloaded.iter().map(|m| m.manifest.name.clone()).collect();
-
-        let starting_index = if let Some(active_id) = &state._active_model_id {
-            downloaded
-                .iter()
-                .position(|m| m.manifest.id == *active_id)
-                .unwrap_or(0)
+        let ans = if let Some(target) = auto_boot_target {
+            target.to_string()
         } else {
-            0
+            loop {
+                let master_options = vec![
+                    "🧠 Switch Model".to_string(),
+                    "⚡ Engine Modes".to_string(),
+                    "🚀 System Booster".to_string(),
+                ];
+                let master_ans = match Select::new("Action:", master_options)
+                    .with_render_config(config.clone())
+                    .prompt() {
+                    Ok(ans) => ans,
+                    Err(inquire::InquireError::OperationCanceled) | Err(inquire::InquireError::OperationInterrupted) => {
+                        print!("\x1B[1A\x1B[2K\r");
+                        stdout().flush()?;
+                        return Ok(());
+                    }
+                    Err(e) => return Err(e.into()),
+                };
+                    
+                print!("\x1B[1A\x1B[2K\r");
+                stdout().flush()?;
+
+                if master_ans.contains("Engine Modes") {
+                    let modes = vec![
+                        "⚡ Flash Mode (High Speed)".to_string(),
+                        "🧠 Think Mode (Deep Reasoning)".to_string(),
+                        "🚀 Boot Mode (Auto-Start Engine)".to_string(),
+                    ];
+                    let mode_ans = match Select::new("Select Mode:", modes)
+                        .with_render_config(config.clone())
+                        .prompt() {
+                        Ok(ans) => ans,
+                        Err(inquire::InquireError::OperationCanceled) | Err(inquire::InquireError::OperationInterrupted) => {
+                            print!("\x1B[1A\x1B[2K\r"); // Erase <canceled>
+                            stdout().flush()?;
+                            continue; // One step back
+                        }
+                        Err(e) => return Err(e.into()),
+                    };
+                        
+                    print!("\x1B[1A\x1B[2K\r");
+                    stdout().flush()?;
+                    
+                    println!("  {} {} activated.", "✅".green(), mode_ans.bold());
+                    return Ok(());
+                } else if master_ans.contains("System Booster") {
+                    let mut booster_path = dirs::home_dir().unwrap_or_default();
+                    booster_path.push(".cluaiz");
+                    booster_path.push("engine");
+                    booster_path.push("system_booster.json");
+
+                loop {
+                    let mut booster = archer_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+                    
+                    let mut options = vec![
+                        format!("Turbo Quant (Current: {:?})", booster.turbo_quant),
+                        format!("Flash Attention (Current: {:?})", booster.flash_attention),
+                        format!("Speculative Decoding (Current: {:?})", booster.speculative_decoding),
+                        format!("Auto Round (Current: {:?})", booster.auto_round),
+                    ];
+                    
+                    let current_dflash = match &booster.dflash {
+                        archer_shared::hardware::schema::booster::SmartState::Static(s) => s.clone(),
+                        _ => "Custom".to_string(),
+                    };
+                    options.push(format!("DFlash (Current: {})", current_dflash));
+                    options.push("🔙 Back to Menu".to_string());
+                    
+                    let target_ans = match Select::new("Configure Setting:", options)
+                        .with_render_config(config.clone())
+                        .prompt() {
+                        Ok(ans) => ans,
+                        Err(_) => {
+                            print!("\x1B[1A\x1B[2K\r"); // Erase <canceled>
+                            stdout().flush()?;
+                            break; // One step back (returns to master menu)
+                        }
+                    };
+                    print!("\x1B[1A\x1B[2K\r");
+                    stdout().flush()?;
+
+                    if target_ans == "🔙 Back to Menu" {
+                        break; // One step back
+                    }
+
+                    let key_part = target_ans.split(" (").next().unwrap_or("").to_string();
+                    let values = vec!["On".to_string(), "Off".to_string(), "Auto".to_string()];
+                    
+                    let val_ans = match Select::new(&format!("Set {}:", key_part), values)
+                        .with_render_config(config.clone())
+                        .prompt() {
+                        Ok(ans) => ans,
+                        Err(_) => {
+                            print!("\x1B[1A\x1B[2K\r"); // Erase <canceled>
+                            stdout().flush()?;
+                            continue; // One step back (stays in System Booster list)
+                        }
+                    };
+                    print!("\x1B[1A\x1B[2K\r");
+                    stdout().flush()?;
+
+                    let feature_state = match val_ans.as_str() {
+                        "On" => archer_shared::hardware::schema::booster::FeatureState::On,
+                        "Off" => archer_shared::hardware::schema::booster::FeatureState::Off,
+                        _ => archer_shared::hardware::schema::booster::FeatureState::Auto,
+                    };
+
+                    match key_part.as_str() {
+                        "Turbo Quant" => booster.turbo_quant = feature_state,
+                        "Flash Attention" => booster.flash_attention = feature_state,
+                        "Speculative Decoding" => booster.speculative_decoding = feature_state,
+                        "Auto Round" => booster.auto_round = feature_state,
+                        "DFlash" => booster.dflash = archer_shared::hardware::schema::booster::SmartState::Static(val_ans.clone()),
+                        _ => {}
+                    }
+                    
+                    if let Ok(_) = archer_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster) {
+                        println!("  {} System Booster updated: {} = {}", "✅".green(), key_part.cyan(), val_ans.bold());
+                    } else {
+                        println!("  {} Failed to save system booster settings.", "❌".red());
+                    }
+                }
+                    continue; // Go back to Master Menu after exiting System Booster
+                }
+
+                let downloaded: Vec<_> = state.sorted_models.iter().filter(|m| m.is_cached).collect();
+
+                if downloaded.is_empty() {
+                    println!(
+                        "  {} No downloaded models found. Install from /menu.",
+                        "ℹ️".blue()
+                    );
+                    return Ok(());
+                }
+
+                let options: Vec<String> = downloaded.iter().map(|m| m.manifest.name.clone()).collect();
+
+                let starting_index = if let Some(active_id) = &state._active_model_id {
+                    downloaded
+                        .iter()
+                        .position(|m| m.manifest.id == *active_id)
+                        .unwrap_or(0)
+                } else {
+                    0
+                };
+
+                let selection = match Select::new("Switch to model:", options)
+                    .with_render_config(config.clone())
+                    .with_starting_cursor(starting_index)
+                    .prompt() {
+                    Ok(ans) => ans,
+                    Err(inquire::InquireError::OperationCanceled) | Err(inquire::InquireError::OperationInterrupted) => {
+                        print!("\x1B[1A\x1B[2K\r"); // Erase <canceled>
+                        stdout().flush()?;
+                        continue; // One step back (goes to Action menu)
+                    }
+                    Err(e) => return Err(e.into()),
+                };
+
+                print!("\x1B[1A\x1B[2K\r");
+                stdout().flush()?;
+                break selection; // Breaks the master loop and returns the selected model
+            }
         };
 
-        let ans = Select::new("Switch to model:", options)
-            .with_render_config(config)
-            .with_starting_cursor(starting_index)
-            .prompt()?;
-
-        print!("\x1B[1A\x1B[2K\r");
-        stdout().flush()?;
+        let downloaded: Vec<_> = state.sorted_models.iter().filter(|m| m.is_cached).collect();
 
         if let Some(model) = downloaded.iter().find(|m| m.manifest.name == ans) {
             if state._active_model_id.as_ref() == Some(&model.manifest.id) {
@@ -399,7 +579,7 @@ impl DashboardEngine {
                 return Ok(());
             }
 
-            println!("  {} Loading: {}", "🧬".cyan(), model.manifest.name.bold());
+            println!("  {} Loading {}, please wait a moment...", "⏳".yellow(), model.manifest.name.bold());
 
             if let Some(path_str) = &model.manifest.local_path {
                 let path = std::path::PathBuf::from(path_str);
@@ -473,7 +653,7 @@ impl DashboardEngine {
 
                 match result {
                     Ok(_) => {
-                        state.Core_engine.is_loaded = true;
+                        model.manifest.id.clone();
                         state._active_model_id = Some(model.manifest.id.clone());
                         println!("  {} Mounted successfully.", "✅".green());
                     }

@@ -4,10 +4,14 @@ use crate::interface_engines::manager::kernel_loader::KernelLoader;
 use crate::interface_engines::manager::driver_bridge::DriverBridge;
 use archer_shared::hardware::schema::profiles::SystemControl;
 use archer_shared::hardware::governor::HardwareGovernor;
+use colored::Colorize;
 
 pub mod kernel_loader;
 pub mod driver_bridge;
 pub mod npu_bridge;
+pub mod driver_provisioner;
+
+use driver_provisioner::DriverProvisioner;
 
 /// Cluaiz Engine Manager
 /// Orchestrates pre-compiled Kernels (BitNet, Llama, Candle) and Hardware Drivers.
@@ -82,21 +86,52 @@ impl EngineManager {
             _ => "cpu",
         };
 
+        // 🚀 NATIVE PROVISIONING: Ensure silicon drivers exist before linkage
+        if suffix != "cpu" {
+            if let Err(e) = DriverProvisioner::provision_for_hardware(suffix).await {
+                println!("  {} [PROVISIONER] Silicon Handshake Error: {}", "⚠️".yellow(), e);
+                // We continue for now, as the user might already have the drivers in PATH
+            }
+        }
+
         let binary_id = format!("{}-{}", engine_type, suffix);
 
-        // 🚀 Cluaiz VRAM Handshake: Pre-Flight Check
-        // Defaulting to 2.0GB for V1 Baseline. Future: Pull from model metadata.
-        let required_vram = 2.0; 
-        HardwareGovernor::request_vram(&binary_id, required_vram)
-            .map_err(|e| format!("Memory Arbitration Failed: {}", e))?;
+        let mut target_suffix = suffix;
+        let mut target_binary_id = binary_id.clone();
+
+        // 🚀 Cluaiz VRAM Handshake: Pre-Flight Check (Hardware-Aware Routing)
+        // Only enforce strict GPU VRAM limits if the target hardware is a GPU backend.
+        if suffix == "cuda" || suffix == "metal" || suffix == "rocm" || suffix == "vulkan" {
+            // Defaulting to 2.0GB for V1 Baseline. Future: Pull from model metadata.
+            let required_vram = 2.0; 
+            if let Err(e) = HardwareGovernor::request_vram(&binary_id, required_vram) {
+                tracing::warn!("⚠️ [Arbiter] VRAM Arbitration Failed ({}). Falling back to CPU.", e);
+                target_suffix = "cpu";
+                target_binary_id = format!("{}-cpu", engine_type);
+            }
+        } else {
+            tracing::info!("🧠 [Arbiter] Hardware Linkage targeting CPU/System RAM. Bypassing GPU VRAM limits.");
+        }
 
         // 2. Check local presence in cluaiz/interface-engines/
-        if self.loader.exists(&binary_id) {
-            Ok(self.loader.resolve_path(&binary_id))
+        if self.loader.exists(&target_binary_id) {
+            Ok(self.loader.resolve_path(&target_binary_id))
         } else {
-            // If binary missing, release the reserved memory immediately
-            let _ = HardwareGovernor::release_vram(&binary_id);
-            Err(format!("Engine Binary Missing: Please pull the '{}' package for your {} Hardware into your cluaiz/interface-engines/ folder", binary_id, os))
+            // 🔄 NATIVE FALLBACK: If GPU binary is missing, attempt CPU fallback
+            if target_suffix != "cpu" {
+                tracing::warn!("⚠️ [Linker] Engine '{}' missing. Attempting CPU fallback...", target_binary_id);
+                let fallback_id = format!("{}-cpu", engine_type);
+                if self.loader.exists(&fallback_id) {
+                    // Release the GPU VRAM we aggressively reserved earlier
+                    let _ = HardwareGovernor::release_vram(&target_binary_id);
+                    tracing::info!("✅ [Linker] CPU Fallback successful: {}", fallback_id);
+                    return Ok(self.loader.resolve_path(&fallback_id));
+                }
+            }
+
+            // If binary missing (and no fallback), release the reserved memory immediately
+            let _ = HardwareGovernor::release_vram(&target_binary_id);
+            Err(format!("Engine Binary Missing: Please pull the '{}' package for your {} Hardware into your cluaiz/interface-engines/ folder", target_binary_id, os))
         }
     }
 
@@ -111,6 +146,27 @@ impl EngineManager {
     pub fn load_and_link(&mut self, binary_path: PathBuf) -> anyhow::Result<()> {
         tracing::info!("🧬 [Linker] Mapping binary: {:?}", binary_path);
         
+        // 🪟 WINDOWS SEARCH PATCH: Add drivers directory to DLL search path
+        #[cfg(target_os = "windows")]
+        {
+            use std::os::windows::ffi::OsStrExt;
+            let discovery_paths = DriverProvisioner::discover_system_paths();
+            
+            unsafe {
+                extern "system" {
+                    fn SetDllDirectoryW(lpPathName: *const u16) -> i32;
+                }
+                
+                for path in discovery_paths {
+                    if path.exists() {
+                        let mut path_wide: Vec<u16> = path.as_os_str().encode_wide().collect();
+                        path_wide.push(0);
+                        SetDllDirectoryW(path_wide.as_ptr());
+                    }
+                }
+            }
+        }
+
         unsafe {
             let lib = Library::new(&binary_path)
                 .map_err(|e| anyhow::anyhow!("Binary Mapping Failed (libloading): {}", e))?;
