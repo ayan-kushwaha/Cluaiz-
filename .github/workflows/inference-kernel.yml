@@ -20,7 +20,6 @@ concurrency:
 
 env:
   CARGO_BUILD_JOBS: 4
-  # 🛡️ Cluaiz Compliance: Suppress GitHub's internal Node.js 20 deprecation warnings
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -31,10 +30,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        kernel: [llama]
-        platform: [win-x64, linux-x64, android-arm64, mac-arm64, mac-x64, ios-arm64]
         include:
-          # --- Windows NVIDIA CUDA (v13 Standard) ---
+          # --- Windows NVIDIA CUDA (v13) ---
           - platform: win-x64
             backend: cuda
             cuda_v: "v13"
@@ -43,7 +40,9 @@ jobs:
             features: cuda
             ext: dll
             prefix: ""
-          # --- Linux NVIDIA CUDA (v13 Standard) ---
+            kernel: llama
+
+          # --- Linux NVIDIA CUDA (v13) ---
           - platform: linux-x64
             backend: cuda
             cuda_v: "v13"
@@ -52,6 +51,8 @@ jobs:
             features: cuda
             ext: so
             prefix: "lib"
+            kernel: llama
+
           # --- Apple Metal (ARM64) ---
           - platform: mac-arm64
             backend: metal
@@ -60,6 +61,8 @@ jobs:
             features: metal
             ext: dylib
             prefix: "lib"
+            kernel: llama
+
           # --- Apple Metal (Intel x64) ---
           - platform: mac-x64
             backend: metal
@@ -68,6 +71,8 @@ jobs:
             features: metal
             ext: dylib
             prefix: "lib"
+            kernel: llama
+
           # --- Android (Neon Optimized) ---
           - platform: android-arm64
             backend: cpu
@@ -77,6 +82,8 @@ jobs:
             features: arm_neon
             ext: so
             prefix: "lib"
+            kernel: llama
+
           # --- iOS Static ---
           - platform: ios-arm64
             backend: metal
@@ -85,6 +92,8 @@ jobs:
             features: metal
             ext: a
             prefix: "lib"
+            kernel: llama
+
           # --- CPU SIMD Optimizations (Windows) ---
           - platform: win-x64
             backend: cpu
@@ -94,6 +103,7 @@ jobs:
             features: ""
             ext: dll
             prefix: ""
+            kernel: llama
           - platform: win-x64
             backend: cpu
             simd: avx2
@@ -102,6 +112,8 @@ jobs:
             features: ""
             ext: dll
             prefix: ""
+            kernel: llama
+
           # --- CPU SIMD Optimizations (Linux) ---
           - platform: linux-x64
             backend: cpu
@@ -111,6 +123,7 @@ jobs:
             features: ""
             ext: so
             prefix: "lib"
+            kernel: llama
           - platform: linux-x64
             backend: cpu
             simd: avx2
@@ -119,6 +132,8 @@ jobs:
             features: ""
             ext: so
             prefix: "lib"
+            kernel: llama
+
           # --- Specialized Backends ---
           - platform: win-x64
             backend: openvino
@@ -127,6 +142,7 @@ jobs:
             features: openvino
             ext: dll
             prefix: ""
+            kernel: llama
           - platform: linux-x64
             backend: openvino
             os: ubuntu-latest
@@ -134,6 +150,7 @@ jobs:
             features: openvino
             ext: so
             prefix: "lib"
+            kernel: llama
           - platform: win-x64
             backend: vulkan
             os: windows-latest
@@ -141,6 +158,15 @@ jobs:
             features: vulkan
             ext: dll
             prefix: ""
+            kernel: llama
+          - platform: linux-x64
+            backend: vulkan
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            features: vulkan
+            ext: so
+            prefix: "lib"
+            kernel: llama
 
     steps:
       - name: Checkout Code
@@ -190,13 +216,14 @@ jobs:
       - name: Setup OpenVINO (Intel)
         if: matrix.backend == 'openvino'
         run: |
-          curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | sudo gpg --dearmor -o /usr/share/keyrings/intel-sw-products.gpg
-          echo "deb [signed-by=/usr/share/keyrings/intel-sw-products.gpg] https://apt.repos.intel.com/openvino/2024 ubuntu22 main" | sudo tee /etc/apt/sources.list.d/intel-openvino-2024.list
-          sudo apt-get update
-          sudo apt-get install -y openvino-2024.0.0 || sudo apt-get install -y openvino-2024.3.0 || sudo apt-get install -y openvino
-          
-          OV_DIR=$(ls -d /opt/intel/openvino_2024* | head -n 1 || echo "/usr")
-          echo "INTEL_OPENVINO_DIR=$OV_DIR" >> $GITHUB_ENV
+          if [ "${{ runner.os }}" == "Linux" ]; then
+            curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | sudo gpg --dearmor -o /usr/share/keyrings/intel-sw-products.gpg
+            echo "deb [signed-by=/usr/share/keyrings/intel-sw-products.gpg] https://apt.repos.intel.com/openvino/2024 ubuntu22 main" | sudo tee /etc/apt/sources.list.d/intel-openvino-2024.list
+            sudo apt-get update
+            sudo apt-get install -y openvino-2024.0.0 || sudo apt-get install -y openvino-2024.3.0 || sudo apt-get install -y openvino
+            OV_DIR=$(ls -d /opt/intel/openvino_2024* | head -n 1 || echo "/usr")
+            echo "INTEL_OPENVINO_DIR=$OV_DIR" >> $GITHUB_ENV
+          fi
 
       - name: Install Build Tools (Linux)
         if: runner.os == 'Linux'
@@ -247,21 +274,11 @@ jobs:
             RUSTFLAGS="$RUSTFLAGS_SIMD" cargo build --release --target ${{ matrix.target }} -p ${{ matrix.kernel }} --features "${{ matrix.features }}"
           fi
 
-      # ── 🔬 THE SOVEREIGN AUDIT (Symbol Verification) ──
-      - name: Audit Exported Symbols
-        shell: bash
-        run: |
-          # 💎 Sovereign Naming DNA: Must match [lib] name in Cargo.toml
-          BINARY="target/${{ matrix.target }}/release/${{ matrix.prefix }}cluaiz_${{ matrix.kernel }}.${{ matrix.ext }}"
-          echo "🔍 Auditing binary: $BINARY"
-          ls -l "$BINARY" || exit 1
-
       # ── Sovereign Binary Naming ──
       - name: Prepare Sovereign Binary
         id: naming
         shell: bash
         run: |
-          # 💎 Sovereign Versioning Logic
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             VERSION="${{ github.event.inputs.tag_name }}"
           else
@@ -269,17 +286,12 @@ jobs:
           fi
           
           mkdir -p artifacts
-          
           SIMD_TAG=""
           if [ -n "${{ matrix.simd }}" ]; then SIMD_TAG="-${{ matrix.simd }}"; fi
-          
           CUDA_TAG=""
           if [ -n "${{ matrix.cuda_v }}" ]; then CUDA_TAG="-${{ matrix.cuda_v }}"; fi
           
-          # Match filename from Cargo.toml then rename to Sovereign Convention
           SRC="target/${{ matrix.target }}/release/${{ matrix.prefix }}cluaiz_${{ matrix.kernel }}.${{ matrix.ext }}"
-          
-          # 💎 Sovereign Precision Mapping
           DEST="artifacts/cluaiz-llama-${VERSION}-${{ matrix.platform }}-${{ matrix.backend }}${SIMD_TAG}${CUDA_TAG}.${{ matrix.ext }}"
           
           cp "$SRC" "$DEST"
@@ -309,12 +321,18 @@ jobs:
       - name: 💎 Hardened Registry Master Sync
         shell: bash
         run: |
-          VERSION="${{ github.ref_name }}"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.tag_name }}"
+            TAG="${{ github.event.inputs.tag_name }}"
+          else
+            VERSION="${{ github.ref_name }}"
+            TAG="${{ github.ref_name }}"
+          fi
+          
           REG_PATH="inference-drivers/registry.json"
-          BASE_URL="https://github.com/${{ github.repository }}/releases/download"
+          BASE_URL="https://github.com/${{ github.repository }}/releases/download/$TAG"
           GEN_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           
-          # 🛡️ Military Grade Placeholder Replacement
           sed -i "s|{BASE_URL}|$BASE_URL|g" $REG_PATH
           sed -i "s|{VERSION}|$VERSION|g" $REG_PATH
           sed -i "s|{GEN_TIME}|$GEN_TIME|g" $REG_PATH
@@ -326,7 +344,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: registry-synced.json
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
