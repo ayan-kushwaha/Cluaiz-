@@ -32,6 +32,9 @@ fn main() {
         .define("LLAMA_STATIC", "ON")
         .define("BUILD_SHARED_LIBS", "OFF")
         .define("CMAKE_MSVC_RUNTIME_LIBRARY", "MultiThreaded") // 🏛️ Force /MT Linkage
+        // 🍏 Align macOS deployment target with GHA runner SDK (15.x)
+        // Prevents "object was built for newer macOS" linker warnings that abort the link step.
+        .define("CMAKE_OSX_DEPLOYMENT_TARGET", "15.0")
         .profile("Release");
 
     // ── GPU Driver Logic (Sovereign Dispatch) ──
@@ -85,12 +88,7 @@ fn main() {
         println!("cargo:rustc-link-lib=framework=MetalKit");
         println!("cargo:rustc-link-lib=framework=Accelerate");
         println!("cargo:rustc-link-lib=dylib=c++");
-        
-        // 🍏 Add OpenSSL search paths from Homebrew on macOS to resolve missing link symbols
-        println!("cargo:rustc-link-search=native=/usr/local/opt/openssl@3/lib");
-        println!("cargo:rustc-link-search=native=/opt/homebrew/opt/openssl@3/lib");
-        println!("cargo:rustc-link-lib=dylib=ssl");
-        println!("cargo:rustc-link-lib=dylib=crypto");
+        // NOTE: llama.cpp is built with LLAMA_BUILD_SERVER=OFF — no OpenSSL dependency.
     } else if target_os == "ios" {
         println!("cargo:rustc-link-lib=framework=Foundation");
         println!("cargo:rustc-link-lib=framework=Metal");
