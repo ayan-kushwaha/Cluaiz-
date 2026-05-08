@@ -255,9 +255,11 @@ jobs:
           Add-Content $env:GITHUB_ENV "INTEL_OPENVINO_DIR=$PWD\openvino"
           Add-Content $env:GITHUB_ENV "OpenVINO_DIR=$PWD\openvino\runtime\cmake"
           Add-Content $env:GITHUB_PATH "$PWD\openvino\runtime\bin\intel64\Release"
-          # Locate Windows 10/11 SDK OpenCL (always present on GHA Windows runners)
+          # Clone Official OpenCL-Headers
+          git clone https://github.com/KhronosGroup/OpenCL-Headers.git
+          Add-Content $env:GITHUB_ENV "OpenCL_INCLUDE_DIR=$PWD\OpenCL-Headers"
+          # Locate Windows 10/11 SDK OpenCL library (always present on GHA Windows runners)
           $sdkVer = (Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\Include' | Sort-Object Name -Descending | Select-Object -First 1).Name
-          Add-Content $env:GITHUB_ENV "OpenCL_INCLUDE_DIR=C:\Program Files (x86)\Windows Kits\10\Include\$sdkVer\shared"
           Add-Content $env:GITHUB_ENV "OpenCL_LIBRARY=C:\Program Files (x86)\Windows Kits\10\Lib\$sdkVer\um\x64\OpenCL.lib"
 
       - name: Setup OpenVINO SDK (Linux)
@@ -274,6 +276,12 @@ jobs:
           # Export OpenCL paths for CMake
           echo "OpenCL_INCLUDE_DIR=/usr/include" >> $GITHUB_ENV
           echo "OpenCL_LIBRARY=/usr/lib/x86_64-linux-gnu/libOpenCL.so.1" >> $GITHUB_ENV
+
+      - name: Setup Intel oneAPI SYCL SDK (Windows)
+        if: matrix.backend == 'sycl' && runner.os == 'Windows'
+        uses: rscohn2/setup-oneapi@v1
+        with:
+          components: "intel.oneapi.win.dpcpp-compiler"
 
       - name: Setup Intel oneAPI SYCL SDK
         if: matrix.backend == 'sycl' && runner.os == 'Linux'
@@ -317,14 +325,17 @@ jobs:
           wget --header="Referer: https://www.hiascend.com/" -q https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/CANN/CANN%206.0.RC1/Ascend-cann-toolkit_6.0.RC1_linux-x86_64.run
           chmod +x Ascend-cann-toolkit_6.0.RC1_linux-x86_64.run
           ./Ascend-cann-toolkit_6.0.RC1_linux-x86_64.run --quiet --install
-          echo "ASCEND_TOOLKIT_HOME=/usr/local/Ascend/ascend-toolkit/latest" >> $GITHUB_ENV
-          echo "CANN_INSTALL_DIR=/usr/local/Ascend/ascend-toolkit/latest" >> $GITHUB_ENV
+          echo "ASCEND_TOOLKIT_HOME=$HOME/Ascend/ascend-toolkit/latest/x86_64-linux" >> $GITHUB_ENV
+          echo "CANN_INSTALL_DIR=$HOME/Ascend/ascend-toolkit/latest/x86_64-linux" >> $GITHUB_ENV
 
       - name: Build Driver (Foundry)
         shell: bash
         run: |
           if [ "${{ runner.os }}" == "Windows" ]; then
             rm -f /usr/bin/link
+          fi
+          if [[ "${{ matrix.backend }}" == "sycl" && "${{ runner.os }}" == "Linux" ]]; then
+            source /opt/intel/oneapi/setvars.sh 2>/dev/null || true
           fi
           if [[ "${{ matrix.target }}" == *"-android"* ]]; then
             cargo install cross --git https://github.com/cross-rs/cross

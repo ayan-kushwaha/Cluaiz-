@@ -77,8 +77,6 @@ fn main() {
         // Propagate VULKAN_SDK env var so CMake's FindVulkan can locate headers/libs.
         if let Ok(sdk) = env::var("VULKAN_SDK") {
             config.define("VULKAN_SDK",          &sdk);
-            config.define("Vulkan_INCLUDE_DIR",  format!("{}/Include", sdk));
-            config.define("Vulkan_LIBRARY",      format!("{}/Lib/vulkan-1.lib", sdk));
         }
     } else if feature_rocm {
         config.define("GGML_HIPBLAS", "ON");
@@ -135,6 +133,7 @@ fn main() {
         println!("cargo:rustc-link-lib=static=ggml-blas");
     } else if target_os == "ios" {
         println!("cargo:rustc-link-lib=static=ggml-metal");
+        println!("cargo:rustc-link-lib=static=ggml-blas");
     }
 
     // ── OS-specific system libraries ──────────────────────────────────
