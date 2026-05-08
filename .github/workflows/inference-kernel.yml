@@ -204,14 +204,17 @@ jobs:
           cuda: '12.5.0'
           method: 'network'
 
-      # ── Hyper-Silicon SDKs ──
+      # ── Hyper-Silicon SDKs (Modern & Validated) ──
       - name: Setup Vulkan SDK
         if: matrix.backend == 'vulkan'
-        uses: humbletim/setup-vulkan-sdk@v1.2.0
-        with:
-          vulkan-query-version: 1.3.204.1
-          vulkan-components: 'Vulkan-Headers, Vulkan-Loader'
-          vulkan-use-cache: true
+        run: |
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            curl -L "https://sdk.lunarg.com/sdk/download/1.3.204.1/windows/VulkanSDK-1.3.204.1-Installer.exe" -o VulkanSDK-Installer.exe
+            ./VulkanSDK-Installer.exe --accept-licenses --default-answer --confirm-command install
+            echo "VULKAN_SDK=C:\VulkanSDK\1.3.204.1" >> $GITHUB_ENV
+          else
+            sudo apt-get update && sudo apt-get install -y libvulkan-dev vulkan-tools
+          fi
 
       - name: Setup OpenVINO (Intel)
         if: matrix.backend == 'openvino'
@@ -220,9 +223,8 @@ jobs:
             curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | sudo gpg --dearmor -o /usr/share/keyrings/intel-sw-products.gpg
             echo "deb [signed-by=/usr/share/keyrings/intel-sw-products.gpg] https://apt.repos.intel.com/openvino/2024 ubuntu22 main" | sudo tee /etc/apt/sources.list.d/intel-openvino-2024.list
             sudo apt-get update
-            sudo apt-get install -y openvino-2024.0.0 || sudo apt-get install -y openvino-2024.3.0 || sudo apt-get install -y openvino
-            OV_DIR=$(ls -d /opt/intel/openvino_2024* | head -n 1 || echo "/usr")
-            echo "INTEL_OPENVINO_DIR=$OV_DIR" >> $GITHUB_ENV
+            sudo apt-get install -y openvino-2024.3.0 || sudo apt-get install -y openvino
+            echo "INTEL_OPENVINO_DIR=/opt/intel/openvino_2024" >> $GITHUB_ENV
           fi
 
       - name: Install Build Tools (Linux)
@@ -233,22 +235,15 @@ jobs:
         if: runner.os == 'macOS'
         run: xcode-select --install || true
 
-      - name: Setup Android NDK
+      - name: Setup Android NDK (Modern)
         if: matrix.platform == 'android-arm64'
-        uses: nttld/setup-ndk@v1
-        id: setup-ndk
-        with:
-          ndk-version: r25c
-
-      - name: Configure Android Environment
-        if: matrix.platform == 'android-arm64'
-        shell: bash
         run: |
-          NDK_BIN="${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin"
-          echo "ANDROID_NDK_HOME=${{ steps.setup-ndk.outputs.ndk-path }}" >> $GITHUB_ENV
-          echo "${NDK_BIN}" >> $GITHUB_PATH
-          echo "CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER=${NDK_BIN}/aarch64-linux-android23-clang" >> $GITHUB_ENV
-          echo "CC_aarch64_linux_android=${NDK_BIN}/aarch64-linux-android23-clang" >> $GITHUB_ENV
+          sudo apt-get update && sudo apt-get install -y unzip
+          curl -L "https://dl.google.com/android/repository/android-ndk-r25c-linux.zip" -o ndk.zip
+          unzip -q ndk.zip
+          NDK_PATH=$(pwd)/android-ndk-r25c
+          echo "ANDROID_NDK_HOME=$NDK_PATH" >> $GITHUB_ENV
+          echo "$NDK_PATH/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_PATH
 
       - name: Setup iOS Toolchain
         if: matrix.platform == 'ios-arm64'
