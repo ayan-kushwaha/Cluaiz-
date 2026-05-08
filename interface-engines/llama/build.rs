@@ -61,8 +61,16 @@ fn main() {
     // ═══════════════════════════════════════════════════════════════
     println!("cargo:rustc-link-search=native={}/lib", dst.display());
     println!("cargo:rustc-link-search=native={}/lib64", dst.display()); // Some Linux distros
+    
+    // macOS / Linux / Mobile standard build folders
     println!("cargo:rustc-link-search=native={}/build/common", dst.display());
     println!("cargo:rustc-link-search=native={}/build/src", dst.display());
+    println!("cargo:rustc-link-search=native={}/build/ggml/src", dst.display());
+    
+    // Windows MSVC multi-configuration build folders
+    println!("cargo:rustc-link-search=native={}/build/common/Release", dst.display());
+    println!("cargo:rustc-link-search=native={}/build/src/Release", dst.display());
+    println!("cargo:rustc-link-search=native={}/build/ggml/src/Release", dst.display());
 
     // Link core libraries produced by CMake
     println!("cargo:rustc-link-lib=static=llama");
@@ -71,10 +79,26 @@ fn main() {
     println!("cargo:rustc-link-lib=static=ggml-cpu");
     
     // Windows MSVC requires specific system libs for threading
-    if env::var("CARGO_CFG_TARGET_OS").unwrap_or_default() == "windows" {
+    let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
+    if target_os == "windows" {
         println!("cargo:rustc-link-lib=dylib=advapi32");
         println!("cargo:rustc-link-lib=dylib=user32");
         println!("cargo:rustc-link-lib=dylib=ws2_32");
+    } else if target_os == "macos" {
+        println!("cargo:rustc-link-lib=framework=Foundation");
+        println!("cargo:rustc-link-lib=framework=Metal");
+        println!("cargo:rustc-link-lib=framework=MetalKit");
+        println!("cargo:rustc-link-lib=framework=Accelerate");
+        println!("cargo:rustc-link-lib=dylib=c++");
+    } else if target_os == "ios" {
+        println!("cargo:rustc-link-lib=framework=Foundation");
+        println!("cargo:rustc-link-lib=framework=Metal");
+        println!("cargo:rustc-link-lib=framework=UIKit");
+        println!("cargo:rustc-link-lib=framework=Accelerate");
+        println!("cargo:rustc-link-lib=dylib=c++");
+    } else {
+        // Linux / Android
+        println!("cargo:rustc-link-lib=dylib=stdc++");
     }
 
     println!("cargo:warning=🧿 [Llama-Engine] Industrial CMake Build Complete.");
