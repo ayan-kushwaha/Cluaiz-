@@ -23,21 +23,36 @@ fn main() {
     // ═══════════════════════════════════════════════════════════════
     // PHASE 2: INDUSTRIAL CMAKE BUILD
     // ═══════════════════════════════════════════════════════════════
+    // Detect target platform first — needed to set Apple cross-compile flags before cmake runs.
+    let target_os   = env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
+    let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap_or_default();
+
     let mut config = cmake::Config::new(&llama_path);
-    
+
     config
         .define("LLAMA_BUILD_EXAMPLES", "OFF")
-        .define("LLAMA_BUILD_TESTS", "OFF")
-        .define("LLAMA_BUILD_SERVER", "OFF")
-        .define("LLAMA_STATIC", "ON")
-        .define("BUILD_SHARED_LIBS", "OFF")
-        .define("CMAKE_MSVC_RUNTIME_LIBRARY", "MultiThreaded") // 🏛️ Force /MT Linkage
-        // 🍏 Align macOS deployment target with GHA runner SDK (15.x)
-        // Prevents "object was built for newer macOS" linker warnings that abort the link step.
-        .define("CMAKE_OSX_DEPLOYMENT_TARGET", "15.0")
+        .define("LLAMA_BUILD_TESTS",    "OFF")
+        .define("LLAMA_BUILD_SERVER",   "OFF")
+        .define("LLAMA_STATIC",         "ON")
+        .define("BUILD_SHARED_LIBS",    "OFF")
+        .define("CMAKE_MSVC_RUNTIME_LIBRARY", "MultiThreaded") // 🏛️ /MT linkage
         .profile("Release");
 
-    // ── GPU Driver Logic (Sovereign Dispatch) ──
+    // ── Apple Platform Alignment ──────────────────────────────────────
+    // iOS cross-compilation requires a dedicated Xcode CMake target.  Without
+    // CMAKE_SYSTEM_NAME=iOS, CMake targets the macOS host and the objects end
+    // up with the wrong architecture / sysroot, causing linker failures.
+    if target_os == "ios" {
+        config.define("CMAKE_SYSTEM_NAME",           "iOS");
+        config.define("CMAKE_OSX_SYSROOT",           "iphoneos");
+        config.define("CMAKE_OSX_ARCHITECTURES",     &*target_arch); // arm64
+        config.define("CMAKE_OSX_DEPLOYMENT_TARGET", "16.0");
+    } else if target_os == "macos" {
+        // Align with GHA runner SDK (15.x) to prevent "built for newer macOS" link errors.
+        config.define("CMAKE_OSX_DEPLOYMENT_TARGET", "15.0");
+    }
+
+    // ── GPU Driver Logic (Sovereign Dispatch) ─────────────────────────
     if env::var("CARGO_FEATURE_CUDA").is_ok() {
         config.define("GGML_CUDA", "ON");
     } else if env::var("CARGO_FEATURE_METAL").is_ok() {
@@ -48,8 +63,17 @@ fn main() {
         config.define("GGML_HIPBLAS", "ON");
     } else if env::var("CARGO_FEATURE_OPENVINO").is_ok() {
         config.define("GGML_OPENVINO", "ON");
+        // ggml-openvino's CMakeLists.txt calls find_package(OpenCL REQUIRED).
+        // CI injects OpenCL_INCLUDE_DIR / OpenCL_LIBRARY so CMake can locate them.
+        if let Ok(v) = env::var("OpenCL_INCLUDE_DIR") { config.define("OpenCL_INCLUDE_DIR", &*v); }
+        if let Ok(v) = env::var("OpenCL_LIBRARY")     { config.define("OpenCL_LIBRARY",     &*v); }
+        if let Ok(v) = env::var("OpenVINO_DIR")       { config.define("OpenVINO_DIR",       &*v); }
     } else if env::var("CARGO_FEATURE_SYCL").is_ok() {
         config.define("GGML_SYCL", "ON");
+        // Intel DPC++ (icpx) must be the CXX compiler for SYCL support.
+        // CI exports DPCPP_CXX / DPCPP_CC after sourcing setvars.sh.
+        if let Ok(v) = env::var("DPCPP_CXX") { config.define("CMAKE_CXX_COMPILER", &*v); }
+        if let Ok(v) = env::var("DPCPP_CC")  { config.define("CMAKE_C_COMPILER",   &*v); }
     } else if env::var("CARGO_FEATURE_QNN").is_ok() {
         config.define("GGML_QNN", "ON");
     } else if env::var("CARGO_FEATURE_CANN").is_ok() {
@@ -76,8 +100,7 @@ fn main() {
     println!("cargo:rustc-link-lib=static=ggml-base");
     println!("cargo:rustc-link-lib=static=ggml-cpu");
     
-    // Windows MSVC requires specific system libs for threading
-    let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
+    // OS-specific system library linkage
     if target_os == "windows" {
         println!("cargo:rustc-link-lib=dylib=advapi32");
         println!("cargo:rustc-link-lib=dylib=user32");
