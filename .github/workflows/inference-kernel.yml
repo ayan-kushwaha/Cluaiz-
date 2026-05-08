@@ -168,6 +168,16 @@ jobs:
             prefix: "lib"
             kernel: llama
 
+          # --- AMD ROCm/HIP (Linux) ---
+          - platform: linux-x64
+            backend: rocm
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            features: hip
+            ext: so
+            prefix: "lib"
+            kernel: llama
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -297,8 +307,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
         with:
           files: artifacts/*
-          tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}
-          name: "Cluaiz Release ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}"
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && format('kernel-{0}', github.event.inputs.tag_name) || github.ref_name }}
+          name: "Cluaiz Kernel Release ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}"
           append_body: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -318,7 +328,7 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             VERSION="${{ github.event.inputs.tag_name }}"
-            TAG="${{ github.event.inputs.tag_name }}"
+            TAG="kernel-${{ github.event.inputs.tag_name }}"
           else
             VERSION="${{ github.ref_name }}"
             TAG="${{ github.ref_name }}"

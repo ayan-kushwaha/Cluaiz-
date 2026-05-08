@@ -53,7 +53,7 @@ jobs:
             skill_name=$(basename "$skill_dir")
             
             zip_name="${skill_id}.zip"
-            (cd "$skill_dir" && zip -r "../../../dist/library/$zip_name" .)
+            (cd "$skill_dir" && zip -r "../../dist/library/$zip_name" .)
             
             jq --arg id "$skill_id" \
                --arg name "$skill_name" \
@@ -68,8 +68,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
         with:
-          tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}
-          name: "Cluaiz Release ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}"
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && format('skills-{0}', github.event.inputs.tag_name) || github.ref_name }}
+          name: "Cluaiz Skills Release ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}"
           body: |
             Cluaiz Ai Skills Library.
             
