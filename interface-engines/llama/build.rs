@@ -32,40 +32,41 @@ fn main() {
         .define("LLAMA_BUILD_EXAMPLES", "OFF")
         .define("LLAMA_BUILD_TESTS",    "OFF")
         .define("LLAMA_BUILD_SERVER",   "OFF")
+        // FIX 2: Disable llama-bench and all standalone tools.
+        // llama-bench pulls in cpp-httplib which links OpenSSL.
+        // On macOS x64, OpenSSL is not in the default linker path → LNK error.
+        // We only need the static libraries (llama.a, ggml.a, etc.), not any binaries.
+        .define("LLAMA_BUILD_TOOLS",    "OFF")
         .define("LLAMA_STATIC",         "ON")
         .define("BUILD_SHARED_LIBS",    "OFF")
-        // FIX 1: Use MultiThreadedDLL (/MD) to match Rust's default CRT on Windows.
-        // MultiThreaded (/MT) causes LNK4098 LIBCMT conflict with Rust's msvcrt.
+        // Use MultiThreadedDLL (/MD) to match Rust's default CRT on Windows.
         .define("CMAKE_MSVC_RUNTIME_LIBRARY", "MultiThreadedDLL")
         .profile("Release");
 
     // ── Apple Platform Alignment ──────────────────────────────────────
     if target_os == "ios" {
-        // FIX 2: Apple arch name is "arm64" NOT "aarch64".
-        // CARGO_CFG_TARGET_ARCH returns "aarch64" (Linux/Rust naming),
+        // Apple arch name is "arm64" NOT "aarch64".
+        // CARGO_CFG_TARGET_ARCH returns "aarch64" (Rust/Linux naming),
         // but Apple's clang -arch flag only accepts "arm64".
-        // Passing "aarch64" causes: clang: error: invalid arch name '-arch aarch64'
-        let apple_arch = if target_arch == "aarch64" { "arm64" } else { target_arch.as_str() };
+        let apple_arch = if target_arch == "aarch64" { "arm64" } else { &target_arch };
         config.define("CMAKE_SYSTEM_NAME",           "iOS");
         config.define("CMAKE_OSX_SYSROOT",           "iphoneos");
         config.define("CMAKE_OSX_ARCHITECTURES",     apple_arch);
         config.define("CMAKE_OSX_DEPLOYMENT_TARGET", "16.0");
     } else if target_os == "macos" {
-        // FIX 3: Rust's default macOS linker uses -mmacosx-version-min=11.0.
-        // CMake must also target 11.0. Previously we set 15.0 which caused
-        // "object built for newer macOS version (15.0) than being linked (11.0)" → link error.
+        // Sync deployment target with Rust's default macOS linker flag.
         config.define("CMAKE_OSX_DEPLOYMENT_TARGET", "11.0");
     }
 
     // ── GPU Driver Logic (Sovereign Dispatch) ─────────────────────────
-    let feature_cuda    = env::var("CARGO_FEATURE_CUDA").is_ok();
-    let feature_metal   = env::var("CARGO_FEATURE_METAL").is_ok();
-    let feature_vulkan  = env::var("CARGO_FEATURE_VULKAN").is_ok();
-    let feature_rocm    = env::var("CARGO_FEATURE_ROCM").is_ok();
+    let feature_cuda     = env::var("CARGO_FEATURE_CUDA").is_ok();
+    let feature_metal    = env::var("CARGO_FEATURE_METAL").is_ok();
+    let feature_vulkan   = env::var("CARGO_FEATURE_VULKAN").is_ok();
+    let feature_rocm     = env::var("CARGO_FEATURE_ROCM").is_ok();
     let feature_openvino = env::var("CARGO_FEATURE_OPENVINO").is_ok();
-    let feature_sycl    = env::var("CARGO_FEATURE_SYCL").is_ok();
-    let feature_qnn     = env::var("CARGO_FEATURE_QNN").is_ok();
-    let feature_cann    = env::var("CARGO_FEATURE_CANN").is_ok();
+    let feature_sycl     = env::var("CARGO_FEATURE_SYCL").is_ok();
+    let feature_qnn      = env::var("CARGO_FEATURE_QNN").is_ok();
+    let feature_cann     = env::var("CARGO_FEATURE_CANN").is_ok();
 
     if feature_cuda {
         config.define("GGML_CUDA", "ON");
@@ -73,13 +74,11 @@ fn main() {
         config.define("GGML_METAL", "ON");
     } else if feature_vulkan {
         config.define("GGML_VULKAN", "ON");
-        // FIX 4: Propagate VULKAN_SDK env var (set by humbletim/install-vulkan-sdk action)
-        // so CMake's FindVulkan module can locate headers and libraries on Windows.
+        // Propagate VULKAN_SDK env var so CMake's FindVulkan can locate headers/libs.
         if let Ok(sdk) = env::var("VULKAN_SDK") {
-            config.define("VULKAN_SDK", &sdk);
-            // Windows: headers at $VULKAN_SDK/Include, lib at $VULKAN_SDK/Lib/vulkan-1.lib
-            config.define("Vulkan_INCLUDE_DIR", format!("{}/Include", sdk));
-            config.define("Vulkan_LIBRARY",     format!("{}/Lib/vulkan-1.lib", sdk));
+            config.define("VULKAN_SDK",          &sdk);
+            config.define("Vulkan_INCLUDE_DIR",  format!("{}/Include", sdk));
+            config.define("Vulkan_LIBRARY",      format!("{}/Lib/vulkan-1.lib", sdk));
         }
     } else if feature_rocm {
         config.define("GGML_HIPBLAS", "ON");
@@ -87,7 +86,7 @@ fn main() {
         config.define("GGML_OPENVINO", "ON");
         if let Ok(v) = env::var("OpenCL_INCLUDE_DIR") { config.define("OpenCL_INCLUDE_DIR", &v); }
         if let Ok(v) = env::var("OpenCL_LIBRARY")     { config.define("OpenCL_LIBRARY",     &v); }
-        if let Ok(v) = env::var("OpenVINO_DIR")       { config.define("OpenVINO_DIR",       &v); }
+        if let Ok(v) = env::var("OpenVINO_DIR")        { config.define("OpenVINO_DIR",       &v); }
     } else if feature_sycl {
         config.define("GGML_SYCL", "ON");
         if let Ok(v) = env::var("DPCPP_CXX") { config.define("CMAKE_CXX_COMPILER", &v); }
@@ -114,15 +113,28 @@ fn main() {
     println!("cargo:rustc-link-lib=static=ggml-base");
     println!("cargo:rustc-link-lib=static=ggml-cpu");
 
-    // FIX 5: On Windows DLL linking, ALL symbols must be resolved at link time.
-    // ggml.lib's backend-reg calls ggml_backend_cuda_reg() etc, which lives in
-    // ggml-cuda.lib. Without this explicit link, Windows produces LNK2019.
-    // On Linux/macOS, the shared-library linker resolves these at runtime —
-    // explicit static linking is NOT needed there and was BREAKING builds.
+    // ── Windows: explicit backend static libs ─────────────────────────
+    // On Windows DLL builds, ALL symbols must resolve at link time.
+    // ggml.lib's backend-registry calls backend-specific functions which
+    // live in their own libs. Without explicit linking → LNK2019.
+    // On Linux/macOS, the dynamic linker resolves these at runtime.
     if target_os == "windows" {
-        if feature_cuda    { println!("cargo:rustc-link-lib=static=ggml-cuda"); }
-        if feature_vulkan  { println!("cargo:rustc-link-lib=static=ggml-vulkan"); }
-        if feature_rocm    { println!("cargo:rustc-link-lib=static=ggml-hip"); }
+        if feature_cuda   { println!("cargo:rustc-link-lib=static=ggml-cuda"); }
+        if feature_vulkan { println!("cargo:rustc-link-lib=static=ggml-vulkan"); }
+        if feature_rocm   { println!("cargo:rustc-link-lib=static=ggml-hip"); }
+    }
+
+    // ── macOS/iOS: explicit Metal + BLAS backend static libs ──────────
+    // FIX 3: libggml.a's ggml-backend-reg.cpp.o calls ggml_backend_metal_reg()
+    // and ggml_backend_blas_reg() which live in libggml-metal.a and libggml-blas.a.
+    // Without explicit linkage → "Undefined symbols for architecture arm64/x86_64".
+    if target_os == "macos" {
+        if feature_metal {
+            println!("cargo:rustc-link-lib=static=ggml-metal");
+        }
+        println!("cargo:rustc-link-lib=static=ggml-blas");
+    } else if target_os == "ios" {
+        println!("cargo:rustc-link-lib=static=ggml-metal");
     }
 
     // ── OS-specific system libraries ──────────────────────────────────
@@ -130,7 +142,29 @@ fn main() {
         println!("cargo:rustc-link-lib=dylib=advapi32");
         println!("cargo:rustc-link-lib=dylib=user32");
         println!("cargo:rustc-link-lib=dylib=ws2_32");
-        // NOTE: CUDA runtime is linked statically into ggml-cuda.lib by CMake.
+
+        // FIX 1: CUDA Runtime + cuBLAS import libraries.
+        //
+        // These are NOT statically embedded inside ggml-cuda.lib.
+        // ggml-cuda.lib calls cudaLaunchCooperativeKernel, cudaFuncSetAttribute,
+        // __cudaRegisterFatBinary, cublasCreate_v2 etc. which live in:
+        //   cudart.lib  → cudart64_*.dll  (CUDA Runtime API)
+        //   cublas.lib  → cublas64_*.dll  (cuBLAS)
+        //   cublasLt.lib→ cublasLt64_*.dll
+        //   cuda.lib    → nvcuda.dll      (CUDA Driver API: cuDeviceGet, cuMemCreate...)
+        //
+        // jimver/cuda-toolkit GHA action sets CUDA_PATH to the toolkit root.
+        // e.g. "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8"
+        // Import libs are at $CUDA_PATH\lib\x64\*.lib
+        if feature_cuda {
+            if let Ok(cuda_path) = env::var("CUDA_PATH") {
+                println!("cargo:rustc-link-search=native={}/lib/x64", cuda_path);
+            }
+            println!("cargo:rustc-link-lib=dylib=cudart");
+            println!("cargo:rustc-link-lib=dylib=cublas");
+            println!("cargo:rustc-link-lib=dylib=cublasLt");
+            println!("cargo:rustc-link-lib=dylib=cuda");
+        }
     } else if target_os == "macos" {
         println!("cargo:rustc-link-lib=framework=Foundation");
         println!("cargo:rustc-link-lib=framework=Metal");
