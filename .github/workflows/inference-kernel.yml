@@ -1,4 +1,4 @@
-name: Cluaiz Inference Kernels
+name: Cluaiz Interface Kernels
 
 on:
   push:
@@ -313,7 +313,7 @@ jobs:
                 github.ref_name 
             }}
           name: >-
-            Cluaiz ${{ matrix.backend == 'cpu' && 'Kernel' || 'Driver' }} Release 
+            Cluaiz Interface ${{ matrix.backend == 'cpu' && 'Kernel' || 'Driver' }} Release 
             ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}
           append_body: true
         env:
