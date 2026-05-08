@@ -39,8 +39,8 @@ fn main() {
         .define("LLAMA_BUILD_TOOLS",    "OFF")
         .define("LLAMA_STATIC",         "ON")
         .define("BUILD_SHARED_LIBS",    "OFF")
-        // Use MultiThreadedDLL (/MD) to match Rust's default CRT on Windows.
-        .define("CMAKE_MSVC_RUNTIME_LIBRARY", "MultiThreadedDLL")
+        // Use MultiThreaded (/MT) to match Rust's default static CRT on Windows MSVC.
+        .define("CMAKE_MSVC_RUNTIME_LIBRARY", "MultiThreaded")
         .profile("Release");
 
     // ── Apple Platform Alignment ──────────────────────────────────────
@@ -131,9 +131,11 @@ fn main() {
             println!("cargo:rustc-link-lib=static=ggml-metal");
         }
         println!("cargo:rustc-link-lib=static=ggml-blas");
+        println!("cargo:rustc-link-lib=framework=Accelerate");
     } else if target_os == "ios" {
         println!("cargo:rustc-link-lib=static=ggml-metal");
         println!("cargo:rustc-link-lib=static=ggml-blas");
+        println!("cargo:rustc-link-lib=framework=Accelerate");
     }
 
     // ── OS-specific system libraries ──────────────────────────────────

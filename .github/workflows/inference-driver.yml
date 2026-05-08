@@ -317,6 +317,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y rocm-hip-sdk hip-runtime-amd
 
+      - name: Setup Vulkan SDK (Windows)
+        if: matrix.backend == 'vulkan' && runner.os == 'Windows'
+        uses: humbleui/setup-vulkan@v1.2.0
+        with:
+          vulkan-query-version: 1.3.268.0
+          vulkan-components: Vulkan-Headers, Vulkan-Loader
+
       - name: Setup Python 3.9 for CANN (Ascend)
         if: matrix.backend == 'cann'
         uses: actions/setup-python@v5
@@ -326,9 +333,9 @@ jobs:
       - name: Setup Huawei CANN SDK
         if: matrix.backend == 'cann'
         run: |
-          wget --header="Referer: https://www.hiascend.com/" -q https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/CANN/CANN%206.0.RC1/Ascend-cann-toolkit_6.0.RC1_linux-x86_64.run
-          chmod +x Ascend-cann-toolkit_6.0.RC1_linux-x86_64.run
-          ./Ascend-cann-toolkit_6.0.RC1_linux-x86_64.run --quiet --install
+          wget --header="Referer: https://www.hiascend.com/" -q https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/CANN/CANN%208.0.RC1.alpha001/Ascend-cann-toolkit_8.0.RC1.alpha001_linux-x86_64.run
+          chmod +x Ascend-cann-toolkit_8.0.RC1.alpha001_linux-x86_64.run
+          ./Ascend-cann-toolkit_8.0.RC1.alpha001_linux-x86_64.run --quiet --install
           echo "ASCEND_TOOLKIT_HOME=$HOME/Ascend/ascend-toolkit/latest/x86_64-linux" >> $GITHUB_ENV
           echo "CANN_INSTALL_DIR=$HOME/Ascend/ascend-toolkit/latest/x86_64-linux" >> $GITHUB_ENV
 
@@ -338,12 +345,14 @@ jobs:
           if [ "${{ runner.os }}" == "Windows" ]; then
             rm -f /usr/bin/link
           fi
-          if [[ "${{ matrix.backend }}" == "sycl" && "${{ runner.os }}" == "Linux" ]]; then
+          if [[ "${{ matrix.backend }}" == "sycl" || "${{ matrix.backend }}" == "openvino" ]] && [[ "${{ runner.os }}" == "Linux" ]]; then
             source /opt/intel/oneapi/setvars.sh 2>/dev/null || true
           fi
           if [[ "${{ matrix.target }}" == *"-android"* ]]; then
             cargo install cross --git https://github.com/cross-rs/cross
             cross build --release --target ${{ matrix.target }} -p llama --features "${{ matrix.features }}"
+          elif [[ "${{ matrix.backend }}" == "sycl" && "${{ runner.os }}" == "Windows" ]]; then
+            cmd.exe //c "call \"%ONEAPI_ROOT%\setvars.bat\" && cargo build --release --target ${{ matrix.target }} -p llama --features \"${{ matrix.features }}\""
           else
             cargo build --release --target ${{ matrix.target }} -p llama --features "${{ matrix.features }}"
           fi
