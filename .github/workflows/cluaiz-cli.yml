@@ -7,6 +7,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag (e.g. v1.0.0-alpha)'
+        required: true
+        default: 'dev-release'
 
 permissions:
   contents: write
@@ -77,8 +82,12 @@ jobs:
         id: naming
         shell: bash
         run: |
-          # 💎 Sovereign Versioning Logic (Must match the Kernel logic)
-          VERSION="${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'dev' }}"
+          # 💎 Sovereign Versioning Logic
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.tag_name }}"
+          else
+            VERSION="${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'dev' }}"
+          fi
           
           SUFFIX="${{ matrix.suffix }}"
           EXT="${{ matrix.ext }}"
@@ -99,8 +108,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
         with:
           files: ${{ steps.naming.outputs.binary_path }}
-          tag_name: ${{ github.ref_name }}
-          name: "Cluaiz Release ${{ github.ref_name }}"
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}
+          name: "Cluaiz Release ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}"
           append_body: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -118,8 +127,13 @@ jobs:
       - name: Generate CLI Manifest JSON
         shell: bash
         run: |
-          VERSION="${{ github.ref_name }}"
-          TAG="${{ github.ref_name }}"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.tag_name }}"
+            TAG="${{ github.event.inputs.tag_name }}"
+          else
+            VERSION="${{ github.ref_name }}"
+            TAG="${{ github.ref_name }}"
+          fi
           
           cat <<EOF > cli-manifest.json
           {
@@ -139,7 +153,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: cli-manifest.json
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}
           append_body: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

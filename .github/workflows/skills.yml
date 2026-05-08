@@ -7,6 +7,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag (e.g. v1.0.0-alpha)'
+        required: true
+        default: 'dev-release'
 
 permissions:
   contents: write
@@ -31,8 +36,13 @@ jobs:
       - name: Package Skills (Dynamic Sovereignty)
         id: build_library
         run: |
-          VERSION="${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'dev' }}"
-          TAG="${{ github.ref_name }}"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.tag_name }}"
+            TAG="${{ github.event.inputs.tag_name }}"
+          else
+            VERSION="${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'dev' }}"
+            TAG="${{ github.ref_name }}"
+          fi
           
           mkdir -p dist/library
           echo "{\"version\": \"$VERSION\", \"timestamp\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\", \"skills\": []}" > dist/skills.json
@@ -58,8 +68,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
         with:
-          tag_name: ${{ github.ref_name }}
-          name: "Cluaiz Release ${{ github.ref_name }}"
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}
+          name: "Cluaiz Release ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}"
           body: |
             Cluaiz Ai Skills Library.
             
@@ -78,7 +88,12 @@ jobs:
       - name: 📦 Publish Skills to GHCR
         if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
         run: |
-          VERSION="${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'dev' }}"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.tag_name }}"
+          else
+            VERSION="${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'dev' }}"
+          fi
+          
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           IMAGE_ID=ghcr.io/$OWNER/cluaiz-skills
           
