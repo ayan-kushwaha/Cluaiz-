@@ -302,13 +302,19 @@ jobs:
           cp "$SRC" "$DEST"
           echo "binary_path=${DEST}" >> $GITHUB_OUTPUT
 
-      - name: 🚀 Release Kernels (Atomic Upload)
+      - name: 🚀 Release Binaries (Dynamic Split: Kernel vs Driver)
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
         with:
           files: artifacts/*
-          tag_name: ${{ github.event_name == 'workflow_dispatch' && format('kernel-{0}', github.event.inputs.tag_name) || github.ref_name }}
-          name: "Cluaiz Kernel Release ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}"
+          tag_name: >-
+            ${{ github.event_name == 'workflow_dispatch' && 
+                format('{0}-{1}', (matrix.backend == 'cpu' && 'kernel' || 'driver'), github.event.inputs.tag_name) || 
+                github.ref_name 
+            }}
+          name: >-
+            Cluaiz ${{ matrix.backend == 'cpu' && 'Kernel' || 'Driver' }} Release 
+            ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}
           append_body: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -335,11 +341,17 @@ jobs:
           fi
           
           REG_PATH="inference-drivers/registry.json"
-          BASE_URL="https://github.com/${{ github.repository }}/releases/download/$TAG"
+          BASE_URL="https://github.com/${{ github.repository }}/releases/download"
           GEN_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          
+          # 💎 Atomic Tag Resolution
+          KERNEL_TAG="kernel-$VERSION"
+          DRIVER_TAG="driver-$VERSION"
           
           sed -i "s|{BASE_URL}|$BASE_URL|g" $REG_PATH
           sed -i "s|{VERSION}|$VERSION|g" $REG_PATH
+          sed -i "s|{KERNEL_TAG}|$KERNEL_TAG|g" $REG_PATH
+          sed -i "s|{DRIVER_TAG}|$DRIVER_TAG|g" $REG_PATH
           sed -i "s|{GEN_TIME}|$GEN_TIME|g" $REG_PATH
           sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/g" $REG_PATH
           

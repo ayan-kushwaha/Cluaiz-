@@ -38,7 +38,7 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             VERSION="${{ github.event.inputs.tag_name }}"
-            TAG="${{ github.event.inputs.tag_name }}"
+            TAG="skills-${{ github.event.inputs.tag_name }}"
           else
             VERSION="${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'dev' }}"
             TAG="${{ github.ref_name }}"

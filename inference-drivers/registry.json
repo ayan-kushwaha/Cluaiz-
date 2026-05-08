@@ -49,7 +49,7 @@
       "platform": { "os": "windows", "arch": ["x86_64"] },
       "requirements": { "cuda_version": ">=13.0", "minimum_vram_gb": 8 },
       "engine": { "name": "llama.cpp", "variant": "cuda", "capabilities": { "flash_attention": true, "kv_offload": true, "bitnet": true, "mamba": true } },
-      "artifacts": [{ "name_template": "cluaiz-llama-cuda-v13.dll", "download_url_template": "{BASE_URL}/{VERSION}/cluaiz-llama-{VERSION}-win-x64-cuda-v13.dll" }]
+      "artifacts": [{ "name_template": "cluaiz-llama-cuda-v13.dll", "download_url_template": "{BASE_URL}/{DRIVER_TAG}/cluaiz-llama-{VERSION}-win-x64-cuda-v13.dll" }]
     },
     {
       "id": "nvidia-cuda-v12-windows",
@@ -58,7 +58,7 @@
       "platform": { "os": "windows", "arch": ["x86_64"] },
       "requirements": { "cuda_version": ">=12.0, <13.0", "minimum_vram_gb": 4 },
       "engine": { "name": "llama.cpp", "variant": "cuda", "capabilities": { "flash_attention": true, "kv_offload": true, "bitnet": true, "mamba": true } },
-      "artifacts": [{ "name_template": "cluaiz-llama-cuda-v12.dll", "download_url_template": "{BASE_URL}/{VERSION}/cluaiz-llama-{VERSION}-win-x64-cuda-v12.dll" }]
+      "artifacts": [{ "name_template": "cluaiz-llama-cuda-v12.dll", "download_url_template": "{BASE_URL}/{DRIVER_TAG}/cluaiz-llama-{VERSION}-win-x64-cuda-v12.dll" }]
     },
     {
       "id": "nvidia-cuda-v11-windows",
@@ -67,7 +67,7 @@
       "platform": { "os": "windows", "arch": ["x86_64"] },
       "requirements": { "cuda_version": ">=11.0, <12.0", "minimum_vram_gb": 4 },
       "engine": { "name": "llama.cpp", "variant": "cuda", "capabilities": { "flash_attention": true, "kv_offload": true, "bitnet": true } },
-      "artifacts": [{ "name_template": "cluaiz-llama-cuda-v11.dll", "download_url_template": "{BASE_URL}/{VERSION}/cluaiz-llama-{VERSION}-win-x64-cuda-v11.dll" }]
+      "artifacts": [{ "name_template": "cluaiz-llama-cuda-v11.dll", "download_url_template": "{BASE_URL}/{DRIVER_TAG}/cluaiz-llama-{VERSION}-win-x64-cuda-v11.dll" }]
     },
     {
       "id": "nvidia-cuda-v13-linux",
@@ -76,7 +76,7 @@
       "platform": { "os": "linux", "arch": ["x86_64", "aarch64"] },
       "requirements": { "cuda_version": ">=13.0" },
       "engine": { "name": "llama.cpp", "variant": "cuda", "capabilities": { "flash_attention": true, "kv_offload": true, "bitnet": true, "mamba": true } },
-      "artifacts": [{ "name_template": "libcluaiz-llama-cuda-v13.so", "download_url_template": "{BASE_URL}/{VERSION}/libcluaiz-llama-{VERSION}-linux-x64-cuda-v13.so" }]
+      "artifacts": [{ "name_template": "libcluaiz-llama-cuda-v13.so", "download_url_template": "{BASE_URL}/{DRIVER_TAG}/libcluaiz-llama-{VERSION}-linux-x64-cuda-v13.so" }]
     },
     {
       "id": "nvidia-cuda-v12-linux",
@@ -85,7 +85,7 @@
       "platform": { "os": "linux", "arch": ["x86_64", "aarch64"] },
       "requirements": { "cuda_version": ">=12.0, <13.0" },
       "engine": { "name": "llama.cpp", "variant": "cuda", "capabilities": { "flash_attention": true, "kv_offload": true, "bitnet": true, "mamba": true } },
-      "artifacts": [{ "name_template": "libcluaiz-llama-cuda-v12.so", "download_url_template": "{BASE_URL}/{VERSION}/libcluaiz-llama-{VERSION}-linux-x64-cuda-v12.so" }]
+      "artifacts": [{ "name_template": "libcluaiz-llama-cuda-v12.so", "download_url_template": "{BASE_URL}/{DRIVER_TAG}/libcluaiz-llama-{VERSION}-linux-x64-cuda-v12.so" }]
     },
     {
       "id": "nvidia-cuda-v11-linux",
@@ -94,8 +94,9 @@
       "platform": { "os": "linux", "arch": ["x86_64", "aarch64"] },
       "requirements": { "cuda_version": ">=11.0, <12.0" },
       "engine": { "name": "llama.cpp", "variant": "cuda", "capabilities": { "flash_attention": true, "kv_offload": true, "bitnet": true } },
-      "artifacts": [{ "name_template": "libcluaiz-llama-cuda-v11.so", "download_url_template": "{BASE_URL}/{VERSION}/libcluaiz-llama-{VERSION}-linux-x64-cuda-v11.so" }]
-    },
+      "artifacts": [{ "name_template": "libcluaiz-llama-cuda-v11.so", "download_url_template": "{BASE_URL}/{DRIVER_TAG}/libcluaiz-llama-{VERSION}-linux-x64-cuda-v11.so" }]
+    }
+},
     {
       "id": "apple-metal-macos",
       "priority": 2,
@@ -320,6 +321,7 @@
       "requirements": { "minimum_ram_gb": 2 },
       "engine": { "name": "llama.cpp", "variant": "wasm", "capabilities": { "flash_attention": false, "kv_offload": false } },
       "artifacts": [{ "name_template": "cluaiz-llama-wasm.wasm", "download_url_template": "{BASE_URL}/{VERSION}/cluaiz-llama-{VERSION}-web-wasm32-emscripten.wasm" }]
+      "artifacts": [{ "name_template": "cluaiz-llama-wasm.wasm", "download_url_template": "{BASE_URL}/{KERNEL_TAG}/cluaiz-llama-{VERSION}-web-wasm32-emscripten.wasm" }]
     },
     {
       "id": "cpu-avx512",
@@ -328,7 +330,7 @@
       "platform": { "os": "universal", "arch": ["x86_64"] },
       "requirements": { "simd": "avx512" },
       "engine": { "name": "llama.cpp", "variant": "cpu", "capabilities": { "flash_attention": false, "kv_offload": false } },
-      "artifacts": [{ "name_template": "cluaiz-llama-cpu-avx512-{os}.{ext}", "download_url_template": "{BASE_URL}/{VERSION}/cluaiz-llama-{VERSION}-cpu-avx512-{os}.{ext}" }]
+      "artifacts": [{ "name_template": "cluaiz-llama-cpu-avx512-{os}.{ext}", "download_url_template": "{BASE_URL}/{KERNEL_TAG}/cluaiz-llama-{VERSION}-cpu-avx512-{os}.{ext}" }]
     },
     {
       "id": "cpu-avx2",
@@ -337,7 +339,7 @@
       "platform": { "os": "universal", "arch": ["x86_64"] },
       "requirements": { "simd": "avx2" },
       "engine": { "name": "llama.cpp", "variant": "cpu", "capabilities": { "flash_attention": false, "kv_offload": false } },
-      "artifacts": [{ "name_template": "cluaiz-llama-cpu-avx2-{os}.{ext}", "download_url_template": "{BASE_URL}/{VERSION}/cluaiz-llama-{VERSION}-cpu-avx2-{os}.{ext}" }]
+      "artifacts": [{ "name_template": "cluaiz-llama-cpu-avx2-{os}.{ext}", "download_url_template": "{BASE_URL}/{KERNEL_TAG}/cluaiz-llama-{VERSION}-cpu-avx2-{os}.{ext}" }]
     },
     {
       "id": "cpu-neon",
@@ -346,7 +348,7 @@
       "platform": { "os": "universal", "arch": ["arm64", "aarch64"] },
       "requirements": { "simd": "neon" },
       "engine": { "name": "llama.cpp", "variant": "cpu", "capabilities": { "flash_attention": false, "kv_offload": false } },
-      "artifacts": [{ "name_template": "cluaiz-llama-cpu-neon-{os}", "download_url_template": "{BASE_URL}/{VERSION}/cluaiz-llama-{VERSION}-cpu-neon-{os}" }]
+      "artifacts": [{ "name_template": "cluaiz-llama-cpu-neon-{os}", "download_url_template": "{BASE_URL}/{KERNEL_TAG}/cluaiz-llama-{VERSION}-cpu-neon-{os}" }]
     },
     {
       "id": "cpu-neon-armv7",
