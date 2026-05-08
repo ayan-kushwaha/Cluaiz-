@@ -62,15 +62,10 @@ fn main() {
     println!("cargo:rustc-link-search=native={}/lib", dst.display());
     println!("cargo:rustc-link-search=native={}/lib64", dst.display()); // Some Linux distros
     
-    // macOS / Linux / Mobile standard build folders
-    println!("cargo:rustc-link-search=native={}/build/common", dst.display());
-    println!("cargo:rustc-link-search=native={}/build/src", dst.display());
-    println!("cargo:rustc-link-search=native={}/build/ggml/src", dst.display());
-    
-    // Windows MSVC multi-configuration build folders
-    println!("cargo:rustc-link-search=native={}/build/common/Release", dst.display());
-    println!("cargo:rustc-link-search=native={}/build/src/Release", dst.display());
-    println!("cargo:rustc-link-search=native={}/build/ggml/src/Release", dst.display());
+    // Dynamically traverse dst to discover all compiled library folders recursively.
+    // This perfectly supports multi-config targets (e.g. Xcode, MSVC), Mobile (iOS/Android),
+    // and standard CMake Makefile output folders seamlessly!
+    find_and_link_search_paths(&dst);
 
     // Link core libraries produced by CMake
     println!("cargo:rustc-link-lib=static=llama");
@@ -108,4 +103,23 @@ fn main() {
     }
 
     println!("cargo:warning=🧿 [Llama-Engine] Industrial CMake Build Complete.");
+}
+
+fn find_and_link_search_paths(dir: &Path) {
+    if let Ok(entries) = std::fs::read_dir(dir) {
+        let mut has_lib = false;
+        for entry in entries.filter_map(Result::ok) {
+            let path = entry.path();
+            if path.is_dir() {
+                find_and_link_search_paths(&path);
+            } else if let Some(ext) = path.extension() {
+                if ext == "a" || ext == "lib" {
+                    has_lib = true;
+                }
+            }
+        }
+        if has_lib {
+            println!("cargo:rustc-link-search=native={}", dir.display());
+        }
+    }
 }
