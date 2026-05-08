@@ -114,18 +114,15 @@ fn main() {
     println!("cargo:rustc-link-lib=static=ggml-base");
     println!("cargo:rustc-link-lib=static=ggml-cpu");
 
-    // FIX 5: Link the backend-specific ggml sub-library explicitly.
-    // ggml.lib's backend-registry object references ggml_backend_<X>_reg(),
-    // which lives in the backend's own compiled lib. Without this explicit
-    // link the linker produces LNK2019 (unresolved external symbol).
-    if feature_cuda {
-        println!("cargo:rustc-link-lib=static=ggml-cuda");
-    } else if feature_metal {
-        println!("cargo:rustc-link-lib=static=ggml-metal");
-    } else if feature_vulkan {
-        println!("cargo:rustc-link-lib=static=ggml-vulkan");
-    } else if feature_rocm {
-        println!("cargo:rustc-link-lib=static=ggml-hip");
+    // FIX 5: On Windows DLL linking, ALL symbols must be resolved at link time.
+    // ggml.lib's backend-reg calls ggml_backend_cuda_reg() etc, which lives in
+    // ggml-cuda.lib. Without this explicit link, Windows produces LNK2019.
+    // On Linux/macOS, the shared-library linker resolves these at runtime —
+    // explicit static linking is NOT needed there and was BREAKING builds.
+    if target_os == "windows" {
+        if feature_cuda    { println!("cargo:rustc-link-lib=static=ggml-cuda"); }
+        if feature_vulkan  { println!("cargo:rustc-link-lib=static=ggml-vulkan"); }
+        if feature_rocm    { println!("cargo:rustc-link-lib=static=ggml-hip"); }
     }
 
     // ── OS-specific system libraries ──────────────────────────────────
