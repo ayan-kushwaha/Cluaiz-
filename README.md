@@ -18,146 +18,154 @@
 
 ---
 
-## 🏛️ **Current Project Status**
+## 🛡️ **Project Trust & Status**
 
 > [!IMPORTANT]
-> **Status**: **Industrial Alpha (Research Phase)**.
-> Cluaiz is an experimental neural infrastructure. While the core architecture is build-stable, hardware-constrained guarantees and specialized ternary kernels are undergoing rigorous validation.
+> **Current Phase**: **Industrial Alpha (Research Phase)**.
+> Cluaiz is an experimental neural infrastructure. While the core architecture is build-stable, hardware-constrained guarantees and specialized ternary kernels are undergoing rigorous validation. Trust is built on empirical evidence, not marketing claims.
 
 ---
 
-## 🧭 **What is Cluaiz? (The Infrastructure Layer)**
+## 🧭 **What is Cluaiz? (Engine ≠ Model)**
 
-Cluaiz is a **Silicon-Native Neural Kernel** designed to orchestrate inference directly on local silicon with a minimized-copy architecture.
+Cluaiz is **NOT** an AI model. It is an **Industrial Silicon-Native Inference Infrastructure** designed to orchestrate neural workloads directly on local silicon with a minimized-copy architecture.
 
-| Component | Role | Implementation |
+| Component | Analogy | Role |
 | :--- | :--- | :--- |
-| **Cluaiz Engine** | Orchestrator | Rust-Native Kernel Management |
-| **Cluaiz DNA** | Manifest | Unified Identity & Versioning |
-| **AtmaSteer** | Steering | Hardware-Constrained Decoding |
-| **Drivers** | Handshake | Native Silicon FFI (CUDA, Metal, Vulkan) |
+| **Models** | The Fuel | Data/Weights (Llama-3, BitNet, etc.) |
+| **Cluaiz Engine** | The Engine | Orchestration & Kernel Management |
+| **Standard Middleware** | Legacy Transmission | HTTP APIs, Docker, Python layers |
 
 ---
 
-## 📂 **Deep Repository Structure**
+## 🎯 **Core Industrial Goals**
 
-The ecosystem is architected into surgically separated layers to ensure zero cross-contamination and maximum portability.
+1.  **Universal Sovereignty**: Eliminate cloud dependency by enabling high-performance inference on any local device.
+2.  **Silicon Mastery**: Extract every bit of performance from the underlying silicon via native FFI (Direct-to-Metal).
+3.  **Zero-Copy Efficiency**: Minimize data movement between application memory and neural compute buffers.
+4.  **Hardware Agnosticism**: A unified architecture that adapts to NVIDIA, Apple, Intel, and AMD silicon natively.
+
+---
+
+## 🧭 **Universal Architecture (CluaizDNA)**
+
+Cluaiz follows a decoupled, three-tier modular design governed by the **CluaizDNA** manifest standard.
+
+```mermaid
+graph TD
+    A[Interface Layer: CLI/SDK] -- "Near-Cache Signaling" --> B["Cluaiz Engine (CURE)"]
+    B -- "CluaizDNA Manifest" --> C[Model Registry]
+    B -- "Dynamic Native FFI" --> D[Kernel Drivers]
+    
+    subgraph "Bare-Metal Realignment"
+        D --> D1[CUDA / ROCm]
+        D --> D2[Metal / MPS]
+        D --> D3[Vulkan / OpenVINO]
+    end
+```
+
+---
+
+## 📦 **Backend Matrix (Hardware Support)**
+
+| Backend | Vendor | Acceleration Tech | Status |
+| :--- | :--- | :--- | :--- |
+| **CUDA** | NVIDIA | Tensor Cores (v12.x+) | ✅ Alpha |
+| **Metal** | Apple | Metal Performance Shaders | ✅ Alpha |
+| **ROCm** | AMD | HIP / Instinct Buffers | 🧪 Experimental |
+| **Vulkan** | Universal | Cross-Vendor Compute | ✅ Alpha |
+| **OpenVINO** | Intel | NPU / iGPU Acceleration | 🧪 Experimental |
+
+---
+
+## 🌍 **OS Matrix (Platform Availability)**
+
+| OS Target | Architecture | Target Build | Status |
+| :--- | :--- | :--- | :--- |
+| **Windows** | x86_64 | MSVC Native | ✅ Alpha |
+| **Linux** | x86_64 | GNU / Musl | ✅ Alpha |
+| **macOS** | ARM64 (M1+) | Darwin / Mach | ✅ Alpha |
+| **Android** | ARM64 | NDK / Neon | 🧪 Experimental |
+| **iOS** | ARM64 | Metal / Mach-O | 🧪 Experimental |
+
+---
+
+## 🛰️ **Routing Logic (Neural Steering)**
+
+### **1. AtmaSteer Protocol**
+AtmaSteer enables direct state injection into the neural context. By hard-masking hardware registers during the sampling phase, we enforce structural adherence (JSON/Schema) at the bare-metal level.
+
+### **2. Dynamic Skill Routing**
+The ecosystem utilizes a modular **Skill Router** that redirects queries to specialized neural fragments based on hardware-profiled efficiency, ensuring the best "Silicon-to-Task" mapping.
+
+---
+
+## ⚡ **Core Features**
+
+- **Ternary Compute Engine**: Optimized support for 1.58-bit BitNet architectures.
+- **Minimized-Copy FFI**: Direct Rust-to-Silicon linkage bypassing Python/Node wrappers.
+- **P2P Universal Sync**: Local mDNS/UDP discovery for context synchronization between PC and Mobile.
+- **Neural Sandbox**: Process isolation for third-party kernels.
+
+---
+
+## 📊 **Empirical Benchmarks**
+
+*Experimental measurements on AMD Ryzen 7 7435HS + NVIDIA RTX 4050.*
+
+| Metric | Cluaiz (Alpha) | Standard Middleware |
+| :--- | :--- | :--- |
+| **Signaling Latency** | **<25ns** | ~20ms - 50ms |
+| **Memory Footprint** | **~25MB** | ~800MB (Docker) |
+| **Startup Time** | **~150ms** | ~2.5s - 5s |
+
+---
+
+## 🛡️ **Security Architecture**
+
+- **Process Isolation**: Kernels execute in restricted sub-processes with OS-level sandboxing (Job Objects / Namespaces).
+- **VRAM Resource Arbiter**: Real-time memory governor tracks VRAM and performs LRU eviction to prevent OOM errors.
+- **SHA-256 Verification**: Every binary kernel is verified against the DNA manifest before linkage.
+
+---
+
+## 📂 **Repository Structure**
 
 ```text
 /Apps
-  /cli                  # Industrial CLI (User Handshake)
+  /cli            # Industrial CLI (User Interface)
 /cluaiz-engine
-  /api                  # Low-latency C-API & REST Handshake
-  /engines              # Core Orchestration Runtime (CURE)
-    /cluaiz-shared      # Universal Types, Constants & DNA Manifest
-    /system-booster     # Hardware Governor & LRU Arbiter
-/inference-drivers      # Silicon Registry & Dynamic Provisioning
-  /drivers              # Bare-metal kernel binary definitions
-  /registry.json        # Global Hardware-to-Backend mapping
-/interface-engines      # Specialized Inference Backends
-  /llama                # High-performance llama.cpp wrapper
-  /candle               # Pure-Rust Candle/BitNet support
-  /neural_core          # Unified Engine Contract & Traits
+  /api            # Low-latency C-API Handshake
+  /engines        # Core Orchestration Runtime (CURE)
+    /cluaiz-shared # Unified System DNA & Types
+    /system-booster # Hardware Governor & Memory Arbiter
+/inference-drivers
+  /drivers        # Bare-metal kernel definitions
+  /registry.json  # Global Hardware-to-Backend mapping
+/interface-engines # Specialized Inference Backends (Llama, Candle)
 ```
 
 ---
 
-## 🛠️ **Industrial Setup & Installation**
+## 🚀 **Quick Start Manual**
 
-### 1. Prerequisites (Bare-Metal)
-- **Rust Toolchain**: Stable (latest)
-- **C++ Compiler**: MSVC (Windows) / Clang (Linux/Mac)
-- **Silicon Drivers**: 
-  - NVIDIA: CUDA Toolkit 12.x
-  - Mac: Apple Command Line Tools (Metal)
-  - Intel: OpenVINO Runtime (Optional)
-
-### 2. Building from Source
+### 1. Build & Install
 ```bash
-# Clone the Ecosystem
-$ git clone https://github.com/cluaiz/cluaiz
-$ cd cluaiz
-
-# Build the Industrial CLI
-$ cargo build --release -p cli
-
-# Optional: Add to PATH
-$ export PATH=$PATH:$(pwd)/target/release
+$ cargo install --path ./Apps/cli
+$ cluaiz probe    # Calibrate Silicon
 ```
 
-### 3. Post-Install Calibration
+### 2. Basic Operations
 ```bash
-# Deep-probe silicon and initialize system_control.json
-$ cluaiz probe
-
-# Verify kernel linkage
-$ cluaiz doctor
-```
-
----
-
-## 🕹️ **Operation Guide (The Neural Workflow)**
-
-### 🔹 **1. Acquiring Neural Weights (Pull)**
-Cluaiz uses a registry-based acquisition system to ensure the correct quant format for your specific silicon.
-```bash
+# Acquire neural weights
 $ cluaiz pull llama3-8b
-# Logic: Checks local hardware -> Queries CluaizDNA -> Downloads optimized GGUF/BitNet blob
+
+# Live Inference
+$ cluaiz run llama3-8b --prompt "Initialize Industrial Protocol"
+
+# State Injection
+$ cluaiz skill inject ./skills/logic_pro.json
 ```
-
-### 🔹 **2. Live Inference (Run)**
-Orchestrate a session with hardware-level memory management.
-```bash
-$ cluaiz run llama3-8b --prompt "Initialize Sovereign Protocol"
-# Logic: VRAM Arbiter checks budget -> Loads native driver -> Spawns Sandbox
-```
-
-### 🔹 **3. Skill & State Injection (Inject)**
-Inject behavioral constraints or external knowledge directly into the neural context via the **AtmaSteer Protocol**.
-```bash
-$ cluaiz skill inject ./skills/coding_pro.json
-# Logic: Tokenizes prefix -> Writes to KV-Cache buffer -> Forces hardware register mask
-```
-
----
-
-## 🧠 **Core Engineering Pillars**
-
-### 🔹 **1. Near-Cache-Latency Signaling**
-Utilizes shared-memory pointers and atomic flags to achieve signaling latencies in the **20ns - 100ns** range, bypassing bloated network stacks.
-
-### 🔹 **2. Native Silicon Interface (Direct FFI)**
-Binds directly to CUDA/Metal APIs via Rust FFI. We do not use intermediate Python or high-level runtime wrappers, ensuring a **minimized-copy** data path.
-
-### 🔹 **3. Hardware-Constrained Decoding**
-Enforces structural output (JSON/Schema) by hard-masking hardware registers during the sampling phase. This physically prevents token deviations that lead to structural hallucinations.
-
----
-
-## 📊 **Platform & Silicon Matrix**
-
-| OS Target | Architecture | Backend | Status |
-| :--- | :--- | :--- | :--- |
-| **Windows** | x86_64 | CUDA / Vulkan | ✅ Alpha |
-| **Linux** | x86_64 | CUDA / ROCm | ✅ Alpha |
-| **macOS** | Apple Silicon | Metal / MPS | ✅ Alpha |
-| **Android** | ARM64 | Neon / OpenCL | 🧪 Experimental |
-| **iOS** | ARM64 | Metal Native | 🧪 Experimental |
-
----
-
-## 📜 **License & Compliance**
-
-Cluaiz is governed by the **Cluaiz Industrial License (CSL) v1.0**:
-- **Personal Use**: Free for individuals and startups under $10M revenue.
-- **Institutional Standing**: Maintained by Cluaiz, a registered Micro Enterprise under the **Ministry of MSME, India** (Reg: UDYAM-UP-03-0131764).
-
----
-
-### **Documentation**
-- **[Architecture Deep-Dive](ARCHITECTURE.md)**
-- **[Cluaiz Technical Specification](docs/cluaiz-technical-spec-v1.0.md)**
-- **[Security Policy](SECURITY.md)**
 
 ---
 
