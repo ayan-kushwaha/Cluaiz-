@@ -1,12 +1,31 @@
-CLUAIZ SOURCE-AVAILABLE LICENSE (CSL)
+================================================================================
+                    CLUAIZ SOURCE-AVAILABLE LICENSE (CSL)
+                                 Version 1.0
+================================================================================
 
-Version 1.0 — May 2026
+            👉 QUICK SUMMARY (HUMAN-READABLE, NOT A LEGAL SUBSTITUTE)
+
+  FREE FOR:
+  ✅ Personal & Hobbyist use
+  ✅ Startups (Pre-scale companies with Annual Gross Revenue below $10M USD)
+  ✅ Academic & Scientific Research
+  ✅ Local deployments and self-hosting
+
+  COMMERCIAL LICENSE REQUIRED FOR:
+  ❌ Large Enterprises (Annual Gross Revenue above $10M USD)
+  ❌ Hosting competing SaaS, cloud utilities, or managed API offerings
+  ❌ Commercial redistribution of the core runtime
+
+  "Source-available AI runtime platform. Free for developers, startups, and 
+  research. Commercial licensing available for enterprises and hosted services."
+
+================================================================================
+
 Copyright (c) 2026 Cluaiz Technologies. All Rights Reserved.
 
-================================================================================
-                                 PREAMBLE
-================================================================================
-
+--------------------------------------------------------------------------------
+1. PREAMBLE
+--------------------------------------------------------------------------------
 The Cluaiz Source-Available License (CSL) is designed to cultivate a high-performance,
 collaborative ecosystem. By making our source code visible and adaptable, we empower
 individual developers, startups, researchers, and hobbyists to build freely. At the 
@@ -18,10 +37,9 @@ It offers a balanced "Open-Core" model: completely free for personal, educationa
 startup, and local self-hosted use, with commercial licensing required for large 
 enterprises and managed service providers.
 
-================================================================================
-1. DEFINITIONS
-================================================================================
-
+--------------------------------------------------------------------------------
+2. DEFINITIONS
+--------------------------------------------------------------------------------
 "Licensed Software" means the source code, build scripts, configuration files, 
 and documentation of the Cluaiz ecosystem made available under this License.
 
@@ -30,32 +48,28 @@ its parent company, subsidiaries, and controlled affiliates) whose annual gross
 revenue exceeded Ten Million USD ($10,000,000 USD) in its preceding fiscal year.
 
 "Contributor" means any individual or corporate entity that has authored and 
-successfully merged at least one non-trivial contribution (minimum of 50 lines of 
-functional code, critical bug fixes, or equivalent extensive documentation) into 
-the official upstream repository of the Licensed Software.
+had an accepted merged contribution in the official upstream repository of the 
+Licensed Software.
 
 "Competing SaaS / Hosted Service" means any service that provides the core 
 functional features of the Licensed Software as a hosted platform, managed API, 
 managed container, or cloud offering in direct commercial competition with the 
 official cloud services or commercial API endpoints hosted by Cluaiz.
 
-================================================================================
-2. LICENSE GRANTS
-================================================================================
-
+--------------------------------------------------------------------------------
+3. LICENSE GRANTS
+--------------------------------------------------------------------------------
 Subject to the terms and conditions of this License, Cluaiz Technologies hereby 
 grants you a non-exclusive, worldwide, royalty-free, non-transferable license to 
 view, modify, copy, and distribute the Licensed Software under the following tiers:
 
 A. Developer & Startup Tier (Free Use)
---------------------------------------
 You may use the Licensed Software for personal projects, academic research, 
 education, local evaluation, and within business operations, provided that:
-  (1) You are not an Enterprise (as defined in Section 1).
-  (2) You do not operate a Competing SaaS / Hosted Service (as defined in Section 1).
+  (1) You are not an Enterprise (as defined in Section 2).
+  (2) You do not operate a Competing SaaS / Hosted Service (as defined in Section 2).
 
 B. Contributor Commercial Waiver
---------------------------------
 In appreciation of community support, any verified Contributor is granted a perpetual, 
 worldwide, royalty-free Commercial License to use, modify, and run the core Licensed 
 Software for commercial operations, fully bypassing the Enterprise revenue threshold, 
@@ -63,74 +77,54 @@ provided that:
   (1) The Contributor remains in good standing within the community.
   (2) The Contributor's usage does not involve operating a Competing SaaS / Hosted Service.
 
-================================================================================
-3. ENTERPRISE COMMERCIAL MANDATE
-================================================================================
-
+--------------------------------------------------------------------------------
+4. ENTERPRISE COMMERCIAL MANDATE
+--------------------------------------------------------------------------------
 If you are an Enterprise, you may evaluate the Licensed Software in a non-production 
 environment for up to thirty (30) days. Continued or production use of the Licensed 
 Software within an Enterprise requires a separate, written Enterprise Commercial Agreement 
 or Strategic Partnership Agreement from Cluaiz Technologies.
 
-================================================================================
-4. PROTECTIVE COVENANTS & RESTRICTIONS
-================================================================================
-
+--------------------------------------------------------------------------------
+5. PROTECTIVE COVENANTS & RESTRICTIONS
+--------------------------------------------------------------------------------
 A. No Competing Managed Services
---------------------------------
 You may not use, package, or distribute the Licensed Software to operate, host, 
 or offer a Competing SaaS / Hosted Service or commercial API clone. Offering Cluaiz 
 as a managed cloud utility requires a specific hosting provider agreement.
 
-B. Proprietary Methodology Protection
--------------------------------------
-The Licensed Software contains proprietary algorithms, state-probing methodologies, 
-and mathematical frameworks (including but not limited to the AtmaSteer Protocol, 
-Engine C logical interfaces, and Silicon Probing signatures). While the source code 
-is public and licensed under these terms, these methodologies are protected by copyright, 
-trademarks, and patents (where applicable). You may not extract or isolate these 
-proprietary methodologies to construct a competing closed-source binary or platform.
-
-C. Trademark Separation
------------------------
+B. Trademark Separation
 This License does not grant any rights to use the trademarked names "Cluaiz", 
 "Cluaiz-OS", "Archer", "Antigravity", or any associated official logos. Any 
 redistribution, fork, or derivative work of the Licensed Software must be renamed 
 to a distinct brand that does not imply affiliation with or endorsement by Cluaiz.
 
-================================================================================
-5. COMPLIANCE & VERIFICATION
-================================================================================
-
-To ensure compliance with the Developer & Startup Tier threshold, Cluaiz Technologies 
-reserves the right to request a standard, non-intrusive self-declaration of revenue 
-or a written certification of compliance from commercial entities utilizing the 
-Licensed Software.
-
-================================================================================
+--------------------------------------------------------------------------------
 6. TERMINATION
-================================================================================
-
+--------------------------------------------------------------------------------
 This License and the rights granted hereunder will terminate automatically and 
 immediately upon any breach by you of the terms, conditions, or restrictions 
 contained in this Agreement. Upon termination, you must cease all use, distribution, 
 and modification of the Licensed Software and destroy all copies in your possession.
 
-================================================================================
+--------------------------------------------------------------------------------
 7. DISCLAIMER OF WARRANTY & LIMITATION OF LIABILITY
-================================================================================
-
+--------------------------------------------------------------------------------
 THE LICENSED SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS 
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL CLUAIZ TECHNOLOGIES 
-OR THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN 
-ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
-THE LICENSED SOFTWARE.
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
-================================================================================
+IN NO EVENT SHALL CLUAIZ TECHNOLOGIES, ITS DIRECTORS, EMPLOYEES, OR THE AUTHORS 
+BE LIABLE FOR ANY CLAIM, DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE 
+GOODS OR SERVICES; LOSS OF USE, DATA, PRODUCTION FAILURES, OR PROFITS; OR BUSINESS 
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY 
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+--------------------------------------------------------------------------------
 8. GOVERNING LAW & JURISDICTION
-================================================================================
-
+--------------------------------------------------------------------------------
 This License shall be governed by, interpreted, and construed in accordance with 
 the laws of India. 
 
