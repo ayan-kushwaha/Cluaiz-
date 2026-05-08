@@ -90,6 +90,12 @@ fn main() {
         println!("cargo:rustc-link-lib=framework=MetalKit");
         println!("cargo:rustc-link-lib=framework=Accelerate");
         println!("cargo:rustc-link-lib=dylib=c++");
+        
+        // 🍏 Add OpenSSL search paths from Homebrew on macOS to resolve missing link symbols
+        println!("cargo:rustc-link-search=native=/usr/local/opt/openssl@3/lib");
+        println!("cargo:rustc-link-search=native=/opt/homebrew/opt/openssl@3/lib");
+        println!("cargo:rustc-link-lib=dylib=ssl");
+        println!("cargo:rustc-link-lib=dylib=crypto");
     } else if target_os == "ios" {
         println!("cargo:rustc-link-lib=framework=Foundation");
         println!("cargo:rustc-link-lib=framework=Metal");
