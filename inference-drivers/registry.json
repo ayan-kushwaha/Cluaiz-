@@ -95,8 +95,7 @@
       "requirements": { "cuda_version": ">=11.0, <12.0" },
       "engine": { "name": "llama.cpp", "variant": "cuda", "capabilities": { "flash_attention": true, "kv_offload": true, "bitnet": true } },
       "artifacts": [{ "name_template": "libcluaiz-llama-cuda-v11.so", "download_url_template": "{BASE_URL}/{DRIVER_TAG}/libcluaiz-llama-{VERSION}-linux-x64-cuda-v11.so" }]
-    }
-},
+    },
     {
       "id": "apple-metal-macos",
       "priority": 2,
@@ -320,8 +319,7 @@
       "platform": { "os": "web", "arch": ["wasm32"] },
       "requirements": { "minimum_ram_gb": 2 },
       "engine": { "name": "llama.cpp", "variant": "wasm", "capabilities": { "flash_attention": false, "kv_offload": false } },
-      "artifacts": [{ "name_template": "cluaiz-llama-wasm.wasm", "download_url_template": "{BASE_URL}/{VERSION}/cluaiz-llama-{VERSION}-web-wasm32-emscripten.wasm" }]
-      "artifacts": [{ "name_template": "cluaiz-llama-wasm.wasm", "download_url_template": "{BASE_URL}/{KERNEL_TAG}/cluaiz-llama-{VERSION}-web-wasm32-emscripten.wasm" }]
+       "artifacts": [{ "name_template": "cluaiz-llama-wasm.wasm", "download_url_template": "{BASE_URL}/{KERNEL_TAG}/cluaiz-llama-{VERSION}-web-wasm32-emscripten.wasm" }]
     },
     {
       "id": "cpu-avx512",
