@@ -130,12 +130,7 @@ fn main() {
         println!("cargo:rustc-link-lib=dylib=advapi32");
         println!("cargo:rustc-link-lib=dylib=user32");
         println!("cargo:rustc-link-lib=dylib=ws2_32");
-        // CUDA on Windows also needs cuda runtime libs
-        if feature_cuda {
-            println!("cargo:rustc-link-lib=dylib=cuda");
-            println!("cargo:rustc-link-lib=dylib=cudart");
-            println!("cargo:rustc-link-lib=dylib=cublas");
-        }
+        // NOTE: CUDA runtime is linked statically into ggml-cuda.lib by CMake.
     } else if target_os == "macos" {
         println!("cargo:rustc-link-lib=framework=Foundation");
         println!("cargo:rustc-link-lib=framework=Metal");
