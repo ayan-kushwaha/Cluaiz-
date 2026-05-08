@@ -219,10 +219,10 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Setup CUDA Toolkit
-        if: matrix.backend == 'cuda'
+        if: contains(matrix.backend, 'cuda')
         uses: jimver/cuda-toolkit@v0.2.21
         with:
-          cuda: '12.5.0'
+          cuda: ${{ matrix.backend == 'cuda-v11' && '11.8.0' || matrix.backend == 'cuda-v12' && '12.2.0' || '12.5.0' }}
 
       - name: Setup Vulkan SDK
         if: matrix.backend == 'vulkan'
@@ -233,6 +233,38 @@ jobs:
           else
             sudo apt-get update && sudo apt-get install -y libvulkan-dev
           fi
+
+      - name: Setup OpenVINO SDK
+        if: matrix.backend == 'openvino'
+        uses: openvinotoolkit/setup-openvino@v1
+        with:
+          version: '2024.0.0'
+
+      - name: Setup Intel oneAPI SYCL SDK
+        if: matrix.backend == 'sycl'
+        uses: rscohn2/setup-oneapi@v0
+        with:
+          compiler: dpcpp
+          mkl: true
+
+      - name: Setup AMD ROCm / HIP SDK
+        if: matrix.backend == 'rocm' || matrix.backend == 'hip'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget gnupg2
+          wget https://repo.radeon.com/rocm/rocm.gpg.key -O - | gpg --dearmor | sudo tee /etc/apt/keyrings/rocm.gpg
+          echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/6.0 ubuntu main" | sudo tee /etc/apt/sources.list.d/rocm.list
+          sudo apt-get update
+          sudo apt-get install -y rocm-dev hip-runtime-amd
+
+      - name: Setup Huawei CANN SDK
+        if: matrix.backend == 'cann'
+        run: |
+          wget --header="Referer: https://www.hiascend.com/" -q https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/CANN/CANN%206.0.RC1/Ascend-cann-toolkit_6.0.RC1_linux-x86_64.run
+          chmod +x Ascend-cann-toolkit_6.0.RC1_linux-x86_64.run
+          ./Ascend-cann-toolkit_6.0.RC1_linux-x86_64.run --quiet --install
+          echo "ASCEND_TOOLKIT_HOME=/usr/local/Ascend/ascend-toolkit/latest" >> $GITHUB_ENV
+          echo "CANN_INSTALL_DIR=/usr/local/Ascend/ascend-toolkit/latest" >> $GITHUB_ENV
 
       - name: Build Driver (Foundry)
         shell: bash
