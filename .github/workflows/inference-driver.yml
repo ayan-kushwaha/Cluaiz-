@@ -224,14 +224,26 @@ jobs:
         with:
           cuda: ${{ matrix.backend == 'cuda-v11' && '11.8.0' || matrix.backend == 'cuda-v12' && '12.2.0' || '12.5.0' }}
 
+      # ── Vulkan: Linux installs glslc via the official LunarG apt repo.
+      # Ubuntu universe shaderc package does NOT provide /usr/bin/glslc on 22.04.
+      # The LunarG repo is the ONLY reliable source of glslc on Ubuntu 22.04.
       - name: Setup Vulkan SDK (Linux)
         if: matrix.backend == 'vulkan' && runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libvulkan-dev shaderc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget gpg
+          wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+          sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list https://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
+          sudo apt-get update
+          sudo apt-get install -y vulkan-sdk
 
+      # ── Vulkan: Windows uses the official humbletim action (same approach as llama.cpp CI).
       - name: Setup Vulkan SDK (Windows)
         if: matrix.backend == 'vulkan' && runner.os == 'Windows'
-        shell: powershell
-        run: choco install vulkan-sdk -y --no-progress
+        uses: humbletim/install-vulkan-sdk@v1.2
+        with:
+          version: latest
+          cache: true
 
       - name: Setup OpenVINO SDK (Windows)
         if: matrix.backend == 'openvino' && runner.os == 'Windows'
@@ -252,8 +264,8 @@ jobs:
         if: matrix.backend == 'openvino' && runner.os == 'Linux'
         run: |
           sudo apt-get update
-          # OpenCL headers + ICD loader — required by ggml-openvino's find_package(OpenCL)
-          sudo apt-get install -y opencl-headers ocl-icd-opencl-dev wget gnupg2
+          # OpenCL packages — identical to those used in official llama.cpp CI (build-openvino.yml)
+          sudo apt-get install -y ocl-icd-opencl-dev opencl-headers opencl-clhpp-headers intel-opencl-icd wget gnupg2
           wget -q https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           echo "deb https://apt.repos.intel.com/openvino/2024 ubuntu22 main" | sudo tee /etc/apt/sources.list.d/intel-openvino-2024.list
