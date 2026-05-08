@@ -51,6 +51,7 @@ fn main() {
         config.define("GGML_QNN", "ON");
     } else if env::var("CARGO_FEATURE_CANN").is_ok() {
         config.define("GGML_CANN", "ON");
+        config.define("SOC_TYPE", "ascend910b");
     }
 
     let dst = config.build();

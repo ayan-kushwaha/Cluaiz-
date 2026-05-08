@@ -148,6 +148,9 @@ jobs:
       - name: Build Kernel (Foundry Strike)
         shell: bash
         run: |
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            rm -f /usr/bin/link
+          fi
           if [[ "${{ matrix.target }}" == *"-android"* || "${{ matrix.target }}" == "aarch64-unknown-linux-gnu" ]]; then
             cargo install cross --git https://github.com/cross-rs/cross
             cross build --release --target ${{ matrix.target }} -p llama --features "${{ matrix.features }}"
