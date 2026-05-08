@@ -11,7 +11,7 @@ path = "src/main.rs"
 [dependencies]
 # ── Root Architecture ──
 engines = { path = "../../cluaiz-engine/engines" }
-archer_shared = { package = "archer-shared", path = "../../cluaiz-engine/engines/archer-shared" }
+cluaiz_shared = { package = "cluaiz-shared", path = "../../cluaiz-engine/engines/cluaiz-shared" }
 
 
 # ── Powerhouse Ratatui Framework ──

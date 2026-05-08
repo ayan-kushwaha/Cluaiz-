@@ -33,7 +33,7 @@ tracing = "0.1.44"
 uuid = { version = "1", features = ["v4"] }
 
 # ── Shared Workspace Member Links ──
-archer-shared = { path = "archer-shared" }
+cluaiz-shared = { path = "cluaiz-shared" }
 # Engines (Llama, Candle, BitNet) are now loaded dynamically via libloading from interface-engines
 system-booster = { path = "system-booster", optional = true }
 neural-core = { path = "../../interface-engines/neural_core" }

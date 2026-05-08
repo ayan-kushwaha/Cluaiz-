@@ -3,7 +3,7 @@
 //! ═══════════════════════════════════════════════════════════════════════
 
 use anyhow::{anyhow, Result};
-use archer_shared::{ModelWeightsWrapper, CluaizContext, CluaizLinkerPlaceholder};
+use cluaiz_shared::{ModelWeightsWrapper, CluaizContext, CluaizLinkerPlaceholder};
 use crate::interface_engines::EngineManager;
 
 pub struct HardwareOrchestrator;
@@ -17,7 +17,7 @@ impl HardwareOrchestrator {
         tracing::info!("🔩 [Orchestrator] Initiating Dynamic Hardware Handshake...");
 
         // 1. Initialize the Engine Manager (The Cluaiz Linker)
-        let base_path = archer_shared::hardware::governor::HardwareGovernor::resolve_hub_path();
+        let base_path = cluaiz_shared::hardware::governor::HardwareGovernor::resolve_hub_path();
         let manager = EngineManager::new(base_path);
 
         // 2. Identify Engine Type based on DNA Signature

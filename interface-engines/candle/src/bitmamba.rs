@@ -1,7 +1,7 @@
 //! 🐍 BitMamba Core Architecture
 //! Fusing 1.58b Quantization with State Space Models (Mamba) for Sovereign Inference.
 
-use archer_shared::hardware::schema::profiles::SiliconTruth;
+use cluaiz_shared::hardware::schema::profiles::SiliconTruth;
 
 pub struct BitMambaEngine {
     pub hidden_size: usize,

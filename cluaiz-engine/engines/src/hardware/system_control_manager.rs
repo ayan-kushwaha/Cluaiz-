@@ -1,6 +1,6 @@
 use super::SiliconTruth;
 use anyhow::Result;
-use archer_shared::hardware::{governor::HardwareGovernor, system_control::HardwareOrchestrator};
+use cluaiz_shared::hardware::{governor::HardwareGovernor, system_control::HardwareOrchestrator};
 
 /// 🏛️ Performs a deep surgical scan of the host Hardware.
 pub fn detect_hardware() -> SiliconTruth {

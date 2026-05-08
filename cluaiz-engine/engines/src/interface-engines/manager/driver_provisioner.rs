@@ -4,7 +4,7 @@ use reqwest;
 use zip::ZipArchive;
 use std::fs;
 use std::io::Cursor;
-use archer_shared::HardwareGovernor;
+use cluaiz_shared::HardwareGovernor;
 
 pub struct DriverProvisioner;
 

@@ -17,7 +17,7 @@ impl SkillRouter {
     /// Uses the dynamic registry and KERNEL TELEMETRY to find compute-aware matches.
     pub fn match_intent(&self, prompt: &str, registry: &SkillRegistry) -> Vec<String> {
         // 🛰️ Cluaiz Linkage: Get real-time Hardware pressure
-        let pulse = archer_shared::hardware::telemetry::get_pulse();
+        let pulse = cluaiz_shared::hardware::telemetry::get_pulse();
         let pulse_lock = pulse.pulse.read().unwrap();
         
         let mut matches = Vec::new();

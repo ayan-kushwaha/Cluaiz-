@@ -12,7 +12,7 @@ use runtime::wasm_host::WasmHost;
 use runtime::mcp_gateway::McpGateway;
 use security::guard::{PermissionGuard, PermissionLevel};
 use tracing::{info, warn};
-use archer_shared::hardware::memory::kv_cache::stitching::CluaizSignal;
+use cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal;
 use neural_core::interfaces::memory_contract::MappedBuffer;
 use std::sync::{Mutex, Arc};
 

@@ -1,0 +1,70 @@
+2026-05-07T19:23:32.601655Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: ../../models
+2026-05-07T19:23:32.602442Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: ../../models
+2026-05-07T19:23:32.606101Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-05-07T19:23:32.606495Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-05-07T19:23:32.606803Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-05-07T19:23:32.606949Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. Using Ghost Probe to seal DNA.
+2026-05-07T19:23:32.607036Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-05-07T19:23:32.607136Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. Using Ghost Probe to seal DNA.
+2026-05-07T19:23:32.607464Z  INFO engines::models::registry::discovery: ✅ DNA SEALED (GHOST): 'bonsai1:8b' is now Cluaiz-Verified.
+2026-05-07T19:23:32.607464Z  INFO engines::models::registry::discovery: ✅ DNA SEALED (GHOST): 'bonsai1:8b' is now Cluaiz-Verified.
+2026-05-07T19:23:32.607588Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-05-07T19:23:32.607595Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-05-07T19:23:32.607855Z  INFO engines::models::registry: 📚 [Roster] Library source found at: ../../models/library
+2026-05-07T19:23:32.607872Z  INFO engines::models::registry: 📚 [Roster] Library source found at: ../../models/library
+2026-05-07T19:23:32.612783Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:1.7b Status: Optimal, Cached: false
+2026-05-07T19:23:32.612893Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:1.7b Status: Optimal, Cached: false
+2026-05-07T19:23:32.612987Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:4b Status: Optimal, Cached: false
+2026-05-07T19:23:32.613094Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:4b Status: Optimal, Cached: false
+2026-05-07T19:23:32.613203Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:8b Status: Optimal, Cached: true
+2026-05-07T19:23:32.613305Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:8b Status: Optimal, Cached: false
+2026-05-07T19:23:32.613339Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:1.7b Status: Optimal, Cached: false
+2026-05-07T19:23:32.613389Z  INFO engines::models::registry: 🧬 [Roster] Model models Status: Optimal, Cached: false
+2026-05-07T19:23:32.613448Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:1.7b Status: Optimal, Cached: false
+2026-05-07T19:23:32.613478Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b Status: Incompatible, Cached: false
+2026-05-07T19:23:32.613554Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:4b Status: Optimal, Cached: false
+2026-05-07T19:23:32.613604Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b Status: Optimal, Cached: false
+2026-05-07T19:23:32.613710Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b Status: Optimal, Cached: false
+2026-05-07T19:23:32.613731Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:4b Status: Optimal, Cached: false
+2026-05-07T19:23:32.613802Z  INFO engines::models::registry: 🧬 [Roster] Model Llama-4-Maverick-17B-128E-Instruct Status: Incompatible, Cached: false
+2026-05-07T19:23:32.613864Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:8b Status: Optimal, Cached: true
+2026-05-07T19:23:32.613895Z  INFO engines::models::registry: 🧬 [Roster] Model Llama-4-Scout-17B-16E-Instruct Status: Incompatible, Cached: false
+2026-05-07T19:23:32.613919Z  INFO engines::models::registry: 📊 [Roster] Generated 12 model recommendations for UI.
+2026-05-07T19:23:32.613989Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:8b Status: Optimal, Cached: false
+2026-05-07T19:23:32.614163Z  INFO engines::models::registry: 🧬 [Roster] Model models Status: Optimal, Cached: false
+2026-05-07T19:23:32.614291Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b Status: Incompatible, Cached: false
+2026-05-07T19:23:32.614413Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b Status: Optimal, Cached: false
+2026-05-07T19:23:32.614528Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b Status: Optimal, Cached: false
+2026-05-07T19:23:32.614635Z  INFO engines::models::registry: 🧬 [Roster] Model Llama-4-Maverick-17B-128E-Instruct Status: Incompatible, Cached: false
+2026-05-07T19:23:32.614742Z  INFO engines::models::registry: 🧬 [Roster] Model Llama-4-Scout-17B-16E-Instruct Status: Incompatible, Cached: false
+2026-05-07T19:23:32.614763Z  INFO engines::models::registry: 📊 [Roster] Generated 12 model recommendations for UI.
+2026-05-07T19:23:32.615219Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: ../../models
+2026-05-07T19:23:32.618386Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-05-07T19:23:32.618939Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-05-07T19:23:32.619046Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. Using Ghost Probe to seal DNA.
+2026-05-07T19:23:32.619388Z  INFO engines::models::registry::discovery: ✅ DNA SEALED (GHOST): 'bonsai1:8b' is now Cluaiz-Verified.
+2026-05-07T19:23:32.619480Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-05-07T19:23:32.619621Z  INFO engines::models::registry: 📚 [Roster] Library source found at: ../../models/library
+2026-05-07T19:23:32.623697Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:1.7b Status: Optimal, Cached: false
+2026-05-07T19:23:32.623821Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:1.7b Status: Optimal, Cached: false
+2026-05-07T19:23:32.623903Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:4b Status: Optimal, Cached: false
+2026-05-07T19:23:32.623983Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:4b Status: Optimal, Cached: false
+2026-05-07T19:23:32.624068Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:8b Status: Optimal, Cached: true
+2026-05-07T19:23:32.624148Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:8b Status: Optimal, Cached: false
+2026-05-07T19:23:32.624229Z  INFO engines::models::registry: 🧬 [Roster] Model models Status: Optimal, Cached: false
+2026-05-07T19:23:32.624309Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b Status: Incompatible, Cached: false
+2026-05-07T19:23:32.624388Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b Status: Optimal, Cached: false
+2026-05-07T19:23:32.624484Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b Status: Optimal, Cached: false
+2026-05-07T19:23:32.624566Z  INFO engines::models::registry: 🧬 [Roster] Model Llama-4-Maverick-17B-128E-Instruct Status: Incompatible, Cached: false
+2026-05-07T19:23:32.624647Z  INFO engines::models::registry: 🧬 [Roster] Model Llama-4-Scout-17B-16E-Instruct Status: Incompatible, Cached: false
+2026-05-07T19:23:32.624665Z  INFO engines::models::registry: 📊 [Roster] Generated 12 model recommendations for UI.
+2026-05-07T19:23:33.934416Z  INFO engines::runtime::execution::hub: 🔩 [Orchestrator] Initiating Dynamic Hardware Handshake...
+2026-05-07T19:23:33.939818Z  INFO cluaiz_shared::hardware::governor: ⚖️ [Arbiter] VRAM Truth synchronized from System Control: 2.35GB
+2026-05-07T19:23:33.940875Z  INFO engines::interface_engines::manager::kernel_loader: 🎯 [KernelLoader] Cluaiz path resolved (kernels/): "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\kernels\\archer_candle.dll"
+2026-05-07T19:23:33.941398Z  INFO engines::interface_engines::manager::kernel_loader: 🎯 [KernelLoader] Cluaiz path resolved (kernels/): "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\kernels\\archer_candle.dll"
+2026-05-07T19:23:33.941435Z  INFO engines::interface_engines::manager: 🧬 [Linker] Mapping binary: "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\kernels\\archer_candle.dll"
+2026-05-07T19:44:19.931000Z  INFO engines::runtime::execution::hub: 🔩 [Orchestrator] Initiating Dynamic Hardware Handshake...
+2026-05-07T19:44:19.936973Z  WARN engines::interface_engines::manager: ⚠️ [Arbiter] VRAM Arbitration Failed (❌ [VRAM Arbiter] Out of Memory! Requested: 2.00GB, Available: 0.35GB (Total: 2.35GB)). Falling back to CPU.
+2026-05-07T19:44:19.937446Z  INFO engines::interface_engines::manager::kernel_loader: 🎯 [KernelLoader] Cluaiz path resolved (kernels/): "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\kernels\\archer_candle.dll"
+2026-05-07T19:44:19.937839Z  INFO engines::interface_engines::manager::kernel_loader: 🎯 [KernelLoader] Cluaiz path resolved (kernels/): "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\kernels\\archer_candle.dll"
+2026-05-07T19:44:19.937864Z  INFO engines::interface_engines::manager: 🧬 [Linker] Mapping binary: "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\kernels\\archer_candle.dll"

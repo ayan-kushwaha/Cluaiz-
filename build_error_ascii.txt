@@ -1,0 +1,325 @@
+cargo : warning: unreachable expression
+At line:1 char:1
++ cargo check -p cli 2>&1 | Out-File -FilePath build_error_ascii.txt -E ...
++ ~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: unreachable expression:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  --> cluaiz-engine\engines\cluaiz-shared\src\hardware\system_performance\drivers\vulkan.rs:53:9
+   |
+51 |             return Ok(bytes / 1024 / 1024);
+   |             ------------------------------ any code following this expression is unreachable
+52 |         }
+53 |         Ok(0)
+   |         ^^^^^ unreachable expression
+   |
+   = note: `#[warn(unreachable_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: unreachable expression
+  --> cluaiz-engine\engines\cluaiz-shared\src\hardware\system_performance\drivers\openvino.rs:53:9
+   |
+51 |             return Ok(bytes / 1024 / 1024);
+   |             ------------------------------ any code following this expression is unreachable
+52 |         }
+53 |         Ok(0)
+   |         ^^^^^ unreachable expression
+
+warning: field `thermal_guard` is never read
+  --> cluaiz-engine\engines\cluaiz-shared\src\hardware\system_performance\mod.rs:17:5
+   |
+14 | pub struct SystemPerformanceLive {
+   |            --------------------- field in this struct
+...
+17 |     thermal_guard: ThermalGuard,
+   |     ^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: module `Chat` should have a snake case name
+  --> cluaiz-engine\engines\cluaiz-shared\src\lib.rs:24:9
+   |
+24 | pub mod Chat;
+   |         ^^^^ help: convert the identifier to snake case (notice the capitalization): `chat`
+   |
+   = note: `#[warn(non_snake_case)]` (part of `#[warn(nonstandard_style)]`) on by default
+
+warning: function `get_Cluaiz_profile` should have a snake case name
+  --> cluaiz-engine\engines\cluaiz-shared\src\hardware\mod.rs:62:8
+   |
+62 | pub fn get_Cluaiz_profile() -> schema::profiles::CluaizProfile {
+   |        ^^^^^^^^^^^^^^^^^^ help: convert the identifier to snake case (notice the capitalization): 
+`get_cluaiz_profile`
+
+warning: method `to_Hardware_truth` should have a snake case name
+  --> cluaiz-engine\engines\cluaiz-shared\src\hardware\mod.rs:68:12
+   |
+68 |     pub fn to_Hardware_truth(&self) -> schema::profiles::SiliconTruth {
+   |            ^^^^^^^^^^^^^^^^^ help: convert the identifier to snake case: `to_hardware_truth`
+
+warning: `cluaiz-shared` (lib) generated 6 warnings
+warning: unused import: `PathBuf`
+ --> cluaiz-engine\engines\src\models\registry\mod.rs:6:23
+  |
+6 | use std::path::{Path, PathBuf};
+  |                       ^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `warn`
+ --> cluaiz-engine\engines\src\models\registry\mod.rs:8:21
+  |
+8 | use tracing::{info, warn};
+  |                     ^^^^
+
+warning: unused import: `warn`
+ --> cluaiz-engine\engines\src\models\fetch\mod.rs:2:21
+  |
+2 | use tracing::{info, warn};
+  |                     ^^^^
+
+warning: unused import: `std::time::Instant`
+ --> cluaiz-engine\engines\src\models\fetch\mod.rs:3:5
+  |
+3 | use std::time::Instant;
+  |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Path`
+ --> cluaiz-engine\engines\src\interface-engines\manager\driver_provisioner.rs:1:17
+  |
+1 | use std::path::{Path, PathBuf};
+  |                 ^^^^
+
+warning: variable does not need to be mutable
+   --> cluaiz-engine\engines\src\models\registry\mod.rs:150:13
+    |
+150 |         let mut manifests = Vec::new();
+    |             ----^^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `id`
+   --> cluaiz-engine\engines\src\models\registry\mod.rs:153:18
+    |
+153 |             for (id, _path) in routing {
+    |                  ^^ help: if this is intentional, prefix it with an underscore: `_id`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: struct `InstallationFile` is never constructed
+  --> cluaiz-engine\engines\src\models\registry\mod.rs:68:8
+   |
+68 | struct InstallationFile {
+   |        ^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: fields `client` and `installer` are never read
+  --> cluaiz-engine\engines\src\models\manager\mod.rs:14:5
+   |
+13 | pub struct ModelManager {
+   |            ------------ fields in this struct
+14 |     client: RegistryClient,
+   |     ^^^^^^
+15 |     installer: ModelInstaller,
+   |     ^^^^^^^^^
+
+warning: fields `kernel_dir` and `bridge` are never read
+  --> cluaiz-engine\engines\src\interface-engines\manager\mod.rs:19:5
+   |
+18 | pub struct EngineManager {
+   |            ------------- fields in this struct
+19 |     kernel_dir: PathBuf,
+   |     ^^^^^^^^^^
+20 |     loader: KernelLoader,
+21 |     bridge: DriverBridge,
+   |     ^^^^^^
+
+warning: method `inject_Core_signals` should have a snake case name
+  --> cluaiz-engine\engines\src\runtime\execution\runner.rs:34:12
+   |
+34 |     pub fn inject_Core_signals(&mut self, signals: 
+Vec<cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Resul...
+   |            ^^^^^^^^^^^^^^^^^^^ help: convert the identifier to snake case (notice the capitalization): 
+`inject_core_signals`
+   |
+   = note: `#[warn(non_snake_case)]` (part of `#[warn(nonstandard_style)]`) on by default
+
+warning: variable `Cluaiz_context` should have a snake case name
+  --> cluaiz-engine\engines\src\runtime\execution\hub.rs:15:9
+   |
+15 |         Cluaiz_context: CluaizContext,
+   |         ^^^^^^^^^^^^^^ help: convert the identifier to snake case (notice the capitalization): `cluaiz_context`
+
+warning: function `initialize_Core_drivers` should have a snake case name
+ --> cluaiz-engine\engines\src\runtime\execution\drivers.rs:8:8
+  |
+8 | pub fn initialize_Core_drivers() {
+  |        ^^^^^^^^^^^^^^^^^^^^^^^ help: convert the identifier to snake case (notice the capitalization): 
+`initialize_core_drivers`
+
+warning: variable `Cluaiz_context` should have a snake case name
+  --> cluaiz-engine\engines\src\runtime\execution\loader.rs:43:13
+   |
+43 |         let Cluaiz_context = CluaizContext::boot(
+   |             ^^^^^^^^^^^^^^ help: convert the identifier to snake case (notice the capitalization): 
+`cluaiz_context`
+
+warning: method `get_Cluaiz_url` should have a snake case name
+   --> cluaiz-engine\engines\src\runtime\execution\provisioner.rs:102:8
+    |
+102 |     fn get_Cluaiz_url(os: &str, driver: &BackendDriver) -> Result<String> {
+    |        ^^^^^^^^^^^^^^ help: convert the identifier to snake case (notice the capitalization): `get_cluaiz_url`
+
+warning: method `index_Cluaiz_models` should have a snake case name
+  --> cluaiz-engine\engines\src\models\registry\discovery.rs:10:12
+   |
+10 |     pub fn index_Cluaiz_models(base_path: &Path) -> Vec<ModelManifest> {
+   |            ^^^^^^^^^^^^^^^^^^^ help: convert the identifier to snake case (notice the capitalization): 
+`index_cluaiz_models`
+
+warning: method `generate_Cluaiz_dna` should have a snake case name
+   --> cluaiz-engine\engines\src\models\fetch\mod.rs:134:12
+    |
+134 |     pub fn generate_Cluaiz_dna(manifest: &ModelManifest, dest_dir: &std::path::Path, weight_path: 
+&std::path::Path) -> Result<(), S...
+    |            ^^^^^^^^^^^^^^^^^^^ help: convert the identifier to snake case (notice the capitalization): 
+`generate_cluaiz_dna`
+
+warning: structure field `Core_metadata` should have a snake case name
+  --> cluaiz-engine\engines\src\neural_foundry\registry\mod.rs:19:9
+   |
+19 |     pub Core_metadata: CoreMetadata,
+   |         ^^^^^^^^^^^^^ help: convert the identifier to snake case (notice the capitalization): `core_metadata`
+
+warning: `engines` (lib) generated 18 warnings (run `cargo fix --lib -p engines` to apply 7 suggestions)
+    Checking cli v0.1.0 (C:\Users\Aryan\my\Cluaiz-workspace\cluaiz\Apps\cli)
+warning: unused imports: `Event` and `self`
+ --> Apps\cli\src\core\dashboard.rs:4:24
+  |
+4 | use crossterm::event::{self, Event};
+  |                        ^^^^  ^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `engines::utils::healer::AutoHealer`
+  --> Apps\cli\src\core\dashboard.rs:17:5
+   |
+17 | use engines::utils::healer::AutoHealer;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `MenuApp`
+ --> Apps\cli\src\ui\apps\menu\mod.rs:8:36
+  |
+8 | use crate::core::state::{AppState, MenuApp};
+  |                                    ^^^^^^^
+
+warning: unused import: `crate::assets::logos::logo`
+ --> Apps\cli\src\ui\apps\onboarding\native.rs:1:5
+  |
+1 | use crate::assets::logos::logo;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Write` and `stdout`
+ --> Apps\cli\src\ui\apps\onboarding\native.rs:6:15
+  |
+6 | use std::io::{stdout, Write};
+  |               ^^^^^^  ^^^^^
+
+warning: unused import: `std::time::Duration`
+ --> Apps\cli\src\ui\apps\onboarding\native.rs:7:5
+  |
+7 | use std::time::Duration;
+  |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Widget`
+ --> Apps\cli\src\ui\apps\roster\ui_flow.rs:4:33
+  |
+4 |     widgets::{Table, Row, Cell, Widget},
+  |                                 ^^^^^^
+
+warning: unused import: `AppState`
+ --> Apps\cli\src\ui\apps\registry\details.rs:8:26
+  |
+8 | use crate::core::state::{AppState};
+  |                          ^^^^^^^^
+
+error[E0308]: mismatched types
+   --> Apps\cli\src\core\bootstrapper.rs:123:38
+    |
+123 |                 Self::download_asset(url, &zip_path).await?;
+    |                 -------------------- ^^^ expected `&str`, found `String`
+    |                 |
+    |                 arguments to this function are incorrect
+    |
+note: associated function defined here
+   --> Apps\cli\src\core\bootstrapper.rs:132:14
+    |
+132 |     async fn download_asset(url: &str, dest: &Path) -> Result<()> {
+    |              ^^^^^^^^^^^^^^ ---------
+help: consider borrowing here
+    |
+123 |                 Self::download_asset(&url, &zip_path).await?;
+    |                                      +
+
+warning: unreachable expression
+   --> Apps\cli\src\core\bootstrapper.rs:165:9
+    |
+154 |         return Ok(format!("{}/cluaiz-engine-{}-win-x64.dll", base, version));
+    |         -------------------------------------------------------------------- any code following this expression 
+is unreachable
+...
+165 |         Err(eyre!("Cluaiz Registry: Platform not supported in this build."))
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ unreachable expression
+    |
+    = note: `#[warn(unreachable_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `cpu_color`
+   --> Apps\cli\src\core\dashboard.rs:110:21
+    |
+110 | ...   let cpu_color = if cpu < 50.0 { style::Color::Green } else if cpu < 80.0 { style::Color::Yellow } else { 
+style::Color::Red };
+    |           ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_cpu_color`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `gpu_color`
+   --> Apps\cli\src\core\dashboard.rs:111:21
+    |
+111 | ...   let gpu_color = if (vram_pct as f32) < 50.0 { style::Color::Green } else if (vram_pct as f32) < 80.0 { 
+style::Color::Yellow }...
+    |           ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_gpu_color`
+
+warning: unused variable: `ram_color`
+   --> Apps\cli\src\core\dashboard.rs:112:21
+    |
+112 | ...   let ram_color = if ram_pct < 50.0 { style::Color::Green } else if ram_pct < 80.0 { style::Color::Yellow } 
+else { style::Color...
+    |           ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_ram_color`
+
+warning: variable does not need to be mutable
+  --> Apps\cli\src\ui\components\text_paste.rs:25:10
+   |
+25 |     let (mut cursor_x, _cursor_y) = crossterm::cursor::position().unwrap_or((0, 0));
+   |          ----^^^^^^^^
+   |          |
+   |          help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `cursor_x`
+  --> Apps\cli\src\ui\components\text_paste.rs:25:10
+   |
+25 |     let (mut cursor_x, _cursor_y) = crossterm::cursor::position().unwrap_or((0, 0));
+   |          ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_cursor_x`
+
+warning: unused variable: `prompt_offset`
+  --> Apps\cli\src\ui\components\text_paste.rs:26:9
+   |
+26 |     let prompt_offset = prompt_text.chars().count() + 1;
+   |         ^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_prompt_offset`
+
+For more information about this error, try `rustc --explain E0308`.
+warning: `cli` (bin "cluaiz") generated 15 warnings
+error: could not compile `cli` (bin "cluaiz") due to 1 previous error; 15 warnings emitted

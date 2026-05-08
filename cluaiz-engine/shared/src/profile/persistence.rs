@@ -21,7 +21,7 @@ pub fn get_archer_dir() -> PathBuf {
 
 /// Get the full path to user_profile.json
 pub fn get_profile_path() -> PathBuf {
-    get_archer_dir().join(PROFILE_FILE)
+    get_cluaiz_dir().join(PROFILE_FILE)
 }
 
 /// Check if a user profile already exists
@@ -31,7 +31,7 @@ pub fn profile_exists() -> bool {
 
 /// Save user profile to JSON
 pub fn save_profile(profile: &UserProfile) -> Result<(), String> {
-    let dir = get_archer_dir();
+    let dir = get_cluaiz_dir();
     if !dir.exists() {
         fs::create_dir_all(&dir)
             .map_err(|e| format!("Failed to create ~/.archer/: {}", e))?;

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use archer_shared::hardware::schema::profiles::SystemControl;
+use cluaiz_shared::hardware::schema::profiles::SystemControl;
 
 /// Hardware Health Auditor
 /// Enforces the 5/10 TPS Rule and VRAM safety.
@@ -52,7 +52,7 @@ impl HardwareAuditor {
     }
 
     fn get_system_control_path(&self) -> PathBuf {
-        archer_shared::hardware::governor::HardwareGovernor::resolve_engine_path().join("system_control.json")
+        cluaiz_shared::hardware::governor::HardwareGovernor::resolve_engine_path().join("system_control.json")
     }
 }
 

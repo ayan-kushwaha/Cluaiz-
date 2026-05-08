@@ -37,7 +37,7 @@ impl DashboardEngine {
         }
 
         // ── 📡 Cluaiz TELEMETRY IGNITION (Ghost Observer Singleton) ──
-        let state_pulse = archer_shared::hardware::telemetry::get_pulse();
+        let state_pulse = cluaiz_shared::hardware::telemetry::get_pulse();
         let pulse_ref = state_pulse.clone();
         let start_time = std::time::Instant::now();
 
@@ -454,20 +454,15 @@ impl DashboardEngine {
                     booster_path.push("system_booster.json");
 
                 loop {
-                    let mut booster = archer_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+                    let mut booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
                     
                     let mut options = vec![
                         format!("Turbo Quant (Current: {:?})", booster.turbo_quant),
                         format!("Flash Attention (Current: {:?})", booster.flash_attention),
                         format!("Speculative Decoding (Current: {:?})", booster.speculative_decoding),
                         format!("Auto Round (Current: {:?})", booster.auto_round),
+                        format!("DFlash (FlashKDA) (Current: {:?})", booster.dflash),
                     ];
-                    
-                    let current_dflash = match &booster.dflash {
-                        archer_shared::hardware::schema::booster::SmartState::Static(s) => s.clone(),
-                        _ => "Custom".to_string(),
-                    };
-                    options.push(format!("DFlash (Current: {})", current_dflash));
                     options.push("🔙 Back to Menu".to_string());
                     
                     let target_ans = match Select::new("Configure Setting:", options)
@@ -504,9 +499,9 @@ impl DashboardEngine {
                     stdout().flush()?;
 
                     let feature_state = match val_ans.as_str() {
-                        "On" => archer_shared::hardware::schema::booster::FeatureState::On,
-                        "Off" => archer_shared::hardware::schema::booster::FeatureState::Off,
-                        _ => archer_shared::hardware::schema::booster::FeatureState::Auto,
+                        "On" => cluaiz_shared::hardware::schema::booster::FeatureState::On,
+                        "Off" => cluaiz_shared::hardware::schema::booster::FeatureState::Off,
+                        _ => cluaiz_shared::hardware::schema::booster::FeatureState::Auto,
                     };
 
                     match key_part.as_str() {
@@ -514,11 +509,17 @@ impl DashboardEngine {
                         "Flash Attention" => booster.flash_attention = feature_state,
                         "Speculative Decoding" => booster.speculative_decoding = feature_state,
                         "Auto Round" => booster.auto_round = feature_state,
-                        "DFlash" => booster.dflash = archer_shared::hardware::schema::booster::SmartState::Static(val_ans.clone()),
+                        "DFlash (FlashKDA)" => {
+                            booster.dflash = match val_ans.as_str() {
+                                "On" => cluaiz_shared::hardware::schema::booster::SmartState::Static("On".to_string()),
+                                "Off" => cluaiz_shared::hardware::schema::booster::SmartState::Static("Off".to_string()),
+                                _ => cluaiz_shared::hardware::schema::booster::SmartState::Static("Auto".to_string()),
+                            };
+                        },
                         _ => {}
                     }
                     
-                    if let Ok(_) = archer_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster) {
+                    if let Ok(_) = cluaiz_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster) {
                         println!("  {} System Booster updated: {} = {}", "✅".green(), key_part.cyan(), val_ans.bold());
                     } else {
                         println!("  {} Failed to save system booster settings.", "❌".red());
@@ -585,13 +586,13 @@ impl DashboardEngine {
                 let path = std::path::PathBuf::from(path_str);
 
                 // 🧬 Cluaiz Hardware DETECTION
-                let profile = archer_shared::hardware::get_Cluaiz_profile();
+                let profile = cluaiz_shared::hardware::get_Cluaiz_profile();
                 let device = if profile.compute.has_gpu {
                     match profile.compute.primary_driver {
-                        archer_shared::hardware::schema::profiles::BackendDriver::CUDA => {
+                        cluaiz_shared::hardware::schema::profiles::BackendDriver::CUDA => {
                             candle_core::Device::new_cuda(0).unwrap_or(candle_core::Device::Cpu)
                         }
-                        archer_shared::hardware::schema::profiles::BackendDriver::METAL => {
+                        cluaiz_shared::hardware::schema::profiles::BackendDriver::METAL => {
                             candle_core::Device::new_metal(0).unwrap_or(candle_core::Device::Cpu)
                         }
                         _ => candle_core::Device::Cpu,
@@ -610,9 +611,9 @@ impl DashboardEngine {
                 // High bit-depth -> Native Rust (Candle)
                 // 1-bit BitNet -> MANDATORY Llama (Binary)
                 let runtime = if model.manifest.bit_depth < 2.0 {
-                    archer_shared::BackendType::RuntimeB
+                    cluaiz_shared::BackendType::RuntimeB
                 } else {
-                    archer_shared::BackendType::RuntimeA
+                    cluaiz_shared::BackendType::RuntimeA
                 };
 
                 let result = tokio::task::block_in_place(|| {
@@ -630,14 +631,14 @@ impl DashboardEngine {
                         Err(e) => {
                             // ⚠️ NATIVE FALLBACK: Only for standard models (Bit-depth >= 2.0)!
                             // BitNet MUST NOT use RuntimeA (Candle) as it will crash with tensor errors.
-                            if runtime == archer_shared::BackendType::RuntimeB
+                            if runtime == cluaiz_shared::BackendType::RuntimeB
                                 && model.manifest.bit_depth >= 2.0
                             {
                                 let path_inner = std::path::PathBuf::from(path_str);
                                 handle
                                     .block_on(engines::CoreRouter::load_model(
                                         path_inner,
-                                        archer_shared::BackendType::RuntimeA,
+                                        cluaiz_shared::BackendType::RuntimeA,
                                         &device,
                                     ))
                                     .map(|router| {

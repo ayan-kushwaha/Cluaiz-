@@ -7,7 +7,7 @@ use wasmtime_wasi::preview1::{self, WasiP1Ctx};
 #[cfg(feature = "wasm-runtime")]
 use wasmtime_wasi::WasiCtxBuilder;
 // TODO: Restore once CoreGraph is implemented in archer_shared
-// use archer_shared::Core::graph::CoreGraph;
+// use cluaiz_shared::Core::graph::CoreGraph;
 
 use std::sync::Mutex;
 
@@ -164,7 +164,7 @@ mod tests {
         let activity = "Foundry Simulation Pulse";
         let skill_id = "test_skill_v1";
         
-        let result = archer_shared::Core::graph::CoreGraph::chronicle_pulse(
+        let result = cluaiz_shared::Core::graph::CoreGraph::chronicle_pulse(
             activity,
             skill_id,
             "Metadata: [Simulation Mode Active]"

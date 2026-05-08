@@ -1,15 +1,15 @@
 //! Sovereign Implementation B: Core Loader.
 
-use archer_shared::backend::signature::{BackendType, KernelSignature};
-use archer_shared::backend::context::CluaizContext;
-use archer_shared::backend::traits::ModelWeightsWrapper;
+use cluaiz_shared::backend::signature::{BackendType, KernelSignature};
+use cluaiz_shared::backend::context::CluaizContext;
+use cluaiz_shared::backend::traits::ModelWeightsWrapper;
 use std::sync::Arc;
-use crate::config::RuntimeBConfig;
+use crate::config::BoosterConfig;
 
 pub struct RuntimeBLoader;
 
 impl RuntimeBLoader {
-    pub fn register_drivers(mut register_fn: impl FnMut(BackendType, KernelSignature, archer_shared::ArcConstructor)) -> Result<(), String> {
+    pub fn register_drivers(mut register_fn: impl FnMut(BackendType, KernelSignature, cluaiz_shared::ArcConstructor)) -> Result<(), String> {
         let patterns = vec!["uniform", "asymmetric"];
 
         for pattern in patterns {
@@ -30,13 +30,12 @@ impl RuntimeBLoader {
                 Arc::new(
                     |model_load_path: &str,
                      sovereign_context: CluaizContext| {
-                        // Dynamic param resolution
-                        let _params = RuntimeBConfig::resolve(&sovereign_context.dna);
+                        // Dynamic param resolution (Handled autonomously by BoosterConfig)
                         
                         let engine = crate::RuntimeB::new(model_load_path, sovereign_context);
                         Ok(Box::new(engine) as ModelWeightsWrapper)
                     },
-                ) as archer_shared::ArcConstructor,
+                ) as cluaiz_shared::ArcConstructor,
             );
 
         }

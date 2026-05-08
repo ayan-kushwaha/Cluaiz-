@@ -1,6 +1,6 @@
 //! Sovereign Implementation B: Acceleration Pipeline (With Binary Fallback).
 
-use archer_shared::backend::context::CluaizContext;
+use cluaiz_shared::backend::context::CluaizContext;
 use std::process::{Command, Stdio};
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;

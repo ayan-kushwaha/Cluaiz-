@@ -102,14 +102,14 @@ async fn main() -> Result<()> {
 
     if cli_args.calibrate {
         println!("  {} [Cluaiz] Calibrating hardware...", "🧬".cyan());
-        archer_shared::hardware::HardwareGovernor::auto_calibrate()
+        cluaiz_shared::hardware::HardwareGovernor::auto_calibrate()
             .map_err(|e| color_eyre::eyre::eyre!("Calibration failed: {}", e))?;
         println!("  {} [Cluaiz] SiliconTruth synchronized.", "✅".green());
         return Ok(());
     }
 
     // ── NATIVE ONBOARDING FLOW ────────────────────────────────────────────
-    let profile_over = if !::archer_shared::onboarding::should_skip_onboarding() {
+    let profile_over = if !::cluaiz_shared::onboarding::should_skip_onboarding() {
         Some(crate::ui::apps::onboarding::native::run_native_flow()?)
     } else {
         None

@@ -1,5 +1,5 @@
 use crate::assets::logos::logo;
-use ::archer_shared::profile::{AccountType, AuthMethod, BusinessProfile, UserProfile};
+use ::cluaiz_shared::profile::{AccountType, AuthMethod, BusinessProfile, UserProfile};
 use color_eyre::Result;
 use colored::*;
 use inquire::{Confirm, Password, Select, Text};
@@ -53,7 +53,7 @@ pub fn run_native_flow() -> Result<UserProfile> {
             let mut biz = BusinessProfile::default();
             biz.name = Text::new("🏢 Business Name:").prompt()?;
 
-            let industries: Vec<String> = ::archer_shared::profile::INDUSTRY_TAXONOMY
+            let industries: Vec<String> = ::cluaiz_shared::profile::INDUSTRY_TAXONOMY
                 .iter()
                 .map(|i| i.label.to_string())
                 .collect();
@@ -71,7 +71,7 @@ pub fn run_native_flow() -> Result<UserProfile> {
     println!("\n📡 INITIATING BARE-METAL CALIBRATION");
 
     // 🧬 probe hardware
-    use ::archer_shared::hardware::{HardwareGovernor, get_Cluaiz_profile};
+    use ::cluaiz_shared::hardware::{HardwareGovernor, get_Cluaiz_profile};
 
     if let Err(e) = HardwareGovernor::auto_calibrate() {
         println!("  {} [Onboarding] Calibration failed: {:?}", "❌".red(), e);
@@ -126,8 +126,8 @@ pub fn run_native_flow() -> Result<UserProfile> {
     profile.hardware_completed = true;
     profile.touch();
 
-    let _ = ::archer_shared::profile::save_profile(&profile);
-    let _ = ::archer_shared::onboarding::seed_workspace(&profile);
+    let _ = ::cluaiz_shared::profile::save_profile(&profile);
+    let _ = ::cluaiz_shared::onboarding::seed_workspace(&profile);
 
     println!("\n🧿 ARCHER Cluaiz — ONLINE");
     println!(

@@ -1,6 +1,6 @@
 use dashmap::DashMap;
 use once_cell::sync::Lazy;
-use archer_shared::hardware::memory::kv_cache::stitching::CluaizSignal;
+use cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal;
 use uuid::Uuid;
 
 /// 🧠 CoreSessionCache: The Persistent Memory of the Cluaiz OS.

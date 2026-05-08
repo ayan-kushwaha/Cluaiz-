@@ -1,7 +1,7 @@
 //! Archer-Candle Configuration: Dynamic parameter resolution.
 
-use archer_shared::neural_core::config::{NeuralConfig, ResolvedNeuralParams};
-use archer_shared::metadata::dna::StructuralDNA;
+use cluaiz_shared::neural_core::config::{NeuralConfig, ResolvedNeuralParams};
+use cluaiz_shared::metadata::dna::StructuralDNA;
 
 pub struct CandleConfig;
 

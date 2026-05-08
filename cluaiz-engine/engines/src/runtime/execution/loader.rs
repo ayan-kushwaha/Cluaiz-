@@ -3,8 +3,8 @@ use anyhow::{Result, anyhow};
 use tokenizers::Tokenizer;
 use crate::models::registry::Provisioner;
 use crate::runtime::execution::hub::HardwareOrchestrator as CoreHub;
-use archer_shared::{ModelWeightsWrapper, CluaizContext, StructuralDNA, TemplateManager};
-use archer_shared::utils::GGUFProber;
+use cluaiz_shared::{ModelWeightsWrapper, CluaizContext, StructuralDNA, TemplateManager};
+use cluaiz_shared::utils::GGUFProber;
 
 /// GGUFLoader: Lightweight orchestrator for quantized Core models.
 pub struct GGUFLoader;

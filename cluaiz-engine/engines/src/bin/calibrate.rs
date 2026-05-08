@@ -1,7 +1,7 @@
 //! 🔬 Archer Calibration Tool
 //! Surgical probe of local Hardware to generate 'system_control.json'.
 
-use archer_shared::HardwareGovernor;
+use cluaiz_shared::HardwareGovernor;
 
 fn main() -> anyhow::Result<()> {
     println!("⚔️  [CALIBRATE] Starting deep Hardware probe...");

@@ -3,14 +3,14 @@ pub mod models_runner;
 pub mod system_control_manager;
 
 // 🧬 Cluaiz Profile Unification: Re-exporting from archer-shared/schema
-pub use archer_shared::hardware::schema::profiles::{
+pub use cluaiz_shared::hardware::schema::profiles::{
     SiliconTruth, 
     MemorySubsystem, 
     StorageSubsystem, 
     CpuSubsystem,
     Accelerators
 };
-pub use archer_shared::hardware::schema::metrics::SiliconMetrics;
+pub use cluaiz_shared::hardware::schema::metrics::SiliconMetrics;
 
 pub struct HardwareDetector;
 impl Default for HardwareDetector {

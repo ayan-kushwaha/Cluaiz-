@@ -12,7 +12,7 @@ neural-core = { path = "../neural_core" }
 llama = { path = "../llama" }
 candle = { path = "../candle" }
 system-booster = { path = "../../cluaiz-engine/engines/system-booster" }
-archer-shared = { path = "../../cluaiz-engine/engines/archer-shared" }
+cluaiz-shared = { path = "../../cluaiz-engine/engines/cluaiz-shared" }
 anyhow = "1.0"
 async-trait = "0.1"
 tracing = "0.1"

@@ -3,7 +3,7 @@
 
 use std::path::PathBuf;
 use crate::utils::healer::AutoHealer;
-use archer_shared::{UnifiedBackend, BackendType, CluaizContext, StructuralDNA, TemplateManager, ModelWeightsWrapper};
+use cluaiz_shared::{UnifiedBackend, BackendType, CluaizContext, StructuralDNA, TemplateManager, ModelWeightsWrapper};
 use crate::runtime::execution::hub::HardwareOrchestrator;
 use candle_core::Device;
 
@@ -34,7 +34,7 @@ impl UnifiedBackend for Backend {
     }
 }
 
-impl archer_shared::CluaizInference for Backend {
+impl cluaiz_shared::CluaizInference for Backend {
     fn forward_raw(&mut self, inputs: &[u32], pos: usize) -> anyhow::Result<Vec<f32>> {
         match self {
             Self::Cluaiz(b) => b.forward_raw(inputs, pos),
@@ -174,7 +174,7 @@ impl CoreRouter {
 }
 
 pub struct DummyBackend;
-impl archer_shared::UnifiedBackend for DummyBackend {
+impl cluaiz_shared::UnifiedBackend for DummyBackend {
     fn generate(&mut self, _prompt: &str, _max_tokens: usize) -> Result<String, String> {
         Err("Core weights not loaded.".to_string())
     }
@@ -182,7 +182,7 @@ impl archer_shared::UnifiedBackend for DummyBackend {
     fn evaluate_tps(&self) -> f64 { 0.0 }
 }
 
-impl archer_shared::CluaizInference for DummyBackend {
+impl cluaiz_shared::CluaizInference for DummyBackend {
     fn forward_raw(&mut self, _inputs: &[u32], _pos: usize) -> anyhow::Result<Vec<f32>> {
         Err(anyhow::anyhow!("Dummy backend"))
     }

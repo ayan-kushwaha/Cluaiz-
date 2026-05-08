@@ -4,7 +4,7 @@
 use std::sync::Arc;
 use tokio::net::{TcpListener, TcpStream};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use archer_shared::hardware::telemetry::ObservableHardwareState;
+use cluaiz_shared::hardware::telemetry::ObservableHardwareState;
 use std::sync::atomic::Ordering;
 
 pub struct TelemetryServer {

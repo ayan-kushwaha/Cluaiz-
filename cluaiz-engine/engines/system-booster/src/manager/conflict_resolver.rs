@@ -1,9 +1,9 @@
 //! ⚖️ Conflict Resolver: Sovereign Decision Matrix
 //! Handles synergies and overlaps between incompatible booster features.
 
-use archer_shared::hardware::schema::booster::{BoosterControl, FeatureState};
-use archer_shared::hardware::schema::profiles::SiliconTruth;
-use archer_shared::backend::signature::KernelSignature;
+use cluaiz_shared::hardware::schema::booster::{BoosterControl, FeatureState};
+use cluaiz_shared::hardware::schema::profiles::SiliconTruth;
+use cluaiz_shared::backend::signature::KernelSignature;
 
 pub struct ConflictResolver;
 

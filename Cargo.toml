@@ -2,7 +2,7 @@
 members = [
     "cluaiz-engine/api",
     "cluaiz-engine/engines",
-    "cluaiz-engine/engines/archer-shared",
+    "cluaiz-engine/engines/cluaiz-shared",
     "cluaiz-engine/engines/system-booster",
     "Apps/cli",
 ]

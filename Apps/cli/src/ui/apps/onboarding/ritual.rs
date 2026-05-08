@@ -13,7 +13,7 @@ use ratatui::{
     prelude::*,
     widgets::{Block, Borders, Paragraph, Clear, Padding, Scrollbar, ScrollbarState, ScrollbarOrientation},
 };
-use ::archer_shared::profile::AccountType;
+use ::cluaiz_shared::profile::AccountType;
 use crate::core::onboarding::textwrap;
 
 // ── About Text ────────────────────────────────────────────────────────
@@ -94,7 +94,7 @@ pub fn render_flow(state: &mut AppState, theme: &Theme, area: Rect, buf: &mut Bu
 // ── Completed Step (1-line collapsed summary) ─────────────────────────
 
 fn render_completed_step(state: &AppState, step: OnboardingStep, area: Rect, buf: &mut Buffer) {
-    let summary = ::archer_shared::onboarding::get_completed_summary(step, &state.user_profile);
+    let summary = ::cluaiz_shared::onboarding::get_completed_summary(step, &state.user_profile);
     let step_num = step.step_number();
 
     let line = Line::from(vec![
@@ -418,16 +418,16 @@ fn render_business_profile(state: &mut AppState, area: Rect, buf: &mut Buffer) {
                 .style(Style::default().fg(Color::Cyan))
                 .render(input_area, buf);
         }
-        1 => { render_option_list(::archer_shared::profile::INDUSTRY_TAXONOMY.iter().map(|i| format!("{} {}", i.icon, i.label)).collect(), selected, area.x + lm + 2, opt_w, list_area, buf); }
+        1 => { render_option_list(::cluaiz_shared::profile::INDUSTRY_TAXONOMY.iter().map(|i| format!("{} {}", i.icon, i.label)).collect(), selected, area.x + lm + 2, opt_w, list_area, buf); }
         2 => {
             let biz = state.user_profile.business.as_ref();
             let industry_id = biz.map(|b| b.industry.as_str()).unwrap_or("");
-            let subs = ::archer_shared::profile::get_sub_categories(industry_id);
+            let subs = ::cluaiz_shared::profile::get_sub_categories(industry_id);
             render_option_list(subs.iter().map(|s| format!("{} {}", s.icon, s.label)).collect(), selected, area.x + lm + 2, opt_w, list_area, buf);
         }
-        3 => { render_option_list(::archer_shared::profile::BUSINESS_MODELS.iter().map(|m| format!("{} {}", m.icon, m.label)).collect(), selected, area.x + lm + 2, opt_w, list_area, buf); }
-        4 => { render_option_list(::archer_shared::profile::AUDIENCES.iter().map(|a| format!("{} {}", a.icon, a.label)).collect(), selected, area.x + lm + 2, opt_w, list_area, buf); }
-        5 => { render_option_list(::archer_shared::profile::PRIMARY_GOALS.iter().map(|g| format!("{} {}", g.icon, g.label)).collect(), selected, area.x + lm + 2, opt_w, list_area, buf); }
+        3 => { render_option_list(::cluaiz_shared::profile::BUSINESS_MODELS.iter().map(|m| format!("{} {}", m.icon, m.label)).collect(), selected, area.x + lm + 2, opt_w, list_area, buf); }
+        4 => { render_option_list(::cluaiz_shared::profile::AUDIENCES.iter().map(|a| format!("{} {}", a.icon, a.label)).collect(), selected, area.x + lm + 2, opt_w, list_area, buf); }
+        5 => { render_option_list(::cluaiz_shared::profile::PRIMARY_GOALS.iter().map(|g| format!("{} {}", g.icon, g.label)).collect(), selected, area.x + lm + 2, opt_w, list_area, buf); }
         _ => {}
     }
 }

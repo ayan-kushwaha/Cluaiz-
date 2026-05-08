@@ -2,8 +2,8 @@ use std::path::PathBuf;
 use libloading::{Library, Symbol};
 use crate::interface_engines::manager::kernel_loader::KernelLoader;
 use crate::interface_engines::manager::driver_bridge::DriverBridge;
-use archer_shared::hardware::schema::profiles::SystemControl;
-use archer_shared::hardware::governor::HardwareGovernor;
+use cluaiz_shared::hardware::schema::profiles::SystemControl;
+use cluaiz_shared::hardware::governor::HardwareGovernor;
 use colored::Colorize;
 
 pub mod kernel_loader;
@@ -51,8 +51,8 @@ impl EngineManager {
         println!("🎯 Engine Prep: OS={}, Arch={}, GPU={:?}, Drivers={}", os, arch, gpu_vendor, has_drivers);
 
         // 🧠 Mission 12: Chronicle Core Activity
-        // Temporarily commented out due to missing CoreGraph in archer_shared
-        // let _ = archer_shared::Core::graph::CoreGraph::chronicle_pulse(
+        // Temporarily commented out due to missing CoreGraph in cluaiz_shared
+        // let _ = cluaiz_shared::Core::graph::CoreGraph::chronicle_pulse(
         //     "Hardware Handshake & Engine Preparation",
         //     engine_type,
         //     &format!("OS: {}, GPU: {:?}", os, gpu_vendor)
@@ -172,8 +172,8 @@ impl EngineManager {
                 .map_err(|e| anyhow::anyhow!("Binary Mapping Failed (libloading): {}", e))?;
             
             // 🎯 Phase 1: Symbol Validation
-            let _init: Symbol<unsafe extern "C" fn() -> *const std::os::raw::c_char> = lib.get(b"archer_kernel_init")
-                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'archer_kernel_init' symbol missing."))?;
+            let _init: Symbol<unsafe extern "C" fn() -> *const std::os::raw::c_char> = lib.get(b"cluaiz_kernel_init")
+                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaiz_kernel_init' symbol missing."))?;
 
             tracing::info!("✅ [Linker] 7ns Handshake Complete. Kernel Linked.");
             self.active_lib = Some(lib);
@@ -189,8 +189,8 @@ impl EngineManager {
         
         unsafe {
             let instantiate_fn: Symbol<unsafe extern "C" fn(*const std::os::raw::c_char) -> *mut std::ffi::c_void> = 
-                lib.get(b"archer_kernel_instantiate")
-                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'archer_kernel_instantiate' symbol missing."))?;
+                lib.get(b"cluaiz_kernel_instantiate")
+                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaiz_kernel_instantiate' symbol missing."))?;
             
             let c_path = std::ffi::CString::new(model_path)?;
             let _engine_ptr = instantiate_fn(c_path.as_ptr() as *const std::os::raw::c_char);

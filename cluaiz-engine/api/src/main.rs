@@ -12,7 +12,7 @@ mod routes;
 use colored::*;
 use dispatcher::NeuralDispatcher;
 use system_booster::SystemBooster;
-use archer_shared::backend::signature::KernelSignature;
+use cluaiz_shared::backend::signature::KernelSignature;
 use std::env;
 use std::sync::Arc;
 use storage::EmbeddedManager;
@@ -25,7 +25,7 @@ async fn main() {
     let args: Vec<String> = env::args().collect();
     if args.iter().any(|arg| arg == "--setup") {
         println!("🛠️ [Sovereign] Initializing Hardware Calibration...");
-        if let Err(e) = archer_shared::HardwareGovernor::auto_calibrate() {
+        if let Err(e) = cluaiz_shared::HardwareGovernor::auto_calibrate() {
             eprintln!("❌ [Sovereign] Calibration Failed: {}", e);
             std::process::exit(1);
         }

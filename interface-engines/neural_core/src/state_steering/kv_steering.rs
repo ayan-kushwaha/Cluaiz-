@@ -5,8 +5,8 @@ use std::path::Path;
 use std::sync::Arc;
 use anyhow::{Result, anyhow};
 use crate::interfaces::memory_contract::{SovereignBuffer, MappedBuffer};
-use archer_shared::hardware::schema::profiles::SiliconTruth;
-use archer_shared::hardware::memory::kv_cache::stitching::CluaizSignal;
+use cluaiz_shared::hardware::schema::profiles::SiliconTruth;
+use cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal;
 
 /// 🏛️ SovereignMapper
 /// Handles the mapping of .kv-cache or .gguf files based on hardware capabilities.

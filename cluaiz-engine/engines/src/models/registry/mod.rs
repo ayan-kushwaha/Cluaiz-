@@ -12,7 +12,7 @@ pub use provisioner::Provisioner;
 pub use discovery::AutonomousDiscovery;
 use crate::hardware::SiliconTruth;
 use crate::models::fetch::ModelDownloader;
-pub use archer_shared::{KernelSignature, StructuralDNA};
+pub use cluaiz_shared::{KernelSignature, StructuralDNA};
 use reqwest;
 
 // ─── Installation JSON Schema ──────────────────────────────────────────────

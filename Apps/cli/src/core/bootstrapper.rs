@@ -1,6 +1,6 @@
 use std::path::Path;
 use std::process::Command;
-use archer_shared::HardwareGovernor;
+use cluaiz_shared::HardwareGovernor;
 use color_eyre::{Result, eyre::eyre};
 use colored::Colorize;
 
@@ -100,11 +100,14 @@ impl Bootstrapper {
         // 1. Kernel Sync
         let kernel_dir = HardwareGovernor::resolve_hub_path().join("interface-engines/kernels");
         let kernel_ext = if cfg!(windows) { "dll" } else if cfg!(target_os = "macos") { "dylib" } else { "so" };
-        let kernel_path = kernel_dir.join(format!("archer_llama.{}", kernel_ext));
+        let kernel_name = format!("cluaiz-llama.{}", kernel_ext);
+        let kernel_path = kernel_dir.join(&kernel_name);
 
         if !kernel_path.exists() {
             println!("  {} [Cluaiz] Downloading kernel ({})...", "📦".magenta(), backend);
-            let url = format!("https://github.com/cluaiz/cluaiz/releases/download/kernel-v0.1.0/archer_llama-dev-{}-{}.{}", platform, backend, kernel_ext);
+            // 🛡️ Cluaiz DNA Sync: Match Workflow Naming DNA
+            let version = cluaiz_shared::CluaizDNA::KERNEL; 
+            let url = format!("https://github.com/cluaiz/cluaiz/releases/download/{}/cluaiz-llama-{}-{}-{}.{}", version, version, platform, backend, kernel_ext);
             Self::download_asset(&url, &kernel_path).await?;
         }
 
@@ -114,9 +117,10 @@ impl Bootstrapper {
             let driver_tag = driver_dir.join("cuda.tag");
             if !driver_tag.exists() {
                 println!("  {} [Cluaiz] Deploying Hardware Driver (CUDA)...", "🏎️".yellow());
-                let url = "https://github.com/cluaiz/cluaiz/releases/download/drivers-v0.1.0/cluaiz-driver-cuda.zip";
+                let version = cluaiz_shared::CluaizDNA::DRIVER;
+                let url = format!("https://github.com/cluaiz/cluaiz/releases/download/{}/cluaiz-driver-cuda.zip", version);
                 let zip_path = driver_dir.join("driver.zip");
-                Self::download_asset(url, &zip_path).await?;
+                Self::download_asset(&url, &zip_path).await?;
                 // TODO: Extraction logic
                 std::fs::write(driver_tag, "ready")?;
             }
@@ -143,20 +147,20 @@ impl Bootstrapper {
     }
 
     fn resolve_engine_url() -> Result<String> {
-        let tag = "engine-v0.1.0";
-        let base = format!("https://github.com/cluaiz/cluaiz/releases/download/{}", tag);
+        let version = cluaiz_shared::CluaizDNA::ENGINE;
+        let base = format!("https://github.com/cluaiz/cluaiz/releases/download/{}", version);
 
         #[cfg(all(target_os = "windows", target_arch = "x86_64"))]
-        return Ok(format!("{}/cluaiz-engine-dev-win-x64.dll", base));
+        return Ok(format!("{}/cluaiz-engine-{}-win-x64.dll", base, version));
 
         #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
-        return Ok(format!("{}/cluaiz-engine-dev-linux-x64.so", base));
+        return Ok(format!("{}/cluaiz-engine-{}-linux-x64.so", base, version));
 
         #[cfg(all(target_os = "linux", target_arch = "aarch64"))]
-        return Ok(format!("{}/cluaiz-engine-dev-linux-arm64.so", base));
+        return Ok(format!("{}/cluaiz-engine-{}-linux-arm64.so", base, version));
 
         #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
-        return Ok(format!("{}/cluaiz-engine-dev-mac-arm64.dylib", base));
+        return Ok(format!("{}/cluaiz-engine-{}-mac-arm64.dylib", base, version));
 
         Err(eyre!("Cluaiz Registry: Platform not supported in this build."))
     }

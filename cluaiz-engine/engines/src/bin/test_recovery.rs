@@ -1,4 +1,4 @@
-use archer_shared::HardwareGovernor;
+use cluaiz_shared::HardwareGovernor;
 
 fn main() {
     println!("🧪 [Test] Attempting to load Cluaiz Truth...");

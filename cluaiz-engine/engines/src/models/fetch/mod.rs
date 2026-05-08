@@ -134,7 +134,7 @@ impl ModelDownloader {
     pub fn generate_Cluaiz_dna(manifest: &ModelManifest, dest_dir: &std::path::Path, weight_path: &std::path::Path) -> Result<(), String> {
         info!("🧬 [DNA] Generating Cluaiz architectural backbone for '{}'", manifest.id);
         
-        let mut signature = archer_shared::KernelSignature::default();
+        let mut signature = cluaiz_shared::KernelSignature::default();
         signature.is_multimodal = manifest.has_vision;
         if manifest.expert_count.is_some() {
             signature.has_experts = true;
@@ -161,7 +161,7 @@ impl ModelDownloader {
             // info!("🧬 [DNA] Probing weight binary: {:?}", weight_path);
             // TODO: Fix GGUFProber memory allocation bug causing 0xc0000409
             /*
-            if let Ok((metadata, tensor_infos)) = archer_shared::utils::GGUFProber::probe(weight_path) {
+            if let Ok((metadata, tensor_infos)) = cluaiz_shared::utils::GGUFProber::probe(weight_path) {
                 dna.sync_with_metadata(&metadata, &tensor_infos);
             }
             */

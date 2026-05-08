@@ -5,7 +5,7 @@
 use anyhow::Result;
 use candle_core::Device;
 use crate::runtime::execution::sampler::CoreSampler;
-use archer_shared::ModelWeightsWrapper;
+use cluaiz_shared::ModelWeightsWrapper;
 use tokenizers::Tokenizer;
 
 
@@ -31,7 +31,7 @@ impl CluaizRunner {
     }
 
     /// 🔗 Instant Recall: Injects Core Cluaiz signals before generation.
-    pub fn inject_Core_signals(&mut self, signals: Vec<archer_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Result<()> {
+    pub fn inject_Core_signals(&mut self, signals: Vec<cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Result<()> {
         self.model.inject_signals(signals)
     }
 
@@ -42,11 +42,11 @@ impl CluaizRunner {
         mut callback: impl FnMut(String) + Send + 'static,
     ) -> Result<CluaizMetrics> {
         // 🛰️ Cluaiz BOOSTER SYNC: Load truth from Governor before generation
-        let booster = archer_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+        let booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
         self.model.apply_booster(&booster)?;
         
         // 🌊 Liquid Mode Linkage
-        if booster.turbo_quant == archer_shared::hardware::schema::booster::FeatureState::On {
+        if booster.turbo_quant == cluaiz_shared::hardware::schema::booster::FeatureState::On {
             self.model.set_liquid_mode(true)?;
         }
 

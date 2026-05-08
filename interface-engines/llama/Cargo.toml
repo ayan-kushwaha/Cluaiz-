@@ -6,22 +6,25 @@ authors.workspace = true
 build = "build.rs"
 
 [lib]
-name = "archer_llama"
+name = "cluaiz_llama"
 crate-type = ["cdylib", "rlib", "staticlib"]
 
 [dependencies]
 # ── Sovereign LLaMA Backend (Direct C++ Bridge) ──
 anyhow = "1.0"
 tracing = "0.1"
-archer-shared = { path = "../../cluaiz-engine/engines/archer-shared" }
+cluaiz-shared = { path = "../../cluaiz-engine/engines/cluaiz-shared" }
 tokenizers = "0.22.2"
 libloading = "0.8"
 tokio = { version = "1.37", features = ["full"] }
 neural-core = { path = "../neural_core" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 
 [build-dependencies]
 cc = "1.0"
 bindgen = "0.69"
+cmake = "0.1"
 
 [features]
 # ── Silicon Driver Switches ──

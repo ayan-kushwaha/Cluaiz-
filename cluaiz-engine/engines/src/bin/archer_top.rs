@@ -1,20 +1,20 @@
-//! archer-top: The Cluaiz Hardware Watchtower (CLI).
-//! High-speed, terminal-native monitoring for the CURE Engine.
+//! cluaiz-top: The Cluaiz Neural Pulse Monitor (CLI).
+//! High-speed, terminal-native monitoring for the Cluaiz Engine.
 
-use archer_shared::hardware::telemetry;
+use cluaiz_shared::hardware::telemetry;
 use std::io::{stdout, Write};
 use std::thread;
 use std::time::Duration;
 
 fn main() -> anyhow::Result<()> {
     // 🏛️ Initialize the Cluaiz Governor (Triggers Calibration if JSON is missing)
-    let _governor = archer_shared::HardwareGovernor::start();
+    let _governor = cluaiz_shared::HardwareGovernor::start();
     
     let sensor = telemetry::get_pulse();
     let mut stdout = stdout();
 
     println!("\x1B[2J\x1B[H"); // Clear screen
-    println!("🧿 ARCHER Hardware WATCHTOWER V6.0 - [GHOST MODE ACTIVE]");
+    println!("🧿 CLUAIZ Neural PULSE MONITOR V1.0 - [STEALTH MODE ACTIVE]");
     println!("══════════════════════════════════════════════════════════");
 
     loop {
@@ -26,7 +26,7 @@ fn main() -> anyhow::Result<()> {
 
         // 2. Render UI (ANSI Express)
         print!("\x1B[H"); // Move to top
-        println!("🧿 ARCHER Hardware WATCHTOWER V6.0 - Hardware Pulse Target: LOCAL");
+        println!("🧿 CLUAIZ Neural PULSE MONITOR V1.0 - Hardware Pulse Target: LOCAL");
         println!("══════════════════════════════════════════════════════════");
 
         // CPU Grid (Per-Core Audit)
@@ -55,7 +55,7 @@ fn main() -> anyhow::Result<()> {
         println!(" Disk Load:      {} MB/s", pulse.storage_throughput_mbps);
 
         println!("\n══════════════════════════════════════════════════════════");
-        println!(" [Ctrl+C] to exit 'Ghost Mode'");
+        println!(" [Ctrl+C] to exit 'Stealth Mode'");
 
         stdout.flush()?;
         thread::sleep(Duration::from_millis(250));

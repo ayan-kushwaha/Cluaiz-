@@ -10,7 +10,7 @@ storage = { path = "../../brain/storage" }
 engines = { path = "../engines" }
 dispatcher = { path = "../../interface-engines/dispatcher", package = "dispatcher-crate" }
 system-booster = { path = "../engines/system-booster" }
-archer-shared = { path = "../engines/archer-shared" }
+cluaiz-shared = { path = "../engines/cluaiz-shared" }
 
 # ── Web Server (The Gateway) ──
 axum       = "0.8"

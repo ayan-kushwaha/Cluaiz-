@@ -2,7 +2,7 @@
 //! This kernel is loaded dynamically by the SiliconOrchestrator.
 
 use anyhow::Result;
-use archer_shared::{CluaizContext, CluaizInference, UnifiedBackend};
+use cluaiz_shared::{CluaizContext, CluaizInference, UnifiedBackend};
 use std::sync::Arc;
 use tokenizers::Tokenizer;
 use neural_core::interfaces::memory_contract::SovereignBuffer;
@@ -11,15 +11,22 @@ pub mod asm_kernels;
 pub mod bridge;
 pub mod config;
 pub mod ffi;
+pub mod hybrid;
 pub mod loader;
+pub mod native;
 pub mod pipeline;
 pub mod router;
+
+use crate::config::BoosterConfig;
+use crate::native::NativeLlama;
 
 pub use asm_kernels::BareMetalMath;
 
 pub struct RuntimeB {
     pub model_path: String,
     pub context: CluaizContext,
+    pub booster: BoosterConfig,
+    pub native: Option<NativeLlama>,
     pub lucebox: Option<Arc<ffi::lucebox::LuceboxBridge>>,
 }
 
@@ -28,8 +35,21 @@ impl RuntimeB {
         Self {
             model_path: path.to_string(),
             context,
+            booster: BoosterConfig::default(),
+            native: None,
             lucebox: None,
         }
+    }
+
+    /// 🧬 Load the model natively into memory using current booster settings.
+    pub fn load_native(&mut self) -> anyhow::Result<()> {
+        let model_params = self.booster.to_model_params();
+        let ctx_params = self.booster.to_context_params();
+        
+        let native = NativeLlama::load(&self.model_path, model_params, ctx_params)?;
+        self.native = Some(native);
+        tracing::info!("✅ [Llama-Engine] Native Model Loaded & Optimized.");
+        Ok(())
     }
 
     /// 🛠️ Attach the Lucebox accelerator bridge
@@ -69,6 +89,12 @@ impl CluaizInference for RuntimeB {
         _tokenizer: &Tokenizer,
         callback: Box<dyn FnMut(String) + Send + 'static>,
     ) -> Result<()> {
+        // 🚀 High-Performance Native Path
+        if let Some(ref native) = self.native {
+            return native.stream_tokens(prompt, max_tokens, callback);
+        }
+
+        // 🛡️ Safe Binary Fallback Path
         tokio::task::block_in_place(|| {
             let handle = tokio::runtime::Handle::current();
             handle
@@ -84,7 +110,7 @@ impl CluaizInference for RuntimeB {
     }
 
     /// 💉 Neural Injection Hook: Injects multiple pre-encoded skill states into the Llama cache.
-    fn inject_signals(&mut self, signals: Vec<archer_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Result<()> {
+    fn inject_signals(&mut self, signals: Vec<cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Result<()> {
         let max_ctx = self.context.dna.max_context_length.unwrap_or(4096);
         let mut current_offset = 0;
 
@@ -130,8 +156,8 @@ impl CluaizInference for RuntimeB {
     }
 
     /// 🚀 Booster Sync: Applies hardware-level optimization flags (TurboQuant, KV-Cache, etc.)
-    fn apply_booster(&mut self, control: &archer_shared::hardware::schema::booster::BoosterControl) -> Result<()> {
-        tracing::info!("🚀 [Llama-Engine] Applying Booster: {:?}", control.silicon.performance_profile);
+    fn apply_booster(&mut self, control: &cluaiz_shared::hardware::schema::booster::BoosterControl) -> Result<()> {
+        tracing::info!("🚀 [Llama-Engine] Applying Booster: Autonomous Performance");
         // Llama-specific tuning logic (e.g., ASM kernel switching) goes here
         Ok(())
     }
@@ -147,7 +173,10 @@ impl CluaizInference for RuntimeB {
 
 #[export_name = "archer_kernel_init"]
 pub extern "C" fn archer_kernel_init() -> *const std::os::raw::c_char {
-    tracing::info!("🧬 [Llama-Kernel] Sovereign Handshake Initialized.");
+    unsafe {
+        ffi::llama_cpp::llama_backend_init();
+    }
+    tracing::info!("🧬 [Llama-Kernel] Sovereign Handshake & Backend Initialized.");
     "archer-llama-v8-active\0".as_ptr() as *const std::os::raw::c_char
 }
 
@@ -161,8 +190,8 @@ pub extern "C" fn archer_kernel_instantiate(
     let path = unsafe { std::ffi::CStr::from_ptr(path_ptr) }
         .to_string_lossy()
         .into_owned();
-    let dna = archer_shared::StructuralDNA::default();
-    let context = CluaizContext::boot(dna, archer_shared::TemplateManager::default());
+    let dna = cluaiz_shared::StructuralDNA::default();
+    let context = CluaizContext::boot(dna, cluaiz_shared::TemplateManager::default());
 
     let engine = Box::new(RuntimeB::new(&path, context));
     Box::into_raw(engine)

@@ -5,7 +5,7 @@
 use std::sync::Arc;
 use tokio::sync::mpsc;
 use crate::runtime::execution::runner::{CluaizRunner, CluaizMetrics};
-use archer_shared::CluaizContext;
+use cluaiz_shared::CluaizContext;
 
 pub struct CorePipeline {
     pub runner: CluaizRunner,

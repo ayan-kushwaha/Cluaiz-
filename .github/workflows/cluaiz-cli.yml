@@ -77,12 +77,8 @@ jobs:
         id: naming
         shell: bash
         run: |
-          # 💎 Sovereign Versioning Logic (Uniform across all stages)
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            VERSION="${{ github.ref_name }}"
-          else
-            VERSION="dev"
-          fi
+          # 💎 Sovereign Versioning Logic (Must match the Kernel logic)
+          VERSION="${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'dev' }}"
           
           SUFFIX="${{ matrix.suffix }}"
           EXT="${{ matrix.ext }}"
@@ -98,27 +94,14 @@ jobs:
           mv "$ORIGINAL" "$DEST"
           echo "binary_path=${DEST}" >> $GITHUB_OUTPUT
 
-      - name: 🚀 Release to GitHub
+      - name: 🚀 Release to GitHub (Dynamic Tagging)
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
         with:
           files: ${{ steps.naming.outputs.binary_path }}
-          tag_name: cli-v0.1.0
-          name: "Cluaiz CLI v0.1.0"
-          body: |
-            Cluaiz CLI
-            
-            ### 🖥️ Quick Installation
-            **Windows (PowerShell):**
-            ```powershell
-            iwr -useb https://raw.githubusercontent.com/cluaiz/cluaiz/main/install.ps1 | iex
-            ```
-            **Linux / macOS (Bash):**
-            ```bash
-            curl -fsSL https://raw.githubusercontent.com/cluaiz/cluaiz/main/install.sh | bash
-            ```
-          draft: false
-          prerelease: false
+          tag_name: ${{ github.ref_name }}
+          name: "Cluaiz Release ${{ github.ref_name }}"
+          append_body: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -135,14 +118,8 @@ jobs:
       - name: Generate CLI Manifest JSON
         shell: bash
         run: |
-          # 💎 Sovereign Versioning Logic (Must match Stage 1)
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            VERSION="${{ github.ref_name }}"
-          else
-            VERSION="dev"
-          fi
-          
-          TAG="cli-v0.1.0"
+          VERSION="${{ github.ref_name }}"
+          TAG="${{ github.ref_name }}"
           
           cat <<EOF > cli-manifest.json
           {
@@ -162,7 +139,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: cli-manifest.json
-          tag_name: cli-v0.1.0
-          make_latest: true
+          tag_name: ${{ github.ref_name }}
+          append_body: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

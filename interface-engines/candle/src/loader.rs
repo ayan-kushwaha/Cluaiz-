@@ -1,7 +1,7 @@
 //! Archer-Candle Loader: Weight initialization and DNA-driven GGUF parsing.
 
 use anyhow::Result;
-use archer_shared::metadata::dna::StructuralDNA;
+use cluaiz_shared::metadata::dna::StructuralDNA;
 use candle_core::{Device};
 use candle_core::quantized::gguf_file::{Content, Value};
 use std::fs::File;

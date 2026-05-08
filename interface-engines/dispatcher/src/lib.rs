@@ -1,5 +1,5 @@
 use anyhow::{Result, anyhow};
-use archer_shared::backend::signature::{KernelSignature, GlobalFeatureRegistry, BackendType};
+use cluaiz_shared::backend::signature::{KernelSignature, GlobalFeatureRegistry, BackendType};
 use system_booster::BoosterControl;
 
 /// 🚦 NeuralDispatcher
@@ -21,7 +21,7 @@ impl NeuralDispatcher {
     /// Checks the SystemBooster and routes to the correct engine.
     pub async fn dispatch_prompt(&self, prompt: &str) -> Result<String> {
         // 🚀 Real-time Silicon Probe
-        let hardware = archer_shared::hardware::HardwareOrchestrator::probe().silicon_truth;
+        let hardware = cluaiz_shared::hardware::HardwareOrchestrator::probe().silicon_truth;
 
         // Use the GlobalFeatureRegistry to select the correct runtime based on signature AND hardware
         let backend = GlobalFeatureRegistry::select_runtime(&self.current_signature, &hardware);

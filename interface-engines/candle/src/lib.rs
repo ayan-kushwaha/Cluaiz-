@@ -2,7 +2,7 @@
 //! Hardware-Adaptive Neural Runtime built on Candle.
 
 use anyhow::Result;
-use archer_shared::{CluaizInference, UnifiedBackend};
+use cluaiz_shared::{CluaizInference, UnifiedBackend};
 use candle_core::{Device, Result as CandleResult, Tensor};
 use std::path::PathBuf;
 use tokenizers::Tokenizer;
@@ -47,7 +47,7 @@ impl CandleEngine {
         let content = candle_core::quantized::gguf_file::Content::read(&mut file)
             .map_err(|e| anyhow::anyhow!("Failed to parse GGUF: {}", e))?;
 
-        let dna = archer_shared::metadata::dna::StructuralDNA::default();
+        let dna = cluaiz_shared::metadata::dna::StructuralDNA::default();
         let model = loader::CandleLoader::load(&path, content, &mut file, device, Some(dna))?;
 
         Ok(Self {
@@ -82,7 +82,7 @@ impl CluaizInference for CandleEngine {
     }
 
     /// 💉 Neural Injection Hook: Injects multiple skill states into the Candle tensor buffers.
-    fn inject_signals(&mut self, signals: Vec<archer_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Result<()> {
+    fn inject_signals(&mut self, signals: Vec<cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Result<()> {
         for signal in signals {
             println!("💉 [Candle-Engine] Skill Injection: Loading {} neural states into memory.", signal.token_count);
         }
@@ -91,8 +91,8 @@ impl CluaizInference for CandleEngine {
     }
 
     /// 🚀 Booster Sync: Applies hardware-level optimization flags (TurboQuant, KV-Cache, etc.)
-    fn apply_booster(&mut self, control: &archer_shared::hardware::schema::booster::BoosterControl) -> Result<()> {
-        tracing::info!("🚀 [Candle-Engine] Applying Booster: {:?}", control.silicon.performance_profile);
+    fn apply_booster(&mut self, control: &cluaiz_shared::hardware::schema::booster::BoosterControl) -> Result<()> {
+        tracing::info!("🚀 [Candle-Engine] Applying Booster: Autonomous Performance");
         Ok(())
     }
 
@@ -139,7 +139,7 @@ pub extern "C" fn archer_kernel_instantiate(
         .into_owned();
 
     // 🛰️ Sovereign Device Detection: No more hardcoded CPU
-    let silicon = archer_shared::hardware::get_silicon_state();
+    let silicon = cluaiz_shared::hardware::get_silicon_state();
     let device = if !silicon.accelerators.gpus.is_empty() {
         let gpu = &silicon.accelerators.gpus[0];
         if gpu.vendor.contains("NVIDIA") {

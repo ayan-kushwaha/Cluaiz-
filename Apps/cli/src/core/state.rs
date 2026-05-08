@@ -3,8 +3,8 @@ use ratatui::widgets::{TableState, ListState};
 use std::sync::Arc;
 
 // ── Re-export shared types for CLI use ──
-pub use ::archer_shared::onboarding::OnboardingStep;
-pub use ::archer_shared::profile::UserProfile;
+pub use ::cluaiz_shared::onboarding::OnboardingStep;
+pub use ::cluaiz_shared::profile::UserProfile;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum OsState {
@@ -147,7 +147,7 @@ pub struct AppState {
     pub _active_tab: Tab,
     pub active_app: MenuApp,
     pub _menu_app: MenuApp,
-    pub hardware: ::archer_shared::hardware::schema::profiles::CluaizProfile,
+    pub hardware: ::cluaiz_shared::hardware::schema::profiles::CluaizProfile,
     pub ram_gb: f64,
     pub sorted_models: Vec<engines::ModelRecommendation>,
     pub roster_state: TableState,
@@ -177,7 +177,7 @@ pub struct AppState {
     pub _generation_tps: f64,
     pub cpu_usage: f32,
     pub mem_usage_gb: f32,
-    pub live_pulse: Arc<::archer_shared::hardware::telemetry::ObservableHardwareState>,
+    pub live_pulse: Arc<::cluaiz_shared::hardware::telemetry::ObservableHardwareState>,
 
     // ── Shared Profile ──
     pub user_profile: UserProfile,
@@ -289,8 +289,8 @@ impl AppState {
         self.activity_stream.iter().rev().find(|b| b.is_live())
     }
 
-    pub fn new(profile_override: Option<::archer_shared::profile::UserProfile>) -> Self {
-        let hardware = ::archer_shared::hardware::get_Cluaiz_profile();
+    pub fn new(profile_override: Option<::cluaiz_shared::profile::UserProfile>) -> Self {
+        let hardware = ::cluaiz_shared::hardware::get_Cluaiz_profile();
 
         let mut sys = sysinfo::System::new();
         sys.refresh_memory();
@@ -306,8 +306,8 @@ impl AppState {
         // Check if onboarding already completed or override provided
         let (os_state, user_profile) = if let Some(p) = profile_override {
             (OsState::Dashboard, p)
-        } else if ::archer_shared::onboarding::should_skip_onboarding() {
-            let profile = ::archer_shared::profile::load_profile()
+        } else if ::cluaiz_shared::onboarding::should_skip_onboarding() {
+            let profile = ::cluaiz_shared::profile::load_profile()
                 .ok()
                 .flatten()
                 .unwrap_or_else(UserProfile::new);
@@ -316,7 +316,7 @@ impl AppState {
             (OsState::Onboarding(OnboardingStep::LogoAnimation), UserProfile::new())
         };
 
-        let live_pulse = ::archer_shared::hardware::telemetry::get_pulse();
+        let live_pulse = ::cluaiz_shared::hardware::telemetry::get_pulse();
 
         Self {
             os_state,

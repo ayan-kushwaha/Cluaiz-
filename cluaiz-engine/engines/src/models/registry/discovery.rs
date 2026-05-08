@@ -69,15 +69,15 @@ impl AutonomousDiscovery {
             .map(|e| e.path());
 
         if let Some(wp) = weight_path {
-            let mut signature = archer_shared::KernelSignature::default();
+            let mut signature = cluaiz_shared::KernelSignature::default();
             signature.is_multimodal = manifest.has_vision;
             if manifest.expert_count.is_some() { signature.has_experts = true; }
             if manifest.bit_depth < 2.0 { signature.is_bitnet = true; }
 
             let _runtime = if manifest.bit_depth < 2.0 {
-                archer_shared::backend::signature::BackendType::RuntimeB
+                cluaiz_shared::backend::signature::BackendType::RuntimeB
             } else {
-                archer_shared::backend::signature::BackendType::RuntimeA
+                cluaiz_shared::backend::signature::BackendType::RuntimeA
             };
 
 

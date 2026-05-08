@@ -38,4 +38,4 @@ pub use models::fetch::{DownloadEvent, ModelDownloader};
 
 // 5. Routing
 pub use api::router::CoreRouter;
-pub use archer_shared::BackendType;
+pub use cluaiz_shared::BackendType;
