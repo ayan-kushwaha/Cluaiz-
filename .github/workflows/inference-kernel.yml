@@ -1,4 +1,4 @@
-name: Cluaiz Interface Kernels
+name: "Cluaiz Interface Kernels"
 
 on:
   push:
@@ -15,7 +15,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: "release-${{ github.ref }}"
   cancel-in-progress: false
 
 env:
@@ -25,7 +25,7 @@ env:
 jobs:
   # ─── STAGE 1: Silicon Compilation (HYPER MATRIX) ────────────────────
   build-kernels:
-    name: ⚙️ Build [${{ matrix.platform }}-${{ matrix.backend }}${{ matrix.simd && format('-{0}', matrix.simd) || '' }}]
+    name: "⚙️ Build [${{ matrix.platform }}-${{ matrix.backend }}]"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -302,19 +302,13 @@ jobs:
           cp "$SRC" "$DEST"
           echo "binary_path=${DEST}" >> $GITHUB_OUTPUT
 
-      - name: 🚀 Release Binaries (Dynamic Split: Kernel vs Driver)
+      - name: 🚀 Release Binaries (Dynamic Split)
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
         with:
           files: artifacts/*
-          tag_name: >-
-            ${{ github.event_name == 'workflow_dispatch' && 
-                format('{0}-{1}', (matrix.backend == 'cpu' && 'kernel' || 'driver'), github.event.inputs.tag_name) || 
-                github.ref_name 
-            }}
-          name: >-
-            Cluaiz Interface ${{ matrix.backend == 'cpu' && 'Kernel' || 'Driver' }} Release 
-            ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}
+          tag_name: "${{ github.event_name == 'workflow_dispatch' && format('{0}-{1}', (matrix.backend == 'cpu' && 'kernel' || 'driver'), github.event.inputs.tag_name) || github.ref_name }}"
+          name: "Cluaiz Interface ${{ matrix.backend == 'cpu' && 'Kernel' || 'Driver' }} Release ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}"
           append_body: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
