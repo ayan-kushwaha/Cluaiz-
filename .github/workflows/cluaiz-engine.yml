@@ -178,7 +178,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: engine-manifest.json
-          tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}
+          tag_name: "${{ github.event_name == 'workflow_dispatch' && format('engine-{0}', github.event.inputs.tag_name) || github.ref_name }}"
           append_body: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

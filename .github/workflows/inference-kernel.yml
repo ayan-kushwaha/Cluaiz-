@@ -86,6 +86,12 @@ jobs:
             features: ""
             ext: a
             prefix: "lib"
+          - platform: linux-arm64
+            os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            features: "arm_neon"
+            ext: so
+            prefix: "lib"
 
     steps:
       - name: Checkout Code
@@ -142,7 +148,7 @@ jobs:
       - name: Build Kernel (Foundry Strike)
         shell: bash
         run: |
-          if [[ "${{ matrix.target }}" == *"-android"* ]]; then
+          if [[ "${{ matrix.target }}" == *"-android"* || "${{ matrix.target }}" == "aarch64-unknown-linux-gnu" ]]; then
             cargo install cross --git https://github.com/cross-rs/cross
             cross build --release --target ${{ matrix.target }} -p llama --features "${{ matrix.features }}"
           else

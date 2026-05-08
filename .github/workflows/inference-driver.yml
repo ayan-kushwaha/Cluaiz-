@@ -25,13 +25,13 @@ env:
 jobs:
   # ─── STAGE 1: Silicon Driver Compilation (GPU/NPU) ──────────────────
   build-drivers:
-    name: "⚙️ Driver [${{ matrix.platform }}-${{ matrix.backend }}]"
+    name: "⚙️ Driver [${{ matrix.platform }}-${{ matrix.backend }}${{ matrix.cuda_v && format('-{0}', matrix.cuda_v) || '' }}]"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          # --- NVIDIA CUDA (Windows/Linux) ---
+          # --- NVIDIA CUDA v13 (Windows/Linux) ---
           - platform: win-x64
             backend: cuda
             cuda_v: "v13"
@@ -49,11 +49,54 @@ jobs:
             ext: so
             prefix: "lib"
 
+          # --- NVIDIA CUDA v12 (Windows/Linux) ---
+          - platform: win-x64
+            backend: cuda
+            cuda_v: "v12"
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            features: cuda
+            ext: dll
+            prefix: ""
+          - platform: linux-x64
+            backend: cuda
+            cuda_v: "v12"
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            features: cuda
+            ext: so
+            prefix: "lib"
+
+          # --- NVIDIA CUDA v11 (Windows/Linux) ---
+          - platform: win-x64
+            backend: cuda
+            cuda_v: "v11"
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            features: cuda
+            ext: dll
+            prefix: ""
+          - platform: linux-x64
+            backend: cuda
+            cuda_v: "v11"
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            features: cuda
+            ext: so
+            prefix: "lib"
+
           # --- Apple Metal (Integrated) ---
           - platform: mac-arm64
             backend: metal
             os: macos-latest
             target: aarch64-apple-darwin
+            features: metal
+            ext: dylib
+            prefix: "lib"
+          - platform: mac-x64
+            backend: metal
+            os: macos-latest
+            target: x86_64-apple-darwin
             features: metal
             ext: dylib
             prefix: "lib"
@@ -97,7 +140,7 @@ jobs:
             ext: so
             prefix: "lib"
 
-          # --- AMD ROCm (Linux Only) ---
+          # --- AMD ROCm / HIP (Linux Only) ---
           - platform: linux-x64
             backend: rocm
             os: ubuntu-latest
@@ -105,10 +148,71 @@ jobs:
             features: hip
             ext: so
             prefix: "lib"
+          - platform: linux-x64
+            backend: hip
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            features: hip
+            ext: so
+            prefix: "lib"
+
+          # --- Intel SYCL (oneAPI) ---
+          - platform: win-x64
+            backend: sycl
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            features: sycl
+            ext: dll
+            prefix: ""
+          - platform: linux-x64
+            backend: sycl
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            features: sycl
+            ext: so
+            prefix: "lib"
+
+          # --- Qualcomm QNN (Android) ---
+          - platform: android-arm64
+            backend: qnn
+            os: ubuntu-latest
+            target: aarch64-linux-android
+            features: qnn
+            ext: so
+            prefix: "lib"
+
+          # --- Huawei CANN (Ascend NPU) ---
+          - platform: linux-x64
+            backend: cann
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            features: cann
+            ext: so
+            prefix: "lib"
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      - name: Cache Cargo Registry & Build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-${{ matrix.target }}-${{ matrix.backend }}-driver-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.target }}-${{ matrix.backend }}-driver-cargo-
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Configure Git (Windows LongPaths)
+        if: runner.os == 'Windows'
+        run: git config --global core.longpaths true
 
       - name: Setup MSVC (Windows)
         if: runner.os == 'Windows'
@@ -133,16 +237,33 @@ jobs:
       - name: Build Driver (Foundry)
         shell: bash
         run: |
-          cargo build --release --target ${{ matrix.target }} -p llama --features "${{ matrix.features }}"
+          if [[ "${{ matrix.target }}" == *"-android"* ]]; then
+            cargo install cross --git https://github.com/cross-rs/cross
+            cross build --release --target ${{ matrix.target }} -p llama --features "${{ matrix.features }}"
+          else
+            cargo build --release --target ${{ matrix.target }} -p llama --features "${{ matrix.features }}"
+          fi
 
       - name: Prepare Driver Binary
         id: naming
         shell: bash
         run: |
-          VERSION="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || 'dev' }}"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.tag_name }}"
+          else
+            VERSION="${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'dev' }}"
+          fi
+
           mkdir -p artifacts
           SRC="target/${{ matrix.target }}/release/${{ matrix.prefix }}cluaiz_llama.${{ matrix.ext }}"
-          DEST="artifacts/cluaiz-driver-${VERSION}-${{ matrix.platform }}-${{ matrix.backend }}.${{ matrix.ext }}"
+          PREFIX="${{ matrix.prefix }}"
+
+          if [ -n "${{ matrix.cuda_v }}" ]; then
+            DEST="artifacts/${PREFIX}cluaiz-driver-${VERSION}-${{ matrix.platform }}-${{ matrix.backend }}-${{ matrix.cuda_v }}.${{ matrix.ext }}"
+          else
+            DEST="artifacts/${PREFIX}cluaiz-driver-${VERSION}-${{ matrix.platform }}-${{ matrix.backend }}.${{ matrix.ext }}"
+          fi
+
           cp "$SRC" "$DEST"
           echo "binary_path=${DEST}" >> $GITHUB_OUTPUT
 
@@ -170,8 +291,14 @@ jobs:
       - name: 💎 Hardened Registry Master Sync
         shell: bash
         run: |
-          VERSION="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}"
-          TAG="driver-$VERSION"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.tag_name }}"
+            TAG="driver-${{ github.event.inputs.tag_name }}"
+          else
+            VERSION="${{ github.ref_name }}"
+            TAG="${{ github.ref_name }}"
+          fi
+          
           REG_PATH="inference-drivers/registry.json"
           
           sed -i "s|{DRIVER_TAG}|$TAG|g" $REG_PATH
@@ -183,7 +310,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: registry-synced.json
-          tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}
+          tag_name: "${{ github.event_name == 'workflow_dispatch' && format('driver-{0}', github.event.inputs.tag_name) || github.ref_name }}"
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

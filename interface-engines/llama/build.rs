@@ -39,6 +39,18 @@ fn main() {
         config.define("GGML_CUDA", "ON");
     } else if env::var("CARGO_FEATURE_METAL").is_ok() {
         config.define("GGML_METAL", "ON");
+    } else if env::var("CARGO_FEATURE_VULKAN").is_ok() {
+        config.define("GGML_VULKAN", "ON");
+    } else if env::var("CARGO_FEATURE_ROCM").is_ok() {
+        config.define("GGML_HIPBLAS", "ON");
+    } else if env::var("CARGO_FEATURE_OPENVINO").is_ok() {
+        config.define("GGML_OPENVINO", "ON");
+    } else if env::var("CARGO_FEATURE_SYCL").is_ok() {
+        config.define("GGML_SYCL", "ON");
+    } else if env::var("CARGO_FEATURE_QNN").is_ok() {
+        config.define("GGML_QNN", "ON");
+    } else if env::var("CARGO_FEATURE_CANN").is_ok() {
+        config.define("GGML_CANN", "ON");
     }
 
     let dst = config.build();

@@ -16,21 +16,21 @@ Cluaiz-OS is designed to be a **Universal Neural Kernel**. Our mission is to pro
 
 ## 🧬 2. MODULAR ARCHITECTURE (THE NEURAL STACK)
 
-The ecosystem is divided into four sovereign layers. Any change to one layer MUST NOT break the handshake of others.
+The ecosystem is divided into four sovereign, decoupled layers. Any change to one layer MUST NOT break the handshake of others.
 
 | Layer | Component | Responsibility |
 | :--- | :--- | :--- |
 | **Edge** | `cluaiz-cli` | User interface, model management, and system orchestration. |
 | **Brain** | `cluaiz-engine` | The core orchestrator. Manages memory, context, and driver dispatch. |
-| **Kernel** | `archer-llama` | The inference engine. Links natively with modular GGML/Llama components. |
-| **Bridge** | `cluaiz-drivers` | Hardware-specific native drivers (CUDA, Vulkan, Metal, CPU). |
+| **Kernel** | `cluaiz-kernel` | Base CPU/SIMD interpreters (AVX512, AVX2, NEON) compiled for 9 operating system targets. |
+| **Bridge** | `cluaiz-driver` | Specialized hardware/GPU drivers (CUDA, Metal, Vulkan, OpenVINO, ROCm, HIP). |
 
 ---
 
-## 🛰️ 3. THE UNIVERSAL MATRIX LAW (5-OS SUPPORT)
-Cluaiz-OS MUST run everywhere. The CI/CD pipeline is mandated to support:
+## 🛰️ 3. THE UNIVERSAL MATRIX LAW
+Cluaiz-OS MUST run everywhere. The baseline CPU kernels and drivers support:
 
-- **Windows**: x64 (Desktop/Surface), x86 (Industrial/Legacy).
+- **Windows**: x64 (Desktop/Surface/Server).
 - **Linux**: x86_64 (Server), aarch64 (Cloud/Edge), armv7 (IoT).
 - **Android**: aarch64 (Mobile/Tablet/Auto).
 - **macOS**: arm64 (Apple Silicon), x86_64 (Intel Mac).
@@ -41,30 +41,30 @@ Cluaiz-OS MUST run everywhere. The CI/CD pipeline is mandated to support:
 ## 💎 4. THE NAMING & VERSIONING CONSTITUTION
 To ensure zero-latency binary mapping, all artifacts MUST follow the **Sovereign Naming Convention**:
 
-### 📦 Binary Naming Pattern:
-`cluaiz-<component>-<version>-<platform>-<backend>.<ext>`
+### 📦 Baseline CPU Kernels:
+`cluaiz-kernel-<version>-<platform>.<ext>`
+- **Platform**: Matches the 9 core OS targets (e.g., `win-x64-avx512`, `linux-x64-avx2`, `linux-arm64`, `mac-arm64`, etc.).
+- **Releases**: Pushed to `kernel-v*` release tags.
 
-- **Component**: `cli`, `engine`, `llama`, `driver`.
-- **Platform**: `win-x64`, `linux-arm64`, `android`, etc.
-- **Backend**: `cpu`, `cuda`, `metal`, `vulkan`.
-- **Version**: Strictly follows the git tag `v*`.
+### 🔌 Specialized Accelerator Drivers:
+`cluaiz-driver-<version>-<platform>-<backend>.<ext>`
+- **Backend**: Specialized silicon modules (e.g., `cuda-v13`, `cuda-v12`, `cuda-v11`, `metal`, `vulkan`, `openvino`, `rocm`, `hip`).
+- **Releases**: Pushed to `driver-v*` release tags and indexed in `registry.json`.
 
 ---
 
 ## ⚡ 5. CI/CD PIPELINE INTEGRITY (ZERO-CRASH DEPLOYMENT)
-The GitHub Actions pipeline is an industrial foundry. It MUST follow these mandatory stages:
+The GitHub Actions pipelines are divided into two distinct, isolated factories:
 
-### 🛠️ Stage 1: Native Compilation
-- **Multi-Silicon Strike**: Parallel builds for all architectures.
-- **Static Linking**: Force `/MT` on Windows and `musl` on Linux where possible for maximum portability.
+### ⚙️ 1. Baseline Inference Kernels (`inference-kernel.yml`)
+- **Compilation**: Parallel builds for exactly 9 core platforms using CPU instructions (AVX512, AVX2, NEON, ARM_NEON).
+- **Tooling**: Uses `cross` for Docker-based cross-compilation on target architectures (Android, Linux Aarch64).
+- **Releases**: Uploads baseline library binaries to `kernel-v*` release tags.
 
-### 🔬 Stage 2: Sovereign Audit
-- **Handshake Verification**: Every binary is scanned for exported symbols (`nm` / `dumpbin`) to ensure FFI compatibility.
-- **Integrity Sealing**: Generation of SHA-256 hashes for every artifact.
-
-### 🚀 Stage 3: Hyper-Release
-- **Dynamic Release**: Artifacts are uploaded to a release tagged exactly with `${{ github.ref_name }}`.
-- **Registry Sync**: The `registry.json` is updated with the new download URLs to trigger the CLI auto-updater.
+### ⚙️ 2. Dynamic Silicon Drivers (`inference-driver.yml`)
+- **Compilation**: Parallel builds for specialized backend matrices (including CUDA v13/v12/v11, Metal mac-arm64/mac-x64/ios, Vulkan Windows/Linux, OpenVINO, ROCm, HIP).
+- **Synchronization**: Automatically rewrites `registry.json` placeholders with the compiled release's `{DRIVER_TAG}` and `{VERSION}` to guarantee immediate auto-update updates.
+- **Releases**: Uploads accelerator driver library binaries to `driver-v*` release tags.
 
 ---
 
@@ -73,4 +73,4 @@ The GitHub Actions pipeline is an industrial foundry. It MUST follow these manda
 2. **Standard over Ad-hoc**: Every fix must be architectural, not a "Kach-Khas" (quick-fix).
 3. **Total Coverage**: A build is only successful if ALL platforms in the matrix pass.
 
-**This is the Cluaiz Standard. Professional. Optimized. Sovereign.**  
+**This is the Cluaiz Standard. Professional. Optimized. Sovereign.**
