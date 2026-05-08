@@ -319,7 +319,7 @@ jobs:
 
       - name: Setup Vulkan SDK (Windows)
         if: matrix.backend == 'vulkan' && runner.os == 'Windows'
-        uses: humbleui/setup-vulkan@v1.2.0
+        uses: humbletim/setup-vulkan-sdk@v1.2.1
         with:
           vulkan-query-version: 1.3.268.0
           vulkan-components: Vulkan-Headers, Vulkan-Loader
