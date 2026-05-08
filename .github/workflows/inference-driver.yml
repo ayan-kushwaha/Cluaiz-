@@ -279,9 +279,13 @@ jobs:
 
       - name: Setup Intel oneAPI SYCL SDK (Windows)
         if: matrix.backend == 'sycl' && runner.os == 'Windows'
-        uses: rscohn2/setup-oneapi@v1
-        with:
-          components: "intel.oneapi.win.dpcpp-compiler"
+        shell: cmd
+        run: |
+          curl -LO https://registrationcenter-download.intel.com/akdlm/IRC_NAS/19079/w_BaseKit_p_2023.1.0.46305_offline.exe
+          w_BaseKit_p_2023.1.0.46305_offline.exe -s -a install --eula accept --components intel.oneapi.win.dpcpp-ct
+          set "ONEAPI_ROOT=C:\Program Files (x86)\Intel\oneAPI"
+          echo DPCPP_CXX=%ONEAPI_ROOT%\compiler\latest\windows\bin\icpx.exe>> %GITHUB_ENV%
+          echo DPCPP_CC=%ONEAPI_ROOT%\compiler\latest\windows\bin\icx.exe>> %GITHUB_ENV%
 
       - name: Setup Intel oneAPI SYCL SDK
         if: matrix.backend == 'sycl' && runner.os == 'Linux'
