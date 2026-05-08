@@ -2,21 +2,21 @@
   <img src="assets/logo.png" width="300" alt="Cluaiz Logo">
 </p>
 
-<h1 align="center">Cluaiz: Sovereign Silicon AI Infrastructure</h1>
+<h1 align="center">Cluaiz: Industrial Silicon AI Infrastructure</h1>
 
 <p align="center">
-  <b>⚠️ Under Development - Beta Version Coming Soon</b>
+  <b>⚠️ Under Development - Industrial Alpha Phase</b>
 </p>
 
 <p align="center">
-  <b>Direct-to-Metal Inference. Zero-Bloat Sovereignty. Future-Ready Neural Foundations.</b>
+  <b>Direct-to-Metal Inference. Zero-Bloat Performance. Future-Ready Neural Foundations.</b>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Architecture-Sovereign_Silicon_Kernel-blue?style=for-the-badge" alt="Architecture">
+  <img src="https://img.shields.io/badge/Architecture-Industrial_Silicon_Kernel-blue?style=for-the-badge" alt="Architecture">
   <img src="https://img.shields.io/badge/Logic-Direct_to_Metal-green?style=for-the-badge" alt="Silicon">
   <img src="https://img.shields.io/badge/Future-1--Bit_Ternary_Native-red?style=for-the-badge" alt="Future">
-  <img src="https://img.shields.io/badge/Security-Sovereign_Sandbox-orange?style=for-the-badge" alt="Security">
+  <img src="https://img.shields.io/badge/Security-Isolated_Sandbox-orange?style=for-the-badge" alt="Security">
 </p>
 
 ---
@@ -27,8 +27,8 @@
 <summary>📋 Click to expand full navigation</summary>
 
 1. [What is Cluaiz?](#-what-is-cluaiz-engine--model)
-2. [Sovereign Manifesto](#-the-sovereign-manifesto)
-3. [Core Architecture](#-core-architecture-the-3-tier-sovereignty)
+2. [Industrial Manifesto](#-the-industrial-manifesto)
+3. [Core Architecture](#-core-architecture-the-3-tier-infrastructure)
 4. [Surgical Reality Check](#-surgical-reality-check-debunking-the-skeptics)
 5. [Core Engineering Pillars](#-core-engineering-pillars)
 6. [Industrial Stabilization Gaps](#-industrial-stabilization-gaps-fixed)
@@ -43,7 +43,7 @@
 
 ## 🧭 **What is Cluaiz? (Engine ≠ Model)**
 
-> **Industrial Note**: Cluaiz is **NOT** an AI model. It is a **Sovereign Silicon-Native Inference Engine** — a system-critical hardware orchestrator built to run AI models directly on local silicon with zero-copy efficiency.
+> **Industrial Note**: Cluaiz is **NOT** an AI model. It is an **Industrial Silicon-Native Inference Engine** — a system-critical hardware orchestrator built to run AI models directly on local silicon with zero-copy efficiency.
 
 | Component               | Analogy              | Examples                                |
 | :---------------------- | :------------------- | :-------------------------------------- |
@@ -51,39 +51,40 @@
 | **Cluaiz**              | The Engine           | This repository — Silicon-Native Kernel |
 | **Standard Middleware** | Legacy Transmissions | HTTP APIs, Docker layers, serialization |
 
-
 ---
 
 ## 🚀 **QUICK START**
 
 ```bash
-# 1. Install (Rust Required)
-$ cargo install --git https://github.com/cluaiz/cluaiz --bin cli
+# 1. Install (Industrial Pipeline)
+$ cargo install --path ./Apps/cli
 
 # 2. Probe & Run
 $ cluaiz probe
-$ cluaiz run llama3-8b-bitnet --prompt "Hello Sovereign AI"
+$ cluaiz run llama3-8b-bitnet --prompt "Execute Industrial Command"
 ```
 
- 
+---
 
-## 🏛️ **THE SOVEREIGN MANIFESTO**
+## 🏛️ **THE INDUSTRIAL MANIFESTO**
 
 Cluaiz is not a software application; it is a **Universal Neural Kernel**. Our mission is to eliminate the "Software Tax" that currently bottlenecks local AI. Standard AI implementations rely on bloated layers of Python, HTTP, and Docker. Cluaiz destroys these barriers by speaking the native language of silicon.
 
-> *"In the age of centralized intelligence, sovereignty is the only true privacy. Architecture is the ultimate constitution."*
+> *"In the age of centralized intelligence, architectural integrity is the only true privacy. Performance is the ultimate constitution."*
 
 <p align="center">
-  <img src="assets/Futuristic%20AI%20system%20architecture%20dashboard.png" width="800" alt="Sovereign System Dashboard">
+  <img src="assets/Futuristic%20AI%20system%20architecture%20dashboard.png" width="800" alt="Industrial System Dashboard">
 </p>
 
 ---
+
+## 🧭 **Core Architecture (The 3-Tier Infrastructure)**
 
 Cluaiz is built as a decoupled, system-critical ecosystem designed for 100% hardware-agnostic execution.
 
 ```mermaid
 graph TD
-    A[Apps Layer: CLI, Web, Mobile] --> B[Tier I: CURE Runtime]
+    A[Apps Layer: CLI, Web, Mobile] --> B["Tier I: CURE Runtime"]
     B --> C[Model Manager]
     B --> D[Engine C: Ternary Kernels]
     B --> E[AtmaSteer Protocol]
@@ -101,31 +102,31 @@ graph TD
 
 ---
 
-## 🧠 **THE SOVEREIGN MINDMAP (COGNITIVE ORCHESTRATION)**
+## 🧠 **THE NEURAL MINDMAP (COGNITIVE ORCHESTRATION)**
 
 Cluaiz-OS is governed by a **Trinity Orchestration** where every module is surgically separated for safety but unified via **Zero-Copy Memory Handshakes**.
 
 ```mermaid
 graph TD
-    subgraph "Sovereign Process Memory (RAM)"
-        MEM_MAP["[archer-shared] Global Memory Map"]
+    subgraph "Process Memory (RAM)"
+        MEM_MAP["[cluaiz-shared] Global Memory Map"]
         SIG_BUF["Shared Signal Buffer (128KB)"]
         CTX_BUF["Neural Context Buffer (mmap)"]
         G_VRAM["VRAM Arbiter (LRU Eviction)"]
     end
 
-    subgraph "🛡️ Sovereign Sandbox (Isolate)"
+    subgraph "🛡️ Isolated Sandbox"
         KERN["Inference Loop (C++)"]
         KERN -- "Restricted Access" --> CTX_BUF
     end
 
     subgraph "Tier II: The Brain (Persistence)"
         BRAIN["LanceDB / SurrealDB"]
-        SYNC["Atma Sync (P2P Discovery)"]
+        SYNC["Universal Sync (P2P Discovery)"]
     end
 
     subgraph "🌐 External Interfaces"
-        CLI["Sovereign CLI"]
+        CLI["Industrial CLI"]
         SDK["Universal Developer SDK"]
     end
 
@@ -137,10 +138,10 @@ graph TD
 ```
 
 ### **The Industrial Logic Flow**
-1.  **Silicon Initialization**: `driver-manager` scans hardware and populates the `SovereignProfile`.
+1.  **Silicon Initialization**: `driver-manager` scans hardware and populates the `IndustrialProfile`.
 2.  **Memory Governance**: The **VRAM Arbiter** allocates a dynamic budget and performs **LRU Eviction** to prevent OOM crashes.
-3.  **Safe Spawning**: The **Sovereign Sandbox** spawns the kernel in an isolated sub-process with restricted system access.
-4.  **Cognitive Continuity**: **Atma Sync** performs background local discovery, ensuring your context is portable across devices without any cloud.
+3.  **Safe Spawning**: The **Isolated Sandbox** spawns the kernel in an isolated sub-process with restricted system access.
+4.  **Cognitive Continuity**: **Universal Sync** performs background local discovery, ensuring your context is portable across devices without cloud dependencies.
 
 ---
 
@@ -161,14 +162,14 @@ The central "Heart" of the system. Written in 100% Rust, CURE manages the lifecy
 - **Engine Manager**: Orchestrates pre-compiled kernels (BitNet, LlamaCpp, Candle) via **Zero-Copy FFI**.
 - **Silicon Auditor**: Performs deep-probes of host hardware to identify VRAM, TFLOPS, and Instruction Set (AVX-512, Neon).
 
-### 2. **Sovereign Brain (Relational Memory)**
+### 2. **Universal Brain (Relational Memory)**
 The "Soul" of the system. Manages theoretically infinite context across sessions.
 - **Episodic Store**: High-throughput indexing via **LanceDB**.
 - **Cognitive Graph**: Relational state management via **SurrealDB**.
-- **Atma Sync**: A proprietary **P2P Discovery Protocol** that syncs context between your PC and Mobile without any cloud dependencies.
+- **Universal Sync**: A proprietary **P2P Discovery Protocol** that syncs context between your PC and Mobile without cloud.
 
 ### 3. **Driver-Manager (JIT Provisioning)**
-The "Nervous System". Identifies host hardware and pulls the exact, optimized binary from the **Sovereign Foundry**.
+The "Nervous System". Identifies host hardware and pulls the exact, optimized binary from the **Cluaiz Foundry**.
 - **SHA-256 Verification**: Every kernel is verified against a global manifest to prevent tampering.
 - **Dynamic Linkage**: Loads `.dll`/`.so` binaries directly into process memory for **Direct-to-Metal** execution.
 
@@ -212,49 +213,44 @@ Built in **Rust** for zero-latency communication. Dynamically binds CUDA/Metal l
 
 ## ⚡ **SURGICAL REALITY CHECK: DEBUNKING THE SKEPTICS**
 
-When we say "7ns Handshake" or "0% Hallucination," we are talking about **Industrial Engineering**, not marketing hype.
+When we say "7ns Handshake" or "Guaranteed Adherence," we are talking about **Industrial Engineering**, not marketing hype.
 
+### 1. **The 7ns Handshake**
 - **Verdict**: Handshake happens at **~7ns - 20ns** (L3 Cache hit). Full inference remains bound by RAM/GPU physics (~100ns access time).
 
 ### 2. **Ternary Native Compute (+1, 0, -1)**
 - **The Claim**: Replacing Matrix Multiplication with Addition.
 - **The Truth**: Cluaiz implements **BitNet b1.58** natively.
 - **The Logic**: 90% of an LLM's compute load is Matmul. By using ternary weights, we replace heavy floating-point multiplications with **Sign-Flips and Additions**. 
-- **Verdict**: We reduce **90% of the compute load by ~80%**. Softmax and LayerNorm remains FP16 to preserve "Neural Intelligence."
+- **Verdict**: We reduce **90% of the compute load by ~80%**. Softmax and LayerNorm remains FP16 to preserve neural intelligence.
 
 ### 3. **AtmaSteer (Guaranteed Adherence)**
-- **The Claim**: 0% Hallucination.
+- **The Claim**: High-Precision Output.
 - **The Truth**: Guaranteed **Structure Adherence** for JSON/Schema outputs.
-- **The Logic**: We use **Hardware-Level Guided Decoding**. We don't "ask" the model to follow rules; we **Hard-Mask** the hardware registers during inference. If the schema expects a "Number," the probability of any "Text" token is forced to **Negative Infinity**.
-- **Verdict**: The model follows the "Track" we build. Hallucination is physically prevented at the register level.
+- **The Logic**: We use **Hardware-Level Guided Decoding**. We don't "ask" the model to follow rules; we **Hard-Mask** the hardware registers during inference. 
+- **Verdict**: The model follows the "Track" we build. Deviations are physically prevented at the register level.
 
 ---
 
 ## 🛡️ **INDUSTRIAL STABILIZATION GAPS (FIXED)**
 
-In our latest **Sovereign Baseline (v1)**, we have surgically addressed the critical infrastructure gaps:
-
 ### 🚨 **VRAM Resource Arbiter**
-- **The Problem**: Multiple models (e.g., Llama + Vision) fighting for GPU VRAM causing OOM crashes.
-- **The Fix**: Implemented a **Real-Time Memory Governor** in `archer-shared`. It tracks every byte of VRAM and performs **LRU Eviction** (Least Recently Used) to shift inactive models to System RAM, preventing crashes.
+- **The Problem**: Multiple models fighting for GPU VRAM causing OOM crashes.
+- **The Fix**: Implemented a **Real-Time Memory Governor** in `cluaiz-shared`. It tracks every byte of VRAM and performs **LRU Eviction** to shift inactive models to System RAM.
 
-### 🛰️ **Sovereign P2P Atma Sync**
-- **The Problem**: Moving "Brain" context between PC and Mobile without Cloud.
-- **The Fix**: Developed a lightweight **UDP Discovery Pulse** (mDNS alternative). Devices on the same local network "handshake" and sync brain fragments direct-to-device.
+### 🛰️ **Universal P2P Sync**
+- **The Problem**: Moving context between devices without Cloud.
+- **The Fix**: Developed a lightweight **UDP Discovery Pulse**. Devices on the same local network "handshake" and sync brain fragments direct-to-device.
 
-### 🔒 **Sovereign Sandbox (FFI Safety)**
+### 🔒 **Neural Sandbox (FFI Safety)**
 - **The Problem**: Third-party kernels having unrestricted host system access.
-- **The Fix**: Implemented **Process Isolation**. Kernels run in restricted sub-processes with `CREATE_NO_WINDOW` flags and OS-level sandboxing (Job Objects on Windows / Namespaces on Linux).
-
-### 🛠️ **Universal Developer SDK**
-- **The Problem**: Architecture locked for internal use only.
-- **The Fix**: Released a **Universal C-API Wrapper**. Any developer (Python, C++, JS) can now import `cluaiz.h` and use our **7ns Handshake** in their own sovereign apps.
+- **The Fix**: Implemented **Process Isolation**. Kernels run in restricted sub-processes with OS-level sandboxing.
 
 ---
 
 ## 📊 **COMPREHENSIVE COMPETITIVE LANDSCAPE**
 
-| Dimension         | **Cluaiz (Sovereign)**             | **Standard Middleware** | **Standard Engines** | **Generic Frameworks** |
+| Dimension         | **Cluaiz (Industrial)**            | **Standard Middleware** | **Standard Engines** | **Generic Frameworks** |
 | :---------------- | :--------------------------------- | :---------------------- | :------------------- | :--------------------- |
 | **IPC Latency**   | **~7ns (Shared Mem)**              | ~50ms (HTTP)            | ~20ms (gRPC)         | ~100ms (API)           |
 | **Model Support** | **Transformers, BitNet, Mamba**    | Limited Formats         | Specialized Only     | API Wrapper            |
@@ -272,7 +268,7 @@ In our latest **Sovereign Baseline (v1)**, we have surgically addressed the crit
 | **Windows x64** | x86_64 / MSVC            | `.dll`    | ✅ READY |
 | **Linux x64**   | x86_64 / GNU             | `.so`     | ✅ READY |
 | **Linux ARM64** | **Raspberry Pi / ARM64** | `.binary` | ✅ READY |
-| **macOS**       | Apple Silicon (M1/M2/M3) | `.dylib`  | ✅ READY |
+| **macOS**       | Apple Silicon (M1+)      | `.dylib`  | ✅ READY |
 | **Android**     | ARM64 (NDK)              | `.so`     | ✅ READY |
 | **iOS**         | ARM64 (Metal)            | `.dylib`  | ✅ READY |
 
@@ -307,11 +303,11 @@ vram_budget_gb = 4       # Optimized for low-memory NPUs
 
 ## 🛰️ **OFFLINE / AIR-GAPPED DEPLOYMENT**
 
-1. **Export Artifacts** (on connected machine):
+1. **Export Artifacts**:
    ```bash
    $ cluaiz offline export --output ./cluaiz-v1.tar.gz
    ```
-2. **Import on Sovereign Device** (offline):
+2. **Import on Target Device**:
    ```bash
    $ cluaiz offline import ./cluaiz-v1.tar.gz
    $ cluaiz run llama3-8b-bitnet  # 100% Offline execution
@@ -321,17 +317,17 @@ vram_budget_gb = 4       # Optimized for low-memory NPUs
 
 ## 🔬 **VERIFICATION & BENCHMARKING PROTOCOL**
 
-We believe in **industrial truth over marketing hype**. All claims are validated through reproducible benchmarks:
+We believe in **industrial truth over marketing hype**:
 
 ```bash
 # 1. Hardware Fingerprinting
-$ cargo run --bin storage_probe -- probe > hardware.json
+$ cargo run -p cluaiz-shared --example hardware_probe
 
 # 2. IPC Handshake Benchmark
-$ cargo bench --bench ipc_handshake -- --iterations 10000
+$ cargo bench -p cluaiz-engine --bench handshake_bench
 
 # 3. Ternary vs FP16 Matmul Comparison
-$ cargo bench --features ternary --bench matmul_comparison
+$ cargo bench -p cluaiz-engine --features ternary --bench matmul_comparison
 ```
 
 ---
@@ -341,8 +337,8 @@ $ cargo bench --features ternary --bench matmul_comparison
 ### 🔹 What does "7ns handshake" actually mean?
 It refers to the **App→Engine signal latency** via shared memory pointer + atomic flag (L3 cache hit scenario). It does **not** mean full token generation takes 7ns.
 
-### 🔹 Does "ternary compute" mean the whole model uses +1/0/-1 math?
-**No.** Only **linear layers** (which are ~90% of LLM parameters) use BitNet b1.58 ternary weights. Attention `Softmax` and `LayerNorm` still use FP16/BF16 as required by math.
+### 🔹 Does ternary compute mean the whole model uses +1/0/-1 math?
+**No.** Only **linear layers** (90% of parameters) use BitNet b1.58 ternary weights. Attention and LayerNorm preserve FP16/BF16 precision.
 
 ---
 
@@ -362,16 +358,16 @@ It refers to the **App→Engine signal latency** via shared memory pointer + ato
 |:---|:---|
 | **GitHub Issues** | [Report Bugs](https://github.com/cluaiz/cluaiz/issues) |
 | **Email Support** | [support@cluaiz.com](mailto:support@cluaiz.com) |
-| **Discord** | [Join Sovereign Chat](https://discord.gg/cluaiz) |
+| **Discord** | [Join Community Chat](https://discord.gg/cluaiz) |
 | **Benchmarks** | [Verified Results Dashboard](https://benchmarks.cluaiz.dev) |
 
 ---
 
 ## 📜 **LICENSE: CLUAIZ SYSTEMS LICENSE (CSL) v1.0**
 
-Cluaiz is governed by a **Sovereign-First License**:
-- **Free for Individual Sovereignty**: No cost for individuals or companies under $10M revenue.
-- **Architecture Protection**: Cloning the 3-tier kernel or AtmaSteer logic for competing engines is strictly prohibited.
+Cluaiz is governed by an **Industrial-First License**:
+- **Free for Individuals**: No cost for individuals or startups under $10M revenue.
+- **Architecture Protection**: Cloning the 3-tier kernel logic for competing engines is strictly prohibited.
 - **Enterprise Scale**: Companies >$10M revenue require a Commercial Agreement.
 
 ---
@@ -391,7 +387,7 @@ Cluaiz-OS is maintained and governed by **Cluaiz**, a registered Micro Enterpris
 
 ### **Documentation & Resources**
 - **[Architecture Deep-Dive](ARCHITECTURE.md)**
-- **[Sovereign Technical Specification](docs/sovereign-technical-spec-v1.0.md)**
+- **[Cluaiz Technical Specification](docs/cluaiz-technical-spec-v1.0.md)**
 - **[Contribution Protocol](CONTRIBUTING.md)**
 - **[Security Policy](SECURITY.md)**
 
@@ -399,5 +395,5 @@ Cluaiz-OS is maintained and governed by **Cluaiz**, a registered Micro Enterpris
 
 <p align="center">
   <b>© 2026 Cluaiz. All Rights Reserved.</b><br>
-  <i>"Built on Rust. Born on Silicon. Architecture is Sovereignty."</i>
+  <i>"Built on Rust. Born on Silicon. Architecture is Power."</i>
 </p>
