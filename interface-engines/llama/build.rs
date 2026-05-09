@@ -116,6 +116,10 @@ fn main() {
         if feature_cuda   { println!("cargo:rustc-link-lib=static=ggml-cuda"); }
         if feature_vulkan { println!("cargo:rustc-link-lib=static=ggml-vulkan"); }
         if feature_rocm   { println!("cargo:rustc-link-lib=static=ggml-hip"); }
+        if feature_openvino { 
+            println!("cargo:rustc-link-lib=static=ggml-openvino");
+            println!("cargo:rustc-link-lib=dylib=OpenCL"); 
+        }
     }
 
     // ── macOS/iOS: explicit Metal + BLAS backend static libs ──────────
