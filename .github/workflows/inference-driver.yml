@@ -237,21 +237,24 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y vulkan-sdk
 
-      # ── Vulkan: Windows uses the official humbletim action (same approach as llama.cpp CI).
+      # ── Vulkan: Windows uses the official Lunarg installer method as per llama.cpp CI.
       - name: Setup Vulkan SDK (Windows)
         if: matrix.backend == 'vulkan' && runner.os == 'Windows'
-        uses: humbletim/install-vulkan-sdk@v1.2
-        with:
-          version: latest
-          cache: true
+        shell: powershell
+        run: |
+          $VULKAN_VERSION = "1.3.268.0"
+          curl.exe -o $env:RUNNER_TEMP/VulkanSDK-Installer.exe -L "https://sdk.lunarg.com/sdk/download/$VULKAN_VERSION/windows/vulkansdk-windows-X64-$VULKAN_VERSION.exe"
+          & "$env:RUNNER_TEMP\VulkanSDK-Installer.exe" --accept-licenses --default-answer --confirm-command install
+          Add-Content $env:GITHUB_ENV "VULKAN_SDK=C:\VulkanSDK\$VULKAN_VERSION"
+          Add-Content $env:GITHUB_PATH "C:\VulkanSDK\$VULKAN_VERSION\bin"
 
       - name: Setup OpenVINO SDK (Windows)
         if: matrix.backend == 'openvino' && runner.os == 'Windows'
         shell: powershell
         run: |
-          Invoke-WebRequest -Uri "https://storage.openvinotoolkit.org/repositories/openvino/packages/2024.6/windows/w_openvino_toolkit_windows_2024.6.0.17404.4c0f47d2335_x86_64.zip" -OutFile openvino.zip
+          Invoke-WebRequest -Uri "https://storage.openvinotoolkit.org/repositories/openvino/packages/2026.0/windows/w_openvino_toolkit_windows_2026.0.0.20965.c6d6a13a886_x86_64.zip" -OutFile openvino.zip
           Expand-Archive -Path openvino.zip -DestinationPath .
-          Rename-Item w_openvino_toolkit_windows_2024.6.0.17404.4c0f47d2335_x86_64 openvino
+          Rename-Item w_openvino_toolkit_windows_2026.0.0.20965.c6d6a13a886_x86_64 openvino
           Add-Content $env:GITHUB_ENV "INTEL_OPENVINO_DIR=$PWD\openvino"
           Add-Content $env:GITHUB_ENV "OpenVINO_DIR=$PWD\openvino\runtime\cmake"
           Add-Content $env:GITHUB_PATH "$PWD\openvino\runtime\bin\intel64\Release"
@@ -267,10 +270,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ocl-icd-opencl-dev opencl-headers opencl-clhpp-headers intel-opencl-icd wget gnupg2
-          wget https://storage.openvinotoolkit.org/repositories/openvino/packages/2024.6/linux/l_openvino_toolkit_ubuntu22_2024.6.0.17404.4c0f47d2335_x86_64.tgz
-          tar -xf l_openvino_toolkit_ubuntu22_2024.6.0.17404.4c0f47d2335_x86_64.tgz
-          sudo l_openvino_toolkit_ubuntu22_2024.6.0.17404.4c0f47d2335_x86_64/install_dependencies/install_openvino_dependencies.sh
-          echo "OpenVINO_DIR=$PWD/l_openvino_toolkit_ubuntu22_2024.6.0.17404.4c0f47d2335_x86_64/runtime/cmake" >> $GITHUB_ENV
+          wget https://storage.openvinotoolkit.org/repositories/openvino/packages/2026.0/linux/l_openvino_toolkit_ubuntu22_2026.0.0.20965.c6d6a13a886_x86_64.tgz
+          tar -xf l_openvino_toolkit_ubuntu22_2026.0.0.20965.c6d6a13a886_x86_64.tgz
+          sudo l_openvino_toolkit_ubuntu22_2026.0.0.20965.c6d6a13a886_x86_64/install_dependencies/install_openvino_dependencies.sh
+          echo "OpenVINO_DIR=$PWD/l_openvino_toolkit_ubuntu22_2026.0.0.20965.c6d6a13a886_x86_64/runtime/cmake" >> $GITHUB_ENV
           echo "OpenCL_INCLUDE_DIR=/usr/include" >> $GITHUB_ENV
           echo "OpenCL_LIBRARY=/usr/lib/x86_64-linux-gnu/libOpenCL.so.1" >> $GITHUB_ENV
 
@@ -314,11 +317,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y rocm-hip-sdk hip-runtime-amd
 
-      - name: Setup Vulkan SDK (Windows)
-        if: matrix.backend == 'vulkan' && runner.os == 'Windows'
-        uses: humbletim/install-vulkan-sdk@v1.2
-        with:
-          version: 1.3.268.0
+
 
       - name: Setup Python 3.9 for CANN (Ascend)
         if: matrix.backend == 'cann'
@@ -332,6 +331,9 @@ jobs:
           wget --header="Referer: https://www.hiascend.com/" -q https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/CANN/CANN%208.5.T63/Ascend-cann-toolkit_8.5.0_linux-x86_64.run
           chmod +x Ascend-cann-toolkit_8.5.0_linux-x86_64.run
           ./Ascend-cann-toolkit_8.5.0_linux-x86_64.run --quiet --install
+          wget --header="Referer: https://www.hiascend.com/" -q https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/CANN/CANN%208.5.T63/Ascend-cann-kernels-910b_8.5.0_linux.run
+          chmod +x Ascend-cann-kernels-910b_8.5.0_linux.run
+          ./Ascend-cann-kernels-910b_8.5.0_linux.run --quiet --install || true
           echo "ASCEND_TOOLKIT_HOME=$HOME/Ascend/ascend-toolkit/latest/x86_64-linux" >> $GITHUB_ENV
           echo "CANN_INSTALL_DIR=$HOME/Ascend/ascend-toolkit/latest/x86_64-linux" >> $GITHUB_ENV
 
@@ -350,8 +352,8 @@ jobs:
             cargo install cross --git https://github.com/cross-rs/cross
             cross build --release --target ${{ matrix.target }} -p llama --features "${{ matrix.features }}"
           elif [[ "${{ matrix.backend }}" == "sycl" && "${{ runner.os }}" == "Windows" ]]; then
-            echo "call \"C:\Program Files (x86)\Intel\oneAPI\setvars.bat\"" > run_sycl.bat
-            echo "cargo build --release --target ${{ matrix.target }} -p llama --features \"${{ matrix.features }}\"" >> run_sycl.bat
+            echo 'call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"' > run_sycl.bat
+            echo 'cargo build --release --target ${{ matrix.target }} -p llama --features "${{ matrix.features }}"' >> run_sycl.bat
             cmd.exe //c run_sycl.bat
           else
             cargo build --release --target ${{ matrix.target }} -p llama --features "${{ matrix.features }}"

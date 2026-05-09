@@ -74,17 +74,9 @@ fn main() {
         config.define("GGML_METAL", "ON");
     } else if feature_vulkan {
         config.define("GGML_VULKAN", "ON");
-        // Propagate VULKAN_SDK and forcefully inject paths so CMake's FindVulkan cannot fail.
+        // Propagate VULKAN_SDK env var so CMake's FindVulkan can locate headers/libs.
         if let Ok(sdk) = env::var("VULKAN_SDK") {
             config.define("VULKAN_SDK", &sdk);
-            let sdk_path = Path::new(&sdk);
-            if target_os == "windows" {
-                config.define("Vulkan_INCLUDE_DIR", sdk_path.join("Include").to_str().unwrap());
-                config.define("Vulkan_LIBRARY", sdk_path.join("Lib").join("vulkan-1.lib").to_str().unwrap());
-            } else {
-                config.define("Vulkan_INCLUDE_DIR", sdk_path.join("include").to_str().unwrap());
-                config.define("Vulkan_LIBRARY", sdk_path.join("lib").join("libvulkan.so").to_str().unwrap());
-            }
         }
     } else if feature_rocm {
         config.define("GGML_HIPBLAS", "ON");
