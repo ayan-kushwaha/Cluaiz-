@@ -70,7 +70,7 @@ fn main() {
 
     if feature_cuda {
         config.define("GGML_CUDA", "ON");
-    } else if feature_metal {
+    } else if feature_metal || target_os == "macos" || target_os == "ios" {
         config.define("GGML_METAL", "ON");
     } else if feature_vulkan {
         config.define("GGML_VULKAN", "ON");
@@ -134,17 +134,7 @@ fn main() {
         }
     }
 
-    // ── macOS/iOS: explicit Metal + BLAS backend static libs ──────────
-    // FIX 3: libggml.a's ggml-backend-reg.cpp.o calls ggml_backend_metal_reg()
-    // and ggml_backend_blas_reg() which live in libggml-metal.a and libggml-blas.a.
-    // Without explicit linkage → "Undefined symbols for architecture arm64/x86_64".
-    if target_os == "macos" {
-        if feature_metal {
-            println!("cargo:rustc-link-lib=static=ggml-metal");
-        }
-        println!("cargo:rustc-link-lib=static=ggml-blas");
-        println!("cargo:rustc-link-lib=framework=Accelerate");
-    } else if target_os == "ios" {
+    if target_os == "macos" || target_os == "ios" {
         println!("cargo:rustc-link-lib=static=ggml-metal");
         println!("cargo:rustc-link-lib=static=ggml-blas");
         println!("cargo:rustc-link-lib=framework=Accelerate");
