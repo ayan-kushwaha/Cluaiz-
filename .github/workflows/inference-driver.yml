@@ -262,14 +262,10 @@ jobs:
           Add-Content $env:GITHUB_ENV "INTEL_OPENVINO_DIR=$PWD\openvino"
           Add-Content $env:GITHUB_ENV "OpenVINO_DIR=$PWD\openvino\runtime\cmake"
           Add-Content $env:GITHUB_PATH "$PWD\openvino\runtime\bin\intel64\Release"
-          # Clone Official OpenCL-Headers and OpenCL-CLHPP
-          git clone https://github.com/KhronosGroup/OpenCL-Headers.git
-          git clone https://github.com/KhronosGroup/OpenCL-CLHPP.git
-          Copy-Item -Path "OpenCL-CLHPP\include\CL\*" -Destination "OpenCL-Headers\CL" -Recurse -Force
-          Add-Content $env:GITHUB_ENV "OpenCL_INCLUDE_DIR=$PWD\OpenCL-Headers"
-          # Locate Windows 10/11 SDK OpenCL library (always present on GHA Windows runners)
-          $sdkVer = (Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\Include' | Sort-Object Name -Descending | Select-Object -First 1).Name
-          Add-Content $env:GITHUB_ENV "OpenCL_LIBRARY=C:\Program Files (x86)\Windows Kits\10\Lib\$sdkVer\um\x64\OpenCL.lib"
+          # Install OpenCL via vcpkg
+          vcpkg install opencl:x64-windows
+          Add-Content $env:GITHUB_ENV "OpenCL_INCLUDE_DIR=C:\vcpkg\installed\x64-windows\include"
+          Add-Content $env:GITHUB_ENV "OpenCL_LIBRARY=C:\vcpkg\installed\x64-windows\lib\OpenCL.lib"
 
       - name: Setup OpenVINO SDK (Linux)
         if: matrix.backend == 'openvino' && runner.os == 'Linux'

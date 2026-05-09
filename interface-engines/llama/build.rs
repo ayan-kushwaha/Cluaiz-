@@ -90,6 +90,7 @@ fn main() {
         config.define("GGML_SYCL", "ON");
         if let Ok(v) = env::var("DPCPP_CXX") { config.define("CMAKE_CXX_COMPILER", &v); }
         if let Ok(v) = env::var("DPCPP_CC")  { config.define("CMAKE_C_COMPILER",   &v); }
+        config.cxxflag("/EHsc");
     } else if feature_qnn {
         config.define("GGML_QNN", "ON");
     } else if feature_cann {
@@ -119,7 +120,13 @@ fn main() {
     // On Linux/macOS, the dynamic linker resolves these at runtime.
     if target_os == "windows" {
         if feature_cuda   { println!("cargo:rustc-link-lib=static=ggml-cuda"); }
-        if feature_vulkan { println!("cargo:rustc-link-lib=static=ggml-vulkan"); }
+        if feature_vulkan { 
+            println!("cargo:rustc-link-lib=static=ggml-vulkan"); 
+            if let Ok(vulkan_sdk) = env::var("VULKAN_SDK") {
+                println!("cargo:rustc-link-search=native={}/Lib", vulkan_sdk);
+            }
+            println!("cargo:rustc-link-lib=dylib=vulkan-1");
+        }
         if feature_rocm   { println!("cargo:rustc-link-lib=static=ggml-hip"); }
         if feature_openvino { 
             println!("cargo:rustc-link-lib=static=ggml-openvino");
