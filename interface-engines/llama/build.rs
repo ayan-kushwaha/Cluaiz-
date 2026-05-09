@@ -79,7 +79,12 @@ fn main() {
     } else if feature_openvino {
         config.define("GGML_OPENVINO", "ON");
         if let Ok(v) = env::var("OpenCL_INCLUDE_DIR") { config.define("OpenCL_INCLUDE_DIR", &v); }
-        if let Ok(v) = env::var("OpenCL_LIBRARY")     { config.define("OpenCL_LIBRARY",     &v); }
+        if let Ok(v) = env::var("OpenCL_LIBRARY")     { 
+            config.define("OpenCL_LIBRARY",     &v); 
+            if let Some(parent) = Path::new(&v).parent() {
+                println!("cargo:rustc-link-search=native={}", parent.display());
+            }
+        }
         if let Ok(v) = env::var("OpenVINO_DIR")        { config.define("OpenVINO_DIR",       &v); }
     } else if feature_sycl {
         config.define("GGML_SYCL", "ON");

@@ -210,12 +210,14 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - name: Configure Windows Environment (LongPaths)
+      - name: Configure Windows Environment (LongPaths & Short Target Dir)
         if: runner.os == 'Windows'
         shell: powershell
         run: |
           New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
           git config --global core.longpaths true
+          New-Item -ItemType Directory -Force -Path "D:\t"
+          Add-Content $env:GITHUB_ENV "CARGO_TARGET_DIR=D:\t"
       - name: Setup MSVC (Windows)
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
@@ -285,8 +287,11 @@ jobs:
         if: matrix.backend == 'sycl' && runner.os == 'Windows'
         shell: cmd
         run: |
-          curl -LO https://registrationcenter-download.intel.com/akdlm/IRC_NAS/b60765d1-2b85-4e85-86b6-cb0e9563a699/intel-deep-learning-essentials-2025.3.3.18_offline.exe
-          intel-deep-learning-essentials-2025.3.3.18_offline.exe -s -a install --eula accept --components intel.oneapi.win.cpp-dpcpp-common:intel.oneapi.win.mkl.devel:intel.oneapi.win.dnnl:intel.oneapi.win.tbb.devel
+          curl.exe --output %TEMP%\webimage.exe --url https://registrationcenter-download.intel.com/akdlm/IRC_NAS/b60765d1-2b85-4e85-86b6-cb0e9563a699/intel-deep-learning-essentials-2025.3.3.18_offline.exe --retry 5 --retry-delay 5
+          start /b /wait %TEMP%\webimage.exe -s -x -f webimage_extracted --log extract.log
+          del %TEMP%\webimage.exe
+          start /b /wait webimage_extracted\bootstrapper.exe -s --action install --components=intel.oneapi.win.cpp-dpcpp-common:intel.oneapi.win.mkl.devel:intel.oneapi.win.dnnl:intel.oneapi.win.tbb.devel --eula=accept -p=NEED_VS2017_INTEGRATION=0 -p=NEED_VS2019_INTEGRATION=0 -p=NEED_VS2022_INTEGRATION=0 --log-dir=.
+          rd /s/q "webimage_extracted"
           set "ONEAPI_ROOT=C:\Program Files (x86)\Intel\oneAPI"
           echo DPCPP_CXX=icx>> %GITHUB_ENV%
           echo DPCPP_CC=icx>> %GITHUB_ENV%
@@ -333,18 +338,7 @@ jobs:
       - name: Setup Huawei CANN SDK
         if: matrix.backend == 'cann'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pip python3-dev
-          wget --user-agent="Mozilla/5.0" --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 -q https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/CANN/CANN%208.5.T63/Ascend-cann_8.5.0_linux-x86_64.run || true
-          if [ ! -f Ascend-cann_8.5.0_linux-x86_64.run ]; then
-            wget --user-agent="Mozilla/5.0" -q https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/CANN/CANN%208.0.0/Ascend-cann-toolkit_8.0.0_linux-x86_64.run
-            chmod +x Ascend-cann-toolkit_8.0.0_linux-x86_64.run
-            ./Ascend-cann-toolkit_8.0.0_linux-x86_64.run --quiet --install
-          else
-            chmod +x Ascend-cann_8.5.0_linux-x86_64.run
-            ./Ascend-cann_8.5.0_linux-x86_64.run --quiet --install
-          fi
-          echo "source /usr/local/Ascend/ascend-toolkit/set_env.sh" >> ~/.bashrc
+          echo "Using self-contained official Docker image for CANN compilation, host setup bypassed."
           echo "ASCEND_TOOLKIT_HOME=$HOME/Ascend/ascend-toolkit/latest/x86_64-linux" >> $GITHUB_ENV
           echo "CANN_INSTALL_DIR=$HOME/Ascend/ascend-toolkit/latest/x86_64-linux" >> $GITHUB_ENV
 
@@ -372,6 +366,15 @@ jobs:
             echo 'set CMAKE_GENERATOR=Ninja' > run_vulkan.bat
             echo 'cargo build --release --target ${{ matrix.target }} -p llama --features "${{ matrix.features }}"' >> run_vulkan.bat
             cmd.exe //c run_vulkan.bat
+          elif [[ "${{ matrix.backend }}" == "cann" ]]; then
+            docker run --rm -v "${{ github.workspace }}:/workspace" -w /workspace ascendai/cann:8.5.0-310p-openeuler24.03-py3.11 bash -c "
+              yum install -y --setopt=install_weak_deps=False --setopt=tsflags=nodocs git gcc gcc-c++ make cmake openssl-devel
+              curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+              source \$HOME/.cargo/env
+              export LD_LIBRARY_PATH=\${ASCEND_TOOLKIT_HOME}/lib64:\${ASCEND_TOOLKIT_HOME}/\$(uname -m)-linux/devlib/:\${LD_LIBRARY_PATH}
+              cargo build --release --target ${{ matrix.target }} -p llama --features \"${{ matrix.features }}\"
+              chown -R $(id -u):$(id -g) /workspace/target || true
+            "
           else
             cargo build --release --target ${{ matrix.target }} -p llama --features "${{ matrix.features }}"
           fi
@@ -387,7 +390,11 @@ jobs:
           fi
 
           mkdir -p artifacts
-          SRC="target/${{ matrix.target }}/release/${{ matrix.prefix }}cluaiz_llama.${{ matrix.ext }}"
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            SRC="D:/t/${{ matrix.target }}/release/${{ matrix.prefix }}cluaiz_llama.${{ matrix.ext }}"
+          else
+            SRC="target/${{ matrix.target }}/release/${{ matrix.prefix }}cluaiz_llama.${{ matrix.ext }}"
+          fi
           PREFIX="${{ matrix.prefix }}"
 
           if [ -n "${{ matrix.cuda_v }}" ]; then
