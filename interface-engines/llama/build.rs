@@ -92,6 +92,10 @@ fn main() {
         config.define("SOC_TYPE", "ascend910b");
     }
 
+    if target_os == "windows" {
+        config.generator("Ninja");
+    }
+
     let dst = config.build();
 
     // ═══════════════════════════════════════════════════════════════
@@ -116,6 +120,11 @@ fn main() {
         if feature_cuda   { println!("cargo:rustc-link-lib=static=ggml-cuda"); }
         if feature_vulkan { println!("cargo:rustc-link-lib=static=ggml-vulkan"); }
         if feature_rocm   { println!("cargo:rustc-link-lib=static=ggml-hip"); }
+        if feature_openvino { 
+            println!("cargo:rustc-link-lib=static=ggml-openvino");
+            println!("cargo:rustc-link-lib=dylib=OpenCL"); 
+        }
+        if feature_sycl   { println!("cargo:rustc-link-lib=static=ggml-sycl"); }
     }
 
     // ── macOS/iOS: explicit Metal + BLAS backend static libs ──────────

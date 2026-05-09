@@ -214,9 +214,13 @@ jobs:
         if: runner.os == 'Windows'
         run: git config --global core.longpaths true
 
-      - name: Setup MSVC (Windows)
+      - name: Setup MSVC & Ninja (Windows)
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
+        
+      - name: Install Ninja (Windows)
+        if: runner.os == 'Windows'
+        run: choco install ninja -y
 
       - name: Setup CUDA Toolkit
         if: contains(matrix.backend, 'cuda')
