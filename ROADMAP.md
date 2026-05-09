@@ -1,10 +1,10 @@
-# 🛰️ CLUAIZ-OS: THE UNIVERSAL NEURAL ROADMAP
+# 🛰️ CLUAIZ: THE UNIVERSAL NEURAL ROADMAP
 
-Cluaiz-OS is engineered to be a **Universal Sovereign Kernel**. Our roadmap is a surgical strike towards hardware-agnostic, high-performance neural execution.
+Cluaiz is engineered to be a **Universal Sovereign Kernel**. Our roadmap is a surgical strike towards hardware-agnostic, high-performance neural execution.
 
 ```mermaid
 mindmap
-  root((Cluaiz-OS))
+  root((Cluaiz))
     Phase 1: CURE Engine Stability
       Hardware Fingerprinting
       OS-Native Drivers
@@ -34,6 +34,12 @@ mindmap
 - [ ] **API Standardization**: Expose the engine via a high-performance Rust/REST API for third-party integrations.
 - [ ] **Unified Loader**: Zero-latency model loading across Llama, Candle, and BitNet backends.
 - [ ] **Silicon DNA**: Refine the hardware-to-engine mapping for "Makkhan" (smooth) performance.
+-  CORE FOUNDATION
+✅ CLI
+✅ Engine
+✅ Kernel
+✅ Drivers
+✅ Model runtime
 
 ## 🧠 PHASE 2: BRAIN STABILITY (Neural Continuity)
 **Goal**: Establish a permanent memory layer that allows the OS to "remember" and "reason".
@@ -43,7 +49,7 @@ mindmap
 - [ ] **Context Compression**: High-efficiency KV-cache management.
 
 ## 📱 PHASE 3: UNIVERSAL SOVEREIGNTY (Cross-Platform Apps)
-**Goal**: Bring Cluaiz-OS to every device with a premium, zero-latency interface.
+**Goal**: Bring Cluaiz to every device with a premium, zero-latency interface.
 
 - [ ] **Tauri Desktop Core**: High-performance Windows, Linux, and macOS applications.
 - [ ] **Tauri Mobile Bridge**: Native-speed inference on iOS and Android.
