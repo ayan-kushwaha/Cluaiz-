@@ -285,10 +285,10 @@ jobs:
         if: matrix.backend == 'sycl' && runner.os == 'Windows'
         shell: cmd
         run: |
-          curl -LO https://registrationcenter-download.intel.com/akdlm/IRC_NAS/19079/w_BaseKit_p_2023.1.0.46305_offline.exe
-          w_BaseKit_p_2023.1.0.46305_offline.exe -s -a install --eula accept --components intel.oneapi.win.dpcpp-ct
+          curl -LO https://registrationcenter-download.intel.com/akdlm/IRC_NAS/b60765d1-2b85-4e85-86b6-cb0e9563a699/intel-deep-learning-essentials-2025.3.3.18_offline.exe
+          intel-deep-learning-essentials-2025.3.3.18_offline.exe -s -a install --eula accept --components intel.oneapi.win.cpp-dpcpp-common:intel.oneapi.win.mkl.devel:intel.oneapi.win.dnnl:intel.oneapi.win.tbb.devel
           set "ONEAPI_ROOT=C:\Program Files (x86)\Intel\oneAPI"
-          echo DPCPP_CXX=icpx>> %GITHUB_ENV%
+          echo DPCPP_CXX=icx>> %GITHUB_ENV%
           echo DPCPP_CC=icx>> %GITHUB_ENV%
           choco install ninja -y
 
@@ -335,14 +335,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip python3-dev
-          wget --user-agent="Mozilla/5.0" --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 -q https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/CANN/CANN%208.0.RC2.alpha002/Ascend-cann-toolkit_8.0.RC2.alpha002_linux-x86_64.run || true
-          if [ ! -f Ascend-cann-toolkit_8.0.RC2.alpha002_linux-x86_64.run ]; then
+          wget --user-agent="Mozilla/5.0" --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 -q https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/CANN/CANN%208.5.T63/Ascend-cann_8.5.0_linux-x86_64.run || true
+          if [ ! -f Ascend-cann_8.5.0_linux-x86_64.run ]; then
             wget --user-agent="Mozilla/5.0" -q https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/CANN/CANN%208.0.0/Ascend-cann-toolkit_8.0.0_linux-x86_64.run
             chmod +x Ascend-cann-toolkit_8.0.0_linux-x86_64.run
             ./Ascend-cann-toolkit_8.0.0_linux-x86_64.run --quiet --install
           else
-            chmod +x Ascend-cann-toolkit_8.0.RC2.alpha002_linux-x86_64.run
-            ./Ascend-cann-toolkit_8.0.RC2.alpha002_linux-x86_64.run --quiet --install
+            chmod +x Ascend-cann_8.5.0_linux-x86_64.run
+            ./Ascend-cann_8.5.0_linux-x86_64.run --quiet --install
           fi
           echo "source /usr/local/Ascend/ascend-toolkit/set_env.sh" >> ~/.bashrc
           echo "ASCEND_TOOLKIT_HOME=$HOME/Ascend/ascend-toolkit/latest/x86_64-linux" >> $GITHUB_ENV
@@ -367,6 +367,11 @@ jobs:
             echo 'set CMAKE_GENERATOR=Ninja' >> run_sycl.bat
             echo 'cargo build --release --target ${{ matrix.target }} -p llama --features "${{ matrix.features }}"' >> run_sycl.bat
             cmd.exe //c run_sycl.bat
+          elif [[ "${{ matrix.backend }}" == "vulkan" && "${{ runner.os }}" == "Windows" ]]; then
+            choco install ninja -y
+            echo 'set CMAKE_GENERATOR=Ninja' > run_vulkan.bat
+            echo 'cargo build --release --target ${{ matrix.target }} -p llama --features "${{ matrix.features }}"' >> run_vulkan.bat
+            cmd.exe //c run_vulkan.bat
           else
             cargo build --release --target ${{ matrix.target }} -p llama --features "${{ matrix.features }}"
           fi
