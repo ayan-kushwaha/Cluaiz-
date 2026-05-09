@@ -258,8 +258,10 @@ jobs:
           Add-Content $env:GITHUB_ENV "INTEL_OPENVINO_DIR=$PWD\openvino"
           Add-Content $env:GITHUB_ENV "OpenVINO_DIR=$PWD\openvino\runtime\cmake"
           Add-Content $env:GITHUB_PATH "$PWD\openvino\runtime\bin\intel64\Release"
-          # Clone Official OpenCL-Headers
+          # Clone Official OpenCL-Headers and OpenCL-CLHPP
           git clone https://github.com/KhronosGroup/OpenCL-Headers.git
+          git clone https://github.com/KhronosGroup/OpenCL-CLHPP.git
+          Copy-Item -Path "OpenCL-CLHPP\include\CL\*" -Destination "OpenCL-Headers\CL" -Recurse -Force
           Add-Content $env:GITHUB_ENV "OpenCL_INCLUDE_DIR=$PWD\OpenCL-Headers"
           # Locate Windows 10/11 SDK OpenCL library (always present on GHA Windows runners)
           $sdkVer = (Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\Include' | Sort-Object Name -Descending | Select-Object -First 1).Name
@@ -284,8 +286,8 @@ jobs:
           curl -LO https://registrationcenter-download.intel.com/akdlm/IRC_NAS/19079/w_BaseKit_p_2023.1.0.46305_offline.exe
           w_BaseKit_p_2023.1.0.46305_offline.exe -s -a install --eula accept --components intel.oneapi.win.dpcpp-ct
           set "ONEAPI_ROOT=C:\Program Files (x86)\Intel\oneAPI"
-          echo DPCPP_CXX=C:/Program Files (x86)/Intel/oneAPI/compiler/latest/windows/bin/icpx.exe>> %GITHUB_ENV%
-          echo DPCPP_CC=C:/Program Files (x86)/Intel/oneAPI/compiler/latest/windows/bin/icx.exe>> %GITHUB_ENV%
+          echo DPCPP_CXX=icpx>> %GITHUB_ENV%
+          echo DPCPP_CC=icx>> %GITHUB_ENV%
 
       - name: Setup Intel oneAPI SYCL SDK
         if: matrix.backend == 'sycl' && runner.os == 'Linux'
@@ -330,9 +332,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip python3-dev
-          wget https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/CANN/CANN%208.0.RC1.alpha003/Ascend-cann-toolkit_8.0.RC1.alpha003_linux-x86_64.run
-          chmod +x Ascend-cann-toolkit_8.0.RC1.alpha003_linux-x86_64.run
-          ./Ascend-cann-toolkit_8.0.RC1.alpha003_linux-x86_64.run --quiet --install
+          wget --header="Referer: https://www.hiascend.com/" -q https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/CANN/CANN%208.0.RC1.alpha002/Ascend-cann-toolkit_8.0.RC1.alpha002_linux-x86_64.run
+          chmod +x Ascend-cann-toolkit_8.0.RC1.alpha002_linux-x86_64.run
+          ./Ascend-cann-toolkit_8.0.RC1.alpha002_linux-x86_64.run --quiet --install
           echo "ASCEND_TOOLKIT_HOME=$HOME/Ascend/ascend-toolkit/latest/x86_64-linux" >> $GITHUB_ENV
           echo "CANN_INSTALL_DIR=$HOME/Ascend/ascend-toolkit/latest/x86_64-linux" >> $GITHUB_ENV
 
