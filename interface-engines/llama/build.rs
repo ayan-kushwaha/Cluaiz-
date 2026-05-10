@@ -40,7 +40,7 @@ fn main() {
         .define("LLAMA_STATIC",         "ON")
         .define("BUILD_SHARED_LIBS",    "OFF")
         // Use MultiThreaded (/MT) to match Rust's default static CRT on Windows MSVC.
-        // SYCL backend (icx) does NOT support /MT with -fsycl. Use MultiThreadedDLL (/MD) for SYCL.
+        // SYCL backend (icx) requires MultiThreadedDLL (/MD).
         .define("CMAKE_MSVC_RUNTIME_LIBRARY", if env::var("CARGO_FEATURE_SYCL").is_ok() { "MultiThreadedDLL" } else { "MultiThreaded" })
         .profile("Release");
 
@@ -69,16 +69,17 @@ fn main() {
     let feature_qnn      = env::var("CARGO_FEATURE_QNN").is_ok();
     let feature_cann     = env::var("CARGO_FEATURE_CANN").is_ok();
 
-    if feature_cuda {
-        config.define("GGML_CUDA", "ON");
-    } else if feature_metal || target_os == "macos" || target_os == "ios" {
-        config.define("GGML_METAL", "ON");
-    } else if feature_vulkan {
-        config.define("GGML_VULKAN", "ON");
-    } else if feature_rocm {
-        config.define("GGML_HIPBLAS", "ON");
-    } else if feature_openvino {
-        config.define("GGML_OPENVINO", "ON");
+    // Explicitly disable backends to prevent auto-detection "Bakchodi"
+    config.define("GGML_CUDA",     if feature_cuda     { "ON" } else { "OFF" });
+    config.define("GGML_METAL",    if feature_metal    { "ON" } else { "OFF" });
+    config.define("GGML_VULKAN",   if feature_vulkan   { "ON" } else { "OFF" });
+    config.define("GGML_HIPBLAS",  if feature_rocm     { "ON" } else { "OFF" });
+    config.define("GGML_OPENVINO", if feature_openvino { "ON" } else { "OFF" });
+    config.define("GGML_SYCL",     if feature_sycl     { "ON" } else { "OFF" });
+    config.define("GGML_QNN",      if feature_qnn      { "ON" } else { "OFF" });
+    config.define("GGML_CANN",     if feature_cann     { "ON" } else { "OFF" });
+
+    if feature_openvino {
         if let Ok(v) = env::var("OpenCL_INCLUDE_DIR") { config.define("OpenCL_INCLUDE_DIR", &v); }
         if let Ok(v) = env::var("OpenCL_LIBRARY")     { 
             config.define("OpenCL_LIBRARY",     &v); 
@@ -87,8 +88,13 @@ fn main() {
             }
         }
         if let Ok(v) = env::var("OpenVINO_DIR")        { config.define("OpenVINO_DIR",       &v); }
-    } else if feature_sycl {
-        config.define("GGML_SYCL", "ON");
+        // Hard-link OpenVINO runtime libraries to fix LNK1104: cannot open file 'tbb12.lib'
+        if let Ok(v) = env::var("INTEL_OPENVINO_DIR") {
+            println!("cargo:rustc-link-search=native={}/runtime/lib/intel64/Release", v);
+        }
+    }
+
+    if feature_sycl {
         if let Ok(v) = env::var("DPCPP_CXX") { config.define("CMAKE_CXX_COMPILER", &v); }
         if let Ok(v) = env::var("DPCPP_CC")  { config.define("CMAKE_C_COMPILER",   &v); }
 
@@ -96,10 +102,9 @@ fn main() {
         if target_os == "windows" {
             config.cxxflag("/EHsc");
         }
-    } else if feature_qnn {
-        config.define("GGML_QNN", "ON");
-    } else if feature_cann {
-        config.define("GGML_CANN", "ON");
+    }
+
+    if feature_cann {
         config.define("SOC_TYPE", "ascend910b");
     }
 
