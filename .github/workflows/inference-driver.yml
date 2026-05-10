@@ -157,13 +157,13 @@ jobs:
             prefix: "lib"
 
           # --- Intel SYCL (oneAPI) ---
-          - platform: win-x64
-            backend: sycl
-            os: windows-latest
-            target: x86_64-pc-windows-msvc
-            features: sycl
-            ext: dll
-            prefix: ""
+          # - platform: win-x64
+          #   backend: sycl
+          #   os: windows-latest
+          #   target: x86_64-pc-windows-msvc
+          #   features: sycl
+          #   ext: dll
+          #   prefix: ""
           - platform: linux-x64
             backend: sycl
             os: ubuntu-22.04
