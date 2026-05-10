@@ -187,3 +187,37 @@ jobs:
           append_body: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ─── STAGE 2: Registry Synchronization ──────────────────────────────
+  publish-registry:
+    name: 📂 Synchronize Kernel Registry
+    needs: build-kernels
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 💎 Sovereign Master Verification Gatekeeper
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.tag_name }}"
+            TAG="kernel-${{ github.event.inputs.tag_name }}"
+          else
+            VERSION="${{ github.ref_name }}"
+            TAG="${{ github.ref_name }}"
+          fi
+          
+          node .github/scripts/verify_manifest.js --repo=${{ github.repository }} --tag=$TAG --template=master-registry.json --output=registry-synced.json --version=$VERSION
+
+      - name: Upload Synced Registry
+        uses: softprops/action-gh-release@v2
+        with:
+          files: registry-synced.json
+          tag_name: "${{ github.event_name == 'workflow_dispatch' && format('kernel-{0}', github.event.inputs.tag_name) || github.ref_name }}"
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

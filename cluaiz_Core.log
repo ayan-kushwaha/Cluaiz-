@@ -1,0 +1,44 @@
+2026-05-10T11:31:20.561156Z  WARN engines::interface_engines::manager::driver_provisioner: ⚠️ [PROVISIONER] Cloud Foundry returned 404 Not Found, loading embedded registry...
+2026-05-10T11:32:08.162685Z ERROR engines::telemetry: 🛡️ [Watchtower] Telemetry Server failed: Only one usage of each socket address (protocol/network address/port) is normally permitted. (os error 10048)
+2026-05-10T11:32:09.503764Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
+2026-05-10T11:32:09.503867Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
+2026-05-10T11:32:09.508108Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
+2026-05-10T11:32:09.508175Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
+2026-05-10T11:32:09.511389Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:1.7b Status: Optimal, Cached: false
+2026-05-10T11:32:09.511475Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:1.7b Status: Optimal, Cached: false
+2026-05-10T11:32:09.511513Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:1.7b Status: Optimal, Cached: false
+2026-05-10T11:32:09.511574Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:1.7b Status: Optimal, Cached: false
+2026-05-10T11:32:09.511602Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:4b Status: Optimal, Cached: false
+2026-05-10T11:32:09.511658Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:4b Status: Optimal, Cached: false
+2026-05-10T11:32:09.511685Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:4b Status: Optimal, Cached: false
+2026-05-10T11:32:09.511739Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:4b Status: Optimal, Cached: false
+2026-05-10T11:32:09.511766Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:8b Status: Optimal, Cached: false
+2026-05-10T11:32:09.511827Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:8b Status: Optimal, Cached: false
+2026-05-10T11:32:09.511869Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:8b Status: Optimal, Cached: false
+2026-05-10T11:32:09.511955Z  INFO engines::models::registry: 🧬 [Roster] Model models Status: Optimal, Cached: false
+2026-05-10T11:32:09.512037Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:8b Status: Optimal, Cached: false
+2026-05-10T11:32:09.512053Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b Status: Incompatible, Cached: false
+2026-05-10T11:32:09.512150Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b Status: Optimal, Cached: false
+2026-05-10T11:32:09.512271Z  INFO engines::models::registry: 🧬 [Roster] Model models Status: Optimal, Cached: false
+2026-05-10T11:32:09.512271Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b Status: Incompatible, Cached: false
+2026-05-10T11:32:09.512378Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b Status: Incompatible, Cached: false
+2026-05-10T11:32:09.512381Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b Status: Incompatible, Cached: false
+2026-05-10T11:32:09.512471Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b Status: Optimal, Cached: false
+2026-05-10T11:32:09.512481Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b Status: Optimal, Cached: false
+2026-05-10T11:32:09.512588Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b Status: Optimal, Cached: false
+2026-05-10T11:32:09.512592Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b Status: Incompatible, Cached: false
+2026-05-10T11:32:09.512680Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-a4b Status: Incompatible, Cached: false
+2026-05-10T11:32:09.512689Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b Status: Incompatible, Cached: false
+2026-05-10T11:32:09.512761Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b Status: Optimal, Cached: false
+2026-05-10T11:32:09.512772Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b Status: Optimal, Cached: false
+2026-05-10T11:32:09.512841Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b Status: Incompatible, Cached: false
+2026-05-10T11:32:09.512897Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b Status: Optimal, Cached: false
+2026-05-10T11:32:09.512927Z  INFO engines::models::registry: 🧬 [Roster] Model Llama-4-Maverick-17B-128E-Instruct Status: Incompatible, Cached: false
+2026-05-10T11:32:09.512985Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-a4b Status: Incompatible, Cached: false
+2026-05-10T11:32:09.513029Z  INFO engines::models::registry: 🧬 [Roster] Model Llama-4-Scout-17B-16E-Instruct Status: Incompatible, Cached: false
+2026-05-10T11:32:09.513037Z  INFO engines::models::registry: 📊 [Roster] Generated 18 model recommendations for UI.
+2026-05-10T11:32:09.513067Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b Status: Optimal, Cached: false
+2026-05-10T11:32:09.513146Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b Status: Incompatible, Cached: false
+2026-05-10T11:32:09.513227Z  INFO engines::models::registry: 🧬 [Roster] Model Llama-4-Maverick-17B-128E-Instruct Status: Incompatible, Cached: false
+2026-05-10T11:32:09.513337Z  INFO engines::models::registry: 🧬 [Roster] Model Llama-4-Scout-17B-16E-Instruct Status: Incompatible, Cached: false
+2026-05-10T11:32:09.513345Z  INFO engines::models::registry: 📊 [Roster] Generated 18 model recommendations for UI.

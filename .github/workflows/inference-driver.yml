@@ -423,8 +423,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: 💎 Hardened Registry Master Sync
+      - name: 💎 Sovereign Master Verification Gatekeeper
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             VERSION="${{ github.event.inputs.tag_name }}"
@@ -434,12 +436,7 @@ jobs:
             TAG="${{ github.ref_name }}"
           fi
           
-          REG_PATH="inference-drivers/registry.json"
-          
-          sed -i "s|{DRIVER_TAG}|$TAG|g" $REG_PATH
-          sed -i "s|{VERSION}|$VERSION|g" $REG_PATH
-          
-          cp $REG_PATH registry-synced.json
+          node .github/scripts/verify_manifest.js --repo=${{ github.repository }} --tag=$TAG --template=master-registry.json --output=registry-synced.json --version=$VERSION
 
       - name: Upload Synced Registry
         uses: softprops/action-gh-release@v2

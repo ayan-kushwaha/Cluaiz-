@@ -91,7 +91,7 @@ impl Bootstrapper {
         
         if !control_path.exists() {
             return Ok(()); // Wait for first calibration
-        }
+        } 
 
         let control_data: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&control_path)?)?;
         let has_nvidia = control_data["silicon_truth"]["accelerators"]["gpus"]
@@ -168,24 +168,8 @@ impl Bootstrapper {
 
         // 2. Driver Sync (If needed)
         if has_nvidia {
-            let driver_dir = HardwareGovernor::resolve_hub_path().join("interface-engines/drivers");
-            let driver_tag = driver_dir.join("cuda.tag");
-            if !driver_tag.exists() {
-                println!("  {} [Cluaiz] Deploying Hardware Driver (CUDA)...", "🏎️".yellow());
-                let version = cluaiz_shared::CluaizDNA::DRIVER;
-                let tag_name = if version == "dev-release" || version == "v1.0.0" {
-                    "driver-dev-release".to_string()
-                } else {
-                    format!("driver-{}", version)
-                };
-                let url = format!("https://github.com/cluaiz/cluaiz/releases/download/{}/cluaiz-driver-cuda.zip", tag_name);
-                let zip_path = driver_dir.join("driver.zip");
-                if let Err(e) = Self::download_asset(&url, &zip_path).await {
-                    println!("  {} [Cluaiz] Driver zip package download failed: {}. Continuing bootstrap...", "⚠️".yellow(), e);
-                } else {
-                    // TODO: Extraction logic
-                    std::fs::write(driver_tag, "ready")?;
-                }
+            if let Err(e) = engines::interface_engines::manager::driver_provisioner::DriverProvisioner::provision_for_hardware("cuda").await {
+                println!("  {} [Cluaiz] Driver deployment failed: {}. Continuing bootstrap...", "⚠️".yellow(), e);
             }
         }
 

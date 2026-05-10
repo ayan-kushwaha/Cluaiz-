@@ -1,17 +1,47 @@
 use std::path::{Path, PathBuf};
 use anyhow::{Result, anyhow};
 use reqwest;
-use zip::ZipArchive;
 use std::fs;
-use std::io::Cursor;
 use cluaiz_shared::HardwareGovernor;
 
 pub struct DriverProvisioner;
 
 impl DriverProvisioner {
-    const MANIFEST_URL: &'static str = "https://github.com/cluaiz/cluaiz/releases/download/drivers-v0.1.0/driver-manifest.json";
-// https://cdn.jsdelivr.net/ 
-    /// 🛠️ Provision Hardware Driver: Auto-detects, downloads, and extracts missing silicon drivers.
+    const MANIFEST_URL: &'static str = "https://github.com/cluaiz/cluaiz/releases/download/driver-dev-release/registry-synced.json";
+
+    fn get_backend_id_for_platform(driver_type: &str) -> Option<&'static str> {
+        #[cfg(target_os = "windows")]
+        {
+            match driver_type {
+                "cuda" => Some("nvidia-cuda-v12-windows"),
+                "vulkan" => Some("universal-vulkan-windows"),
+                _ => None,
+            }
+        }
+        #[cfg(target_os = "linux")]
+        {
+            match driver_type {
+                "cuda" => Some("nvidia-cuda-v12-linux"),
+                "vulkan" => Some("universal-vulkan-linux"),
+                "rocm" => Some("amd-rocm-linux"),
+                "hip" => Some("amd-hip-linux"),
+                _ => None,
+            }
+        }
+        #[cfg(target_os = "macos")]
+        {
+            match driver_type {
+                "metal" => Some("apple-metal-macos"),
+                _ => None,
+            }
+        }
+        #[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "macos")))]
+        {
+            None
+        }
+    }
+
+    /// 🛠️ Provision Hardware Driver: Auto-detects, downloads, and deploys missing silicon drivers.
     pub async fn provision_for_hardware(driver_type: &str) -> Result<()> {
         let root = HardwareGovernor::resolve_hub_path();
         let driver_dir = root.join("interface-engines").join("drivers");
@@ -28,81 +58,80 @@ impl DriverProvisioner {
 
         println!("🛠️ [PROVISIONER] Missing Hardware Driver detected: {}. Initiating Silicon Handshake...", driver_type);
 
-        // 🎯 Step 2: Fetch Driver Manifest (with User-Agent for GitHub/CDN compliance)
+        let backend_id = Self::get_backend_id_for_platform(driver_type)
+            .ok_or_else(|| anyhow!("Driver type '{}' is not supported on this platform.", driver_type))?;
+
+        // 🎯 Step 2: Fetch Synced Driver Registry with dual-layer offline fallback
         let client = reqwest::Client::builder()
             .user_agent("Cluaiz-Neural-Engine/0.1.0")
             .build()?;
 
-        let response = client.get(Self::MANIFEST_URL)
-            .send()
-            .await
-            .map_err(|e| anyhow!("Failed to connect to Cloud Foundry: {}", e))?;
+        let manifest_str = include_str!("../../../../../inference-drivers/registry.json")
+            .replace("{BASE_URL}", "https://github.com/cluaiz/cluaiz/releases/download")
+            .replace("{DRIVER_TAG}", "driver-dev-release")
+            .replace("{VERSION}", "dev-release");
 
-        if !response.status().is_success() {
-            return Err(anyhow!("Cloud Foundry returned error {}: {}", response.status(), Self::MANIFEST_URL));
-        }
+        let manifest: serde_json::Value = if let Ok(resp) = client.get(Self::MANIFEST_URL).send().await {
+            if resp.status().is_success() {
+                resp.json().await.unwrap_or_else(|_| {
+                    tracing::warn!("⚠️ [PROVISIONER] JSON deserialization failed, loading embedded registry...");
+                    serde_json::from_str(&manifest_str).unwrap()
+                })
+            } else {
+                tracing::warn!("⚠️ [PROVISIONER] Cloud Foundry returned {}, loading embedded registry...", resp.status());
+                serde_json::from_str(&manifest_str).unwrap()
+            }
+        } else {
+            tracing::warn!("⚠️ [PROVISIONER] Failed to connect to Cloud Foundry, loading embedded registry...");
+            serde_json::from_str(&manifest_str).unwrap()
+        };
 
-        let manifest: serde_json::Value = response.json().await?;
+        let backends = manifest["backends"]
+            .as_array()
+            .ok_or_else(|| anyhow!("Manifest 'backends' field is missing or not an array."))?;
 
-        let download_url = manifest["drivers"][driver_type]
+        let backend = backends.iter()
+            .find(|b| b["id"].as_str() == Some(backend_id))
+            .ok_or_else(|| anyhow!("Backend ID '{}' not found in registry.", backend_id))?;
+
+        let artifact = backend["artifacts"]
+            .as_array()
+            .and_then(|a| a.first())
+            .ok_or_else(|| anyhow!("No artifacts found for backend ID '{}'.", backend_id))?;
+
+        let download_url_template = artifact["download_url_template"]
             .as_str()
-            .ok_or_else(|| anyhow!("Driver '{}' not supported in the current Cluaiz Manifest.", driver_type))?;
+            .ok_or_else(|| anyhow!("Artifact download_url_template is missing or not a string."))?;
 
-        // 🛡️ Placeholder Guard: Don't download if the URL points to a text placeholder
-        if download_url.ends_with(".txt") || download_url.ends_with(".md") {
-            return Err(anyhow!("Silicon Handshake Aborted: Manifest contains placeholder URLs (.txt/.md) instead of binary kernels for '{}'. Please update your GitHub Release assets.", driver_type));
-        }
+        let name_template = artifact["name_template"]
+            .as_str()
+            .ok_or_else(|| anyhow!("Artifact name_template is missing or not a string."))?;
+
+        // 🎯 Step 3: Format and Expand URLs
+        let download_url = download_url_template
+            .replace("{BASE_URL}", "https://github.com/cluaiz/cluaiz/releases/download")
+            .replace("{DRIVER_TAG}", "driver-dev-release")
+            .replace("{VERSION}", "dev-release");
+
+        let dest_filename = name_template
+            .replace("{VERSION}", "dev-release");
+
+        let dest_path = driver_dir.join(&dest_filename);
 
         println!("📥 [PROVISIONER] Downloading {} driver from Cloud Foundry...", driver_type);
 
-        // 🎯 Step 3: Download Driver Zip
-        let response = client.get(download_url).send().await?;
+        // 🎯 Step 4: Download Driver Binary Directly
+        let response = client.get(&download_url).send().await?;
         if !response.status().is_success() {
-            return Err(anyhow!("Failed to download driver binary: {}", response.status()));
+            return Err(anyhow!("Failed to download driver binary: {} from {}", response.status(), download_url));
         }
         
         let bytes = response.bytes().await?;
+        fs::write(&dest_path, bytes)?;
 
-        // 🎯 Step 4: Extract Zip
-        println!("📦 [PROVISIONER] Extracting silicon kernels to drivers/ folder...");
-        let mut archive = ZipArchive::new(Cursor::new(bytes))?;
-        for i in 0..archive.len() {
-            let mut file = archive.by_index(i)?;
-            let outpath = match file.enclosed_name() {
-                Some(path) => driver_dir.join(path),
-                None => continue,
-            };
-
-            if (*file.name()).ends_with('/') {
-                fs::create_dir_all(&outpath)?;
-            } else {
-                if let Some(p) = outpath.parent() {
-                    if !p.exists() {
-                        fs::create_dir_all(&p)?;
-                    }
-                }
-                let mut outfile = fs::File::create(&outpath)?;
-                std::io::copy(&mut file, &mut outfile)?;
-            }
-        }
-
-        // 🎯 Step 5: Silicon Integrity Check (Ensure we actually got binaries, not just placeholders)
-        let mut has_binaries = false;
-        if let Ok(entries) = fs::read_dir(&driver_dir) {
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if let Some(ext) = path.extension() {
-                    if ext == "dll" || ext == "so" || ext == "dylib" || ext == "a" {
-                        has_binaries = true;
-                        break;
-                    }
-                } 
-            }
-        }
-
-        if !has_binaries {
-            fs::remove_file(&marker).ok(); // Remove marker so we can retry later
-            return Err(anyhow!("Driver provisioning failed: The downloaded package contains no executable binaries (.dll/.so). Please check the GitHub Release assets."));
+        // 🎯 Step 5: Silicon Integrity Check (Ensure we actually got the binary)
+        if !dest_path.exists() || fs::metadata(&dest_path)?.len() == 0 {
+            return Err(anyhow!("Driver provisioning failed: Loaded file is empty or missing."));
         }
 
         // 🎯 Step 6: Mark as Ready
@@ -111,6 +140,7 @@ impl DriverProvisioner {
 
         Ok(())
     }
+
 
     /// 🔍 Silicon Discovery: Scans the system for pre-installed drivers if local ones are missing.
     pub fn discover_system_paths() -> Vec<PathBuf> {
