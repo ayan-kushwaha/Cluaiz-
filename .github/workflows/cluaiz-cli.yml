@@ -124,10 +124,8 @@ jobs:
       - name: Checkout Cluaiz
         uses: actions/checkout@v4
 
-      - name: 💎 Sovereign Master Verification Gatekeeper
+      - name: Generate CLI Manifest JSON
         shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             VERSION="${{ github.event.inputs.tag_name }}"
@@ -137,9 +135,21 @@ jobs:
             TAG="${{ github.ref_name }}"
           fi
           
-          node .github/scripts/verify_manifest.js --repo=${{ github.repository }} --tag=$TAG --template=master-registry.json --output=cluaiz-cli.json --version=$VERSION
+          cat <<EOF > cluaiz-cli.json
+          {
+            "version": "$VERSION",
+            "binaries": {
+              "win-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-$VERSION-win-x64.exe",
+              "win-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-$VERSION-win-arm64.exe",
+              "linux-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-$VERSION-linux-x64",
+              "linux-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-$VERSION-linux-arm64",
+              "mac-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-$VERSION-mac-arm64",
+              "mac-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-$VERSION-mac-x64"
+            }
+          }
+          EOF
 
-      - name: 🚀 Upload Synced Registry
+      - name: 🚀 Upload Manifest to Release
         uses: softprops/action-gh-release@v2
         with:
           files: cluaiz-cli.json

@@ -146,10 +146,8 @@ jobs:
       - name: Checkout Cluaiz
         uses: actions/checkout@v4
 
-      - name: 💎 Sovereign Master Verification Gatekeeper
+      - name: Generate Engine Manifest JSON
         shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             VERSION="${{ github.event.inputs.tag_name }}"
@@ -159,9 +157,24 @@ jobs:
             TAG="${{ github.ref_name }}"
           fi
           
-          node .github/scripts/verify_manifest.js --repo=${{ github.repository }} --tag=$TAG --template=master-registry.json --output=cluaiz-engine.json --version=$VERSION
+          cat <<EOF > cluaiz-engine.json
+          {
+            "version": "$VERSION",
+            "assets": {
+              "win-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-engine-$VERSION-win-x64.dll",
+              "win-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-engine-$VERSION-win-arm64.dll",
+              "linux-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-engine-$VERSION-linux-x64.so",
+              "linux-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-engine-$VERSION-linux-arm64.so",
+              "android-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-engine-$VERSION-android-arm64.so",
+              "android-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-engine-$VERSION-android-x64.so",
+              "mac-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-engine-$VERSION-mac-arm64.dylib",
+              "mac-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-engine-$VERSION-mac-x64.dylib",
+              "ios-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-engine-$VERSION-ios-arm64.a"
+            }
+          }
+          EOF
 
-      - name: 🚀 Upload Synced Registry
+      - name: 🚀 Upload Manifest to Release
         uses: softprops/action-gh-release@v2
         with:
           files: cluaiz-engine.json

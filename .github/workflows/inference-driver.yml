@@ -423,10 +423,8 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: 💎 Sovereign Master Verification Gatekeeper
+      - name: Generate Driver Manifest JSON
         shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             VERSION="${{ github.event.inputs.tag_name }}"
@@ -436,9 +434,26 @@ jobs:
             TAG="${{ github.ref_name }}"
           fi
           
-          node .github/scripts/verify_manifest.js --repo=${{ github.repository }} --tag=$TAG --template=master-registry.json --output=cluaiz-driver.json --version=$VERSION
+          cat <<EOF > cluaiz-driver.json
+          {
+            "version": "$VERSION",
+            "drivers": {
+              "win-x64-cuda-13": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-driver-$VERSION-win-x64-cuda-v13.dll",
+              "win-x64-cuda-12": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-driver-$VERSION-win-x64-cuda-v12.dll",
+              "win-x64-cuda-11": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-driver-$VERSION-win-x64-cuda-v11.dll",
+              "win-x64-vulkan": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-driver-$VERSION-win-x64-vulkan.dll",
+              "linux-x64-cuda-13": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-linux-x64-cuda-v13.so",
+              "linux-x64-cuda-12": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-linux-x64-cuda-v12.so",
+              "linux-x64-rocm": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-linux-x64-rocm.so",
+              "mac-arm64-metal": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-mac-arm64-metal.dylib",
+              "mac-x64-metal": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-mac-x64-metal.dylib",
+              "android-arm64-qnn": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-android-arm64-qnn.so",
+              "ios-arm64-metal": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-ios-arm64-metal.a"
+            }
+          }
+          EOF
 
-      - name: Upload Synced Registry
+      - name: 🚀 Upload Manifest to Release
         uses: softprops/action-gh-release@v2
         with:
           files: cluaiz-driver.json

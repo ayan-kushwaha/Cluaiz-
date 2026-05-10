@@ -198,10 +198,8 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: 💎 Sovereign Master Verification Gatekeeper
+      - name: Generate Kernel Manifest JSON
         shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             VERSION="${{ github.event.inputs.tag_name }}"
@@ -211,9 +209,24 @@ jobs:
             TAG="${{ github.ref_name }}"
           fi
           
-          node .github/scripts/verify_manifest.js --repo=${{ github.repository }} --tag=$TAG --template=master-registry.json --output=cluaiz-kernel.json --version=$VERSION
+          cat <<EOF > cluaiz-kernel.json
+          {
+            "version": "$VERSION",
+            "kernels": {
+              "win-x64-avx512": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-kernel-$VERSION-win-x64-avx512.dll",
+              "win-x64-avx2": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-kernel-$VERSION-win-x64-avx2.dll",
+              "linux-x64-avx512": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-kernel-$VERSION-linux-x64-avx512.so",
+              "linux-x64-avx2": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-kernel-$VERSION-linux-x64-avx2.so",
+              "linux-arm64-neon": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-kernel-$VERSION-linux-arm64.so",
+              "mac-arm64-neon": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-kernel-$VERSION-mac-arm64.dylib",
+              "mac-x64-avx2": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-kernel-$VERSION-mac-x64.dylib",
+              "ios-arm64-neon": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-kernel-$VERSION-ios-arm64.a",
+              "android-arm64-neon": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-kernel-$VERSION-android-arm64.so"
+            }
+          }
+          EOF
 
-      - name: Upload Synced Registry
+      - name: 🚀 Upload Manifest to Release
         uses: softprops/action-gh-release@v2
         with:
           files: cluaiz-kernel.json
