@@ -358,6 +358,7 @@ jobs:
           elif [[ "${{ matrix.backend }}" == "sycl" && "${{ runner.os }}" == "Windows" ]]; then
             echo 'call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"' > run_sycl.bat
             echo 'set CMAKE_GENERATOR=Ninja' >> run_sycl.bat
+            echo 'set RUSTFLAGS=-Ctarget-feature=-crt-static' >> run_sycl.bat
             echo 'cargo build --release --target ${{ matrix.target }} -p llama --features "${{ matrix.features }}"' >> run_sycl.bat
             cmd.exe //c run_sycl.bat
           elif [[ "${{ matrix.backend }}" == "vulkan" && "${{ runner.os }}" == "Windows" ]]; then

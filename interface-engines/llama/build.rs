@@ -91,6 +91,7 @@ fn main() {
         // Hard-link OpenVINO runtime libraries to fix LNK1104: cannot open file 'tbb12.lib'
         if let Ok(v) = env::var("INTEL_OPENVINO_DIR") {
             println!("cargo:rustc-link-search=native={}/runtime/lib/intel64/Release", v);
+            println!("cargo:rustc-link-search=native={}/runtime/3rdparty/tbb/lib", v);
         }
     }
 
@@ -141,6 +142,10 @@ fn main() {
         if feature_openvino { 
             println!("cargo:rustc-link-lib=static=ggml-openvino");
             println!("cargo:rustc-link-lib=dylib=OpenCL"); 
+        }
+        if feature_sycl {
+            println!("cargo:rustc-link-lib=static=ggml-sycl");
+            println!("cargo:rustc-link-lib=dylib=sycl7"); // Intel oneAPI SYCL runtime
         }
     }
 
