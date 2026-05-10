@@ -148,14 +148,14 @@ fn main() {
             println!("cargo:rustc-link-lib=static=ggml-sycl");
             println!("cargo:rustc-link-lib=dylib=sycl"); // Intel oneAPI SYCL runtime
             
-            // Link Intel oneMKL (required for ggml-sycl BLAS operations)
-            println!("cargo:rustc-link-lib=dylib=mkl_sycl");
-            println!("cargo:rustc-link-lib=dylib=mkl_intel_ilp64");
-            println!("cargo:rustc-link-lib=dylib=mkl_sequential");
-            println!("cargo:rustc-link-lib=dylib=mkl_core");
+            // Link Intel oneMKL using the Single Dynamic Library (mkl_rt) for reliable dispatching
+            println!("cargo:rustc-link-lib=dylib=mkl_rt");
             
             // Link Intel oneDNN (required for ggml-sycl neural operations)
             println!("cargo:rustc-link-lib=dylib=dnnl");
+            
+            // Link TBB (dependency for MKL/DNNL)
+            println!("cargo:rustc-link-lib=dylib=tbb12");
 
             // Hard-link search paths for SYCL, MKL, and DNNL on Windows
             let oneapi_root = env::var("ONEAPI_ROOT").unwrap_or_else(|_| "C:\\Program Files (x86)\\Intel\\oneAPI".to_string());
@@ -163,6 +163,7 @@ fn main() {
             println!("cargo:rustc-link-search=native={}\\compiler\\latest\\windows\\lib\\intel64", oneapi_root);
             println!("cargo:rustc-link-search=native={}\\mkl\\latest\\lib\\intel64", oneapi_root);
             println!("cargo:rustc-link-search=native={}\\dnnl\\latest\\lib", oneapi_root);
+            println!("cargo:rustc-link-search=native={}\\tbb\\latest\\lib\\intel64\\vc14", oneapi_root);
         }
     }
 

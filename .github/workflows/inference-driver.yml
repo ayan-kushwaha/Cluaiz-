@@ -357,11 +357,14 @@ jobs:
             cargo install cross --git https://github.com/cross-rs/cross
             cross build --release --target ${{ matrix.target }} -p llama --features "${{ matrix.features }}"
           elif [[ "${{ matrix.backend }}" == "sycl" && "${{ runner.os }}" == "Windows" ]]; then
-            # Clean target directory to prevent RuntimeLibrary mismatch with cached objects
+            # Clean target directory and force /MD (Dynamic CRT) globally via .cargo/config.toml
             rm -rf D:/t/*
+            mkdir -p .cargo
+            echo '[target.x86_64-pc-windows-msvc]' > .cargo/config.toml
+            echo 'rustflags = ["-C", "target-feature=-crt-static"]' >> .cargo/config.toml
+            
             echo 'call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"' > run_sycl.bat
             echo 'set CMAKE_GENERATOR=Ninja' >> run_sycl.bat
-            echo 'set RUSTFLAGS=-Ctarget-feature=-crt-static' >> run_sycl.bat
             echo 'cargo build --release --target ${{ matrix.target }} -p llama --features "${{ matrix.features }}"' >> run_sycl.bat
             cmd.exe //c run_sycl.bat
           elif [[ "${{ matrix.backend }}" == "vulkan" && "${{ runner.os }}" == "Windows" ]]; then
