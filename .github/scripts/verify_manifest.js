@@ -94,6 +94,11 @@ const processManifest = (manifestStr, assets) => {
       
       return true;
     });
+
+    // Delete the entire key if the array is completely empty
+    if (manifest[key].length === 0) {
+      delete manifest[key];
+    }
   };
 
   ['backends', 'kernels', 'drivers', 'engines', 'cli'].forEach(pruneArray);

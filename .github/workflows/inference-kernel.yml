@@ -211,12 +211,12 @@ jobs:
             TAG="${{ github.ref_name }}"
           fi
           
-          node .github/scripts/verify_manifest.js --repo=${{ github.repository }} --tag=$TAG --template=master-registry.json --output=registry-synced.json --version=$VERSION
+          node .github/scripts/verify_manifest.js --repo=${{ github.repository }} --tag=$TAG --template=master-registry.json --output=cluaiz-kernel.json --version=$VERSION
 
       - name: Upload Synced Registry
         uses: softprops/action-gh-release@v2
         with:
-          files: registry-synced.json
+          files: cluaiz-kernel.json
           tag_name: "${{ github.event_name == 'workflow_dispatch' && format('kernel-{0}', github.event.inputs.tag_name) || github.ref_name }}"
           make_latest: true
         env:

@@ -9,9 +9,12 @@
   },
 
   "cli": [
-    { "os": "windows", "arch": "x86_64", "download_url": "{BASE_URL}/{CLI_TAG}/cluaiz-win-x64.exe" },
-    { "os": "linux", "arch": "x86_64", "download_url": "{BASE_URL}/{CLI_TAG}/cluaiz-linux-x64" },
-    { "os": "macos", "arch": "arm64", "download_url": "{BASE_URL}/{CLI_TAG}/cluaiz-mac-arm64" }
+    { "os": "windows", "arch": "x86_64", "download_url": "{BASE_URL}/{CLI_TAG}/cluaiz-{VERSION}-win-x64.exe" },
+    { "os": "windows", "arch": "aarch64", "download_url": "{BASE_URL}/{CLI_TAG}/cluaiz-{VERSION}-win-arm64.exe" },
+    { "os": "linux", "arch": "x86_64", "download_url": "{BASE_URL}/{CLI_TAG}/cluaiz-{VERSION}-linux-x64" },
+    { "os": "linux", "arch": "aarch64", "download_url": "{BASE_URL}/{CLI_TAG}/cluaiz-{VERSION}-linux-arm64" },
+    { "os": "macos", "arch": "arm64", "download_url": "{BASE_URL}/{CLI_TAG}/cluaiz-{VERSION}-mac-arm64" },
+    { "os": "macos", "arch": "x86_64", "download_url": "{BASE_URL}/{CLI_TAG}/cluaiz-{VERSION}-mac-x64" }
   ],
 
   "engines": [
