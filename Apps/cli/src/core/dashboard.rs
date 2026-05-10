@@ -31,7 +31,7 @@ impl DashboardEngine {
         // ── 🧬 ATOMIC Core DISCOVERY (Cluaiz Startup Scan) ──
         if state.sorted_models.is_empty() {
             state.sorted_models = engines::CoreRoster::get_recommendations(
-                &state.hardware.to_Hardware_truth(),
+                &state.hardware.to_hardware_truth(),
                 state.ram_gb,
             );
         }

@@ -124,7 +124,7 @@ jobs:
             ext: so
             prefix: "lib"
 
-          # --- Intel OpenVINO ---
+          # --- Intel OpenVINO ---  
           - platform: win-x64
             backend: openvino
             os: windows-latest
@@ -262,6 +262,9 @@ jobs:
           Add-Content $env:GITHUB_ENV "INTEL_OPENVINO_DIR=$PWD\openvino"
           Add-Content $env:GITHUB_ENV "OpenVINO_DIR=$PWD\openvino\runtime\cmake"
           Add-Content $env:GITHUB_PATH "$PWD\openvino\runtime\bin\intel64\Release"
+          # Add TBB library path for llama.cpp linking
+          Add-Content $env:GITHUB_ENV "TBB_LIB_DIR=$PWD\openvino\runtime\lib\intel64\Release"
+          Add-Content $env:GITHUB_ENV "LIB=$PWD\openvino\runtime\lib\intel64\Release;$env:LIB"
           # Install OpenCL via vcpkg
           vcpkg install opencl:x64-windows
           Add-Content $env:GITHUB_ENV "OpenCL_INCLUDE_DIR=C:\vcpkg\installed\x64-windows\include"

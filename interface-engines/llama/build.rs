@@ -40,7 +40,8 @@ fn main() {
         .define("LLAMA_STATIC",         "ON")
         .define("BUILD_SHARED_LIBS",    "OFF")
         // Use MultiThreaded (/MT) to match Rust's default static CRT on Windows MSVC.
-        .define("CMAKE_MSVC_RUNTIME_LIBRARY", "MultiThreaded")
+        // SYCL backend (icx) does NOT support /MT with -fsycl. Use MultiThreadedDLL (/MD) for SYCL.
+        .define("CMAKE_MSVC_RUNTIME_LIBRARY", if env::var("CARGO_FEATURE_SYCL").is_ok() { "MultiThreadedDLL" } else { "MultiThreaded" })
         .profile("Release");
 
     // ── Apple Platform Alignment ──────────────────────────────────────
@@ -90,7 +91,11 @@ fn main() {
         config.define("GGML_SYCL", "ON");
         if let Ok(v) = env::var("DPCPP_CXX") { config.define("CMAKE_CXX_COMPILER", &v); }
         if let Ok(v) = env::var("DPCPP_CC")  { config.define("CMAKE_C_COMPILER",   &v); }
-        config.cxxflag("/EHsc");
+
+        // Use MSVC-style flags only on Windows. Linux icpx expects GCC-style flags.
+        if target_os == "windows" {
+            config.cxxflag("/EHsc");
+        }
     } else if feature_qnn {
         config.define("GGML_QNN", "ON");
     } else if feature_cann {

@@ -399,7 +399,7 @@ impl AppState {
                 engines::DownloadEvent::Complete(id) => {
                     if id == "INITIAL_LOAD" {
                         self.sorted_models = engines::CoreRoster::get_recommendations(
-                            &self.hardware.to_Hardware_truth(), self.ram_gb
+                            &self.hardware.to_hardware_truth(), self.ram_gb
                         );
                     } else if self.downloading_id.as_ref() == Some(&id) {
                         let name = self.sorted_models.iter()
@@ -410,7 +410,7 @@ impl AppState {
                         self.downloading_id = None;
                         self.activity_stream.push(ActivityBlock::DownloadComplete(name));
                         self.sorted_models = engines::CoreRoster::get_recommendations(
-                            &self.hardware.to_Hardware_truth(), self.ram_gb
+                            &self.hardware.to_hardware_truth(), self.ram_gb
                         );
                     }
                 }

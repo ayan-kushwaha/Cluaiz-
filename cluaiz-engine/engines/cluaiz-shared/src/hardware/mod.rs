@@ -65,7 +65,7 @@ pub fn get_Cluaiz_profile() -> schema::profiles::CluaizProfile {
 
 impl schema::profiles::SovereignProfile {
     /// 🧬 Cluaiz Bridge: Alias for to_silicon_truth() for naming-migration compat.
-    pub fn to_Hardware_truth(&self) -> schema::profiles::SiliconTruth {
+    pub fn to_hardware_truth(&self) -> schema::profiles::SiliconTruth {
         self.to_silicon_truth()
     }
 }

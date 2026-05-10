@@ -144,7 +144,7 @@ async fn run_app() -> Result<()> {
     // 🧠 Background Initialization: Load recommendations asynchronously
     spawn(async move {
         let _models = tokio::task::spawn_blocking(move || {
-            engines::CoreRoster::get_recommendations(&hardware.to_Hardware_truth(), ram)
+            engines::CoreRoster::get_recommendations(&hardware.to_hardware_truth(), ram)
         }).await.unwrap_or_default();
 
         let _ = tx.send(DownloadEvent::Complete("INITIAL_LOAD".to_string()));
