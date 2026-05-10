@@ -146,11 +146,12 @@ fn main() {
         }
         if feature_sycl {
             println!("cargo:rustc-link-lib=static=ggml-sycl");
-            println!("cargo:rustc-link-lib=dylib=sycl7"); // Intel oneAPI SYCL runtime
+            println!("cargo:rustc-link-lib=dylib=sycl"); // Modern Intel oneAPI SYCL runtime (usually sycl.lib)
             
-            // Hard-link search path for sycl7.lib on Windows (updated for modern oneAPI layout)
+            // Hard-link search path for sycl.lib on Windows (comprehensive paths for modern oneAPI)
             let oneapi_root = env::var("ONEAPI_ROOT").unwrap_or_else(|_| "C:\\Program Files (x86)\\Intel\\oneAPI".to_string());
             println!("cargo:rustc-link-search=native={}\\compiler\\latest\\windows\\lib", oneapi_root);
+            println!("cargo:rustc-link-search=native={}\\compiler\\latest\\windows\\lib\\intel64", oneapi_root);
             println!("cargo:rustc-link-search=native={}\\compiler\\latest\\lib", oneapi_root);
         }
     }

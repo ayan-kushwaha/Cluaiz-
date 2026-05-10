@@ -208,6 +208,7 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: stable
           targets: ${{ matrix.target }}
 
       - name: Configure Windows Environment (LongPaths & Short Target Dir)
