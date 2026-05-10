@@ -357,6 +357,8 @@ jobs:
             cargo install cross --git https://github.com/cross-rs/cross
             cross build --release --target ${{ matrix.target }} -p llama --features "${{ matrix.features }}"
           elif [[ "${{ matrix.backend }}" == "sycl" && "${{ runner.os }}" == "Windows" ]]; then
+            # Clean target directory to prevent RuntimeLibrary mismatch with cached objects
+            rm -rf D:/t/*
             echo 'call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"' > run_sycl.bat
             echo 'set CMAKE_GENERATOR=Ninja' >> run_sycl.bat
             echo 'set RUSTFLAGS=-Ctarget-feature=-crt-static' >> run_sycl.bat
