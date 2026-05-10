@@ -142,10 +142,15 @@ fn main() {
         if feature_openvino { 
             println!("cargo:rustc-link-lib=static=ggml-openvino");
             println!("cargo:rustc-link-lib=dylib=OpenCL"); 
+            println!("cargo:rustc-link-lib=dylib=openvino"); // Core OpenVINO Runtime symbols
         }
         if feature_sycl {
             println!("cargo:rustc-link-lib=static=ggml-sycl");
             println!("cargo:rustc-link-lib=dylib=sycl7"); // Intel oneAPI SYCL runtime
+            
+            // Hard-link search path for sycl7.lib on Windows
+            let oneapi_root = env::var("ONEAPI_ROOT").unwrap_or_else(|_| "C:\\Program Files (x86)\\Intel\\oneAPI".to_string());
+            println!("cargo:rustc-link-search=native={}\\compiler\\latest\\lib", oneapi_root);
         }
     }
 
