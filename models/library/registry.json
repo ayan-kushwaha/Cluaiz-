@@ -18,7 +18,7 @@
     "gemma3:12b": "Gemma/v-3.0/3.0.json",
     "gemma4:e2b": "Gemma/v-4.0/4.0.json",
     "gemma4:e4b": "Gemma/v-4.0/4.0.json",
-    "gemma4:26b": "Gemma/v-4.0/4.0.json",
+    "gemma4:26b-a4b": "Gemma/v-4.0/4.0.json",
     "Llama-4-Scout-17B-16E-Instruct": "Llama/v-4.0/4.0.json",
     "Llama-4-Maverick-17B-128E-Instruct": "Llama/v-4.0/4.0.json",
     "bitnet-personalized-llm": "Persona.json"

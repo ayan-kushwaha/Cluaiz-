@@ -3,10 +3,10 @@
 /// 🏛️ CluaizDNA: Modular Lifecycle Management for the Neural Ecosystem
 pub struct CluaizDNA;
 impl CluaizDNA {
-    pub const CLI: &'static str = "v1.0.0";
-    pub const ENGINE: &'static str = "v1.0.0";
-    pub const KERNEL: &'static str = "v1.0.0";
-    pub const DRIVER: &'static str = "v1.0.0";
+    pub const CLI: &'static str = "dev-release";
+    pub const ENGINE: &'static str = "dev-release";
+    pub const KERNEL: &'static str = "dev-release";
+    pub const DRIVER: &'static str = "dev-release";
 }
 
 pub mod hardware;

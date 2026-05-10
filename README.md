@@ -186,25 +186,76 @@ Automatically maps neural tasks to specialized kernels based on hardware efficie
 
 ## 🕹️ **Quick Start Manual**
 
-### 1. Build & Install
-```bash
-$ cargo install --path ./Apps/cli
-$ cluaiz probe    # Calibrate Silicon
+### 🚀 Remote Power-On Installation (Recommended)
+
+Get the entire sovereign neural runtime compiled, linked, and calibrated natively with a single command:
+
+#### **Windows (PowerShell)**:
+```powershell
+powershell -ExecutionPolicy Bypass -Command "iwr -useb https://raw.githubusercontent.com/cluaiz/cluaiz/main/install.ps1 | iex"
 ```
 
-### 2. Operational Workflow
+#### **Linux & macOS (Shell)**:
 ```bash
-# Acquire weights
-$ cluaiz pull llama3-8b
-
-# Live Inference
-$ cluaiz run llama3-8b --prompt "Initialize Neural Protocol"
-
-# Feature: Not Yet Available
-# - Distributed Inference
-# - Mobile Optimization
-# - Multi-User Failover
+curl -fsSL https://raw.githubusercontent.com/cluaiz/cluaiz/main/install.sh | bash
 ```
+
+---
+
+### 🛠️ Local Compilation (Manual Build)
+
+If you prefer to compile from source, you can build the entire workspace natively using Cargo:
+
+```bash
+# 1. Clone the repository
+$ git clone https://github.com/cluaiz/cluaiz.git
+$ cd cluaiz
+
+# 2. Build the entire Cluaiz Neural Ecosystem
+$ cargo build --release --workspace
+
+# 3. Run the CLI binary directly from Cargo
+$ cargo run -p cli
+```
+
+---
+
+### 🕹️ Operational Workflow (How to Use)
+
+Cluaiz provides an ultra-low-overhead CLI command suite:
+
+#### **1. Launch the Sovereign Interactive TUI Dashboard**
+Run the naked `cluaiz` command to launch our full-terminal interactive control panel (replaces heavy UI web interfaces):
+```bash
+$ cluaiz
+```
+
+#### **2. Direct Headless Inference**
+Pull and run any model with zero-copy caching dynamically:
+```bash
+$ cluaiz run gemma2:2b
+```
+
+#### **3. Re-Calibrate Hardware Profile**
+Perform real-time RDTSC hardware clocking, SIMD profiling, and VRAM detection to update your native hardware profile:
+```bash
+$ cluaiz --calibrate
+```
+
+#### **4. Run Hardware Performance Benchmark**
+Stress-test your local CPU/GPU and memory subsystems to measure neural operations per second:
+```bash
+$ cluaiz --benchmark
+```
+
+---
+
+### 🛡️ Note on Windows SmartScreen Warning
+
+Since the pre-compiled `cluaiz` executables are built dynamically on GitHub Actions and are not signed with a commercial Microsoft code-signing certificate (which requires corporate entity validation), Windows Defender may show a blue **"Windows protected your PC"** pop-up upon double-clicking the app:
+
+1. Click on **"More info"** on the pop-up.
+2. Click **"Run anyway"** to launch the native CLI dashboard instantly.
 
 ---
 

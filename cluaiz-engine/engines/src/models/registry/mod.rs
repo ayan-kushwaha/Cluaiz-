@@ -34,7 +34,7 @@ pub struct InstallationModel {
     pub parameters: String,
     #[serde(default)]
     pub training_tokens: String,
-    #[serde(default = "default_bit_depth")]
+    #[serde(default = "default_bit_depth", deserialize_with = "deserialize_bit_depth")]
     pub bit_depth: f64,
     pub ram_required_gb: f64,
     #[serde(default)]
@@ -70,6 +70,52 @@ struct InstallationFile {
 }
 
 fn default_bit_depth() -> f64 { 4.0 }
+
+fn deserialize_bit_depth<'de, D>(deserializer: D) -> Result<f64, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    struct BitDepthVisitor;
+
+    impl<'de> serde::de::Visitor<'de> for BitDepthVisitor {
+        type Value = f64;
+
+        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            formatter.write_str("a float or a string containing a float")
+        }
+
+        fn visit_f64<E>(self, value: f64) -> Result<Self::Value, E>
+        where
+            E: serde::de::Error,
+        {
+            Ok(value)
+        }
+
+        fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E>
+        where
+            E: serde::de::Error,
+        {
+            Ok(value as f64)
+        }
+
+        fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+        where
+            E: serde::de::Error,
+        {
+            Ok(value as f64)
+        }
+
+        fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+        where
+            E: serde::de::Error,
+        {
+            value.parse::<f64>().map_err(serde::de::Error::custom)
+        }
+    }
+
+    deserializer.deserialize_any(BitDepthVisitor)
+}
+
 fn default_context() -> String { "8k".to_string() }
 fn default_category() -> String { "chat".to_string() }
 
@@ -83,6 +129,7 @@ pub struct ModelManifest {
     pub architecture: String,
     pub parameters: String,
     pub training_tokens: String,
+    #[serde(default = "default_bit_depth", deserialize_with = "deserialize_bit_depth")]
     pub bit_depth: f64,
     pub ram_required_gb: f64,
     pub download_size_gb: f64,

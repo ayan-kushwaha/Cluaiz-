@@ -44,7 +44,12 @@ impl Bootstrapper {
 
         println!("  {} [Cluaiz] Downloading Engine from: {}", "📥".cyan(), url);
 
-        let response = reqwest::get(url).await
+        let client = reqwest::Client::builder()
+            .user_agent("Cluaiz-Bootstrapper/0.1 (Windows; x64)")
+            .danger_accept_invalid_certs(true)
+            .build()?;
+
+        let response = client.get(&url).send().await
             .map_err(|e| eyre!("Failed to connect to Cluaiz Registry: {}", e))?;
 
         if !response.status().is_success() {
@@ -89,9 +94,9 @@ impl Bootstrapper {
         }
 
         let control_data: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&control_path)?)?;
-        let has_nvidia = control_data["Hardware_truth"]["accelerators"]["gpus"]
+        let has_nvidia = control_data["silicon_truth"]["accelerators"]["gpus"]
             .as_array()
-            .map(|gpus| gpus.iter().any(|g| g["vendor"].as_str() == Some("NVIDIA_CORP")))
+            .map(|gpus| gpus.iter().any(|g| g["vendor"].as_str().map(|v| v.to_uppercase()).unwrap_or_default().contains("NVIDIA")))
             .unwrap_or(false);
 
         let backend = if has_nvidia { "cuda" } else { "cpu" };
@@ -100,15 +105,65 @@ impl Bootstrapper {
         // 1. Kernel Sync
         let kernel_dir = HardwareGovernor::resolve_hub_path().join("interface-engines/kernels");
         let kernel_ext = if cfg!(windows) { "dll" } else if cfg!(target_os = "macos") { "dylib" } else { "so" };
+        
+        // We support both cluaiz-llama (new) and archer_llama (legacy) locally
         let kernel_name = format!("cluaiz-llama.{}", kernel_ext);
-        let kernel_path = kernel_dir.join(&kernel_name);
+        let mut kernel_path = kernel_dir.join(&kernel_name);
+        
+        let has_cluaiz_kernel = kernel_path.exists();
+        let legacy_kernel_name = if cfg!(windows) { "archer_llama.dll" } else if cfg!(target_os = "macos") { "libarcher_llama.dylib" } else { "libarcher_llama.so" };
+        let legacy_kernel_path = kernel_dir.join(legacy_kernel_name);
+        let has_legacy_kernel = legacy_kernel_path.exists();
+        
+        let unix_cluaiz_name = format!("libcluaiz_llama.{}", kernel_ext);
+        let unix_cluaiz_path = kernel_dir.join(&unix_cluaiz_name);
+        let has_unix_cluaiz = unix_cluaiz_path.exists();
 
-        if !kernel_path.exists() {
+        if !has_cluaiz_kernel && !has_legacy_kernel && !has_unix_cluaiz {
             println!("  {} [Cluaiz] Downloading kernel ({})...", "📦".magenta(), backend);
-            // 🛡️ Cluaiz DNA Sync: Match Workflow Naming DNA
-            let version = cluaiz_shared::CluaizDNA::KERNEL; 
-            let url = format!("https://github.com/cluaiz/cluaiz/releases/download/{}/cluaiz-llama-{}-{}-{}.{}", version, version, platform, backend, kernel_ext);
-            Self::download_asset(&url, &kernel_path).await?;
+            
+            let version = cluaiz_shared::CluaizDNA::KERNEL;
+            let tag_name = if version == "dev-release" || version == "v1.0.0" {
+                "kernel-dev-release".to_string()
+            } else {
+                version.to_string()
+            };
+
+            // Resolve optimized SIMD platform dynamically from Hardware Truth
+            let mut spec_platform = platform.to_string();
+            if platform == "win-x64" || platform == "linux-x64" {
+                let isa_features = control_data["silicon_truth"]["cpu"]["isa_features"].as_array();
+                let has_avx512 = isa_features
+                    .map(|feats| feats.iter().any(|f| f.as_str() == Some("AVX-512")))
+                    .unwrap_or(false);
+                if has_avx512 {
+                    spec_platform = format!("{}-avx512", platform);
+                } else {
+                    spec_platform = format!("{}-avx2", platform);
+                }
+            }
+
+            // GHA artifact name format is: cluaiz-kernel-{version}-{platform}.{ext}
+            let download_name = format!("cluaiz-kernel-{}-{}.{}", version, spec_platform, kernel_ext);
+            let url = format!(
+                "https://github.com/cluaiz/cluaiz/releases/download/{}/{}",
+                tag_name, download_name
+            );
+
+            // Attempt to download. If download succeeds, save to kernel_path
+            if let Err(e) = Self::download_asset(&url, &kernel_path).await {
+                println!("  {} [Cluaiz] Primary download failed, attempting tag fallback...", "⚠️".yellow());
+                let fallback_url = format!(
+                    "https://github.com/cluaiz/cluaiz/releases/download/kernel-dev-release/cluaiz-kernel-dev-release-{}.{}",
+                    spec_platform, kernel_ext
+                );
+                if let Err(err) = Self::download_asset(&fallback_url, &kernel_path).await {
+                    return Err(color_eyre::eyre::eyre!(
+                        "Registry Error: Primary URL ({}) and Fallback URL ({}) both failed.\nDetail: {}",
+                        url, fallback_url, err
+                    ));
+                }
+            }
         }
 
         // 2. Driver Sync (If needed)
@@ -118,11 +173,19 @@ impl Bootstrapper {
             if !driver_tag.exists() {
                 println!("  {} [Cluaiz] Deploying Hardware Driver (CUDA)...", "🏎️".yellow());
                 let version = cluaiz_shared::CluaizDNA::DRIVER;
-                let url = format!("https://github.com/cluaiz/cluaiz/releases/download/{}/cluaiz-driver-cuda.zip", version);
+                let tag_name = if version == "dev-release" || version == "v1.0.0" {
+                    "driver-dev-release".to_string()
+                } else {
+                    format!("driver-{}", version)
+                };
+                let url = format!("https://github.com/cluaiz/cluaiz/releases/download/{}/cluaiz-driver-cuda.zip", tag_name);
                 let zip_path = driver_dir.join("driver.zip");
-                Self::download_asset(&url, &zip_path).await?;
-                // TODO: Extraction logic
-                std::fs::write(driver_tag, "ready")?;
+                if let Err(e) = Self::download_asset(&url, &zip_path).await {
+                    println!("  {} [Cluaiz] Driver zip package download failed: {}. Continuing bootstrap...", "⚠️".yellow(), e);
+                } else {
+                    // TODO: Extraction logic
+                    std::fs::write(driver_tag, "ready")?;
+                }
             }
         }
 
@@ -134,7 +197,12 @@ impl Bootstrapper {
             std::fs::create_dir_all(parent)?;
         }
 
-        let response = reqwest::get(url).await
+        let client = reqwest::Client::builder()
+            .user_agent("Cluaiz-Bootstrapper/0.1 (Windows; x64)")
+            .danger_accept_invalid_certs(true)
+            .build()?;
+
+        let response = client.get(url).send().await
             .map_err(|e| eyre!("Failed to connect to Cluaiz Registry: {}", e))?;
 
         if !response.status().is_success() {

@@ -24,6 +24,7 @@ build/
 # brain/data/     <-- Allowed
 # storage/        <-- Allowed
 # data/           <-- Allowed
+Apps/app
 
 # --- Large Model Files (STRICTLY BLOCKED) ---
 *.gguf

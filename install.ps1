@@ -118,15 +118,17 @@ try {
     Complete-Step $step2
 
     # --- CLI Deployment ---
-    $CliRel = $Releases | Where-Object { $_.tag_name -like 'cli-v*' } | Select-Object -First 1
+    $CliRel = $Releases | Where-Object { $_.tag_name -like 'cli-v*' -or $_.tag_name -eq 'cli-dev-release' } | Select-Object -First 1
     if (-not $CliRel) { throw 'No CLI release found in registry.' }
-    $CliUrl = "https://github.com/$Repo/releases/download/$($CliRel.tag_name)/cli-manifest.json"
-    $CliManifest = Invoke-RestMethod -Uri $CliUrl
-    $CliBins = if ($CliManifest.binaries) { $CliManifest.binaries } else { $CliManifest.assets }
+    
+    # Direct Asset Lookup (Bypasses missing cli-manifest.json)
+    $CliAsset = $CliRel.assets | Where-Object { $_.name -like "*$Arch*" } | Select-Object -First 1
+    if (-not $CliAsset) { throw "No CLI asset matching $Arch found in release." }
+    $CliUrl = $CliAsset.browser_download_url
     
     $TargetCli = Join-Path $HubPath 'apps/cli/cluaiz.exe'
     $CliLabel = "Cluaiz CLI ($Arch) $($CliRel.tag_name) - latest"
-    Invoke-CluaizDownload -url $CliBins.($Arch) -path $TargetCli -label $CliLabel
+    Invoke-CluaizDownload -url $CliUrl -path $TargetCli -label $CliLabel
     
     # 🚀 Zero-Copy Linkage
     $BinPath = Join-Path $HubPath 'bin'
@@ -140,36 +142,36 @@ try {
     Complete-Step $step3
 
     # --- Engine Deployment ---
-    $EngRel = $Releases | Where-Object { $_.tag_name -like 'engine-v*' } | Select-Object -First 1
+    $EngRel = $Releases | Where-Object { $_.tag_name -like 'engine-v*' -or $_.tag_name -eq 'engine-dev-release' } | Select-Object -First 1
     if (-not $EngRel) { throw 'No Engine release found in registry.' }
-    $EngUrl = "https://github.com/$Repo/releases/download/$($EngRel.tag_name)/engine-manifest.json"
-    $EngManifest = Invoke-RestMethod -Uri $EngUrl
-    $EngBins = if ($EngManifest.binaries) { $EngManifest.binaries } else { $EngManifest.assets }
     
-    $EUrl = $EngBins.($Arch) -replace 'latest-engine', "$($EngRel.tag_name)"
+    # Direct Asset Lookup (Bypasses engine-manifest.json dependency)
+    $EngAsset = $EngRel.assets | Where-Object { $_.name -like "*$Arch*" } | Select-Object -First 1
+    if (-not $EngAsset) { throw "No Engine asset matching $Arch found in release." }
+    $EUrl = $EngAsset.browser_download_url
+    
     $EngLabel = "Cluaiz Engine ($Arch) $($EngRel.tag_name) - latest"
     Invoke-CluaizDownload -url $EUrl -path (Join-Path $HubPath 'engine/cluaiz-engine.dll') -label $EngLabel
 
     # --- Multi-Kernel Sync ---
-    $KerRel = $Releases | Where-Object { $_.tag_name -like 'kernel-v*' } | Select-Object -First 1
+    $KerRel = $Releases | Where-Object { $_.tag_name -like 'kernel-v*' -or $_.tag_name -eq 'kernel-dev-release' } | Select-Object -First 1
     if ($KerRel) {
-        $KerUrl = "https://github.com/$Repo/releases/download/$($KerRel.tag_name)/kernel-manifest.json"
-        $KerManifest = Invoke-RestMethod -Uri $KerUrl
-        $KerBins = if ($KerManifest.kernels) { $KerManifest.kernels } else { $KerManifest.assets }
+        # Check CPU ISA to download AVX512 or AVX2 dynamically
+        $AVX512_Enabled = $false
+        if ($env:PROCESSOR_IDENTIFIER -like "*AVX512*") { $AVX512_Enabled = $true }
         
-        $KernelsToSync = @('llama', 'candle', 'bitnet')
-        foreach ($k in $KernelsToSync) {
-            if ($KerBins.$k) {
-                $KUrlRaw = $KerBins.$k.("$Arch-cuda")
-                if (-not $KUrlRaw) { $KUrlRaw = $KerBins.$k.("$Arch-cpu") }
-                
-                if ($KUrlRaw) {
-                    $KUrl = $KUrlRaw -replace 'latest-kernels', "$($KerRel.tag_name)"
-                    $KName = 'archer_' + $k + '.dll'
-                    $KerLabel = "Cluaiz $k Kernel ($Arch) $($KerRel.tag_name) - latest"
-                    Invoke-CluaizDownload -url $KUrl -path (Join-Path $HubPath "interface-engines/kernels/$KName") -label $KerLabel
-                }
-            }
+        $TargetPlatform = if ($AVX512_Enabled) { "win-x64-avx512" } else { "win-x64-avx2" }
+        if ($Arch -eq 'win-arm64') { $TargetPlatform = 'win-arm64' } # Align ARM64
+        
+        # Direct Asset Lookup (Bypasses missing kernel-manifest.json entirely!)
+        $KerAsset = $KerRel.assets | Where-Object { $_.name -like "*$TargetPlatform*" } | Select-Object -First 1
+        if ($KerAsset) {
+            $KUrl = $KerAsset.browser_download_url
+            $KName = 'cluaiz-llama.dll'
+            $KerLabel = "Cluaiz Llama Kernel ($TargetPlatform) $($KerRel.tag_name) - latest"
+            Invoke-CluaizDownload -url $KUrl -path (Join-Path $HubPath "interface-engines/kernels/$KName") -label $KerLabel
+        } else {
+            Write-Host "  [Warning] No matching kernel asset found for $TargetPlatform in release. Continuing bootstrap..." -ForegroundColor Yellow
         }
     }
 

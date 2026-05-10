@@ -62,13 +62,25 @@ impl KernelLoader {
         // We try multiple potential naming conventions and subdirectories
         let mut candidates = Vec::new();
         
-        // 1. Full Hardware-Suffixed (e.g. archer_llama-cuda.dll)
-        candidates.push(format!("archer_{}.{}", kernel_name, ext));
+        // 1. Unified Cluaiz Naming Format (e.g. cluaiz-llama.dll, libcluaiz_llama.so)
+        candidates.push(format!("cluaiz-{}.{}", kernel_name, ext));
+        candidates.push(format!("cluaiz_{}.{}", kernel_name, ext));
+        candidates.push(format!("libcluaiz_{}.{}", kernel_name, ext));
+        candidates.push(format!("libcluaiz-{}.{}", kernel_name, ext));
         
-        // 2. Simple Base (e.g. archer_llama.dll)
+        // 2. Legacy Archer Naming Format (e.g. archer_llama.dll, libarcher_llama.so)
+        candidates.push(format!("archer_{}.{}", kernel_name, ext));
+        candidates.push(format!("archer-{}.{}", kernel_name, ext));
+        candidates.push(format!("libarcher_{}.{}", kernel_name, ext));
+        
+        // 3. Simple Base checks for hyphenated names (e.g. llama-cuda -> llama)
         if kernel_name.contains('-') {
             let base_name = kernel_name.split('-').next().unwrap_or(kernel_name);
+            candidates.push(format!("cluaiz-{}.{}", base_name, ext));
+            candidates.push(format!("cluaiz_{}.{}", base_name, ext));
+            candidates.push(format!("libcluaiz_{}.{}", base_name, ext));
             candidates.push(format!("archer_{}.{}", base_name, ext));
+            candidates.push(format!("libarcher_{}.{}", base_name, ext));
         }
 
         // 3. System Truth: Read cluaiz_root

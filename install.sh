@@ -56,8 +56,11 @@ esac
 PLATFORM="$OS-$ARCH"
 
 # --- CLI ---
-CLI_MANIFEST_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+cli-manifest.json"' | head -1 | cut -d'"' -f4)
-CLI_URL=$(curl -sL "$CLI_MANIFEST_URL" | grep -oE "\"$PLATFORM\": \"[^\"]+\"" | cut -d'"' -f4)
+CLI_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+cluaiz-dev-release-'"$PLATFORM"'"' | head -1 | cut -d'"' -f4 || echo "")
+if [ -z "$CLI_URL" ]; then
+    CLI_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+cluaiz-[^"]+-'"$PLATFORM"'"' | head -1 | cut -d'"' -f4 || echo "")
+fi
+
 write_step "Retrieving CLI ($PLATFORM)"
 curl -sL "$CLI_URL" -o "$HUB_PATH/apps/cli/cluaiz"
 chmod +x "$HUB_PATH/apps/cli/cluaiz"
@@ -65,24 +68,37 @@ ln -sf "$HUB_PATH/apps/cli/cluaiz" "$HUB_PATH/bin/cluaiz"
 complete_step "Retrieving CLI ($PLATFORM)"
 
 # --- Engine ---
-ENGINE_MANIFEST_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+engine-manifest.json"' | head -1 | cut -d'"' -f4)
-ENGINE_URL=$(curl -sL "$ENGINE_MANIFEST_URL" | grep -oE "\"$PLATFORM\": \"[^\"]+\"" | cut -d'"' -f4)
+ENGINE_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+cluaiz-engine-dev-release-'"$PLATFORM"'\.'"$EXT"'"' | head -1 | cut -d'"' -f4 || echo "")
+if [ -z "$ENGINE_URL" ]; then
+    ENGINE_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+cluaiz-engine-[^"]+-'"$PLATFORM"'\.'"$EXT"'"' | head -1 | cut -d'"' -f4 || echo "")
+fi
+
 write_step "Retrieving Core Engine"
 curl -sL "$ENGINE_URL" -o "$HUB_PATH/engine/cluaiz-engine.$EXT"
 complete_step "Retrieving Core Engine"
 
 # --- Default Kernel ---
-KERNEL_MANIFEST_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+kernel-manifest.json"' | head -1 | cut -d'"' -f4)
-MANIFEST_CONTENT=$(curl -sL "$KERNEL_MANIFEST_URL")
-
-# Smart detection
-if [[ "$OS" == "mac" ]]; then BACKEND="metal"; else BACKEND="cuda"; fi
-KERNEL_URL=$(echo "$MANIFEST_CONTENT" | grep -oE "\"$PLATFORM-$BACKEND\": \"[^\"]+\"" | cut -d'"' -f4 || echo "")
+if [[ "$OS" == "mac" ]]; then
+    KERNEL_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+cluaiz-kernel-dev-release-'"$PLATFORM"'\.dylib"' | head -1 | cut -d'"' -f4 || echo "")
+else
+    # Linux
+    if [[ "$ARCH" == "arm64" ]]; then
+        TARGET_PLATFORM="linux-arm64"
+    else
+        HAS_AVX512=$(grep -o "avx512f" /proc/cpuinfo | head -1 || echo "")
+        if [ -n "$HAS_AVX512" ]; then
+            TARGET_PLATFORM="linux-x64-avx512"
+        else
+            TARGET_PLATFORM="linux-x64-avx2"
+        fi
+    fi
+    KERNEL_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+cluaiz-kernel-dev-release-'"$TARGET_PLATFORM"'\.so"' | head -1 | cut -d'"' -f4 || echo "")
+fi
 
 if [ -n "$KERNEL_URL" ]; then
-    write_step "Retrieving Core Kernel ($BACKEND)"
-    curl -sL "$KERNEL_URL" -o "$HUB_PATH/interface-engines/kernels/libarcher_llama.$EXT"
-    complete_step "Retrieving Core Kernel ($BACKEND)"
+    write_step "Retrieving Core Kernel"
+    curl -sL "$KERNEL_URL" -o "$HUB_PATH/interface-engines/kernels/libcluaiz_llama.$EXT"
+    complete_step "Retrieving Core Kernel"
 fi
 
 write_success "Deployment successful."

@@ -42,6 +42,17 @@ enum CliCommand {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    if let Err(e) = run_app().await {
+        eprintln!("\n  {} [Cluaiz] Fatal Error: {}\n", "❌".red(), e);
+        println!("  Press [Enter] to exit...");
+        let mut temp = String::new();
+        let _ = std::io::stdin().read_line(&mut temp);
+        std::process::exit(1);
+    }
+    Ok(())
+}
+
+async fn run_app() -> Result<()> {
     // ══ PHASE 1 — HEADLESS FAST PATH ══════════════════════════════════════
     // These commands exit BEFORE bootstrap so no stray output contaminates
     // the clean terminal UX.
