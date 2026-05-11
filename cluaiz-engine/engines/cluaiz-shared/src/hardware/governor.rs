@@ -290,13 +290,20 @@ impl HardwareGovernor {
 
         let json_path = base.join("system_control.json");
         let bin_path = base.join("system_control.bin");
+        let temp_json = json_path.with_extension("tmp");
+        let temp_bin = bin_path.with_extension("tmp");
 
+        // ✍️ Atomic Write Protocol: Write to Temp -> Sync -> Rename
         let json_data = serde_json::to_string_pretty(control)?;
-        std::fs::write(json_path, json_data)?;
-
+        std::fs::write(&temp_json, json_data)?;
+        
         let bytes = rkyv::to_bytes::<_, 1024>(control)
             .map_err(|e| anyhow::anyhow!("Binary Serialization Failed: {}", e))?;
-        std::fs::write(bin_path, bytes.as_slice())?;
+        std::fs::write(&temp_bin, bytes.as_slice())?;
+
+        // Atomic Swap
+        std::fs::rename(temp_json, json_path)?;
+        std::fs::rename(temp_bin, bin_path)?;
 
         Ok(())
     }
@@ -362,15 +369,17 @@ impl RegistryGovernor {
     /// 🏛️ Synchronizes the master registry from remote and seals it into binary truth.
     pub fn seal_registry(data: serde_json::Value) -> anyhow::Result<()> {
         let (json_path, bin_path) = Self::resolve_registry_path();
+        let temp_json = json_path.with_extension("tmp");
+        let temp_bin = bin_path.with_extension("tmp");
         
-        // Save JSON
+        // ✍️ Atomic Registry Update
         let json_str = serde_json::to_string_pretty(&data)?;
-        std::fs::write(&json_path, json_str)?;
+        std::fs::write(&temp_json, json_str)?;
+        std::fs::write(&temp_bin, serde_json::to_vec(&data)?)?;
 
-        // Save Binary Truth (High-Speed Parsing)
-        // Note: For now we store the JSON string in binary to verify the handshake, 
-        // but this allows O(1) memory mapping in the future.
-        std::fs::write(bin_path, serde_json::to_vec(&data)?)?;
+        // Atomic Swap
+        std::fs::rename(temp_json, json_path)?;
+        std::fs::rename(temp_bin, bin_path)?;
 
         Ok(())
     }

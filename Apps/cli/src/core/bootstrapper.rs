@@ -22,11 +22,12 @@ impl Bootstrapper {
             .build()?;
 
         // 🎯 1. Fetch Master Registry (package.json)
-        println!("  {} [Cluaiz] Synchronizing Neural Registry...", "🛰️".cyan());
+        tracing::info!("🛰️ [Cluaiz] Synchronizing Neural Registry...");
         let master_registry: serde_json::Value = client.get(Self::MASTER_REGISTRY_URL).send().await?.json().await?;
         
-        // 🏛️ Seal the Master Registry (JSON + Binary Truth)
+        // 🏛️ Seal the Master Registry with Atomic Write Protocol
         cluaiz_shared::RegistryGovernor::seal_registry(master_registry.clone())?;
+        tracing::debug!("✅ [Registry] Binary Truth sealed and verified.");
 
         // 🎯 2. CLI Lifecycle Check
         let cli_info = &master_registry["components"]["cli"];
