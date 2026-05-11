@@ -1,13 +1,6 @@
 //! archer-shared: Common traits and types for the CURE Engine ecosystem.
 
-/// 🏛️ CluaizDNA: Modular Lifecycle Management for the Neural Ecosystem
 pub struct CluaizDNA;
-impl CluaizDNA {
-    pub const CLI: &'static str = "dev-release";
-    pub const ENGINE: &'static str = "dev-release";
-    pub const KERNEL: &'static str = "dev-release";
-    pub const DRIVER: &'static str = "dev-release";
-}
 
 pub mod hardware;
 pub mod metadata;

@@ -7,42 +7,36 @@ use cluaiz_shared::HardwareGovernor;
 pub struct DriverProvisioner;
 
 impl DriverProvisioner {
-    const MANIFEST_URL: &'static str = "https://github.com/cluaiz/cluaiz/releases/download/driver-dev-release/registry-synced.json";
+    /// 🛠️ Construct Registry Key: Dynamically maps local hardware details to the registry's flat keys.
+    fn get_registry_key(driver_type: &str) -> String {
+        let platform = if cfg!(windows) { 
+            "win-x64" 
+        } else if cfg!(target_os = "macos") { 
+            "mac-arm64" 
+        } else if cfg!(target_os = "android") {
+            "android-arm64"
+        } else { 
+            "linux-x64" 
+        };
 
-    fn get_backend_id_for_platform(driver_type: &str) -> Option<&'static str> {
-        #[cfg(target_os = "windows")]
-        {
-            match driver_type {
-                "cuda" => Some("nvidia-cuda-v12-windows"),
-                "vulkan" => Some("universal-vulkan-windows"),
-                _ => None,
-            }
-        }
-        #[cfg(target_os = "linux")]
-        {
-            match driver_type {
-                "cuda" => Some("nvidia-cuda-v12-linux"),
-                "vulkan" => Some("universal-vulkan-linux"),
-                "rocm" => Some("amd-rocm-linux"),
-                "hip" => Some("amd-hip-linux"),
-                _ => None,
-            }
-        }
-        #[cfg(target_os = "macos")]
-        {
-            match driver_type {
-                "metal" => Some("apple-metal-macos"),
-                _ => None,
-            }
-        }
-        #[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "macos")))]
-        {
-            None
+        // Handle specialized naming for CUDA versions and vendors
+        match driver_type {
+            "cuda" => {
+                // Default to v12 for now, can be expanded to detect installed toolkit
+                format!("{}-cuda-12", platform)
+            },
+            "rocm" | "hip" => format!("{}-{}", platform, driver_type),
+            "vulkan" => format!("{}-vulkan", platform),
+            "openvino" => format!("{}-openvino", platform),
+            "cann" => format!("{}-cann", platform),
+            "qnn" => format!("{}-qnn", platform),
+            "metal" => format!("{}-metal", platform),
+            _ => format!("{}-{}", platform, driver_type),
         }
     }
 
-    /// 🛠️ Provision Hardware Driver: Auto-detects, downloads, and deploys missing silicon drivers.
-    pub async fn provision_for_hardware(driver_type: &str) -> Result<()> {
+    /// 🛠️ Provision Hardware Driver: Auto-detects, downloads, and deploys missing or stale silicon drivers.
+    pub async fn provision_for_hardware(driver_type: &str, manifest_url: &str) -> Result<()> {
         let root = HardwareGovernor::resolve_hub_path();
         let driver_dir = root.join("interface-engines").join("drivers");
         
@@ -50,109 +44,76 @@ impl DriverProvisioner {
             fs::create_dir_all(&driver_dir)?;
         }
 
-        // 🎯 Step 1: Check if driver already exists
-        let marker = driver_dir.join(format!("{}.ready", driver_type));
-        if marker.exists() {
-            return Ok(());
-        }
-
-        println!("🛠️ [PROVISIONER] Missing Hardware Driver detected: {}. Initiating Silicon Handshake...", driver_type);
-
-        let backend_id = Self::get_backend_id_for_platform(driver_type)
-            .ok_or_else(|| anyhow!("Driver type '{}' is not supported on this platform.", driver_type))?;
-
-        // 🎯 Step 2: Fetch Synced Driver Registry with dual-layer offline fallback
+        // 🎯 Step 1: Fetch Dynamic Driver Registry FIRST to check for updates
         let client = reqwest::Client::builder()
             .user_agent("Cluaiz-Neural-Engine/0.1.0")
             .build()?;
 
-        let manifest_str = include_str!("../../../../../inference-drivers/registry.json")
-            .replace("{BASE_URL}", "https://github.com/cluaiz/cluaiz/releases/download")
-            .replace("{DRIVER_TAG}", "driver-dev-release")
-            .replace("{VERSION}", "dev-release");
+        let response = client.get(manifest_url).send().await
+            .map_err(|e| anyhow!("Failed to connect to Cluaiz Registry: {}", e))?;
 
-        let manifest: serde_json::Value = if let Ok(resp) = client.get(Self::MANIFEST_URL).send().await {
-            if resp.status().is_success() {
-                resp.json().await.unwrap_or_else(|_| {
-                    tracing::warn!("⚠️ [PROVISIONER] JSON deserialization failed, loading embedded registry...");
-                    serde_json::from_str(&manifest_str).unwrap()
-                })
-            } else {
-                tracing::warn!("⚠️ [PROVISIONER] Cloud Foundry returned {}, loading embedded registry...", resp.status());
-                serde_json::from_str(&manifest_str).unwrap()
-            }
-        } else {
-            tracing::warn!("⚠️ [PROVISIONER] Failed to connect to Cloud Foundry, loading embedded registry...");
-            serde_json::from_str(&manifest_str).unwrap()
-        };
-
-        let backends = manifest["backends"]
-            .as_array()
-            .ok_or_else(|| anyhow!("Manifest 'backends' field is missing or not an array."))?;
-
-        let backend = backends.iter()
-            .find(|b| b["id"].as_str() == Some(backend_id))
-            .ok_or_else(|| anyhow!("Backend ID '{}' not found in registry.", backend_id))?;
-
-        let artifact = backend["artifacts"]
-            .as_array()
-            .and_then(|a| a.first())
-            .ok_or_else(|| anyhow!("No artifacts found for backend ID '{}'.", backend_id))?;
-
-        let download_url_template = artifact["download_url_template"]
-            .as_str()
-            .ok_or_else(|| anyhow!("Artifact download_url_template is missing or not a string."))?;
-
-        let name_template = artifact["name_template"]
-            .as_str()
-            .ok_or_else(|| anyhow!("Artifact name_template is missing or not a string."))?;
-
-        // 🎯 Step 3: Format and Expand URLs
-        let download_url = download_url_template
-            .replace("{BASE_URL}", "https://github.com/cluaiz/cluaiz/releases/download")
-            .replace("{DRIVER_TAG}", "driver-dev-release")
-            .replace("{VERSION}", "dev-release");
-
-        let dest_filename = name_template
-            .replace("{VERSION}", "dev-release");
-
-        let dest_path = driver_dir.join(&dest_filename);
-
-        println!("📥 [PROVISIONER] Downloading {} driver from Cloud Foundry...", driver_type);
-
-        // 🎯 Step 4: Download Driver Binary Directly
-        let response = client.get(&download_url).send().await?;
         if !response.status().is_success() {
-            return Err(anyhow!("Failed to download driver binary: {} from {}", response.status(), download_url));
+            return Err(anyhow!("Registry Error: Server returned status {}", response.status()));
+        }
+
+        let manifest: serde_json::Value = response.json().await
+            .map_err(|e| anyhow!("Failed to parse driver manifest: {}", e))?;
+
+        let manifest_version = manifest["version"].as_str().unwrap_or("unknown");
+
+        // 🎯 Step 2: Check if driver already exists AND matches the latest version
+        let marker = driver_dir.join(format!("{}.ready", driver_type));
+        if marker.exists() {
+            let local_version = fs::read_to_string(&marker).unwrap_or_default();
+            if local_version == manifest_version {
+                return Ok(()); // 100% Sync, skip download
+            }
+            println!("  {} [PROVISIONER] New Silicon Update detected: {} -> {}. Deploying...", "🚀".green(), local_version, manifest_version);
+        } else {
+            println!("  {} [PROVISIONER] Missing {} Silicon Driver detected. Initiating Sovereign Handshake...", "⚙️".yellow(), driver_type);
+        }
+
+        let registry_key = Self::get_registry_key(driver_type);
+
+        // 🎯 Step 3: Resolve Download URL from Registry Key
+        let download_url = manifest["drivers"][&registry_key]
+            .as_str()
+            .ok_or_else(|| anyhow!("Driver key '{}' not found in registry. OS/Hardware combination may be unsupported.", registry_key))?;
+
+        // Extract filename from URL
+        let dest_filename = download_url.split('/').last().unwrap_or("driver.bin");
+        let dest_path = driver_dir.join(dest_filename);
+
+        println!("  {} [PROVISIONER] Downloading silicon payload from Registry...", "📥".cyan());
+
+        // 🎯 Step 4: Download Driver Binary
+        let bin_response = client.get(download_url).send().await?;
+        if !bin_response.status().is_success() {
+            return Err(anyhow!("Failed to download driver binary: {} from {}", bin_response.status(), download_url));
         }
         
-        let bytes = response.bytes().await?;
+        let bytes = bin_response.bytes().await?;
         fs::write(&dest_path, bytes)?;
 
-        // 🎯 Step 5: Silicon Integrity Check (Ensure we actually got the binary)
+        // 🎯 Step 5: Silicon Integrity Check
         if !dest_path.exists() || fs::metadata(&dest_path)?.len() == 0 {
             return Err(anyhow!("Driver provisioning failed: Loaded file is empty or missing."));
         }
 
-        // 🎯 Step 6: Mark as Ready
-        fs::write(marker, "PROVISIONED")?;
-        println!("✅ [PROVISIONER] {} Hardware Driver successfully deployed to Bare-Metal.", driver_type);
+        // 🎯 Step 6: Mark as Ready with the manifest version
+        fs::write(marker, manifest_version)?;
+        println!("  {} [PROVISIONER] {} Hardware Driver successfully deployed to Bare-Metal.", "✅".green(), driver_type);
 
         Ok(())
     }
 
-
     /// 🔍 Silicon Discovery: Scans the system for pre-installed drivers if local ones are missing.
     pub fn discover_system_paths() -> Vec<PathBuf> {
         let mut paths = Vec::new();
-        
-        // Local drivers folder
         paths.push(Self::get_driver_path());
 
-        // Windows CUDA Discovery (Dynamic via Environment Variables)
         #[cfg(target_os = "windows")]
         {
-            // Standard NVIDIA environment variable
             if let Ok(cuda_path) = std::env::var("CUDA_PATH") {
                 let bin_path = PathBuf::from(cuda_path).join("bin");
                 if bin_path.exists() {
@@ -160,11 +121,9 @@ impl DriverProvisioner {
                 }
             }
         }
-
         paths
     }
 
-    /// Returns the driver directory for appending to search paths
     pub fn get_driver_path() -> PathBuf {
         HardwareGovernor::resolve_hub_path().join("interface-engines").join("drivers")
     }

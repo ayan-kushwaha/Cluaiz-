@@ -110,24 +110,22 @@ try {
     }
     Complete-Step $step1
 
-    # 2. Registry Discovery
+    # 2. Sovereign Registry Sync
     $step2 = '[AUDITING] Neural Registry Sync'
     Write-Step $step2
-    $Releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases"
+    $MasterRegistryUrl = 'https://raw.githubusercontent.com/cluaiz/cluaiz/main/package.json'
+    $MasterRegistry = Invoke-RestMethod -Uri $MasterRegistryUrl
     $Arch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { 'win-arm64' } else { 'win-x64' }
     Complete-Step $step2
 
-    # --- CLI Deployment ---
-    $CliRel = $Releases | Where-Object { $_.tag_name -like 'cli-v*' -or $_.tag_name -eq 'cli-dev-release' } | Select-Object -First 1
-    if (-not $CliRel) { throw 'No CLI release found in registry.' }
-    
-    # Direct Asset Lookup (Bypasses missing cli-manifest.json)
-    $CliAsset = $CliRel.assets | Where-Object { $_.name -like "*$Arch*" } | Select-Object -First 1
-    if (-not $CliAsset) { throw "No CLI asset matching $Arch found in release." }
-    $CliUrl = $CliAsset.browser_download_url
+    # --- CLI Deployment (Driven by package.json) ---
+    $CliManifestUrl = $MasterRegistry.components.cli.manifest_url
+    $CliManifest = Invoke-RestMethod -Uri $CliManifestUrl
+    $CliUrl = $CliManifest.cli.$Arch
+    if (-not $CliUrl) { throw "No CLI asset matching $Arch found in registry." }
     
     $TargetCli = Join-Path $HubPath 'apps/cli/cluaiz.exe'
-    $CliLabel = "Cluaiz CLI ($Arch) $($CliRel.tag_name) - latest"
+    $CliLabel = "Cluaiz CLI ($Arch) - latest"
     Invoke-CluaizDownload -url $CliUrl -path $TargetCli -label $CliLabel
     
     # 🚀 Zero-Copy Linkage
@@ -141,38 +139,30 @@ try {
     if (-not (Test-Path $BinLink)) { throw 'Hardlink creation failed.' }
     Complete-Step $step3
 
-    # --- Engine Deployment ---
-    $EngRel = $Releases | Where-Object { $_.tag_name -like 'engine-v*' -or $_.tag_name -eq 'engine-dev-release' } | Select-Object -First 1
-    if (-not $EngRel) { throw 'No Engine release found in registry.' }
+    # --- Engine Deployment (Driven by package.json) ---
+    $EngManifestUrl = $MasterRegistry.components.engine.manifest_url
+    $EngManifest = Invoke-RestMethod -Uri $EngManifestUrl
+    $EUrl = $EngManifest.engines.$Arch
+    if (-not $EUrl) { throw "No Engine asset matching $Arch found in registry." }
     
-    # Direct Asset Lookup (Bypasses engine-manifest.json dependency)
-    $EngAsset = $EngRel.assets | Where-Object { $_.name -like "*$Arch*" } | Select-Object -First 1
-    if (-not $EngAsset) { throw "No Engine asset matching $Arch found in release." }
-    $EUrl = $EngAsset.browser_download_url
-    
-    $EngLabel = "Cluaiz Engine ($Arch) $($EngRel.tag_name) - latest"
+    $EngLabel = "Cluaiz Engine ($Arch) - latest"
     Invoke-CluaizDownload -url $EUrl -path (Join-Path $HubPath 'engine/cluaiz-engine.dll') -label $EngLabel
 
-    # --- Multi-Kernel Sync ---
-    $KerRel = $Releases | Where-Object { $_.tag_name -like 'kernel-v*' -or $_.tag_name -eq 'kernel-dev-release' } | Select-Object -First 1
-    if ($KerRel) {
-        # Check CPU ISA to download AVX512 or AVX2 dynamically
-        $AVX512_Enabled = $false
-        if ($env:PROCESSOR_IDENTIFIER -like "*AVX512*") { $AVX512_Enabled = $true }
-        
-        $TargetPlatform = if ($AVX512_Enabled) { "win-x64-avx512" } else { "win-x64-avx2" }
-        if ($Arch -eq 'win-arm64') { $TargetPlatform = 'win-arm64' } # Align ARM64
-        
-        # Direct Asset Lookup (Bypasses missing kernel-manifest.json entirely!)
-        $KerAsset = $KerRel.assets | Where-Object { $_.name -like "*$TargetPlatform*" } | Select-Object -First 1
-        if ($KerAsset) {
-            $KUrl = $KerAsset.browser_download_url
-            $KName = 'cluaiz-llama.dll'
-            $KerLabel = "Cluaiz Llama Kernel ($TargetPlatform) $($KerRel.tag_name) - latest"
-            Invoke-CluaizDownload -url $KUrl -path (Join-Path $HubPath "interface-engines/kernels/$KName") -label $KerLabel
-        } else {
-            Write-Host "  [Warning] No matching kernel asset found for $TargetPlatform in release. Continuing bootstrap..." -ForegroundColor Yellow
-        }
+    # --- Kernel Deployment (Driven by package.json) ---
+    $KerManifestUrl = $MasterRegistry.components.kernel.manifest_url
+    $KerManifest = Invoke-RestMethod -Uri $KerManifestUrl
+    
+    # Check CPU ISA to pick best kernel
+    $AVX512_Enabled = $false
+    if ($env:PROCESSOR_IDENTIFIER -like "*AVX512*") { $AVX512_Enabled = $true }
+    $TargetPlatform = if ($AVX512_Enabled) { "win-x64-avx512" } else { "win-x64-avx2" }
+    if ($Arch -eq 'win-arm64') { $TargetPlatform = 'win-arm64' }
+
+    $KUrl = $KerManifest.kernels.$TargetPlatform
+    if ($KUrl) {
+        $KName = 'cluaiz-llama.dll'
+        $KerLabel = "Cluaiz Llama Kernel ($TargetPlatform) - latest"
+        Invoke-CluaizDownload -url $KUrl -path (Join-Path $HubPath "interface-engines/kernels/$KName") -label $KerLabel
     }
 
     # ── Environment Path Update ──────────────────────────────────────────

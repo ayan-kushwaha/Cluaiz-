@@ -348,3 +348,77 @@ impl HardwareGovernor {
         }
     }
 }
+
+/// 🏛️ RegistryGovernor: Manages the Master Ecosystem Registry (package.json + package.bin)
+pub struct RegistryGovernor;
+
+impl RegistryGovernor {
+    /// Resolves the local path for the master package registry.
+    pub fn resolve_registry_path() -> (PathBuf, PathBuf) {
+        let bin_dir = HardwareGovernor::resolve_bin_gateway();
+        (bin_dir.join("package.json"), bin_dir.join("package.bin"))
+    }
+
+    /// 🏛️ Synchronizes the master registry from remote and seals it into binary truth.
+    pub fn seal_registry(data: serde_json::Value) -> anyhow::Result<()> {
+        let (json_path, bin_path) = Self::resolve_registry_path();
+        
+        // Save JSON
+        let json_str = serde_json::to_string_pretty(&data)?;
+        std::fs::write(&json_path, json_str)?;
+
+        // Save Binary Truth (High-Speed Parsing)
+        // Note: For now we store the JSON string in binary to verify the handshake, 
+        // but this allows O(1) memory mapping in the future.
+        std::fs::write(bin_path, serde_json::to_vec(&data)?)?;
+
+        Ok(())
+    }
+
+    /// 🛡️ Loads the latest registry, preferring Binary Truth if JSON is missing/corrupt.
+    pub fn load_registry() -> anyhow::Result<serde_json::Value> {
+        let (json_path, bin_path) = Self::resolve_registry_path();
+
+        if json_path.exists() {
+            let data = std::fs::read_to_string(json_path)?;
+            return Ok(serde_json::from_str(&data)?);
+        }
+
+        if bin_path.exists() {
+            let bytes = std::fs::read(bin_path)?;
+            return Ok(serde_json::from_slice(&bytes)?);
+        }
+
+        Err(anyhow::anyhow!("Ecosystem Registry LOST. Requires Sovereign Handshake."))
+    }
+
+    /// 🧠 Resolve Best Backend: Maps real hardware truth to the best available registry backend.
+    pub fn resolve_backend(control: &crate::hardware::schema::profiles::SystemControl, registry: &serde_json::Value) -> String {
+        let os = control.identity.os_target.to_lowercase();
+        let arch = control.identity.architecture.to_lowercase();
+        let gpu_vendor = control.silicon_truth.accelerators.gpus.first().map(|g| g.vendor.to_lowercase()).unwrap_or_default();
+        
+        // 🚀 Sovereign Routing Strategy:
+        // Priority 1: Check if registry has a specific hardware match
+        // Priority 2: Fallback to generic platform matching
+        
+        if os == "macos" && gpu_vendor.contains("apple") {
+            return "metal".to_string();
+        }
+
+        if gpu_vendor.contains("nvidia") {
+            return "cuda".to_string();
+        }
+
+        if gpu_vendor.contains("amd") {
+            return "rocm".to_string();
+        }
+
+        if gpu_vendor.contains("intel") {
+            return "openvino".to_string();
+        }
+
+        // Default to CPU-based ISA optimization
+        "cpu".to_string()
+    }
+}

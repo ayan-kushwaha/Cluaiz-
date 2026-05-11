@@ -36,10 +36,10 @@ if [[ ":$PATH:" != *":$HUB_PATH/bin:"* ]]; then
     export PATH="$PATH:$HUB_PATH/bin"
 fi
 
-# 3. Artifact Retrieval
-write_step "Resolving artifacts"
-ALL_RELEASES=$(curl -s "https://api.github.com/repos/$REPO/releases")
-complete_step "Resolving artifacts"
+# 3. Sovereign Registry Sync
+write_step "Synchronizing Neural Registry"
+MASTER_REGISTRY_URL="https://raw.githubusercontent.com/cluaiz/cluaiz/main/package.json"
+MASTER_JSON=$(curl -sL "$MASTER_REGISTRY_URL")
 
 OS_TYPE=$(uname -s | tr '[:upper:]' '[:lower:]')
 ARCH_TYPE=$(uname -m)
@@ -54,51 +54,51 @@ case "$ARCH_TYPE" in
     *) write_error "Unsupported Arch"; exit 1 ;;
 esac
 PLATFORM="$OS-$ARCH"
+complete_step "Synchronizing Neural Registry"
 
-# --- CLI ---
-CLI_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+cluaiz-dev-release-'"$PLATFORM"'"' | head -1 | cut -d'"' -f4 || echo "")
-if [ -z "$CLI_URL" ]; then
-    CLI_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+cluaiz-[^"]+-'"$PLATFORM"'"' | head -1 | cut -d'"' -f4 || echo "")
+# --- CLI Deployment (Driven by package.json) ---
+CLI_MANIFEST_URL=$(echo "$MASTER_JSON" | grep -oE '"manifest_url": "[^"]+"' | sed -n '1p' | cut -d'"' -f4)
+CLI_MANIFEST=$(curl -sL "$CLI_MANIFEST_URL")
+CLI_URL=$(echo "$CLI_MANIFEST" | grep -oE '"'"$PLATFORM"'" : "[^"]+"' | cut -d'"' -f4)
+
+if [ -n "$CLI_URL" ]; then
+    write_step "Retrieving CLI ($PLATFORM)"
+    curl -sL "$CLI_URL" -o "$HUB_PATH/apps/cli/cluaiz"
+    chmod +x "$HUB_PATH/apps/cli/cluaiz"
+    ln -sf "$HUB_PATH/apps/cli/cluaiz" "$HUB_PATH/bin/cluaiz"
+    complete_step "Retrieving CLI ($PLATFORM)"
 fi
 
-write_step "Retrieving CLI ($PLATFORM)"
-curl -sL "$CLI_URL" -o "$HUB_PATH/apps/cli/cluaiz"
-chmod +x "$HUB_PATH/apps/cli/cluaiz"
-ln -sf "$HUB_PATH/apps/cli/cluaiz" "$HUB_PATH/bin/cluaiz"
-complete_step "Retrieving CLI ($PLATFORM)"
-
-# --- Engine ---
-ENGINE_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+cluaiz-engine-dev-release-'"$PLATFORM"'\.'"$EXT"'"' | head -1 | cut -d'"' -f4 || echo "")
-if [ -z "$ENGINE_URL" ]; then
-    ENGINE_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+cluaiz-engine-[^"]+-'"$PLATFORM"'\.'"$EXT"'"' | head -1 | cut -d'"' -f4 || echo "")
-fi
+# --- Engine Deployment (Driven by package.json) ---
+ENGINE_MANIFEST_URL=$(echo "$MASTER_JSON" | grep -oE '"manifest_url": "[^"]+"' | sed -n '2p' | cut -d'"' -f4)
+ENGINE_MANIFEST=$(curl -sL "$ENGINE_MANIFEST_URL")
+ENGINE_URL=$(echo "$ENGINE_MANIFEST" | grep -oE '"'"$PLATFORM"'" : "[^"]+"' | cut -d'"' -f4)
 
 write_step "Retrieving Core Engine"
 curl -sL "$ENGINE_URL" -o "$HUB_PATH/engine/cluaiz-engine.$EXT"
 complete_step "Retrieving Core Engine"
 
-# --- Default Kernel ---
+# --- Kernel Deployment (Driven by package.json) ---
+KERNEL_MANIFEST_URL=$(echo "$MASTER_JSON" | grep -oE '"manifest_url": "[^"]+"' | sed -n '3p' | cut -d'"' -f4)
+KERNEL_MANIFEST=$(curl -sL "$KERNEL_MANIFEST_URL")
+
 if [[ "$OS" == "mac" ]]; then
-    KERNEL_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+cluaiz-kernel-dev-release-'"$PLATFORM"'\.dylib"' | head -1 | cut -d'"' -f4 || echo "")
+    TARGET_PLATFORM="$PLATFORM"
 else
-    # Linux
     if [[ "$ARCH" == "arm64" ]]; then
         TARGET_PLATFORM="linux-arm64"
     else
         HAS_AVX512=$(grep -o "avx512f" /proc/cpuinfo | head -1 || echo "")
-        if [ -n "$HAS_AVX512" ]; then
-            TARGET_PLATFORM="linux-x64-avx512"
-        else
-            TARGET_PLATFORM="linux-x64-avx2"
-        fi
+        TARGET_PLATFORM=$([ -n "$HAS_AVX512" ] && echo "linux-x64-avx512" || echo "linux-x64-avx2")
     fi
-    KERNEL_URL=$(echo "$ALL_RELEASES" | grep -oE '"browser_download_url": "[^"]+cluaiz-kernel-dev-release-'"$TARGET_PLATFORM"'\.so"' | head -1 | cut -d'"' -f4 || echo "")
 fi
 
+KERNEL_URL=$(echo "$KERNEL_MANIFEST" | grep -oE '"'"$TARGET_PLATFORM"'" : "[^"]+"' | cut -d'"' -f4)
+
 if [ -n "$KERNEL_URL" ]; then
-    write_step "Retrieving Core Kernel"
-    curl -sL "$KERNEL_URL" -o "$HUB_PATH/interface-engines/kernels/libcluaiz_llama.$EXT"
-    complete_step "Retrieving Core Kernel"
+    write_step "Retrieving Core Kernel ($TARGET_PLATFORM)"
+    curl -sL "$KERNEL_URL" -o "$HUB_PATH/interface-engines/kernels/cluaiz-llama.$EXT"
+    complete_step "Retrieving Core Kernel ($TARGET_PLATFORM)"
 fi
 
 write_success "Deployment successful."

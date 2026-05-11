@@ -7,90 +7,78 @@ use colored::Colorize;
 pub struct Bootstrapper;
 
 impl Bootstrapper {
-    /// 🚀 Cluaiz BOOTSTRAP: Ensures the Core Engine is present and initialized.
+    const MASTER_REGISTRY_URL: &'static str = "https://raw.githubusercontent.com/cluaiz/cluaiz/main/package.json";
+
+    /// 🚀 Cluaiz BOOTSTRAP: The Sovereign Handshake.
     pub async fn ignite() -> Result<()> {
         #[cfg(windows)]
         let _ = colored::control::set_virtual_terminal(true);
 
-        let engine_dir = HardwareGovernor::resolve_engine_path();
+        let bin_dir = HardwareGovernor::resolve_hub_path().join("bin");
+        let local_registry_path = bin_dir.join("package.json");
         
-        let ext = if cfg!(windows) { "dll" } else if cfg!(target_os = "macos") { "dylib" } else { "so" };
-        let engine_name = format!("cluaiz-engine.{}", ext);
-        let engine_path = engine_dir.join(engine_name);
-
-        if !engine_path.exists() {
-            println!("  {} [Cluaiz] Core Engine missing. Please run the Installer.", "🛠️".red());
-            return Err(eyre!("Core Engine not found."));
-        }
-
-        // --- FULL STACK SYNC: Kernels & Drivers ---
-        Self::sync_neural_stack().await?;
-
-        // Verify if system_control.bin exists in Hub
-        let bin_truth = HardwareGovernor::resolve_interface_path().join("system_control.bin");
-        if !bin_truth.exists() {
-            // Background calibration happens here
-        }
-
-        Ok(())
-    }
-
-    async fn download_engine(dest: &Path) -> Result<()> {
-        let url = Self::resolve_engine_url()?;
-        
-        if let Some(parent) = dest.parent() {
-            std::fs::create_dir_all(parent)?;
-        }
-
-        println!("  {} [Cluaiz] Downloading Engine from: {}", "📥".cyan(), url);
-
         let client = reqwest::Client::builder()
-            .user_agent("Cluaiz-Bootstrapper/0.1 (Windows; x64)")
-            .danger_accept_invalid_certs(true)
+            .user_agent("Cluaiz-Bootstrapper/0.1.0")
             .build()?;
 
-        let response = client.get(&url).send().await
-            .map_err(|e| eyre!("Failed to connect to Cluaiz Registry: {}", e))?;
-
-        if !response.status().is_success() {
-            return Err(eyre!("Registry Error: Server returned status {}", response.status()));
-        }
-
-        let content = response.bytes().await?;
-        std::fs::write(dest, content)?;
-
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            let mut perms = std::fs::metadata(dest)?.permissions();
-            perms.set_mode(0o755);
-            std::fs::set_permissions(dest, perms)?;
-        }
-
-        println!("  {} [Cluaiz] Engine binary mounted and sealed.", "✅".green());
-        Ok(())
-    }
-
-    fn trigger_setup(engine_path: &Path) -> Result<()> {
-        println!("  {} [Cluaiz] Initializing hardware...", "⚙️".yellow());
+        // 🎯 1. Fetch Master Registry (package.json)
+        println!("  {} [Cluaiz] Synchronizing Neural Registry...", "🛰️".cyan());
+        let master_registry: serde_json::Value = client.get(Self::MASTER_REGISTRY_URL).send().await?.json().await?;
         
-        let status = Command::new(engine_path)
-            .arg("--setup")
-            .status()
-            .map_err(|e| eyre!("Failed to execute engine setup: {}", e))?;
+        // 🏛️ Seal the Master Registry (JSON + Binary Truth)
+        cluaiz_shared::RegistryGovernor::seal_registry(master_registry.clone())?;
 
-        if !status.success() {
-            return Err(eyre!("Engine setup failed with status: {}", status));
+        // 🎯 2. CLI Lifecycle Check
+        let cli_info = &master_registry["components"]["cli"];
+        let latest_cli = cli_info["version"].as_str().unwrap_or("");
+        let current_cli = env!("CARGO_PKG_VERSION");
+        
+        if latest_cli != current_cli && !latest_cli.is_empty() {
+            println!("  {} [Cluaiz] Sovereign Update Available: {} -> {}", "🚀".green(), current_cli, latest_cli);
         }
+
+        // 🎯 3. Engine Sync (Driven by package.json)
+        let engine_info = &master_registry["components"]["engine"];
+        let engine_dir = HardwareGovernor::resolve_engine_path();
+        let ext = if cfg!(windows) { "dll" } else if cfg!(target_os = "macos") { "dylib" } else { "so" };
+        let engine_path = engine_dir.join(format!("cluaiz-engine.{}", ext));
+        let engine_marker = engine_dir.join("cluaiz-engine.ready");
+
+        let manifest_version = engine_info["version"].as_str().unwrap_or("unknown");
+        let local_version = std::fs::read_to_string(&engine_marker).unwrap_or_default();
+
+        if !engine_path.exists() || local_version != manifest_version {
+            println!("  {} [Cluaiz] Provisioning Core Engine ({})...", "⚙️".yellow(), manifest_version);
+            let manifest_url = engine_info["manifest_url"].as_str().ok_or_else(|| eyre!("Engine Manifest URL missing."))?;
+            let engine_manifest: serde_json::Value = client.get(manifest_url).send().await?.json().await?;
+            
+            Self::download_engine_with_manifest(&engine_path, &engine_manifest).await?;
+            std::fs::write(&engine_marker, manifest_version)?;
+        }
+
+        // 🎯 4. Kernel & Stack Sync
+        Self::sync_neural_stack(&master_registry).await?;
+
+        // Cache the master registry locally for offline reference
+        if let Some(parent) = local_registry_path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        std::fs::write(local_registry_path, serde_json::to_string_pretty(&master_registry)?)?;
 
         Ok(())
     }
 
-    async fn sync_neural_stack() -> Result<()> {
+    async fn download_engine_with_manifest(dest: &Path, manifest: &serde_json::Value) -> Result<()> {
+        let platform = if cfg!(windows) { "win-x64" } else if cfg!(target_os = "macos") { "mac-arm64" } else { "linux-x64" };
+        let url = manifest["engines"][platform].as_str().ok_or_else(|| eyre!("Platform '{}' not found in Engine Registry.", platform))?;
+        Self::download_asset(url, dest).await?;
+        Ok(())
+    }
+
+    async fn sync_neural_stack(master_registry: &serde_json::Value) -> Result<()> {
         let control_path = HardwareGovernor::resolve_engine_path().join("system_control.json");
-        
         if !control_path.exists() {
-            return Ok(()); // Wait for first calibration
+            return Ok(());
         } 
 
         let control_data: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&control_path)?)?;
@@ -99,76 +87,39 @@ impl Bootstrapper {
             .map(|gpus| gpus.iter().any(|g| g["vendor"].as_str().map(|v| v.to_uppercase()).unwrap_or_default().contains("NVIDIA")))
             .unwrap_or(false);
 
-        let backend = if has_nvidia { "cuda" } else { "cpu" };
         let platform = if cfg!(windows) { "win-x64" } else if cfg!(target_os = "macos") { "mac-arm64" } else { "linux-x64" };
 
-        // 1. Kernel Sync
+        // Kernel Sync (Version-Aware via package.json)
+        let kernel_info = &master_registry["components"]["kernel"];
         let kernel_dir = HardwareGovernor::resolve_hub_path().join("interface-engines/kernels");
         let kernel_ext = if cfg!(windows) { "dll" } else if cfg!(target_os = "macos") { "dylib" } else { "so" };
-        
-        // We support both cluaiz-llama (new) and archer_llama (legacy) locally
-        let kernel_name = format!("cluaiz-llama.{}", kernel_ext);
-        let mut kernel_path = kernel_dir.join(&kernel_name);
-        
-        let has_cluaiz_kernel = kernel_path.exists();
-        let legacy_kernel_name = if cfg!(windows) { "archer_llama.dll" } else if cfg!(target_os = "macos") { "libarcher_llama.dylib" } else { "libarcher_llama.so" };
-        let legacy_kernel_path = kernel_dir.join(legacy_kernel_name);
-        let has_legacy_kernel = legacy_kernel_path.exists();
-        
-        let unix_cluaiz_name = format!("libcluaiz_llama.{}", kernel_ext);
-        let unix_cluaiz_path = kernel_dir.join(&unix_cluaiz_name);
-        let has_unix_cluaiz = unix_cluaiz_path.exists();
+        let kernel_path = kernel_dir.join(format!("cluaiz-llama.{}", kernel_ext));
+        let kernel_marker = kernel_dir.join("cluaiz-llama.ready");
 
-        if !has_cluaiz_kernel && !has_legacy_kernel && !has_unix_cluaiz {
-            println!("  {} [Cluaiz] Downloading kernel ({})...", "📦".magenta(), backend);
-            
-            let version = cluaiz_shared::CluaizDNA::KERNEL;
-            let tag_name = if version == "dev-release" || version == "v1.0.0" {
-                "kernel-dev-release".to_string()
-            } else {
-                version.to_string()
-            };
+        let manifest_version = kernel_info["version"].as_str().unwrap_or("unknown");
+        let local_version = std::fs::read_to_string(&kernel_marker).unwrap_or_default();
 
-            // Resolve optimized SIMD platform dynamically from Hardware Truth
-            let mut spec_platform = platform.to_string();
+        if !kernel_path.exists() || local_version != manifest_version {
+            println!("  {} [Cluaiz] Synchronizing Neural Kernel ({})...", "📦".magenta(), manifest_version);
+            let client = reqwest::Client::builder().user_agent("Cluaiz-Bootstrapper/0.1.0").build()?;
+            let manifest_url = kernel_info["manifest_url"].as_str().ok_or_else(|| eyre!("Kernel Manifest URL missing."))?;
+            let manifest: serde_json::Value = client.get(manifest_url).send().await?.json().await?;
+
+            let mut spec_key = platform.to_string();
             if platform == "win-x64" || platform == "linux-x64" {
                 let isa_features = control_data["silicon_truth"]["cpu"]["isa_features"].as_array();
-                let has_avx512 = isa_features
-                    .map(|feats| feats.iter().any(|f| f.as_str() == Some("AVX-512")))
-                    .unwrap_or(false);
-                if has_avx512 {
-                    spec_platform = format!("{}-avx512", platform);
-                } else {
-                    spec_platform = format!("{}-avx2", platform);
-                }
+                let has_avx512 = isa_features.map(|feats| feats.iter().any(|f| f.as_str() == Some("AVX-512"))).unwrap_or(false);
+                spec_key = if has_avx512 { format!("{}-avx512", platform) } else { format!("{}-avx2", platform) };
             }
 
-            // GHA artifact name format is: cluaiz-kernel-{version}-{platform}.{ext}
-            let download_name = format!("cluaiz-kernel-{}-{}.{}", version, spec_platform, kernel_ext);
-            let url = format!(
-                "https://github.com/cluaiz/cluaiz/releases/download/{}/{}",
-                tag_name, download_name
-            );
-
-            // Attempt to download. If download succeeds, save to kernel_path
-            if let Err(e) = Self::download_asset(&url, &kernel_path).await {
-                println!("  {} [Cluaiz] Primary download failed, attempting tag fallback...", "⚠️".yellow());
-                let fallback_url = format!(
-                    "https://github.com/cluaiz/cluaiz/releases/download/kernel-dev-release/cluaiz-kernel-dev-release-{}.{}",
-                    spec_platform, kernel_ext
-                );
-                if let Err(err) = Self::download_asset(&fallback_url, &kernel_path).await {
-                    return Err(color_eyre::eyre::eyre!(
-                        "Registry Error: Primary URL ({}) and Fallback URL ({}) both failed.\nDetail: {}",
-                        url, fallback_url, err
-                    ));
-                }
-            }
+            let url = manifest["kernels"][&spec_key].as_str().or_else(|| manifest["kernels"][platform].as_str()).ok_or_else(|| eyre!("Kernel key '{}' not found.", spec_key))?;
+            Self::download_asset(url, &kernel_path).await?;
+            std::fs::write(&kernel_marker, manifest_version)?;
         }
 
-        // 2. Driver Sync (If needed)
         if has_nvidia {
-            if let Err(e) = engines::interface_engines::manager::driver_provisioner::DriverProvisioner::provision_for_hardware("cuda").await {
+            let driver_manifest_url = master_registry["components"]["drivers"]["manifest_url"].as_str().unwrap_or_default();
+            if let Err(e) = engines::interface_engines::manager::driver_provisioner::DriverProvisioner::provision_for_hardware("cuda", driver_manifest_url).await {
                 println!("  {} [Cluaiz] Driver deployment failed: {}. Continuing bootstrap...", "⚠️".yellow(), e);
             }
         }
@@ -177,43 +128,12 @@ impl Bootstrapper {
     }
 
     async fn download_asset(url: &str, dest: &Path) -> Result<()> {
-        if let Some(parent) = dest.parent() {
-            std::fs::create_dir_all(parent)?;
-        }
-
-        let client = reqwest::Client::builder()
-            .user_agent("Cluaiz-Bootstrapper/0.1 (Windows; x64)")
-            .danger_accept_invalid_certs(true)
-            .build()?;
-
-        let response = client.get(url).send().await
-            .map_err(|e| eyre!("Failed to connect to Cluaiz Registry: {}", e))?;
-
-        if !response.status().is_success() {
-            return Err(eyre!("Registry Error: {} returned {}", url, response.status()));
-        }
-
+        if let Some(parent) = dest.parent() { std::fs::create_dir_all(parent)?; }
+        let client = reqwest::Client::builder().user_agent("Cluaiz-Bootstrapper/0.1.0").danger_accept_invalid_certs(true).build()?;
+        let response = client.get(url).send().await.map_err(|e| eyre!("Registry Link Error: {}", e))?;
+        if !response.status().is_success() { return Err(eyre!("Registry Error: {} returned {}", url, response.status())); }
         let content = response.bytes().await?;
         std::fs::write(dest, content)?;
         Ok(())
-    }
-
-    fn resolve_engine_url() -> Result<String> {
-        let version = cluaiz_shared::CluaizDNA::ENGINE;
-        let base = format!("https://github.com/cluaiz/cluaiz/releases/download/{}", version);
-
-        #[cfg(all(target_os = "windows", target_arch = "x86_64"))]
-        return Ok(format!("{}/cluaiz-engine-{}-win-x64.dll", base, version));
-
-        #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
-        return Ok(format!("{}/cluaiz-engine-{}-linux-x64.so", base, version));
-
-        #[cfg(all(target_os = "linux", target_arch = "aarch64"))]
-        return Ok(format!("{}/cluaiz-engine-{}-linux-arm64.so", base, version));
-
-        #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
-        return Ok(format!("{}/cluaiz-engine-{}-mac-arm64.dylib", base, version));
-
-        Err(eyre!("Cluaiz Registry: Platform not supported in this build."))
     }
 }

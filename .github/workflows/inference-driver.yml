@@ -453,7 +453,6 @@ jobs:
               "win-x64-cuda-11": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-driver-$VERSION-win-x64-cuda-v11.dll",
               "win-x64-openvino": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-driver-$VERSION-win-x64-openvino.dll",
               "win-x64-vulkan": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-driver-$VERSION-win-x64-vulkan.dll",
-              //"win-x64-sycl": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-driver-$VERSION-win-x64-sycl.dll",
               "linux-x64-cuda-13": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-linux-x64-cuda-v13.so",
               "linux-x64-cuda-12": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-linux-x64-cuda-v12.so",
               "linux-x64-cuda-11": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-linux-x64-cuda-v11.so",

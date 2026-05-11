@@ -1,0 +1,30 @@
+{
+  "name": "cluaiz-package-manager",
+  "version": "0.1.0",
+  "id": "https://github.com/cluaiz/cluaiz/raw/main/package.json",
+  "last_updated": "2026-05-11T11:07:00Z",
+  "author": "cluaiz",
+
+  "components": {
+    "cli": {
+      "version": "dev-release",
+      "min_supported": null,
+      "manifest_url": "https://github.com/cluaiz/cluaiz/releases/download/cli-dev-release/cluaiz-cli.json"
+    },
+    "engine": {
+      "version": "dev-release",
+      "min_supported": null,
+      "manifest_url": "https://github.com/cluaiz/cluaiz/releases/download/engine-dev-release/cluaiz-engine.json"
+    },
+    "kernel": {
+      "version": "dev-release",
+      "min_supported": null,
+      "manifest_url": "https://github.com/cluaiz/cluaiz/releases/download/kernel-dev-release/cluaiz-kernel.json"
+    },
+    "drivers": {
+      "version": "dev-release",
+      "min_supported": null,
+      "manifest_url": "https://github.com/cluaiz/cluaiz/releases/download/driver-dev-release/cluaiz-driver.json"
+    }
+  }
+}

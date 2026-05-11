@@ -58,45 +58,23 @@ impl EngineManager {
         //     &format!("OS: {}, GPU: {:?}", os, gpu_vendor)
         // );
 
-        // 1. Resolve Hardware Suffix based on Deep Probing
-        let suffix = match (os.as_str(), arch.as_str()) {
-            // --- Apple Hardware (Metal Mastery) ---
-            ("macos", "aarch64") if gpu_vendor.as_ref().map(|v| v.contains("apple")).unwrap_or(false) => "metal",
-            
-            // --- Linux/Windows High-Performance Targets ---
-            ("linux", _) | ("windows", _) if gpu_vendor.is_some() => {
-                let vendor = gpu_vendor.as_ref().unwrap();
-                if vendor.contains("nvidia") && has_drivers {
-                    "cuda"
-                } else if vendor.contains("amd") {
-                    "rocm"
-                } else {
-                    "vulkan"
-                }
-            }
-
-            // --- ARM / Raspberry Pi Optimized ---
-            ("linux", "aarch64") | ("linux", "arm") => "arm64",
-
-            // --- Mobile Cluaiz Targets ---
-            ("android", _) => "android",
-            ("ios", _) => "ios",
-
-            // --- Legacy / Generic Fallback ---
-            _ => "cpu",
-        };
+        // 🚀 Sovereign Backend Resolution (Driven by Registry)
+        let registry = cluaiz_shared::RegistryGovernor::load_registry().unwrap_or_default();
+        let suffix = cluaiz_shared::RegistryGovernor::resolve_backend(&control, &registry);
+        
+        println!("🎯 Engine Prep: OS={}, Arch={}, Backend={}", os, arch, suffix);
 
         // 🚀 NATIVE PROVISIONING: Ensure silicon drivers exist before linkage
         if suffix != "cpu" {
-            if let Err(e) = DriverProvisioner::provision_for_hardware(suffix).await {
+            let manifest_url = registry["components"]["drivers"]["manifest_url"].as_str().unwrap_or_default();
+            if let Err(e) = DriverProvisioner::provision_for_hardware(&suffix, manifest_url).await {
                 println!("  {} [PROVISIONER] Silicon Handshake Error: {}", "⚠️".yellow(), e);
-                // We continue for now, as the user might already have the drivers in PATH
             }
         }
 
         let binary_id = format!("{}-{}", engine_type, suffix);
 
-        let mut target_suffix = suffix;
+        let mut target_suffix = suffix.as_str();
         let mut target_binary_id = binary_id.clone();
 
         // 🚀 Cluaiz VRAM Handshake: Pre-Flight Check (Hardware-Aware Routing)
