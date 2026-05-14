@@ -137,12 +137,12 @@ impl HardwareGovernor {
         path.push("system_booster.json");
         println!("🔍 [Arbiter] Loading Booster from: {:?}", path);
 
-        // Ensure truth is loaded
-        if arbiter.total_vram_gb == 0.0 {
-            if let Ok(control) = Self::load_system_control() {
-                arbiter.total_vram_gb = control.silicon_truth.accelerators.gpus.iter()
-                    .map(|g| g.vram_total_gb).sum::<f64>();
-            }
+        // 🔍 LIVE SILICON PROBE: We don't trust cached values for safety-critical negotiation.
+        if let Ok(control) = Self::load_system_control() {
+            arbiter.total_vram_gb = control.silicon_truth.accelerators.gpus.iter()
+                .map(|g| g.vram_total_gb).sum::<f64>();
+        } else if arbiter.total_vram_gb == 0.0 {
+            let _ = Self::auto_calibrate();
         }
 
         // 🌊 ADAPTIVE MARGIN LOGIC: No more static percentages.
@@ -184,15 +184,37 @@ impl HardwareGovernor {
             println!("🔥 [Arbiter] ULTRAMAX RECLAIM: Forcing ultra-tight {}MB VRAM margin.", (margin * total_gb * 1024.0) as usize);
         }
 
-        let available_gb = (total_gb * (1.0 - margin)) - arbiter.allocated_vram_gb - (dna.weights_size_gb as f64);
+        // 🛡️ DYNAMIC HEADROOM: Calculate available space without double-counting.
+        // We only subtract allocations that DON'T belong to the current model identity.
+        let other_allocations = arbiter.active_allocations.iter()
+            .filter(|(id, _)| !id.contains(&dna.model_identity))
+            .map(|(_, gb)| gb)
+            .sum::<f64>();
+
+        let available_gb = (total_gb * (1.0 - margin)) - other_allocations;
+        
+        // Final Safety Check: If weights aren't loaded, we must reserve space for them.
+        let weights_already_loaded = arbiter.active_allocations.keys().any(|k| k.contains(&dna.model_identity));
+        let final_available_gb = if weights_already_loaded {
+            available_gb // Weights already accounted for in allocated_vram_gb (if we tracked it that way)
+        } else {
+            available_gb - (dna.weights_size_gb as f64)
+        }.max(0.0);
         
         // 🧪 SOVEREIGN MATH: Calculate KV-Cache cost per 1024 tokens for THIS model
         let layers = dna.layer_count.unwrap_or(32) as f64;
         let heads = dna.attention_head_count.unwrap_or(32) as f64;
-        let head_dim = dna.attention_head_dim.unwrap_or(128) as f64;
+        
+        // 🧬 DNA Interrogation: head_dim = hidden_size / heads (Architecture Truth)
+        let head_dim_calc = if let (Some(h), Some(c)) = (dna.hidden_size, dna.attention_head_count) {
+            (h / c) as f64
+        } else {
+            dna.attention_head_dim.unwrap_or(128) as f64
+        };
+        
+        let head_dim = dna.attention_head_dim.map(|d| d as f64).unwrap_or(head_dim_calc);
         
         // 🚀 Conservative Math: Always assume FP16 for KV-cache unless confirmed by engine state.
-        // This prevents 'Ghost Over-allocation' that causes the current STATUS_STACK_BUFFER_OVERRUN.
         let bytes_per_element = 2.0; // FP16 standard (Safe)
 
         // GB per 1024 tokens

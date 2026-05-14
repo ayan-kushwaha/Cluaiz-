@@ -231,7 +231,16 @@ impl StructuralDNA {
 
         // 📊 SOVEREIGN TELEMETRY: Synchronize with Governor Truth
         self.dynamic_attributes.insert("context_window".to_string(), format!("{}k", final_ctx / 1024));
-        self.inference_params.insert("max_tokens".to_string(), (final_ctx / 4).min(4096).to_string());
+        
+        // 🚀 DYNAMIC QUOTA: Mode-aware allocation (No more 75% static wall)
+        let gen_headroom = match booster.mode_run {
+            crate::hardware::schema::booster::BoosterMode::UltraMaxBoost | crate::hardware::schema::booster::BoosterMode::HyperCluster => 0.95, // 95% for Extreme modes
+            crate::hardware::schema::booster::BoosterMode::MaxBoost => 0.90, // 90%
+            _ => 0.80, // 80% Standard
+        };
+        
+        let max_gen_tokens = (final_ctx as f64 * gen_headroom) as usize;
+        self.inference_params.insert("max_tokens".to_string(), max_gen_tokens.to_string());
         self.inference_params.insert("context_length".to_string(), final_ctx.to_string());
 
         info!("✅ [DNA] Governor Discovery Complete: Mode {:?} | Window {}k", 

@@ -28,8 +28,8 @@ impl HardwareOrchestrator {
         // 🚀 [FFI Handshake]: Map the binary to process memory
         manager.load_and_link(binary_path)?;
 
-        // 🏛️ [Core Instantiation]: Create the active engine instance
-        let booster_control = cluaiz_shared::hardware::schema::booster::BoosterControl::default();
+        // 🏛️ [Core Instantiation]: Create the active engine instance with User Truth
+        let booster_control = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
         let engine_ptr = manager.instantiate(model_load_path, &booster_control)?;
 
         tracing::info!("🧬 [Orchestrator] Hardware Handshake SUCCESS. Neural Bridge Established.");

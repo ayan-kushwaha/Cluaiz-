@@ -207,13 +207,16 @@ impl NativeLlama {
             } else { is_1bit };
 
             if !is_1bit {
-                // Float models: standard temp + top_p pipeline
-                llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_temp(0.7));
-                llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_top_p(0.95, 1));
+                // Float models: Dynamic Sampling (DNA Truth)
+                let temp = dna.inference_params.get("temperature").and_then(|t| t.parse::<f32>().ok()).unwrap_or(0.7);
+                let top_p = dna.inference_params.get("top_p").and_then(|p| p.parse::<f32>().ok()).unwrap_or(0.95);
+                
+                llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_temp(temp));
+                llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_top_p(top_p, 1));
+                println!("🎲 [Native-Llama] Dynamic Sampler: temp={}, top_p={}", temp, top_p);
             }
             // Terminal sampler — mandatory for ALL models
             llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_greedy());
-            // println!("🎲 [Native-Llama] Sampler: {} | 1-bit={}", if is_1bit { "Greedy-Only" } else { "Temp+TopP+Greedy" }, is_1bit);
 
             let mut n_cur = tokens.len() as i32;
             let mut n_gen = 0;
