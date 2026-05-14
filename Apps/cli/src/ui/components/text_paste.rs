@@ -22,8 +22,8 @@ pub fn read_line_Cluaiz(prompt_text: &str, placeholder: &str) -> Result<Option<S
     execute!(stdout(), EnableBracketedPaste)?;
     enable_raw_mode()?;
 
-    let (mut cursor_x, _cursor_y) = crossterm::cursor::position().unwrap_or((0, 0));
-    let prompt_offset = prompt_text.chars().count() + 1;
+    let (_cursor_x, _cursor_y) = crossterm::cursor::position().unwrap_or((0, 0));
+    let _prompt_offset = prompt_text.chars().count() + 1;
 
     let result = loop {
         if let Ok(event) = event::read() {

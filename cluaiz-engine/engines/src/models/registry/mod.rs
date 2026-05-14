@@ -3,9 +3,9 @@
 //! ═══════════════════════════════════════════════════════════════════════
 
 use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::fs;
-use tracing::{info, warn};
+use tracing::info;
 pub mod provisioner;
 pub mod discovery;
 pub use provisioner::Provisioner;
@@ -194,10 +194,10 @@ impl CoreRoster {
         }
 
         let json_val: serde_json::Value = response.json().await.map_err(|e| e.to_string())?;
-        let mut manifests = Vec::new();
+        let manifests = Vec::new();
 
         if let Some(routing) = json_val.get("routing").and_then(|r| r.as_object()) {
-            for (id, _path) in routing {
+            for (_id, _path) in routing {
                 // For the index, we might just return empty manifests or placeholders
                 // but ideally, the remote should also point to the full JSONs.
                 // For now, let's just parse what we can.

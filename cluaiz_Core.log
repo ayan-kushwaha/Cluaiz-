@@ -1,44 +1,56 @@
-2026-05-10T11:31:20.561156Z  WARN engines::interface_engines::manager::driver_provisioner: ⚠️ [PROVISIONER] Cloud Foundry returned 404 Not Found, loading embedded registry...
-2026-05-10T11:32:08.162685Z ERROR engines::telemetry: 🛡️ [Watchtower] Telemetry Server failed: Only one usage of each socket address (protocol/network address/port) is normally permitted. (os error 10048)
-2026-05-10T11:32:09.503764Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
-2026-05-10T11:32:09.503867Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
-2026-05-10T11:32:09.508108Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
-2026-05-10T11:32:09.508175Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
-2026-05-10T11:32:09.511389Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:1.7b Status: Optimal, Cached: false
-2026-05-10T11:32:09.511475Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:1.7b Status: Optimal, Cached: false
-2026-05-10T11:32:09.511513Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:1.7b Status: Optimal, Cached: false
-2026-05-10T11:32:09.511574Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:1.7b Status: Optimal, Cached: false
-2026-05-10T11:32:09.511602Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:4b Status: Optimal, Cached: false
-2026-05-10T11:32:09.511658Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:4b Status: Optimal, Cached: false
-2026-05-10T11:32:09.511685Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:4b Status: Optimal, Cached: false
-2026-05-10T11:32:09.511739Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:4b Status: Optimal, Cached: false
-2026-05-10T11:32:09.511766Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:8b Status: Optimal, Cached: false
-2026-05-10T11:32:09.511827Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:8b Status: Optimal, Cached: false
-2026-05-10T11:32:09.511869Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:8b Status: Optimal, Cached: false
-2026-05-10T11:32:09.511955Z  INFO engines::models::registry: 🧬 [Roster] Model models Status: Optimal, Cached: false
-2026-05-10T11:32:09.512037Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:8b Status: Optimal, Cached: false
-2026-05-10T11:32:09.512053Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b Status: Incompatible, Cached: false
-2026-05-10T11:32:09.512150Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b Status: Optimal, Cached: false
-2026-05-10T11:32:09.512271Z  INFO engines::models::registry: 🧬 [Roster] Model models Status: Optimal, Cached: false
-2026-05-10T11:32:09.512271Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b Status: Incompatible, Cached: false
-2026-05-10T11:32:09.512378Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b Status: Incompatible, Cached: false
-2026-05-10T11:32:09.512381Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b Status: Incompatible, Cached: false
-2026-05-10T11:32:09.512471Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b Status: Optimal, Cached: false
-2026-05-10T11:32:09.512481Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b Status: Optimal, Cached: false
-2026-05-10T11:32:09.512588Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b Status: Optimal, Cached: false
-2026-05-10T11:32:09.512592Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b Status: Incompatible, Cached: false
-2026-05-10T11:32:09.512680Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-a4b Status: Incompatible, Cached: false
-2026-05-10T11:32:09.512689Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b Status: Incompatible, Cached: false
-2026-05-10T11:32:09.512761Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b Status: Optimal, Cached: false
-2026-05-10T11:32:09.512772Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b Status: Optimal, Cached: false
-2026-05-10T11:32:09.512841Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b Status: Incompatible, Cached: false
-2026-05-10T11:32:09.512897Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b Status: Optimal, Cached: false
-2026-05-10T11:32:09.512927Z  INFO engines::models::registry: 🧬 [Roster] Model Llama-4-Maverick-17B-128E-Instruct Status: Incompatible, Cached: false
-2026-05-10T11:32:09.512985Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-a4b Status: Incompatible, Cached: false
-2026-05-10T11:32:09.513029Z  INFO engines::models::registry: 🧬 [Roster] Model Llama-4-Scout-17B-16E-Instruct Status: Incompatible, Cached: false
-2026-05-10T11:32:09.513037Z  INFO engines::models::registry: 📊 [Roster] Generated 18 model recommendations for UI.
-2026-05-10T11:32:09.513067Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b Status: Optimal, Cached: false
-2026-05-10T11:32:09.513146Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b Status: Incompatible, Cached: false
-2026-05-10T11:32:09.513227Z  INFO engines::models::registry: 🧬 [Roster] Model Llama-4-Maverick-17B-128E-Instruct Status: Incompatible, Cached: false
-2026-05-10T11:32:09.513337Z  INFO engines::models::registry: 🧬 [Roster] Model Llama-4-Scout-17B-16E-Instruct Status: Incompatible, Cached: false
-2026-05-10T11:32:09.513345Z  INFO engines::models::registry: 📊 [Roster] Generated 18 model recommendations for UI.
+2026-05-14T11:42:04.133961Z  INFO cluaiz::core::bootstrapper: 🛰️ [Cluaiz] Synchronizing Neural Registry...
+2026-05-14T11:42:08.995041Z  INFO system_booster::os_tuning: 🚀 [Bare Metal] Attempting to elevate process priority to high (Value: 128) for PID 17984
+2026-05-14T11:42:09.004445Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
+2026-05-14T11:42:09.011674Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-05-14T11:42:09.013106Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-05-14T11:42:09.013533Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
+2026-05-14T11:42:09.014509Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
+2026-05-14T11:42:09.014761Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
+2026-05-14T11:42:09.015013Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-05-14T11:42:09.015111Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
+2026-05-14T11:42:09.015433Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
+2026-05-14T11:42:09.025197Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
+2026-05-14T11:42:09.032054Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-05-14T11:42:09.033158Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-05-14T11:42:09.033339Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
+2026-05-14T11:42:09.034507Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
+2026-05-14T11:42:09.034698Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
+2026-05-14T11:42:09.034844Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-05-14T11:42:09.034875Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
+2026-05-14T11:42:09.034998Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
+2026-05-14T11:42:09.045198Z  INFO engines::runtime::execution::hub: 🔩 [Orchestrator] Initiating Dynamic Hardware Handshake...
+2026-05-14T11:42:09.388747Z  INFO cluaiz_shared::hardware::governor: ⚖️ [Arbiter] VRAM Truth synchronized from System Control (Total): 4.00GB
+2026-05-14T11:42:09.390078Z  INFO engines::interface_engines::manager::kernel_loader: 🎯 [KernelLoader] Cluaiz path resolved: "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
+2026-05-14T11:42:09.390996Z  INFO engines::interface_engines::manager::kernel_loader: 🎯 [KernelLoader] Cluaiz path resolved: "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
+2026-05-14T11:42:09.391195Z  INFO engines::interface_engines::manager: 🧬 [Linker] Mapping binary: "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
+2026-05-14T11:42:09.508962Z  INFO engines::interface_engines::manager: ✅ [Linker] 7ns Handshake Complete. Kernel Linked.
+2026-05-14T11:42:12.136746Z  INFO engines::interface_engines::manager: 🚀 [Linker] Core Kernel Instantiated at Bare-Metal level.
+2026-05-14T11:42:12.136824Z  INFO engines::runtime::execution::hub: 🧬 [Orchestrator] Hardware Handshake SUCCESS. Neural Bridge Established.
+2026-05-14T11:42:16.785376Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
+2026-05-14T11:42:16.788722Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-05-14T11:42:16.789255Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-05-14T11:42:16.789439Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
+2026-05-14T11:42:16.790135Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
+2026-05-14T11:42:16.790287Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
+2026-05-14T11:42:16.790410Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-05-14T11:42:16.790441Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
+2026-05-14T11:42:16.790561Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
+2026-05-14T11:42:16.798757Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:1.7b Status: Optimal, Cached: false
+2026-05-14T11:42:16.798879Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:1.7b Status: Optimal, Cached: false
+2026-05-14T11:42:16.798971Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:4b Status: Optimal, Cached: false
+2026-05-14T11:42:16.799063Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:4b Status: Optimal, Cached: false
+2026-05-14T11:42:16.799158Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:8b Status: Optimal, Cached: true
+2026-05-14T11:42:16.799254Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:8b Status: Optimal, Cached: false
+2026-05-14T11:42:16.799344Z  INFO engines::models::registry: 🧬 [Roster] Model models Status: Optimal, Cached: false
+2026-05-14T11:42:16.799455Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b Status: Incompatible, Cached: false
+2026-05-14T11:42:16.799611Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b Status: Optimal, Cached: false
+2026-05-14T11:42:16.799735Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b Status: Incompatible, Cached: false
+2026-05-14T11:42:16.799830Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b Status: Incompatible, Cached: false
+2026-05-14T11:42:16.799921Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b Status: Optimal, Cached: false
+2026-05-14T11:42:16.800016Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b Status: Optimal, Cached: false
+2026-05-14T11:42:16.800112Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-a4b Status: Incompatible, Cached: false
+2026-05-14T11:42:16.800226Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b Status: Optimal, Cached: true
+2026-05-14T11:42:16.800325Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b Status: Incompatible, Cached: false
+2026-05-14T11:42:16.800417Z  INFO engines::models::registry: 🧬 [Roster] Model Llama-4-Maverick-17B-128E-Instruct Status: Incompatible, Cached: false
+2026-05-14T11:42:16.800511Z  INFO engines::models::registry: 🧬 [Roster] Model Llama-4-Scout-17B-16E-Instruct Status: Incompatible, Cached: false
+2026-05-14T11:42:16.800530Z  INFO engines::models::registry: 📊 [Roster] Generated 18 model recommendations for UI.

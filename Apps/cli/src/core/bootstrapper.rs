@@ -1,5 +1,4 @@
 use std::path::Path;
-use std::process::Command;
 use cluaiz_shared::HardwareGovernor;
 use color_eyre::{Result, eyre::eyre};
 use colored::Colorize;
@@ -11,6 +10,9 @@ impl Bootstrapper {
 
     /// 🚀 Cluaiz BOOTSTRAP: The Sovereign Handshake.
     pub async fn ignite() -> Result<()> {
+        #[cfg(debug_assertions)]
+        let _ = Self::sync_dev_artifacts();
+
         #[cfg(windows)]
         let _ = colored::control::set_virtual_terminal(true);
 
@@ -26,7 +28,8 @@ impl Bootstrapper {
         let master_registry: serde_json::Value = client.get(Self::MASTER_REGISTRY_URL).send().await?.json().await?;
         
         // 🏛️ Seal the Master Registry with Atomic Write Protocol
-        cluaiz_shared::RegistryGovernor::seal_registry(master_registry.clone())?;
+        cluaiz_shared::RegistryGovernor::seal_registry(master_registry.clone())
+            .map_err(|e| eyre!("Binary Truth Seal Error: {}", e))?;
         tracing::debug!("✅ [Registry] Binary Truth sealed and verified.");
 
         // 🎯 2. CLI Lifecycle Check
@@ -71,8 +74,17 @@ impl Bootstrapper {
 
     async fn download_engine_with_manifest(dest: &Path, manifest: &serde_json::Value) -> Result<()> {
         let platform = if cfg!(windows) { "win-x64" } else if cfg!(target_os = "macos") { "mac-arm64" } else { "linux-x64" };
-        let url = manifest["engines"][platform].as_str().ok_or_else(|| eyre!("Platform '{}' not found in Engine Registry.", platform))?;
-        Self::download_asset(url, dest).await?;
+        
+        let url_option = manifest["engines"][platform].as_str();
+        
+        if let Some(url) = url_option {
+            Self::download_asset(url, dest).await?;
+        } else if dest.exists() {
+            tracing::warn!("⚠️ [Bootstrapper] Platform '{}' not found in Engine Registry, but local engine exists. Skipping download.", platform);
+        } else {
+            return Err(eyre!("Platform '{}' not found in Engine Registry and no local engine found.", platform));
+        }
+        
         Ok(())
     }
 
@@ -113,16 +125,21 @@ impl Bootstrapper {
                 spec_key = if has_avx512 { format!("{}-avx512", platform) } else { format!("{}-avx2", platform) };
             }
 
-            let url = manifest["kernels"][&spec_key].as_str().or_else(|| manifest["kernels"][platform].as_str()).ok_or_else(|| eyre!("Kernel key '{}' not found.", spec_key))?;
-            Self::download_asset(url, &kernel_path).await?;
+            let url_option = manifest["kernels"][&spec_key].as_str().or_else(|| manifest["kernels"][platform].as_str());
+            
+            if let Some(url) = url_option {
+                Self::download_asset(url, &kernel_path).await?;
+            } else if kernel_path.exists() {
+                tracing::warn!("⚠️ [Bootstrapper] Kernel key '{}' not found in registry, but local kernel exists. Skipping.", spec_key);
+            } else {
+                return Err(eyre!("Kernel key '{}' not found and no local kernel found.", spec_key));
+            }
             std::fs::write(&kernel_marker, manifest_version)?;
         }
 
         if has_nvidia {
             let driver_manifest_url = master_registry["components"]["drivers"]["manifest_url"].as_str().unwrap_or_default();
-            if let Err(e) = engines::interface_engines::manager::driver_provisioner::DriverProvisioner::provision_for_hardware("cuda", driver_manifest_url).await {
-                println!("  {} [Cluaiz] Driver deployment failed: {}. Continuing bootstrap...", "⚠️".yellow(), e);
-            }
+            let _ = engines::interface_engines::manager::driver_provisioner::DriverProvisioner::provision_for_hardware("cuda", driver_manifest_url).await;
         }
 
         Ok(())
@@ -135,6 +152,61 @@ impl Bootstrapper {
         if !response.status().is_success() { return Err(eyre!("Registry Error: {} returned {}", url, response.status())); }
         let content = response.bytes().await?;
         std::fs::write(dest, content)?;
+        Ok(())
+    }
+
+    /// 🛠️ Dev-Sync: Synchronizes local build artifacts to .cluaiz during development.
+    /// This ensures cargo run always uses the latest compiled binaries.
+    #[cfg(debug_assertions)]
+    fn sync_dev_artifacts() -> Result<()> {
+        let hub_path = cluaiz_shared::HardwareGovernor::resolve_hub_path();
+        
+        // Resolve project root (assuming we are in Apps/cli)
+        let current_dir = std::env::current_dir().unwrap_or_default();
+        let project_root = current_dir.parent()
+            .and_then(|p| p.parent())
+            .map(|p| p.to_path_buf());
+        
+        if let Some(root) = project_root {
+            let target_dir = root.join("target").join("debug");
+            let ext = if cfg!(windows) { "dll" } else if cfg!(target_os = "macos") { "dylib" } else { "so" };
+
+            // 1. Engine Sync (engines.dll -> cluaiz-engine.dll)
+            let engine_src = target_dir.join(format!("engines.{}", ext));
+            let engine_dest = hub_path.join("engine").join(format!("cluaiz-engine.{}", ext));
+            
+            if engine_src.exists() {
+                let _ = std::fs::create_dir_all(engine_dest.parent().unwrap());
+                if let Err(e) = std::fs::copy(&engine_src, &engine_dest) {
+                    tracing::warn!("⚠️ [DevSync] Engine Link Failed: {}. (File might be locked by another process)", e);
+                } else {
+                    let _ = std::fs::write(hub_path.join("engine").join("cluaiz-engine.ready"), "dev-release");
+                    tracing::info!("🧬 [DevSync] Engine Linked: {:?}", engine_dest);
+                }
+            }
+
+            // 2. Kernel Sync (cluaiz_llama.dll -> cluaiz-llama.dll)
+            let kernel_src = target_dir.join(format!("cluaiz_llama.{}", ext));
+            let kernel_dest = hub_path.join("interface-engines").join("kernels").join(format!("cluaiz-llama.{}", ext));
+            
+            if kernel_src.exists() {
+                let _ = std::fs::create_dir_all(kernel_dest.parent().unwrap());
+                if let Err(e) = std::fs::copy(&kernel_src, &kernel_dest) {
+                    tracing::warn!("⚠️ [DevSync] Kernel Link Failed: {}. (DLL might be in use)", e);
+                } else {
+                    let _ = std::fs::write(hub_path.join("interface-engines").join("kernels").join("cluaiz-llama.ready"), "dev-release");
+                    tracing::info!("🧬 [DevSync] Kernel Linked: {:?}", kernel_dest);
+                }
+            }
+        } else {
+            tracing::error!("❌ [DevSync] Failed to resolve project root. Binaries will not be synced.");
+        }
+
+        Ok(())
+    }
+
+    #[cfg(not(debug_assertions))]
+    fn sync_dev_artifacts() -> Result<()> {
         Ok(())
     }
 }

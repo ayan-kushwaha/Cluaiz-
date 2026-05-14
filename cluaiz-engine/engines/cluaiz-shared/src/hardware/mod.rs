@@ -8,6 +8,7 @@ pub mod lookup;
 pub mod system_performance;
 pub mod governor;
 pub mod speed_checker;
+pub mod circuit_breaker;
 
 // ── Re-exports for clean API ──
 pub use system_control::HardwareOrchestrator;

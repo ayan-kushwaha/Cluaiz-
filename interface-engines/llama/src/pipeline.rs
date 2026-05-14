@@ -32,7 +32,7 @@ impl RuntimeBPipeline {
             .unwrap_or(false);
 
         // Apply template via templater
-        let wrapped_prompt = context.templater.format("llama", prompt);
+        let wrapped_prompt = context.templater.format(&context.dna, prompt);
 
         // Resolve model path to absolute
         let model_path_buf = PathBuf::from(model_path);

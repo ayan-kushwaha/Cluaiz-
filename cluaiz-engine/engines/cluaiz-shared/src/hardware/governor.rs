@@ -76,22 +76,30 @@ impl HardwareGovernor {
         if arbiter.total_vram_gb == 0.0 {
             if let Ok(control) = Self::load_system_control() {
                 let total = control.silicon_truth.accelerators.gpus.iter()
-                    .map(|g| g.vram_available_gb)
+                    .map(|g| g.vram_total_gb)
                     .sum::<f64>();
                 arbiter.total_vram_gb = total;
-                tracing::info!("⚖️ [Arbiter] VRAM Truth synchronized from System Control: {:.2}GB", total);
+                tracing::info!("⚖️ [Arbiter] VRAM Truth synchronized from System Control (Total): {:.2}GB", total);
             } else {
                 // Only calibrate if absolutely no truth is found (Slow fallback)
                 let _ = Self::auto_calibrate();
             }
         }
 
-        let available = arbiter.total_vram_gb - arbiter.allocated_vram_gb;
+        // 🛡️ Sovereign Limit: In Max Boost, we allow 98% utilization.
+        let booster = Self::load_booster_settings().unwrap_or_default();
+        let safety_margin = match booster.mode_run {
+            crate::hardware::schema::booster::BoosterMode::MaxBoost => 0.02, // 2% Margin for DWM
+            crate::hardware::schema::booster::BoosterMode::Balance => 0.07,  // 7% Margin
+            _ => 0.12,                                                      // 12% for multitasking 
+        };
+
+        let available = arbiter.total_vram_gb * (1.0 - safety_margin) - arbiter.allocated_vram_gb;
 
         if required_gb > available {
             return Err(anyhow::anyhow!(
-                "❌ [VRAM Arbiter] Out of Memory! Requested: {:.2}GB, Available: {:.2}GB (Total: {:.2}GB)",
-                required_gb, available, arbiter.total_vram_gb
+                "❌ [VRAM Arbiter] Out of Memory! Requested: {:.2}GB, Available: {:.2}GB (Limit: {:.0}% Utilization)",
+                required_gb, available, (1.0 - safety_margin) * 100.0
             ));
         }
 
@@ -107,6 +115,124 @@ impl HardwareGovernor {
         );
 
         Ok(())
+    }
+
+    /// ⚖️ Negotiate VRAM Envelope: Performs an iterative fitting loop (Ollama/vLLM style)
+    /// to find the maximum safe context window for the current silicon state.
+    /// This is NO LONGER static; it recalculates based on live architecture and booster state.
+    pub fn negotiate_vram_envelope(dna: &crate::metadata::dna::StructuralDNA) -> usize {
+        let booster = Self::load_booster_settings().unwrap_or_default();
+        Self::negotiate_vram_envelope_with_booster(dna, &booster)
+    }
+
+    pub fn negotiate_vram_envelope_with_booster(
+        dna: &crate::metadata::dna::StructuralDNA, 
+        booster: &crate::hardware::schema::booster::BoosterControl
+    ) -> usize {
+        let mut arbiter = ARBITER.lock().unwrap();
+        
+        let mut path = dirs::home_dir().unwrap_or_default();
+        path.push(".cluaiz");
+        path.push("engine");
+        path.push("system_booster.json");
+        println!("🔍 [Arbiter] Loading Booster from: {:?}", path);
+
+        // Ensure truth is loaded
+        if arbiter.total_vram_gb == 0.0 {
+            if let Ok(control) = Self::load_system_control() {
+                arbiter.total_vram_gb = control.silicon_truth.accelerators.gpus.iter()
+                    .map(|g| g.vram_total_gb).sum::<f64>();
+            }
+        }
+
+        // 🌊 ADAPTIVE MARGIN LOGIC: No more static percentages.
+        // We scale the margin based on total VRAM to prevent waste on H100s and starvation on 2GB cards.
+        let total_gb = arbiter.total_vram_gb;
+        let mut margin = match booster.mode_run {
+            crate::hardware::schema::booster::BoosterMode::Edge => 0.05f64.min(0.2 / total_gb),         // 📱 Max 5% or 200MB
+            crate::hardware::schema::booster::BoosterMode::Multitasking => 0.30f64.min(1.5 / total_gb), // 💻 Max 30% or 1.5GB
+            crate::hardware::schema::booster::BoosterMode::Balance => 0.15f64.min(2.0 / total_gb),      // ⚖️ Max 15% or 2GB
+            crate::hardware::schema::booster::BoosterMode::MaxBoost => 0.05f64.min(1.0 / total_gb),     // 🚀 Max 5% or 1GB
+            crate::hardware::schema::booster::BoosterMode::UltraMaxBoost => 0.01f64.min(0.4 / total_gb), // 🔥 Max 1% or 400MB
+            crate::hardware::schema::booster::BoosterMode::HyperCluster => {
+                if total_gb < 40.0 {
+                    println!("⚠️ [Arbiter] VRAM GUARD: HyperCluster rejected (<40GB). Falling back to UltraMaxBoost.");
+                    0.01f64.min(0.3 / total_gb) // Fallback to UltraMaxBoost safety
+                } else {
+                    0.15 // 🌌 Server (True Zero-ish)
+                }
+            }
+        }; 
+
+        // 🛡️ FLOOR SAFETY: Ensure OS always has breathing room.
+        // Aryan's Rule: Below 100MB, even the cursor lags.
+        let floor_gb = if matches!(booster.mode_run, crate::hardware::schema::booster::BoosterMode::UltraMaxBoost | crate::hardware::schema::booster::BoosterMode::HyperCluster) {
+            0.10 // 100MB Absolute Minimum for Sovereign Modes
+        } else {
+            0.25 // 250MB Standard Safety Floor
+        };
+
+        // Apply floor unless we are on massive server hardware (>24GB)
+        if total_gb < 24.0 {
+            margin = margin.max(floor_gb / total_gb);
+        }
+
+        // 🔥 'UltraMax' Override: Extreme utilization but still respects our new floor
+        if booster.force_vram_reclaim == crate::hardware::schema::booster::FeatureState::On {
+            let tight_margin = 0.005f64; // 0.5%
+            margin = tight_margin.max(floor_gb / total_gb); 
+            println!("🔥 [Arbiter] ULTRAMAX RECLAIM: Forcing ultra-tight {}MB VRAM margin.", (margin * total_gb * 1024.0) as usize);
+        }
+
+        let available_gb = (total_gb * (1.0 - margin)) - arbiter.allocated_vram_gb - (dna.weights_size_gb as f64);
+        
+        // 🧪 SOVEREIGN MATH: Calculate KV-Cache cost per 1024 tokens for THIS model
+        let layers = dna.layer_count.unwrap_or(32) as f64;
+        let heads = dna.attention_head_count.unwrap_or(32) as f64;
+        let head_dim = dna.attention_head_dim.unwrap_or(128) as f64;
+        
+        // 🚀 Conservative Math: Always assume FP16 for KV-cache unless confirmed by engine state.
+        // This prevents 'Ghost Over-allocation' that causes the current STATUS_STACK_BUFFER_OVERRUN.
+        let bytes_per_element = 2.0; // FP16 standard (Safe)
+
+        // GB per 1024 tokens
+        let gb_per_k = (1024.0 * layers * heads * head_dim * bytes_per_element * 2.0) / (1024.0 * 1024.0 * 1024.0);
+        
+        // 🛑 DYNAMIC STABILITY CAP: No more static traps.
+        // Rule: Never exceed what the model architecture supports (DNA Truth).
+        // If DNA is missing, we assume an infinite architecture limit (usize::MAX) 
+        // and let the Physical VRAM Arbiter determine the safe ceiling.
+        let arch_cap = dna.max_context_length.unwrap_or(usize::MAX);
+        
+        // Starting point for negotiation should be the Architecture Truth
+        let mut current_ctx = arch_cap;
+        
+        // Expansion logic for high-power modes (Only if architecture allows)
+        if matches!(booster.mode_run, crate::hardware::schema::booster::BoosterMode::MaxBoost | crate::hardware::schema::booster::BoosterMode::UltraMaxBoost | crate::hardware::schema::booster::BoosterMode::HyperCluster) {
+            let possible_max = (available_gb / gb_per_k) * 1024.0;
+            // Expand to physical VRAM limit, but never exceed architecture DNA
+            current_ctx = current_ctx.max(possible_max as usize).min(arch_cap);
+        }
+        
+        // Final Safety Clamp: Strictly follow the model's Silicon-Genome
+        current_ctx = current_ctx.min(arch_cap); 
+        
+        // Note: We removed the static 8192 cap for <6GB cards because 
+        // the iterative loop below handles fitting tokens into physical available_gb dynamically.
+
+        // Iterative step down if OOM risk detected
+        while current_ctx > 1024 {
+            let required_gb = (current_ctx as f64 / 1024.0) * gb_per_k;
+            if required_gb <= available_gb {
+                break;
+            }
+            current_ctx -= 1024; 
+        }
+
+        println!("⚖️ [Arbiter] Envelope Negotiated: Mode={:?}, Available: {:.2}GB, Margin: {:.1}MB -> Safe Context: {} tokens", 
+            booster.mode_run, available_gb, margin * total_gb * 1024.0, current_ctx);
+            
+        current_ctx
     }
 
     /// 🔓 Release VRAM allocation when an engine is unloaded.
@@ -229,7 +355,7 @@ impl HardwareGovernor {
 
     pub fn resolve_bin_gateway() -> PathBuf {
         let path = Self::resolve_hub_path().join("bin");
-        let _ = std::fs::create_dir_all(&path);
+        std::fs::create_dir_all(&path).expect("Failed to create bin directory");
         path
     }
 
@@ -241,21 +367,27 @@ impl HardwareGovernor {
         let path = Self::resolve_engine_path().join("system_control.bin");
         
         if !path.exists() {
-            println!("🛠️ [Self-Healing] Kernel Binary Missing. Regenerating...");
-            Self::auto_calibrate()?;
+            return Err(anyhow::anyhow!("Binary truth missing"));
         }
 
         let bytes = std::fs::read(&path)?;
-        let archived = unsafe { rkyv::archived_root::<SystemControl>(&bytes) };
-        let control: SystemControl = match archived.deserialize(&mut rkyv::Infallible) {
-            Ok(val) => val,
-            Err(_) => {
-                println!("⚠️ [Self-Healing] Binary Corrupted. Regenerating...");
+        
+        // 🛡️ Ultimate Safety Guard: Catch rkyv panics (overflows/alignment)
+        let result = std::panic::catch_unwind(|| {
+            if bytes.len() < 32 { return None; }
+            let archived = unsafe { rkyv::archived_root::<SystemControl>(&bytes) };
+            archived.deserialize(&mut rkyv::Infallible).ok()
+        });
+
+        match result {
+            Ok(Some(control)) => Ok(control),
+            _ => {
+                let _ = std::fs::remove_file(&path);
+                println!("⚠️ [Self-Healing] Binary Truth Corrupted. Recovering...");
                 Self::auto_calibrate()?;
-                return Self::load_binary_truth();
+                Err(anyhow::anyhow!("Binary truth recovered. Please retry."))
             }
-        };
-        Ok(control)
+        }
     }
 
     pub fn load_system_control() -> anyhow::Result<SystemControl> {
@@ -290,14 +422,14 @@ impl HardwareGovernor {
 
         let json_path = base.join("system_control.json");
         let bin_path = base.join("system_control.bin");
-        let temp_json = json_path.with_extension("tmp");
-        let temp_bin = bin_path.with_extension("tmp");
+        let temp_json = json_path.with_extension("json.tmp");
+        let temp_bin = bin_path.with_extension("bin.tmp");
 
         // ✍️ Atomic Write Protocol: Write to Temp -> Sync -> Rename
         let json_data = serde_json::to_string_pretty(control)?;
         std::fs::write(&temp_json, json_data)?;
         
-        let bytes = rkyv::to_bytes::<_, 1024>(control)
+        let bytes = rkyv::to_bytes::<_, 65536>(control)
             .map_err(|e| anyhow::anyhow!("Binary Serialization Failed: {}", e))?;
         std::fs::write(&temp_bin, bytes.as_slice())?;
 
@@ -310,14 +442,41 @@ impl HardwareGovernor {
 
     // ─── 🚀 BOOSTER CONTROL (USER SETTINGS) ───
 
+    /// 🏛️ Loads booster settings, prioritizing Binary Truth (.bin) for performance.
     pub fn load_booster_settings() -> anyhow::Result<BoosterControl> {
-        let path = Self::resolve_engine_path().join("system_booster.json");
-        if !path.exists() {
-            return Ok(BoosterControl::default());
+        let base = Self::resolve_engine_path();
+        let bin_path = base.join("system_booster.bin");
+        let json_path = base.join("system_booster.json");
+
+        // 🚀 Priority 1: Binary Truth (Panic-Safe Rkyv)
+        if bin_path.exists() {
+            if let Ok(bytes) = std::fs::read(&bin_path) {
+                let result = std::panic::catch_unwind(|| {
+                    if bytes.len() < 32 { return None; }
+                    let archived = unsafe { rkyv::archived_root::<BoosterControl>(&bytes) };
+                    archived.deserialize(&mut rkyv::Infallible).ok()
+                });
+
+                if let Ok(Some(control)) = result {
+                    return Ok(control);
+                }
+                // If panic or error, wipe it
+                let _ = std::fs::remove_file(&bin_path);
+            }
         }
-        let data = std::fs::read_to_string(path)?;
-        let control: BoosterControl = serde_json::from_str(&data)?;
-        Ok(control)
+
+        // 🛡️ Priority 2: JSON Backup
+        if json_path.exists() {
+            let data = std::fs::read_to_string(&json_path)?;
+            println!("🔍 [Arbiter] Raw Booster JSON: {}", data);
+            if let Ok(control) = serde_json::from_str(&data) {
+                // Self-Heal: Sync binary if JSON was manual-edited
+                let _ = Self::save_booster_settings(&control); 
+                return Ok(control);
+            }
+        }
+
+        Ok(BoosterControl::default())
     }
 
     pub fn save_booster_settings(control: &BoosterControl) -> anyhow::Result<()> {
@@ -327,27 +486,22 @@ impl HardwareGovernor {
         let json_path = base.join("system_booster.json");
         let bin_path = base.join("system_booster.bin");
 
-        // 🔓 Step 1: Unlock for Update
-        Self::set_file_lock(&json_path, false);
-        Self::set_file_lock(&bin_path, false);
+        // 🔓 Sovereign Freedom: Removed Read-Only locking to allow real-time manual edits.
 
-        // ✍️ Step 2: Write Booster Settings
+        // ✍️ Write Booster Settings
         let json_data = serde_json::to_string_pretty(control)?;
         std::fs::write(&json_path, json_data)?;
 
-        let bytes = rkyv::to_bytes::<_, 1024>(control)
+        let bytes = rkyv::to_bytes::<_, 65536>(control)
             .map_err(|e| anyhow::anyhow!("Binary Serialization Failed: {}", e))?;
         std::fs::write(&bin_path, bytes.as_slice())?;
-
-        // 🔒 Step 3: Sovereign Lockdown
-        Self::set_file_lock(&json_path, true);
-        Self::set_file_lock(&bin_path, true);
 
         Ok(())
     }
 
     /// 🔒 Applies OS-level protection to a file to prevent manual deletion or tampering.
-    fn set_file_lock(path: &std::path::Path, locked: bool) {
+    fn _set_file_lock(path: &std::path::Path, locked: bool) {
+        // [DEPRECATED] Sovereign mandated manual control.
         if let Ok(metadata) = std::fs::metadata(path) {
             let mut permissions = metadata.permissions();
             permissions.set_readonly(locked);
@@ -369,8 +523,8 @@ impl RegistryGovernor {
     /// 🏛️ Synchronizes the master registry from remote and seals it into binary truth.
     pub fn seal_registry(data: serde_json::Value) -> anyhow::Result<()> {
         let (json_path, bin_path) = Self::resolve_registry_path();
-        let temp_json = json_path.with_extension("tmp");
-        let temp_bin = bin_path.with_extension("tmp");
+        let temp_json = json_path.with_extension("json.tmp");
+        let temp_bin = bin_path.with_extension("bin.tmp");
         
         // ✍️ Atomic Registry Update
         let json_str = serde_json::to_string_pretty(&data)?;
@@ -402,9 +556,9 @@ impl RegistryGovernor {
     }
 
     /// 🧠 Resolve Best Backend: Maps real hardware truth to the best available registry backend.
-    pub fn resolve_backend(control: &crate::hardware::schema::profiles::SystemControl, registry: &serde_json::Value) -> String {
+    pub fn resolve_backend(control: &crate::hardware::schema::profiles::SystemControl, _registry: &serde_json::Value) -> String {
         let os = control.identity.os_target.to_lowercase();
-        let arch = control.identity.architecture.to_lowercase();
+        let _arch = control.identity.architecture.to_lowercase();
         let gpu_vendor = control.silicon_truth.accelerators.gpus.first().map(|g| g.vendor.to_lowercase()).unwrap_or_default();
         
         // 🚀 Sovereign Routing Strategy:

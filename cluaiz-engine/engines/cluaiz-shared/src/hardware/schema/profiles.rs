@@ -88,6 +88,7 @@ pub enum BackendDriver {
 #[archive(check_bytes)]
 pub struct MemorySubsystem {
     pub total_capacity_gb: f64,
+    pub available_capacity_gb: f64,
     pub type_name: String,
     pub speed_mts: f64,
     pub bandwidth_gbps: f64,

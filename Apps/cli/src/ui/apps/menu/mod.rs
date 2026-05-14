@@ -5,7 +5,7 @@ use ratatui::{
     widgets::{Paragraph, Widget},
     buffer::Buffer,
 };
-use crate::core::state::{AppState, MenuApp};
+use crate::core::state::AppState;
 use crate::theme::Theme;
 
 pub fn render_widget(app: &mut AppState, theme: &Theme, area: Rect, buf: &mut Buffer) {

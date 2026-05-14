@@ -18,13 +18,11 @@ impl SkillRouter {
     pub fn match_intent(&self, prompt: &str, registry: &SkillRegistry) -> Vec<String> {
         // 🛰️ Cluaiz Linkage: Get real-time Hardware pressure
         let pulse = cluaiz_shared::hardware::telemetry::get_pulse();
-        let pulse_lock = pulse.pulse.read().unwrap();
+        let _pulse_lock = pulse.pulse.read().unwrap();
         
         let mut matches = Vec::new();
         let prompt_lower = prompt.to_lowercase();
 
-        println!("🧬 [SkillRouter] Compute-Aware Scan: VRAM Pressure {}% | Scanning {} skills...", 
-            pulse_lock.vram_pressure_pct, registry.skills.len());
 
         for skill in &registry.skills {
             let mut is_matched = false;
@@ -44,7 +42,6 @@ impl SkillRouter {
             }
 
             if is_matched {
-                println!("✅ [SkillRouter] Dynamic Match Found: {}", skill.manifest.id);
                 matches.push(skill.manifest.id.clone());
             }
         }

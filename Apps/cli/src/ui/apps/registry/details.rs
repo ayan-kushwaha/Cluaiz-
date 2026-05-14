@@ -5,7 +5,6 @@ use inquire::{
     ui::{Attributes, Color as InqColor, RenderConfig, Styled},
     Select, Confirm,
 };
-use crate::core::state::{AppState};
 use tokio::sync::mpsc;
 use engines::DownloadEvent;
 use crossterm::event::{self, Event, KeyCode};

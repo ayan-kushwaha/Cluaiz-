@@ -16,6 +16,7 @@ pub struct LivePulse {
     pub relay_latency_ms: u64,
     pub kv_cache_footprint_mb: u64,
     pub storage_throughput_mbps: u64,
+    pub network_throughput_mbps: u64,
     pub per_core_usage: Vec<u32>,
 }
 

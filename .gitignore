@@ -25,6 +25,7 @@ build/
 # storage/        <-- Allowed
 # data/           <-- Allowed
 Apps/app
+docs
 
 # --- Large Model Files (STRICTLY BLOCKED) ---
 *.gguf

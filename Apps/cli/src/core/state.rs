@@ -70,7 +70,6 @@ impl CoreEngine {
     }
 
     pub async fn load_model(&self, path: std::path::PathBuf) -> Result<(), String> {
-        let device = candle_core::Device::Cpu;
         let backend = engines::BackendType::RuntimeB;
 
         // 🔄 Reset Linker State
@@ -80,7 +79,7 @@ impl CoreEngine {
             *err_lock = None;
         }
         
-        match engines::CoreRouter::load_model(path, backend, &device).await {
+        match engines::CoreRouter::load_model(path, backend).await {
             Ok(router) => {
                 let mut lock = self.router.lock().await;
                 *lock = router;

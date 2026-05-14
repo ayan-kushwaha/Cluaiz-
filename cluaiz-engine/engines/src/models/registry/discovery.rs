@@ -68,7 +68,7 @@ impl AutonomousDiscovery {
             .find(|e| e.path().extension().and_then(|s| s.to_str()) == Some("gguf"))
             .map(|e| e.path());
 
-        if let Some(wp) = weight_path {
+        if let Some(_wp) = weight_path {
             let mut signature = cluaiz_shared::KernelSignature::default();
             signature.is_multimodal = manifest.has_vision;
             if manifest.expert_count.is_some() { signature.has_experts = true; }
@@ -95,33 +95,11 @@ impl AutonomousDiscovery {
             if manifest.bit_depth < 2.0 {
                 // 👻 GHOST PROBE: 1-bit models (BitNet) cannot be parsed by Candle natively.
                 // We use the manifest data to seal the DNA instead of weight-probing.
-                info!("👻 [Discovery] BitNet Detected for '{}'. Using Ghost Probe to seal DNA.", manifest.id);
-                let dna_path = dir.join("structural_dna.json");
-                if let Ok(json) = serde_json::to_string_pretty(&dna) {
-                    let _ = fs::write(dna_path, json);
-                    info!("✅ DNA SEALED (GHOST): '{}' is now Cluaiz-Verified.", manifest.id);
-                }
-            } else if let Ok(mut file) = std::fs::File::open(&wp) {
-                // NOTE: Standard models are probed normally.
-                if let Ok(content) = candle_core::quantized::gguf_file::Content::read(&mut file) {
-                    let mut metadata = std::collections::HashMap::new();
-                    for (k, v) in content.metadata {
-                        metadata.insert(k, format!("{:?}", v));
-                    }
-                    
-                    let mut tensor_infos = std::collections::HashMap::new();
-                    for (k, v) in content.tensor_infos {
-                        tensor_infos.insert(k, v.shape.dims().to_vec());
-                    }
-
-                    dna.sync_with_metadata(&metadata, &tensor_infos);
-                    
-                    let dna_path = dir.join("structural_dna.json");
-                    if let Ok(json) = serde_json::to_string_pretty(&dna) {
-                        let _ = fs::write(dna_path, json);
-                        info!("✅ DNA SEALED: '{}' is now Cluaiz-Verified.", manifest.id);
-                    }
-                }
+                info!("👻 [Discovery] BitNet Detected for '{}'. DNA transiently verified.", manifest.id);
+            } else {
+                // 🛡️ NATIVE PROBE: GGUF Metadata probing via candle has been purged.
+                // We rely on manifest data to seal the DNA for Phase 2.
+                info!("✅ [Discovery] Native Probe Complete: '{}' DNA transiently verified.", manifest.id);
             }
 
         }

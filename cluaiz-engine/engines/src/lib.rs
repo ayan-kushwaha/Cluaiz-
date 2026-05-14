@@ -17,6 +17,8 @@ pub mod sync;
 #[path = "interface-engines/mod.rs"]
 pub mod interface_engines;
 pub mod neural_foundry;
+#[cfg(feature = "system-booster")]
+pub use system_booster;
 
 // ─── Master Archer Unified Access ────────────────────────────────────
 

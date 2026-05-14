@@ -3,7 +3,6 @@
 //! ═══════════════════════════════════════════════════════════════════════
 
 use anyhow::Result;
-use candle_core::Device;
 use crate::runtime::execution::sampler::CoreSampler;
 use cluaiz_shared::ModelWeightsWrapper;
 use tokenizers::Tokenizer;
@@ -22,12 +21,11 @@ pub struct CluaizRunner {
     pub tokenizer: Tokenizer,
     pub sampler: CoreSampler,
     pub bos_token_id: Option<u32>,
-    pub device: Device,
 }
 
 impl CluaizRunner {
-    pub fn new(model: ModelWeightsWrapper, tokenizer: Tokenizer, sampler: CoreSampler, bos_token_id: Option<u32>, device: Device) -> Self {
-        Self { model, tokenizer, sampler, bos_token_id, device }
+    pub fn new(model: ModelWeightsWrapper, tokenizer: Tokenizer, sampler: CoreSampler, bos_token_id: Option<u32>) -> Self {
+        Self { model, tokenizer, sampler, bos_token_id }
     }
 
     /// 🔗 Instant Recall: Injects Core Cluaiz signals before generation.

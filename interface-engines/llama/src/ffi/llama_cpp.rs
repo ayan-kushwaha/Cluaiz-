@@ -52,10 +52,19 @@ pub struct LlamaContextParams {
     pub type_v: i32,
     pub abort_callback: *mut std::ffi::c_void,
     pub abort_callback_data: *mut std::ffi::c_void,
-    pub embeddings: bool,
-    pub offload_kqv: bool,
-    pub no_perf: bool,
-    pub op_offload: bool,
+
+    // Keep the booleans together and at the end of the struct to avoid misalignment during copy-by-value.
+    pub embeddings: u8,
+    pub offload_kqv: u8,
+    pub no_perf: u8,
+    pub op_offload: u8,
+    pub swa_full: u8,
+    pub kv_unified: u8,
+    pub _pad: [u8; 2], // Pad to 8-byte boundary for the next pointer
+
+    // [EXPERIMENTAL]
+    pub samplers: *mut std::ffi::c_void,
+    pub n_samplers: usize,
 }
 
 extern "C" {
@@ -102,6 +111,7 @@ extern "C" {
 
     /// 🧬 Get model vocabulary.
     pub fn llama_model_get_vocab(model: *const std::ffi::c_void) -> *const std::ffi::c_void;
+    pub fn llama_vocab_n_tokens(vocab: *const std::ffi::c_void) -> i32;
 
     /// 🏛️ Initialize a batch for inference.
     pub fn llama_batch_init(n_tokens: i32, embd: i32, n_seq_max: i32) -> LlamaBatch;
@@ -113,7 +123,7 @@ extern "C" {
     pub fn llama_decode(ctx: *mut std::ffi::c_void, batch: LlamaBatch) -> i32;
 
     /// 🎲 Industrial Sampler Suite
-    pub fn llama_sampler_chain_init(params: *mut std::ffi::c_void) -> *mut std::ffi::c_void;
+    pub fn llama_sampler_chain_init(params: LlamaSamplerChainParams) -> *mut std::ffi::c_void;
     pub fn llama_sampler_chain_add(chain: *mut std::ffi::c_void, sampler: *mut std::ffi::c_void);
     pub fn llama_sampler_init_greedy() -> *mut std::ffi::c_void;
     pub fn llama_sampler_init_top_p(p: f32, min_keep: usize) -> *mut std::ffi::c_void;
@@ -135,9 +145,30 @@ extern "C" {
         token: i32,
         buf: *mut c_char,
         length: i32,
-        lstrip: bool,
+        lstrip: i32,
         special: bool,
     ) -> i32;
+
+    /// 🏁 EOS/EOG Detection
+    pub fn llama_vocab_is_eog(vocab: *const std::ffi::c_void, token: i32) -> bool;
+    pub fn llama_vocab_eos(vocab: *const std::ffi::c_void) -> i32;
+
+    /// 🧬 Metadata Extraction
+    pub fn llama_model_meta_count(model: *const std::ffi::c_void) -> i32;
+    pub fn llama_model_meta_key_by_index(model: *const std::ffi::c_void, i: i32, buf: *mut c_char, buf_size: usize) -> i32;
+    pub fn llama_model_meta_val_str_by_index(model: *const std::ffi::c_void, i: i32, buf: *mut c_char, buf_size: usize) -> i32;
+
+    /// 🛑 Logging: Redirect native library logs to avoid TUI noise.
+    pub fn llama_log_set(log_callback: Option<LlamaLogCallback>, user_data: *mut std::ffi::c_void);
+}
+
+pub type LlamaLogCallback = extern "C" fn(level: i32, text: *const c_char, user_data: *mut std::ffi::c_void);
+
+/// ✅ Matches `llama_sampler_chain_params` in llama.h exactly.
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct LlamaSamplerChainParams {
+    pub no_perf: bool, // whether to measure performance timings
 }
 
 #[repr(C)]

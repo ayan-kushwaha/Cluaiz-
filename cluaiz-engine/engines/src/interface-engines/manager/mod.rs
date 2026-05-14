@@ -91,25 +91,35 @@ impl EngineManager {
             tracing::info!("🧠 [Arbiter] Hardware Linkage targeting CPU/System RAM. Bypassing GPU VRAM limits.");
         }
 
-        // 2. Check local presence in cluaiz/interface-engines/
-        if self.loader.exists(&target_binary_id) {
-            Ok(self.loader.resolve_path(&target_binary_id))
+        // 🎯 [Core Provisioning]: Ensure the specialized kernel binary exists
+        let registry_engines_url = registry["components"]["kernel"]["manifest_url"].as_str().unwrap_or_default();
+        
+        let binary_path = if self.loader.exists(&target_binary_id) {
+            self.loader.resolve_path(&target_binary_id)
         } else {
-            // 🔄 NATIVE FALLBACK: If GPU binary is missing, attempt CPU fallback
+            // 🚀 ATOMIC PROVISIONING: Attempt to download specialized kernel from registry
             if target_suffix != "cpu" {
-                tracing::warn!("⚠️ [Linker] Engine '{}' missing. Attempting CPU fallback...", target_binary_id);
-                let fallback_id = format!("{}-cpu", engine_type);
-                if self.loader.exists(&fallback_id) {
-                    // Release the GPU VRAM we aggressively reserved earlier
-                    let _ = HardwareGovernor::release_vram(&target_binary_id);
-                    tracing::info!("✅ [Linker] CPU Fallback successful: {}", fallback_id);
-                    return Ok(self.loader.resolve_path(&fallback_id));
+                println!("  {} [LINKER] Specialized Kernel '{}' missing. Initiating Sovereign Provisioning...", "🧬".cyan(), target_binary_id);
+                match DriverProvisioner::provision_kernel(engine_type, target_suffix, registry_engines_url).await {
+                    Ok(path) => path,
+                    Err(e) => {
+                        tracing::warn!("⚠️ [Provisioner] Kernel provisioning failed ({}). Attempting CPU fallback.", e);
+                        target_suffix = "cpu";
+                        target_binary_id = format!("{}-cpu", engine_type);
+                        self.loader.resolve_path(&target_binary_id)
+                    }
                 }
+            } else {
+                self.loader.resolve_path(&target_binary_id)
             }
+        };
 
+        if binary_path.exists() {
+            Ok(binary_path)
+        } else {
             // If binary missing (and no fallback), release the reserved memory immediately
             let _ = HardwareGovernor::release_vram(&target_binary_id);
-            Err(format!("Engine Binary Missing: Please pull the '{}' package for your {} Hardware into your cluaiz/interface-engines/ folder", target_binary_id, os))
+            Err(format!("Engine Binary Missing: Registry and Fallback both failed for '{}' package.", target_binary_id))
         }
     }
 
@@ -122,6 +132,7 @@ impl EngineManager {
 
     /// 🔗 Cluaiz Linker: Maps the binary kernel to process memory and resolves symbols.
     pub fn load_and_link(&mut self, binary_path: PathBuf) -> anyhow::Result<()> {
+        println!("🧬 [Linker] Mapping binary: {:?}", binary_path);
         tracing::info!("🧬 [Linker] Mapping binary: {:?}", binary_path);
         
         // 🪟 WINDOWS SEARCH PATCH: Add drivers directory to DLL search path
@@ -161,19 +172,68 @@ impl EngineManager {
     }
 
     /// 🏛️ Core Instantiation: Invokes the kernel's factory method to create an active execution engine.
-    pub fn instantiate(&self, model_path: &str) -> anyhow::Result<()> {
+    pub fn instantiate(&self, model_path: &str, booster: &cluaiz_shared::hardware::schema::booster::BoosterControl) -> anyhow::Result<*mut std::ffi::c_void> {
         let lib = self.active_lib.as_ref()
             .ok_or_else(|| anyhow::anyhow!("Linker Error: No active kernel linked."))?;
         
         unsafe {
-            let instantiate_fn: Symbol<unsafe extern "C" fn(*const std::os::raw::c_char) -> *mut std::ffi::c_void> = 
+            let instantiate_fn: Symbol<unsafe extern "C" fn(*const std::os::raw::c_char, *const cluaiz_shared::hardware::schema::booster::CluaizBoosterContext) -> *mut std::ffi::c_void> = 
                 lib.get(b"cluaiz_kernel_instantiate")
                 .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaiz_kernel_instantiate' symbol missing."))?;
             
             let c_path = std::ffi::CString::new(model_path)?;
-            let _engine_ptr = instantiate_fn(c_path.as_ptr() as *const std::os::raw::c_char);
+            let booster_ctx: cluaiz_shared::hardware::schema::booster::CluaizBoosterContext = booster.into();
+            let engine_ptr = instantiate_fn(c_path.as_ptr() as *const std::os::raw::c_char, &booster_ctx as *const _);
             
+            if engine_ptr.is_null() {
+                return Err(anyhow::anyhow!("Kernel Instantiation Failed: Pointer is null. Check kernel logs."));
+            }
+
             tracing::info!("🚀 [Linker] Core Kernel Instantiated at Bare-Metal level.");
+            Ok(engine_ptr)
+        }
+    }
+
+    /// 🌊 [FFI Bridge] Direct token streaming from the linked binary.
+    pub fn generate_stream_ffi(
+        &self,
+        engine_ptr: *mut std::ffi::c_void,
+        prompt: &str,
+        max_tokens: usize,
+        callback: Box<dyn FnMut(String) + Send + 'static>,
+    ) -> anyhow::Result<()> {
+        let lib = self.active_lib.as_ref()
+            .ok_or_else(|| anyhow::anyhow!("Linker Error: No active kernel linked."))?;
+        
+        unsafe {
+            let generate_fn: Symbol<unsafe extern "C" fn(*mut std::ffi::c_void, *const std::os::raw::c_char, usize, extern "C" fn(*const std::os::raw::c_char, *mut std::ffi::c_void), *mut std::ffi::c_void) -> i32> = 
+                lib.get(b"cluaiz_kernel_generate_stream")
+                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaiz_kernel_generate_stream' symbol missing."))?;
+            
+            let c_prompt = std::ffi::CString::new(prompt)?;
+            
+            // 🛰️ Static Gateway: Convert the C callback back to our Rust closure
+            extern "C" fn c_callback_bridge(token_ptr: *const std::os::raw::c_char, user_data: *mut std::ffi::c_void) {
+                unsafe {
+                    let cb = &mut *(user_data as *mut Box<dyn FnMut(String) + Send + 'static>);
+                    let token = std::ffi::CStr::from_ptr(token_ptr).to_string_lossy().into_owned();
+                    cb(token);
+                }
+            }
+
+            // Wrap the callback in another box to keep it alive during the call
+            let mut user_data = Box::new(callback);
+            let status = generate_fn(
+                engine_ptr, 
+                c_prompt.as_ptr() as *const std::os::raw::c_char, 
+                max_tokens, 
+                c_callback_bridge,
+                &mut *user_data as *mut _ as *mut std::ffi::c_void
+            );
+            
+            if status != 0 {
+                return Err(anyhow::anyhow!("FFI Generation Error (Code: {})", status));
+            }
         }
         
         Ok(())

@@ -15,6 +15,7 @@ pub enum EngineGear {
 pub struct ObservableHardwareState {
     pub pulse: Arc<RwLock<LivePulse>>,
     pub turbo_quant_enabled: AtomicBool,
+    pub tps_counter: std::sync::atomic::AtomicUsize,
 }
 
 impl ObservableHardwareState {

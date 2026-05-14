@@ -1,11 +1,10 @@
 //! ═══════════════════════════════════════════════════════════════════════
-//!  CURE Engine: Core Sampler (Cluaiz)
+//!  CURE Engine: Core Sampler (Cluaiz) — Native Refactor
 //! ═══════════════════════════════════════════════════════════════════════
 
-use candle_core::{Result, Tensor};
 use rand::{distr::Distribution, SeedableRng};
-
 use serde::{Serialize, Deserialize};
+use anyhow::Result;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum InferenceMode { Turbo, Classic, Auto }
@@ -24,31 +23,45 @@ impl CoreSampler {
     }
 
     /// Dispatch sampling based on InferenceMode.
-    pub fn sample(&self, logits: &Tensor, mode: &InferenceMode) -> Result<u32> {
+    pub fn sample(&self, logits: &[f32], mode: &InferenceMode) -> Result<u32> {
         match mode {
             InferenceMode::Turbo => self.sample_greedy(logits),
             InferenceMode::Classic => self.sample_creative(logits),
-            InferenceMode::Auto => {
-                // Future: Entropy-based automatic switching.
-                // For now, Turbo for maximum potential speed.
-                self.sample_greedy(logits)
-            }
+            InferenceMode::Auto => self.sample_greedy(logits),
         }
     }
 
-    /// Pure GPU Greedy Sampling (Zero distribution stall).
-    pub fn sample_greedy(&self, logits: &Tensor) -> Result<u32> {
-        let argmax = logits.argmax(0)?;
-        let scalar = argmax.to_scalar::<u32>()?;
-        Ok(scalar)
+    /// Pure Greedy Sampling (Argmax).
+    pub fn sample_greedy(&self, logits: &[f32]) -> Result<u32> {
+        let mut best_idx = 0;
+        let mut best_val = f32::MIN;
+
+        for (i, &val) in logits.iter().enumerate() {
+            if val > best_val {
+                best_val = val;
+                best_idx = i;
+            }
+        }
+        Ok(best_idx as u32)
     }
 
     /// Creative Sampling (Top-P).
-    pub fn sample_creative(&self, logits: &Tensor) -> Result<u32> {
-        let logits = (logits / (self.temperature as f64))?;
-        let prs = candle_nn::ops::softmax_last_dim(&logits)?;
+    pub fn sample_creative(&self, logits: &[f32]) -> Result<u32> {
+        if self.temperature == 0.0 {
+            return self.sample_greedy(logits);
+        }
 
-        let prs: Vec<f32> = prs.to_vec1()?;
+        // Apply Temperature
+        let mut prs: Vec<f32> = logits.iter()
+            .map(|&l| (l / self.temperature).exp())
+            .collect();
+        
+        // Softmax
+        let sum: f32 = prs.iter().sum();
+        for p in prs.iter_mut() {
+            *p /= sum;
+        }
+
         let mut prs_with_index: Vec<(usize, f32)> = prs.into_iter().enumerate().collect();
         
         // Sort for Top-P
@@ -68,7 +81,7 @@ impl CoreSampler {
         let mut rng = rand::rngs::StdRng::seed_from_u64(self.seed);
         let distr = rand::distr::weighted::WeightedIndex::new(
             prs_with_index.iter().map(|(_, p)| p / total_p)
-        ).map_err(|e| candle_core::Error::Msg(format!("Sampling Error: {}", e)))?;
+        ).map_err(|e| anyhow::anyhow!("Sampling Error: {}", e))?;
         
         Ok(prs_with_index[distr.sample(&mut rng)].0 as u32)
     }

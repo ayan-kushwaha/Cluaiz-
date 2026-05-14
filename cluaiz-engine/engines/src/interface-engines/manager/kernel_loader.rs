@@ -73,16 +73,6 @@ impl KernelLoader {
         candidates.push(format!("archer-{}.{}", kernel_name, ext));
         candidates.push(format!("libarcher_{}.{}", kernel_name, ext));
         
-        // 3. Simple Base checks for hyphenated names (e.g. llama-cuda -> llama)
-        if kernel_name.contains('-') {
-            let base_name = kernel_name.split('-').next().unwrap_or(kernel_name);
-            candidates.push(format!("cluaiz-{}.{}", base_name, ext));
-            candidates.push(format!("cluaiz_{}.{}", base_name, ext));
-            candidates.push(format!("libcluaiz_{}.{}", base_name, ext));
-            candidates.push(format!("archer_{}.{}", base_name, ext));
-            candidates.push(format!("libarcher_{}.{}", base_name, ext));
-        }
-
         // 3. System Truth: Read cluaiz_root
         if let Some(cluaiz_root) = read_cluaiz_root() {
             let base_link = cluaiz_root.join("interface-engines");

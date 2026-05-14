@@ -1,7 +1,4 @@
 use color_eyre::Result;
-use std::fs::File;
-use tokio::spawn;
-use engines::DownloadEvent;
 use colored::Colorize;
 use clap::{Parser, Subcommand};
 
@@ -12,119 +9,134 @@ mod theme;
 mod app_enums;
 mod cli;
 
-use crate::core::app::App;
+use crate::core::bootstrapper::Bootstrapper;
 
 // ── Cluaiz CLI Definition ──────────────────────────────────────────────────
 
 #[derive(Parser)]
-#[command(name = "cluaiz", about = "Cluaiz CLI", version = "0.1.0", disable_help_subcommand = true)]
+#[command(name = "cluaiz", about = "Cluaiz-OS: Sovereign Neural Kernel", version = env!("CARGO_PKG_VERSION"), disable_help_subcommand = true)]
 struct Cli {
     #[command(subcommand)]
     command: Option<CliCommand>,
-
-    #[arg(long, hide = true)]
-    benchmark: bool,
-
-    #[arg(long, hide = true)]
-    calibrate: bool,
 }
 
 #[derive(Subcommand)]
 enum CliCommand {
     /// Pull & run a model. Downloads if not cached.
     Run {
-        /// Model ID  (e.g. bonsai:8b)
+        /// Model ID (e.g. gemma2:2b, bonsai:8b)
+        model_id: String,
+        
+        /// Enter interactive chat mode (Default: true)
+        #[arg(short, long, default_value_t = true)]
+        interactive: bool,
+    },
+
+    /// List all downloaded models in the vault.
+    List,
+
+    /// Remove a model from the local vault.
+    Rm {
+        /// Model ID to remove
         model_id: String,
     },
+
+    /// Show hardware status and silicon health.
+    Status,
+
+    /// Re-scan hardware and synchronize SiliconTruth profile.
+    Calibrate,
+
+    /// Run a full hardware performance benchmark.
+    Benchmark,
+
+    /// Show the dynamic help screen.
+    Help,
 }
 
 // ──────────────────────────────────────────────────────────────────────────
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    if let Err(e) = run_app().await {
-        eprintln!("\n  {} [Cluaiz] Fatal Error: {}\n", "❌".red(), e);
-        println!("  Press [Enter] to exit...");
-        let mut temp = String::new();
-        let _ = std::io::stdin().read_line(&mut temp);
-        std::process::exit(1);
-    }
-    Ok(())
-}
+    // ══ SOVEREIGN KERNEL SILENCE ══
+    // These env vars suppress CUDA Graph + ggml verbose logs at the source.
+    // NOTE: We do NOT redirect stderr here because inquire (input box) uses stderr to render.
+    // Stderr is selectively redirected only during inference (in dashboard.rs generate_stream).
+    // 🚀 GGML_CUDA_USE_GRAPHS=1: Enables 40% speed boost.
+    std::env::set_var("GGML_CUDA_USE_GRAPHS", "1");
+    std::env::set_var("GGML_LOG_LEVEL", "ERROR");
 
-async fn run_app() -> Result<()> {
-    // ══ PHASE 1 — HEADLESS FAST PATH ══════════════════════════════════════
-    // These commands exit BEFORE bootstrap so no stray output contaminates
-    // the clean terminal UX.
+    color_eyre::install()?;
 
-    let raw_args: Vec<String> = std::env::args().collect();
-    let mut auto_start_model = None;
-
-    if let Some("run") = raw_args.get(1).map(|s| s.as_str()) {
-        let model_id = match raw_args.get(2) {
-            Some(id) => id.clone(),
-            None => {
-                println!(
-                    "\n  {} Usage: cluaiz run <model-id>\n  {} Example: cluaiz run bonsai:8b\n",
-                    "⚠️ ".yellow(),
-                    "💡".cyan()
-                );
-                return Ok(());
-            }
-        };
-        // Minimal init for network commands (log redirect only, no TUI bootstrap)
-        if let Ok(log_file) = File::create("cluaiz_Core.log") {
-            let _ = tracing_subscriber::fmt()
-                .with_writer(log_file)
-                .with_ansi(false)
-                .try_init();
-        }
-        color_eyre::install()?;
-        auto_start_model = Some(crate::cli::run::execute(&model_id).await?);
-    } else if let Some("help") | Some("-h") | Some("--help") = raw_args.get(1).map(|s| s.as_str()) {
-        return crate::cli::help::print_help();
-    }
-
-    // ══ PHASE 2 — FULL BOOT (TUI Dashboard path) ══════════════════════════
+    let cli = Cli::parse();
 
     // 🚀 SILENCE THE VOID: Redirect all logs to file before anything else
-    if let Ok(log_file) = File::create("cluaiz_Core.log") {
+    if let Ok(log_file) = std::fs::File::create("cluaiz_Core.log") {
         let _ = tracing_subscriber::fmt()
             .with_writer(log_file)
             .with_ansi(false)
             .try_init();
     }
 
-    color_eyre::install()?;
+    // 🚀 Cluaiz BOOTSTRAP (Local Dev-Sync & Registry Verification)
+    if let Err(e) = Bootstrapper::ignite().await {
+        eprintln!("\n  {} [Cluaiz] Bootstrap Failed: {}\n", "❌".red(), e);
+        std::process::exit(1);
+    }
 
-    // 🚀 Cluaiz BOOTSTRAP
-    crate::core::bootstrapper::Bootstrapper::ignite().await?;
+    // 🚀 SILICON IGNITION: Optimize hardware before execution
+    let _ = engines::system_booster::SystemBooster::ignite();
 
+    match cli.command {
+        Some(CliCommand::Run { model_id, interactive }) => {
+            if let Err(e) = crate::cli::run::execute(&model_id, interactive).await {
+                eprintln!("\n  {} [Cluaiz] Run Error: {}\n", "❌".red(), e);
+                std::process::exit(1);
+            }
+        }
+        Some(CliCommand::List) => {
+            if let Err(e) = crate::cli::list::execute().await {
+                eprintln!("\n  {} [Cluaiz] List Error: {}\n", "❌".red(), e);
+                std::process::exit(1);
+            }
+        }
+        Some(CliCommand::Rm { model_id }) => {
+            if let Err(e) = crate::cli::rm::execute(&model_id).await {
+                eprintln!("\n  {} [Cluaiz] Removal Error: {}\n", "❌".red(), e);
+                std::process::exit(1);
+            }
+        }
+        Some(CliCommand::Status) => {
+            engines::telemetry::health_check::CluaizHealthChecker::run_full_benchmark();
+        }
+        Some(CliCommand::Calibrate) => {
+             println!("\n  {} [Silicon] Initiating Hardware Re-Scan...", "🛰️".cyan());
+             engines::hardware::system_control_manager::detect_hardware();
+             println!("  {} [Silicon] SiliconTruth profile synchronized.\n", "✅".green());
+        }
+        Some(CliCommand::Benchmark) => {
+            println!("\n  {} [Performance] Starting Full System Benchmark...", "🚀".magenta());
+            engines::telemetry::health_check::CluaizHealthChecker::run_full_benchmark();
+        }
+        Some(CliCommand::Help) => {
+            if let Ok(reg) = crate::core::commands::CommandRegistry::load() {
+                reg.generate_help();
+            } else {
+                println!("  {} Error loading commands.json", "❌".red());
+            }
+        }
+        None => {
+            // Default to Dashboard if no command provided
+            start_dashboard().await?;
+        }
+    }
+
+    Ok(())
+}
+
+async fn start_dashboard() -> Result<()> {
     // 📡 Hardware IGNITION
     engines::telemetry::ignite_watchtower();
-
-    // Parse remaining flags (--benchmark, --calibrate)
-    let cli_args = Cli::parse();
-
-    if cli_args.benchmark {
-        engines::telemetry::health_check::CluaizHealthChecker::run_full_benchmark();
-        return Ok(());
-    }
-
-    if cli_args.calibrate {
-        println!("  {} [Cluaiz] Calibrating hardware...", "🧬".cyan());
-        cluaiz_shared::hardware::HardwareGovernor::auto_calibrate()
-            .map_err(|e| color_eyre::eyre::eyre!("Calibration failed: {}", e))?;
-        println!("  {} [Cluaiz] SiliconTruth synchronized.", "✅".green());
-        return Ok(());
-    }
-
-    // ── NATIVE ONBOARDING FLOW ────────────────────────────────────────────
-    let profile_over = if !::cluaiz_shared::onboarding::should_skip_onboarding() {
-        Some(crate::ui::apps::onboarding::native::run_native_flow()?)
-    } else {
-        None
-    };
 
     // 🛡️ Panic Guard: Ensure terminal recovery on crash
     let hook = std::panic::take_hook();
@@ -134,26 +146,11 @@ async fn run_app() -> Result<()> {
         hook(info);
     }));
 
-    // ── Cluaiz PRIMARY FLOW ───────────────────────────────────────────────
-    let app = App::new(profile_over, auto_start_model)?;
+    // ── Cluaiz PRIMARY FLOW ──
+    let app = crate::core::app::App::new(None, None)?;
+    app.run().await?;
 
-    let tx = app.tx.clone();
-    let hardware = app.state.hardware.clone();
-    let ram = app.state.ram_gb;
-
-    // 🧠 Background Initialization: Load recommendations asynchronously
-    spawn(async move {
-        let _models = tokio::task::spawn_blocking(move || {
-            engines::CoreRoster::get_recommendations(&hardware.to_hardware_truth(), ram)
-        }).await.unwrap_or_default();
-
-        let _ = tx.send(DownloadEvent::Complete("INITIAL_LOAD".to_string()));
-    });
-
-    let app_result = app.run().await;
-
-    // ── Cluaiz TEARDOWN ───────────────────────────────────────────────────
     let _ = crate::core::flow::FlowEngine::restore();
-
-    app_result
+    Ok(())
 }
+

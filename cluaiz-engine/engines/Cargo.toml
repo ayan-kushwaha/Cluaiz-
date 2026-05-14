@@ -7,9 +7,11 @@ authors.workspace = true
 [lib]
 crate-type = ["cdylib", "rlib", "staticlib"]
 
+
+
 [[bin]]
-name = "calibrate"
-path = "src/bin/calibrate.rs"
+name = "test_inference"
+path = "src/bin/test_inference.rs"
 
 [dependencies]
 # ── Async & Web ──
@@ -40,8 +42,6 @@ neural-core = { path = "../../interface-engines/neural_core" }
 
 # ── Dynamic Neural Bridge (The Soul Linker) ──
 libloading = "0.8"
-candle-core = { git = "https://github.com/huggingface/candle.git" }
-candle-nn = { git = "https://github.com/huggingface/candle.git" }
 
 # ── Common Utilities (Used by All) ──
 tokenizers          = "0.22.2"

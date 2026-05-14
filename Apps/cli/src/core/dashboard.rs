@@ -1,7 +1,8 @@
 use crate::core::state::{ActivityBlock, AppState};
 use color_eyre::Result;
 use colored::Colorize;
-use crossterm::event::{self, Event};
+use crossterm::execute;
+use crossterm::cursor;
 use engines::DownloadEvent;
 use inquire::{
     ui::{Attributes, Color, RenderConfig, Styled},
@@ -14,7 +15,6 @@ use tokio::sync::mpsc;
 
 // ── 📦 MODULAR APPS ──
 use crate::ui::apps::registry::RegistryApp;
-use engines::utils::healer::AutoHealer;
 
 pub struct DashboardEngine;
 
@@ -25,7 +25,7 @@ impl DashboardEngine {
         rx: &mut mpsc::UnboundedReceiver<DownloadEvent>,
         mode: &mut crate::app_enums::Mode,
     ) -> Result<()> {
-        // ── 🔒 Cluaiz RENDER CONFIG ──
+        // ══ 🔒 Cluaiz RENDER CONFIG ══
         let config = RenderConfig::default();
 
         // ── 🧬 ATOMIC Core DISCOVERY (Cluaiz Startup Scan) ──
@@ -38,26 +38,57 @@ impl DashboardEngine {
 
         // ── 📡 Cluaiz TELEMETRY IGNITION (Ghost Observer Singleton) ──
         let state_pulse = cluaiz_shared::hardware::telemetry::get_pulse();
-        let pulse_ref = state_pulse.clone();
-        let start_time = std::time::Instant::now();
+        let _pulse_ref = state_pulse.clone();
+        let app_start_time = std::time::Instant::now();
+        let last_inference_duration = Arc::new(std::sync::atomic::AtomicU64::new(0));
+        let last_ttft = Arc::new(std::sync::atomic::AtomicU64::new(0));
+        let peak_power = Arc::new(std::sync::atomic::AtomicU64::new(0));
+        
+        let duration_ref = last_inference_duration.clone();
+        let ttft_ref = last_ttft.clone();
+        let pwr_ref = peak_power.clone();
 
         // 📡 Cluaiz PULSE CONTROL: Visibility gate to prevent chat history bleeding
         let show_dashboard = Arc::new(AtomicBool::new(false));
-        let show_ref = show_dashboard.clone();
+        let _show_ref = show_dashboard.clone();
  
         let engine_ref = state.Core_engine.clone();
  
+        let tokens_generated = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let tps_ref = Arc::new(std::sync::atomic::AtomicU64::new(0)); 
+        
+        let pulse_worker_ref = state_pulse.clone();
+        let show_worker_ref = show_dashboard.clone();
+        let tokens_worker_ref = tokens_generated.clone();
+        let tps_worker_ref = tps_ref.clone();
+        let duration_worker_ref = last_inference_duration.clone();
+        let ttft_worker_ref = last_ttft.clone();
+        let pwr_worker_ref = peak_power.clone();
+
         std::thread::spawn(move || {
-            let engine = engine_ref;
+            let engine = engine_ref; 
             use crossterm::{
                 cursor, execute,
                 style::{self, Stylize},
                 terminal,
             };
+            
+            let pulse_ref = pulse_worker_ref;
+            let show_ref = show_worker_ref;
+            let tokens_ref = tokens_worker_ref;
+            let tps_ref = tps_worker_ref;
             let mut stdout = std::io::stdout();
+            // Guard variables to avoid redundant redraws
+            let mut prev_tokens: usize = 0;
+            let mut prev_tps_bits: u64 = 0;
+            let mut prev_peak_bits: u64 = 0;
             loop {
                 // 🛑 ATOMIC GATE: Skip rendering during bot inference phases
                 if !show_ref.load(std::sync::atomic::Ordering::SeqCst) {
+                    // Reset guard state so next activation forces a render
+                    prev_tokens = 0;
+                    prev_tps_bits = 0;
+                    prev_peak_bits = 0;
                     std::thread::sleep(std::time::Duration::from_millis(50));
                     continue;
                 }
@@ -65,18 +96,26 @@ impl DashboardEngine {
                 let (
                     cpu,
                     cpu_temp,
-                    cpu_ghz,
+                    _cpu_ghz,
                     ram_used,
                     ram_pct,
-                    vram_used,
-                    vram_total,
+                    _vram_used,
+                    _vram_total,
                     vram_pct,
                     gpu_temp,
-                    tps,
+                    _tps,
                 ) = {
                     let pulse_lock = pulse_ref.pulse.read().unwrap();
                     let primary_gpu_temp = pulse_lock.gpus.get(0).map(|g| g.temperature_c).unwrap_or(0.0);
+                    let current_pwr = pulse_lock.gpus.get(0).map(|g| g.power_draw_watts).unwrap_or(0.0);
                     
+                    // 🔋 Peak Power Tracking
+                    let old_peak_bits = pwr_worker_ref.load(Ordering::SeqCst);
+                    let old_peak = f64::from_bits(old_peak_bits);
+                    if (current_pwr as f64) > old_peak {
+                        pwr_worker_ref.store((current_pwr as f64).to_bits(), Ordering::SeqCst);
+                    }
+
                     (
                         pulse_lock.cpu.utilization_pct,
                         pulse_lock.cpu.temperature_c,
@@ -87,93 +126,155 @@ impl DashboardEngine {
                         pulse_lock.vram_total_gb,
                         pulse_lock.vram_pressure_pct,
                         primary_gpu_temp,
-                        pulse_lock.relay_latency_ms as f64 / 10.0,
+                        {
+                            let current_count = pulse_ref.tps_counter.load(Ordering::SeqCst);
+                            let last_count = tokens_ref.swap(current_count, Ordering::SeqCst);
+                            let diff = current_count.saturating_sub(last_count);
+                            diff as f64 * 6.66 // Adjusted for 150ms interval
+                        },
                     )
                 };
 
-                let uptime = start_time.elapsed().as_millis() / 500;
+                let uptime = app_start_time.elapsed().as_millis() / 500;
+                let inf_duration_bits = duration_worker_ref.load(Ordering::SeqCst);
+                let inf_duration = f64::from_bits(inf_duration_bits);
+                
+                let ttft_bits = ttft_worker_ref.load(Ordering::SeqCst);
+                let ttft = f64::from_bits(ttft_bits);
+
+                let peak_pwr_bits = pwr_worker_ref.load(Ordering::SeqCst);
+                let peak_pwr = f64::from_bits(peak_pwr_bits);
                 let is_blink_on = uptime % 2 == 0;
 
+                                // If nothing changed since last draw, skip rendering to avoid flicker
+                let cur_tokens = pulse_ref.tps_counter.load(Ordering::SeqCst);
+                let cur_tps_bits = tps_ref.load(Ordering::SeqCst);
+                let cur_peak_bits = pwr_worker_ref.load(Ordering::SeqCst);
+                if cur_tokens == prev_tokens && cur_tps_bits == prev_tps_bits && cur_peak_bits == prev_peak_bits {
+                    // No metric update – sleep and continue
+                    std::thread::sleep(std::time::Duration::from_millis(150));
+                    continue;
+                }
+                // Update guard state
+                prev_tokens = cur_tokens;
+                prev_tps_bits = cur_tps_bits;
+                prev_peak_bits = cur_peak_bits;
+                
                 // 🧠 Neural State Handshake
                 let is_loaded = engine.is_loaded.load(std::sync::atomic::Ordering::SeqCst);
                 let loading_err = engine.loading_error.blocking_lock();
-                
-                let (neural_label, neural_color) = if is_loaded {
+                let (neural_label, neural_color): (&str, style::Color) = if is_loaded {
                     ("LIVE", style::Color::Green)
                 } else if loading_err.is_some() {
                     ("LINK FAIL", style::Color::Red)
                 } else {
-                    ("LOADING...", style::Color::Yellow)
+                    ("", style::Color::Black) // 🧼 SILENCE: Remove LOADING... text
                 };
 
                 let status_dot = if is_blink_on { "●" } else { " " };
-                let cpu_color = if cpu < 50.0 { style::Color::Green } else if cpu < 80.0 { style::Color::Yellow } else { style::Color::Red };
-                let gpu_color = if (vram_pct as f32) < 50.0 { style::Color::Green } else if (vram_pct as f32) < 80.0 { style::Color::Yellow } else { style::Color::Red };
-                let ram_color = if ram_pct < 50.0 { style::Color::Green } else if ram_pct < 80.0 { style::Color::Yellow } else { style::Color::Red };
+                let _cpu_color = if cpu < 50.0 { style::Color::Green } else if cpu < 80.0 { style::Color::Yellow } else { style::Color::Red };
+                let _gpu_color = if (vram_pct as f32) < 50.0 { style::Color::Green } else if (vram_pct as f32) < 80.0 { style::Color::Yellow } else { style::Color::Red };
+                let _ram_color = if ram_pct < 50.0 { style::Color::Green } else if ram_pct < 80.0 { style::Color::Yellow } else { style::Color::Red };
                 let status_color = if cpu < 50.0 && (vram_pct as f32) < 50.0 { style::Color::Green } else if cpu < 80.0 || (vram_pct as f32) < 80.0 { style::Color::Yellow } else { style::Color::Red };
 
-                // Surgical Overwrite: Force-inject metrics into the prompt's footprint (Y+1)
+                // Surgical Overwrite: Force-inject metrics into the ABSOLUTE BOTTOM (rows-1)
                 if show_ref.load(Ordering::SeqCst) {
-                    if let Ok((_x, mut y)) = cursor::position() {
-                        let (_cols, rows) = terminal::size().unwrap_or((80, 24));
+                    if let Ok((_cur_x, mut cur_y)) = cursor::position() {
+                        let (cols, rows) = terminal::size().unwrap_or((80, 24));
                         
-                        if y + 1 >= rows {
-                            // 🚀 Core SCROLL: Force a scroll up to keep prompt and dashboard separated
+                        // 🚀 PROACTIVE SCROLL: If prompt is at the very bottom, push it up to make room for footer
+                        if cur_y >= rows - 1 {
                             let _ = execute!(stdout, terminal::ScrollUp(1), cursor::MoveUp(1));
-                            y -= 1; 
+                            cur_y -= 1; 
                         }
+
+                        // ── 🎨 COMPACT TELEMETRY ENGINE ──
+                        let is_compact = cols < 120;
+                        let is_minimal = cols < 85;
+
+                        let total_tokens = pulse_ref.tps_counter.load(Ordering::SeqCst);
+                        let old_tps_bits = tps_ref.load(Ordering::SeqCst);
+                        let last_tps = f64::from_bits(old_tps_bits);
 
                         let _ = execute!(
                             stdout,
                             cursor::SavePosition,
-                            cursor::MoveTo(0, y + 1),
+                            cursor::MoveTo(0, rows - 1),
                             terminal::Clear(terminal::ClearType::CurrentLine),
                             style::Print(Stylize::bold(Stylize::dim("[ "))),
                             style::Print(Stylize::bold(status_dot.with(status_color))),
-                            style::Print(Stylize::bold(format!(" {} │ ", neural_label).with(neural_color))),
-                            
-                            // CPU Pulse: Thermal & Load Sync
-                            style::Print(Stylize::dim("CPU: ")),
-                            style::Print(Stylize::dim(format!("{:.0}°C ({:.0}%)", cpu_temp, cpu))),
-                            style::Print(Stylize::dim(format!(" │ {:.1}GHz", cpu_ghz))),
-                            style::Print(Stylize::dim(") │ ")),
+                        );
 
-                            // GPU Pulse: Hardware Pressure Audit
-                            style::Print(Stylize::dim("GPU: ")),
-                            style::Print(Stylize::dim(format!("{:.0}°C ({:.0}%)", gpu_temp, vram_pct))),
-                            style::Print(Stylize::dim(format!(" │ {:.1}/{:.0}GB", vram_used, vram_total))),
-                            style::Print(Stylize::dim(") │ ")),
+                        if !neural_label.is_empty() && !is_minimal {
+                            let _ = execute!(stdout, style::Print(format!(" {} │ ", neural_label).with(neural_color).bold()));
+                        }
 
-                            // RAM Pulse: Core Buffer Load
-                            style::Print(Stylize::dim("RAM: ")),
-                            style::Print(Stylize::dim(format!("{:.1}GB ({:.0}%)", ram_used, ram_pct))),
-                            style::Print(Stylize::dim(") │ ")),
+                        // CPU
+                        if is_minimal {
+                            let _ = execute!(stdout, style::Print(format!(" CPU:{:.0}%", cpu).dim()));
+                        } else {
+                            let _ = execute!(stdout, style::Print(format!(" CPU: {:.0}°C ({:.0}%)", cpu_temp, cpu).dim()));
+                        }
 
-                            // TPS Pulse: Relay Latency Audit
-                            style::Print(Stylize::dim("TPS: ")),
-                            style::Print(Stylize::dim(format!("{:.1}", tps))),
+                        // GPU
+                        if !is_minimal {
+                            let _ = execute!(stdout, style::Print(format!(" │ GPU: {:.0}°C ({:.0}%)", gpu_temp, vram_pct).dim()));
+                        }
+
+                        // RAM
+                        if !is_compact {
+                            let _ = execute!(stdout, style::Print(format!(" │ RAM: {:.1}GB ({:.0}%)", ram_used, ram_pct).dim()));
+                        }
+
+                        // Neural Stats
+                        if total_tokens > 0 {
+                            if is_compact {
+                                let _ = execute!(stdout, style::Print(format!(" │ TPS: {:.1} │ TKN: {}", last_tps, total_tokens).dim().bold()));
+                            } else {
+                                let _ = execute!(stdout, style::Print(format!(" │ TPS: {:.1} │ TKN: {} │ TTFT: {:.2}s │ TIM: {:.1}s │ PWR: {:.0}W", last_tps, total_tokens, ttft, inf_duration, peak_pwr).dim().bold()));
+                            }
+                        }
+
+                        let _ = execute!(
+                            stdout,
                             style::Print(Stylize::bold(Stylize::dim(" ]"))),
-
                             cursor::RestorePosition
                         );
                         let _ = stdout.flush();
                     }
                 } else {
-                    // 🛑 SILENCE: Clear the dashboard line when deactivated
-                    if let Ok((_x, y)) = cursor::position() {
-                        let (_cols, rows) = terminal::size().unwrap_or((80, 24));
-                        if y + 1 < rows {
-                            let _ = execute!(
-                                stdout,
-                                cursor::SavePosition,
-                                cursor::MoveTo(0, y + 1),
-                                terminal::Clear(terminal::ClearType::CurrentLine),
-                                cursor::RestorePosition
-                            );
-                            let _ = stdout.flush();
-                        }
-                    }
+                    // 🛑 SILENCE: Clear the absolute bottom when deactivated
+                    let (_cols, rows) = terminal::size().unwrap_or((80, 24));
+                    let _ = execute!(
+                        stdout,
+                        cursor::SavePosition,
+                        cursor::MoveTo(0, rows - 1),
+                        terminal::Clear(terminal::ClearType::CurrentLine),
+                        cursor::RestorePosition
+                    );
+                    let _ = stdout.flush();
                 }
+
+                // 🏎️ TPS CALCULATION: Sovereign Moving Average
+                let current_count = pulse_ref.tps_counter.load(Ordering::SeqCst);
+                let last_count = tokens_ref.load(Ordering::SeqCst);
+                let diff = current_count.saturating_sub(last_count);
+                tokens_ref.store(current_count, Ordering::SeqCst);
+
+                let current_tps = diff as f64 / 0.150;
+                let old_tps_bits = tps_ref.load(Ordering::SeqCst);
+                let old_tps = f64::from_bits(old_tps_bits);
+                
+                // 🛑 PERSISTENCE GUARD: If main loop has frozen the TPS (avg_tps), don't decay it to 0.0
+                let smoothed_tps = if current_tps > 0.0 {
+                    (old_tps * 0.7) + (current_tps * 0.3)
+                } else if current_count > 0 && old_tps > 0.0 {
+                    old_tps // Hold the frozen record
+                } else {
+                    0.0
+                };
+
+                tps_ref.store(smoothed_tps.to_bits(), Ordering::SeqCst);
 
                 std::thread::sleep(std::time::Duration::from_millis(150));
             }
@@ -182,14 +283,16 @@ impl DashboardEngine {
         let auto_boot_name = state.sorted_models.iter().filter(|m| m.is_cached).next().map(|m| m.manifest.name.clone());
         if let Some(name) = auto_boot_name {
             println!("\n  {} Auto-Booting Neural Kernel: {}...", "🚀".magenta(), name.bold());
+            // show_dashboard.store(true, std::sync::atomic::Ordering::SeqCst);
             let _ = Self::handle_model_switch(state, tx, rx, "", Some(&name));
         }
+        // 🖊️ INPUT FIX: Ensure cursor is on a fresh line before inquire renders
+        println!();
 
         loop {
-            // 🚀 ACTIVATE: Show telemetry only when at the input prompt
             show_dashboard.store(true, std::sync::atomic::Ordering::SeqCst);
             
-            let input = Text::new("")
+            let input = Text::new(">")
                 .with_placeholder("Type your message or @ & / for menu")
                 .with_render_config(config.clone())
                 .prompt();
@@ -197,15 +300,14 @@ impl DashboardEngine {
             // 🛑 DEACTIVATE: Hide telemetry immediately after input to keep the log clean
             show_dashboard.store(false, std::sync::atomic::Ordering::SeqCst);
             
-            if let Ok((_x, y)) = crossterm::cursor::position() {
-                let mut stdout = std::io::stdout();
-                let _ = crossterm::execute!(stdout, crossterm::cursor::MoveTo(0, y + 1), crossterm::terminal::Clear(crossterm::terminal::ClearType::CurrentLine));
-                let _ = stdout.flush();
-            }
+            let (_cols, rows) = crossterm::terminal::size().unwrap_or((80, 24));
+            let mut stdout = std::io::stdout();
+            let _ = execute!(stdout, cursor::SavePosition, cursor::MoveTo(0, rows - 1), crossterm::terminal::Clear(crossterm::terminal::ClearType::CurrentLine), cursor::RestorePosition);
+            let _ = stdout.flush();
 
             if input.is_ok() {
                 print!("\x1B[1A\x1B[2K");
-                stdout().flush()?;
+                stdout.flush()?;
             }
 
             let now = std::time::Instant::now();
@@ -236,7 +338,7 @@ impl DashboardEngine {
                     };
 
                     print!("\x1B[1A\x1B[2K");
-                    stdout().flush()?;
+                    stdout.flush()?;
 
                     if final_message.starts_with('/') {
                         Self::handle_command(state, tx, mode, &final_message[1..])?;
@@ -258,38 +360,146 @@ impl DashboardEngine {
                         ));
                         state.rendered_actions_count += 1;
 
-                        // ── 🧿 THINKING ANIMATION ──
-                        print!("{} Thinking", Stylize::cyan("🤖"));
+                        // ── 🧿 NEURAL DISPATCH ──
                         let _ = std::io::Write::flush(&mut std::io::stdout());
 
                         // ── 🤖 REAL Core STREAMING ────────────────────────
                         let full_response =
                             std::sync::Arc::new(std::sync::Mutex::new(String::new()));
                         let full_clone = full_response.clone();
-                        let mut first_token = true;
+                        let _first_token = true;
+                        // 🧠 Think-mode state machine
+                        let in_think = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+                        let _in_think_cb = in_think.clone();
+                        // 🛑 EOS detection: stops display when model generates stop token
+                        let reached_eos = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+                        let eos_cb = reached_eos.clone();
 
+                        let start_time = std::time::Instant::now();
+                        let initial_tokens = state_pulse.tps_counter.load(Ordering::SeqCst);
+                        
+                        // Reset session metrics
+                        pwr_ref.store(0.0f64.to_bits(), Ordering::SeqCst);
+                        ttft_ref.store(0.0f64.to_bits(), Ordering::SeqCst);
+
+                        let pulse_for_snapshot = state_pulse.clone();
+                        let _pwr_cb = pwr_ref.clone();
+                        let ttft_cb = ttft_ref.clone();
+                        
                         let stream_result = tokio::task::block_in_place(|| {
                             let mut lock = state.Core_engine.router.blocking_lock();
-                            lock.generate_stream(
-                                &final_message,
-                                256,
-                                Box::new(move |token| {
-                                    if first_token {
-                                        print!("\r\x1B[2K");
-                                        use crossterm::style::Stylize;
-                                        print!("{} ", Stylize::magenta("🤖"));
-                                        first_token = false;
-                                    }
-                                    print!("{}", token);
-                                    let _ = stdout().flush();
+                            
+                            // 🧬 Dynamic Config Fetch: Zero Hardcoding
+                            let stop_seqs = lock.get_active_dna().map(|d| d.stop_sequences.clone()).unwrap_or_default();
+                            
+                            // 🎭 Orchestration: Format prompt based on model DNA
+                            let formatted_prompt = if let Some(ref dna) = lock.active_dna {
+                                let tm = cluaiz_shared::TemplateManager::default();
+                                tm.format(dna, &final_message)
+                            } else {
+                                final_message.clone()
+                            };
+
+                            // 🧬 DYNAMIC TOKEN ALLOCATION: Calculate space based on DNA Context Window
+                            let ctx_window = lock.get_active_dna().and_then(|d| d.max_context_length).unwrap_or(2048);
+                            let prompt_tokens = if let Some(ref t) = lock.tokenizer {
+                                t.encode(formatted_prompt.clone(), true).map(|e| e.len()).unwrap_or(0)
+                            } else { 0 };
+                            
+                            let max_t = lock.get_active_dna()
+                                .and_then(|d| d.inference_params.get("max_tokens"))
+                                .and_then(|v| v.parse::<usize>().ok())
+                                .unwrap_or(ctx_window.saturating_sub(prompt_tokens).saturating_sub(128)); // 🚀 DYNAMIC: Use full window headroom minus 128 safety tokens.
+
+                            // 🔇 SURGICAL SILENCE: freopen stderr→NUL only during inference.
+                            #[cfg(windows)]
+                            unsafe {
+                                extern "C" { fn __acrt_iob_func(idx: u32) -> *mut libc::FILE; }
+                                libc::freopen(
+                                    "NUL\0".as_ptr() as *const libc::c_char,
+                                    "w\0".as_ptr() as *const libc::c_char,
+                                    __acrt_iob_func(2),
+                                );
+                            }
+                            #[cfg(not(windows))]
+                            unsafe {
+                                libc::freopen(
+                                    "/dev/null\0".as_ptr() as *const libc::c_char,
+                                    "w\0".as_ptr() as *const libc::c_char,
+                                    libc::fdopen(2, "w\0".as_ptr() as *const libc::c_char),
+                                );
+                            }
+                            
+                            let mut first_token = true;
+                            let pulse_clone = state_pulse.clone(); // 🧬 Clone for closure move
+                            let result = lock.generate_stream(
+                                &formatted_prompt, // 🚀 Use formatted_prompt here!
+                                max_t,
+                                Box::new(move |token: String| {
+                                    // 🛑 Stop if already past EOS
+                                    if eos_cb.load(Ordering::SeqCst) { return; }
+
+                                    // 🛑 Sovereign Deep-Suffix Scan
                                     if let Ok(mut res) = full_clone.lock() {
+                                        let clean_res = (res.clone() + &token).replace("\n", "").replace("\r", "").replace(" ", "");
+                                        if stop_seqs.iter().any(|s| {
+                                            let clean_s = s.replace("\n", "").replace("\r", "").replace(" ", "");
+                                            !clean_s.is_empty() && clean_res.ends_with(&clean_s)
+                                        }) {
+                                            eos_cb.store(true, Ordering::SeqCst);
+                                            return;
+                                        }
+
+                                        // 🤖 First-Token Handshake
+                                        if first_token {
+                                            let ttft = start_time.elapsed().as_secs_f64();
+                                            ttft_cb.store(ttft.to_bits(), Ordering::SeqCst);
+
+                                            let mut out = std::io::stdout();
+                                            let _ = out.write_all(format!("\r\x1B[2K\x1B[0m{} ", crossterm::style::Stylize::magenta("🤖")).as_bytes());
+                                            let _ = out.flush();
+                                            first_token = false;
+                                        }
+
+                                        // Normal token → Display
+                                        print!("{}", token);
+                                        let _ = std::io::stdout().flush();
                                         res.push_str(&token);
+                                        pulse_clone.tps_counter.fetch_add(1, Ordering::SeqCst);
                                     }
                                 }),
-                            )
+                            );
+                            
+                            // 🔊 RESTORE stderr → CONOUT$ (always the active Windows console)
+                            #[cfg(windows)]
+                            unsafe {
+                                extern "C" { fn __acrt_iob_func(idx: u32) -> *mut libc::FILE; }
+                                libc::freopen(
+                                    "CONOUT$\0".as_ptr() as *const libc::c_char,
+                                    "w\0".as_ptr() as *const libc::c_char,
+                                    __acrt_iob_func(2),
+                                );
+                            }
+                            #[cfg(not(windows))]
+                            unsafe {
+                                libc::freopen(
+                                    "/dev/tty\0".as_ptr() as *const libc::c_char,
+                                    "w\0".as_ptr() as *const libc::c_char,
+                                    libc::fdopen(2, "w\0".as_ptr() as *const libc::c_char),
+                                );
+                            }
+                            result
                         });
 
-                        println!();
+                        let end_time = std::time::Instant::now();
+                        let duration = end_time.duration_since(start_time).as_secs_f64();
+                        let final_tokens = pulse_for_snapshot.tps_counter.load(Ordering::SeqCst);
+                        let tokens_in_this_run = final_tokens.saturating_sub(initial_tokens);
+                        let avg_tps = if duration > 0.0 { tokens_in_this_run as f64 / duration } else { 0.0 };
+
+                        // 📈 FREEZE FINAL RECORD IN DASHBOARD BAR
+                        tps_ref.store(avg_tps.to_bits(), Ordering::SeqCst);
+                        duration_ref.store(duration.to_bits(), Ordering::SeqCst);
 
                         let response = if let Err(e) = stream_result {
                             use crossterm::style::Stylize;
@@ -313,6 +523,10 @@ impl DashboardEngine {
                             "ARCHER".to_string(),
                             response.to_string(),
                         ));
+
+                        // 🚀 REVEAL DASHBOARD: Manifest the Sovereign record after completion
+                        show_dashboard.store(true, Ordering::SeqCst);
+println!(); // ensure prompt starts on fresh line
                     }
                 }
                 Err(_) => {
@@ -457,6 +671,7 @@ impl DashboardEngine {
                     let mut booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
                     
                     let mut options = vec![
+                        format!("Neural Mode (Current: {:?})", booster.mode_run),
                         format!("Turbo Quant (Current: {:?})", booster.turbo_quant),
                         format!("Flash Attention (Current: {:?})", booster.flash_attention),
                         format!("Speculative Decoding (Current: {:?})", booster.speculative_decoding),
@@ -505,6 +720,40 @@ impl DashboardEngine {
                     };
 
                     match key_part.as_str() {
+                        "Neural Mode" => {
+                            let mut modes = vec![
+                                "edge".to_string(), 
+                                "multitasking".to_string(), 
+                                "balance".to_string(), 
+                                "max_boost".to_string(), 
+                                "ultra_max_boost".to_string()
+                            ];
+
+                            // 🌌 VRAM GUARD: Only show HyperCluster if VRAM >= 40GB
+                            let total_vram = {
+                                let pulse_lock = state.live_pulse.pulse.read().unwrap();
+                                pulse_lock.vram_total_gb
+                            };
+                            if total_vram >= 40.0 {
+                                modes.push("hyper_cluster".to_string());
+                            }
+
+                            let selected_mode = match Select::new("Select Neural Mode:", modes)
+                                .with_render_config(config.clone())
+                                .prompt() {
+                                Ok(ans) => ans,
+                                Err(_) => continue,
+                            };
+                            booster.mode_run = match selected_mode.as_str() {
+                                "edge" => cluaiz_shared::hardware::schema::booster::BoosterMode::Edge,
+                                "multitasking" => cluaiz_shared::hardware::schema::booster::BoosterMode::Multitasking,
+                                "balance" => cluaiz_shared::hardware::schema::booster::BoosterMode::Balance,
+                                "max_boost" => cluaiz_shared::hardware::schema::booster::BoosterMode::MaxBoost,
+                                "ultra_max_boost" => cluaiz_shared::hardware::schema::booster::BoosterMode::UltraMaxBoost,
+                                "hyper_cluster" => cluaiz_shared::hardware::schema::booster::BoosterMode::HyperCluster,
+                                _ => cluaiz_shared::hardware::schema::booster::BoosterMode::Balance,
+                            };
+                        },
                         "Turbo Quant" => booster.turbo_quant = feature_state,
                         "Flash Attention" => booster.flash_attention = feature_state,
                         "Speculative Decoding" => booster.speculative_decoding = feature_state,
@@ -585,30 +834,8 @@ impl DashboardEngine {
             if let Some(path_str) = &model.manifest.local_path {
                 let path = std::path::PathBuf::from(path_str);
 
-                // 🧬 Cluaiz Hardware DETECTION
-                let profile = cluaiz_shared::hardware::get_Cluaiz_profile();
-                let device = if profile.compute.has_gpu {
-                    match profile.compute.primary_driver {
-                        cluaiz_shared::hardware::schema::profiles::BackendDriver::CUDA => {
-                            candle_core::Device::new_cuda(0).unwrap_or(candle_core::Device::Cpu)
-                        }
-                        cluaiz_shared::hardware::schema::profiles::BackendDriver::METAL => {
-                            candle_core::Device::new_metal(0).unwrap_or(candle_core::Device::Cpu)
-                        }
-                        _ => candle_core::Device::Cpu,
-                    }
-                } else {
-                    candle_core::Device::Cpu
-                };
-
-                println!(
-                    "  {} [Hardware Dispatch] Using device: {:?}",
-                    "🧪".cyan(),
-                    device
-                );
-
                 // 🧬 Cluaiz DISPATCH:
-                // High bit-depth -> Native Rust (Candle)
+                // High bit-depth -> Native Rust
                 // 1-bit BitNet -> MANDATORY Llama (Binary)
                 let runtime = if model.manifest.bit_depth < 2.0 {
                     cluaiz_shared::BackendType::RuntimeB
@@ -621,7 +848,6 @@ impl DashboardEngine {
                     match handle.block_on(engines::CoreRouter::load_model(
                         path,
                         runtime.clone(),
-                        &device,
                     )) {
                         Ok(router) => {
                             let mut lock = state.Core_engine.router.blocking_lock();
@@ -638,8 +864,7 @@ impl DashboardEngine {
                                 handle
                                     .block_on(engines::CoreRouter::load_model(
                                         path_inner,
-                                        cluaiz_shared::BackendType::RuntimeA,
-                                        &device,
+                                        cluaiz_shared::BackendType::RuntimeA
                                     ))
                                     .map(|router| {
                                         let mut lock = state.Core_engine.router.blocking_lock();

@@ -1,10 +1,7 @@
-use crate::assets::logos::logo;
 use ::cluaiz_shared::profile::{AccountType, AuthMethod, BusinessProfile, UserProfile};
 use color_eyre::Result;
 use colored::*;
 use inquire::{Confirm, Password, Select, Text};
-use std::io::{stdout, Write};
-use std::time::Duration;
 
 pub fn run_native_flow() -> Result<UserProfile> {
     let mut profile = UserProfile::new();

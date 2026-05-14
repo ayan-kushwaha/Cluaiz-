@@ -29,8 +29,9 @@ impl HardwareDriver for VulkanDriver {
     fn name(&self) -> &str { "Vulkan (Sovereign)" }
 
     fn temperature_c(&self) -> Result<f32> {
-        // Vulkan temp requires ash/vulkano, using fallback 40.0 for stable telemetry
-        Ok(40.0) 
+        // Vulkan temperature requires a specific extension (VK_EXT_display_control)
+        // or a vendor-specific probe. Fallback to 0.0 to avoid fake telemetry.
+        Ok(0.0) 
     }
 
     fn utilization_pct(&self) -> Result<f32> { Ok(0.0) }
@@ -40,16 +41,8 @@ impl HardwareDriver for VulkanDriver {
     fn vram_used_mb(&self) -> Result<u64> { Ok(0) }
 
     fn vram_total_mb(&self) -> Result<u64> {
-        #[cfg(target_os = "windows")]
-        {
-            // Fetch dedicated video memory via WMI
-            let output = Command::new("powershell")
-                .args(["-Command", "Get-CimInstance Win32_VideoController | Select-Object AdapterRAM"])
-                .output()?;
-            let s = String::from_utf8_lossy(&output.stdout);
-            let bytes = s.lines().nth(3).unwrap_or("0").trim().parse::<u64>().unwrap_or(0);
-            return Ok(bytes / 1024 / 1024);
-        }
+        // Dedicated VRAM should be fetched via the PhysicalDevice properties in a real implementation.
+        // For now, we return 0 to prevent fragile WMI calls from hanging the TUI.
         Ok(0)
     }
 

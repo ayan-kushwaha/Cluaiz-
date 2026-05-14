@@ -1,7 +1,7 @@
 use ratatui::{
     layout::{Rect, Constraint},
     style::{Color, Style, Modifier},
-    widgets::{Table, Row, Cell, Widget},
+    widgets::{Table, Row, Cell},
     buffer::Buffer,
 };
 use crate::core::state::AppState;

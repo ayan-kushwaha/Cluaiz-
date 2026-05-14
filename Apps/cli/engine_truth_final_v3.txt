@@ -1,0 +1,53 @@
+﻿  ≡ƒÜÇ [Cluaiz] Sovereign Update Available: 0.1.0 -> dev-release
+ΓÜû∩╕Å [Manager] Initiating Conflict Resolution Protocol...
+
+   ΓûäΓûêΓûêΓûêΓûêΓûä   ΓûêΓûêΓûô     Γûê    ΓûêΓûê  ΓûäΓûäΓûä       ΓûêΓûêΓûôΓûÆΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûÆ
+  ΓûÆΓûêΓûêΓûÇ ΓûÇΓûê  ΓûôΓûêΓûêΓûÆ     ΓûêΓûê  ΓûôΓûêΓûêΓûÆΓûÆΓûêΓûêΓûêΓûêΓûä    ΓûôΓûêΓûêΓûÆΓûÆ ΓûÆ ΓûÆ ΓûäΓûÇΓûæ
+  ΓûÆΓûôΓûê    Γûä ΓûÆΓûêΓûêΓûæ    ΓûôΓûêΓûê  ΓûÆΓûêΓûêΓûæΓûÆΓûêΓûê  ΓûÇΓûêΓûä  ΓûÆΓûêΓûêΓûÆΓûæ ΓûÆ ΓûäΓûÇΓûÆΓûæ 
+  ΓûÆΓûôΓûôΓûä ΓûäΓûêΓûêΓûÆΓûÆΓûêΓûêΓûæ    ΓûôΓûôΓûê  ΓûæΓûêΓûêΓûæΓûæΓûêΓûêΓûäΓûäΓûäΓûäΓûêΓûê ΓûæΓûêΓûêΓûæ  ΓûäΓûÇΓûÆ   Γûæ
+  ΓûÆ ΓûôΓûêΓûêΓûêΓûÇ ΓûæΓûæΓûêΓûêΓûêΓûêΓûêΓûêΓûÆΓûÆΓûÆΓûêΓûêΓûêΓûêΓûêΓûô  ΓûôΓûê   ΓûôΓûêΓûêΓûÆΓûæΓûêΓûêΓûæΓûÆΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûÆ
+  Γûæ ΓûæΓûÆ ΓûÆ  ΓûæΓûæ ΓûÆΓûæΓûô  ΓûæΓûæΓûÆΓûôΓûÆ ΓûÆ ΓûÆ  ΓûÆΓûÆ   ΓûôΓûÆΓûêΓûæΓûæΓûô  ΓûæΓûÆΓûÆ ΓûôΓûæΓûÆΓûæΓûÆ
+    Γûæ  ΓûÆ   Γûæ Γûæ ΓûÆ  ΓûæΓûæΓûæΓûÆΓûæ Γûæ Γûæ   ΓûÆ   ΓûÆΓûÆ Γûæ ΓûÆ ΓûæΓûæΓûæΓûÆ ΓûÆ Γûæ ΓûÆ
+  Γûæ          Γûæ Γûæ    ΓûæΓûæΓûæ Γûæ Γûæ   Γûæ   ΓûÆ    ΓûÆ ΓûæΓûæ Γûæ Γûæ Γûæ Γûæ
+  Γûæ Γûæ          Γûæ  Γûæ   Γûæ           Γûæ  Γûæ Γûæ    Γûæ Γûæ    
+  Γûæ                                       Γûæ        
+
+  ΓÜÖ∩╕Å [Cluaiz] Initializing Sovereign Kernel for 'bonsai1:8b'...
+  Γ£à Model 'bonsai1:8b' is healthy and ready.
+≡ƒÄ» Engine Prep: OS=windows, Arch=x86_64, GPU=Some("nvidia_corp"), Drivers=true
+≡ƒÄ» Engine Prep: OS=windows, Arch=x86_64, Backend=cuda
+  ΓÜá∩╕Å [PROVISIONER] Silicon Handshake Error: error decoding response body
+C:\Users\Aryan\my\Cluaiz-workspace\cluaiz\target\debug\cluaiz.exe : ≡ƒº¼ [Llama-Lib] Loading DNA for: 
+"C:\\Users\\Aryan\\.cluaiz\\models\\chat\\bonsai1-8b"
+At line:1 char:111
++ ... -workspace; C:\Users\Aryan\my\Cluaiz-workspace\cluaiz\target\debug\cl ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (≡ƒº¼ [Llama-Lib...at\\bonsai1-8b":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+≡ƒôé [Llama-Lib] DNA Loaded from disk. Discovering real-time truth...
+≡ƒº¼ [DNA] Sovereign Discovery Heartbeat: Investigating -> "C:\\Users\\Aryan\\.cluaiz\\models\\chat\\bonsai1-8b"
+≡ƒôé [DNA] Investigating Weights in: "\\\\?\\C:\\Users\\Aryan\\.cluaiz\\models\\chat\\bonsai1-8b"
+  ≡ƒöì Found File: Bonsai-8B.gguf
+  ≡ƒöì Found File: config.json
+  ≡ƒöì Found File: model_manifest.json
+  ≡ƒöì Found File: structural_dna.json
+  ≡ƒöì Found File: tokenizer.json
+  ≡ƒöì Found File: tokenizer_config.json
+≡ƒôè [DNA] Weight Discovery Complete: 1.08GB
+ΓÜû∩╕Å [Arbiter] Envelope Negotiated: Model Architecture Truth used. Available: 2.32GB -> Safe Context: 16384 tokens (Efficiency: 4.0x)
+ΓÜû∩╕Å [DNA] Sovereign Negotiation Complete: Safely allocated 16384 tokens based on silicon truth.
+Γ£à [Llama-Lib] DNA Discovery Complete. Context: Some(16384)
+≡ƒº¼ [Native-Llama] Starting DNA Discovery for: "C:\\Users\\Aryan\\.cluaiz\\models\\chat\\bonsai1-8b"
+≡ƒº¼ [DNA] Sovereign Discovery Heartbeat: Investigating -> "C:\\Users\\Aryan\\.cluaiz\\models\\chat\\bonsai1-8b"
+≡ƒôé [DNA] Investigating Weights in: "\\\\?\\C:\\Users\\Aryan\\.cluaiz\\models\\chat\\bonsai1-8b"
+  ≡ƒöì Found File: Bonsai-8B.gguf
+  ≡ƒöì Found File: config.json
+  ≡ƒöì Found File: model_manifest.json
+  ≡ƒöì Found File: structural_dna.json
+  ≡ƒöì Found File: tokenizer.json
+  ≡ƒöì Found File: tokenizer_config.json
+≡ƒôè [DNA] Weight Discovery Complete: 1.08GB
+ΓÜû∩╕Å [Arbiter] Envelope Negotiated: Model Architecture Truth used. Available: 2.32GB -> Safe Context: 16384 tokens (Efficiency: 4.0x)
+ΓÜû∩╕Å [DNA] Sovereign Negotiation Complete: Safely allocated 16384 tokens based on silicon truth.
+Γ£à [Native-Llama] DNA Discovery Finished. Max Context: Some(16384)

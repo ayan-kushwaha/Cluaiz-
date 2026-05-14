@@ -3,7 +3,6 @@
 //! ═══════════════════════════════════════════════════════════════════════
 
 use serde::Deserialize;
-use candle_core::Device;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ModelsRunner {
@@ -71,8 +70,8 @@ impl ModelCategory {
 }
 
 impl ModelsRunner {
-    /// Select the correct device based on model category and hardware profile
-    pub fn select_device(&self, category: &ModelCategory, gpu_available: bool) -> Device {
+    /// Select the correct backend suffix based on model category and hardware profile
+    pub fn select_backend_suffix(&self, category: &ModelCategory, gpu_available: bool) -> String {
         let hw_target = match category {
             ModelCategory::Chat => &self.model_chat.hardware,
             ModelCategory::Persona => &self.model_persona.hardware,
@@ -80,30 +79,21 @@ impl ModelsRunner {
             ModelCategory::Unknown => "Auto",
         };
 
-        match hw_target {
+        match &hw_target[..] {
             "GPU_Only" => {
                 if gpu_available {
-                    Device::new_cuda(0).unwrap_or(Device::Cpu)
+                    "cuda".to_string() // Future: detect vendor (cuda/metal)
                 } else {
                     tracing::warn!("⚠️ GPU_Only requested but no GPU — falling back to CPU");
-                    Device::Cpu
+                    "cpu".to_string()
                 }
             }
-            "CPU_Optimized" => Device::Cpu,
-            "Hybrid_CPU_GPU" => {
-                // Hybrid: use GPU if available, CPU otherwise
+            "CPU_Optimized" => "cpu".to_string(),
+            "Hybrid_CPU_GPU" | "Auto" | _ => {
                 if gpu_available {
-                    Device::new_cuda(0).unwrap_or(Device::Cpu)
+                    "vulkan".to_string() // Default to Vulkan for cross-platform GPU
                 } else {
-                    Device::Cpu
-                }
-            }
-            _ => {
-                // Auto mode
-                if gpu_available {
-                    Device::new_cuda(0).unwrap_or(Device::Cpu)
-                } else {
-                    Device::Cpu
+                    "cpu".to_string()
                 }
             }
         }

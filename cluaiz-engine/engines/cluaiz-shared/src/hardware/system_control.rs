@@ -295,6 +295,7 @@ impl HardwareOrchestrator {
 
         MemorySubsystem {
             total_capacity_gb: sys.total_memory() as f64 / 1_073_741_824.0,
+            available_capacity_gb: sys.available_memory() as f64 / 1_073_741_824.0,
             type_name,
             speed_mts,
             bandwidth_gbps: live_bw,

@@ -5,7 +5,6 @@ use std::path::PathBuf;
 use crate::utils::healer::AutoHealer;
 use cluaiz_shared::{UnifiedBackend, BackendType, CluaizContext, StructuralDNA, TemplateManager, ModelWeightsWrapper};
 use crate::runtime::execution::hub::HardwareOrchestrator;
-use candle_core::Device;
 
 pub enum Backend {
     Empty(DummyBackend),
@@ -60,6 +59,7 @@ pub struct CoreRouter {
     pub active_backend: Backend,
     pub tokenizer: Option<tokenizers::Tokenizer>,
     pub foundry: crate::neural_foundry::CoreFoundry,
+    pub active_dna: Option<cluaiz_shared::StructuralDNA>,
 }
 
 impl Default for CoreRouter {
@@ -74,10 +74,11 @@ impl CoreRouter {
             active_backend: Backend::Empty(DummyBackend),
             tokenizer: None,
             foundry: crate::neural_foundry::CoreFoundry::new(),
+            active_dna: None,
         }
     }
 
-    pub async fn load_model(path: PathBuf, runtime: BackendType, _device: &Device) -> Result<Self, String> {
+    pub async fn load_model(path: PathBuf, runtime: BackendType) -> Result<Self, String> {
         if let Some(parent) = path.parent() {
             let repo_id = path.file_stem().map(|s| s.to_string_lossy()).unwrap_or_default();
             let _ = AutoHealer::heal_missing_tokenizer(&repo_id, parent).await;
@@ -95,11 +96,14 @@ impl CoreRouter {
                     }
                 }
             }
+            // 🧬 Deep Discovery: Learn and Repair from tokenizer_config.json, etc.
+            dna.discover_from_path(parent)
+                .map_err(|e| format!("Neural Discovery Failure: {}", e))?;
         }
         dna.preferred_runtime = Some(runtime);
         
         let context = CluaizContext::boot(
-            dna,
+            dna.clone(),
             TemplateManager::default(),
         );
 
@@ -134,12 +138,23 @@ impl CoreRouter {
         Ok(Self { 
             active_backend: Backend::Cluaiz(engine), 
             tokenizer,
-            foundry 
+            foundry,
+            active_dna: Some(dna),
         })
     }
 
+    pub fn get_active_dna(&self) -> Option<&cluaiz_shared::StructuralDNA> {
+        self.active_dna.as_ref()
+    }
+
     pub fn generate(&mut self, prompt: &str, max_tokens: usize) -> Result<String, String> {
-        self.active_backend.generate(prompt, max_tokens)
+        let formatted_prompt = if let Some(ref dna) = self.active_dna {
+            let tm = cluaiz_shared::TemplateManager::default();
+            tm.format(dna, prompt)
+        } else {
+            prompt.to_string()
+        };
+        self.active_backend.generate(&formatted_prompt, max_tokens)
     }
 
     pub fn generate_stream(
@@ -162,7 +177,15 @@ impl CoreRouter {
                 }
 
                 if let Some(ref tokenizer) = self.tokenizer {
-                    b.generate_stream(prompt, max_tokens, tokenizer, callback)
+                    // 🎭 Orchestration: Format prompt based on model DNA
+                    let formatted_prompt = if let Some(ref dna) = self.active_dna {
+                        let tm = cluaiz_shared::TemplateManager::default();
+                        tm.format(dna, prompt)
+                    } else {
+                        prompt.to_string()
+                    };
+
+                    b.generate_stream(&formatted_prompt, max_tokens, tokenizer, callback)
                         .map_err(|e| e.to_string())
                 } else {
                     Err("Tokenizer not loaded.".to_string())
