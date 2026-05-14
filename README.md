@@ -190,9 +190,9 @@ Automatically maps neural tasks to specialized kernels based on hardware efficie
 
 All tests performed on an **RTX 3050 (Laptop)** using the prompt: *"What is Local AI and why is it important?"*
 
-| **Metric** | **Gemini (Cloud)** | **Bonsai 8B (Cluaiz)** | **Gemma 2B (Cluaiz)** | **Verdict** |
+| **Metric** | **Gemini (Cloud)** | **Bonsai1:8B (Cluaiz)** | **Gemma4:e2B (Cluaiz)** | **Verdict** |
 | :--- | :--- | :--- | :--- | :--- |
-| **Speed (TPS)** | 25.8 | **48.6** | 31.6 | 🚀 **Cluaiz is 2x Faster** |
+| **Speed (TPS)** | 25.8 | **48.6** | **31.6** | 🚀 **Cluaiz is 2x Faster** |
 | **Tokens Out** | 543 Tokens | **1911 Tokens** | **1465 Tokens** | 🧠 **High Throughput** |
 | **Reasoning Mode**| Standard | **Thinking (Deep)** | **Thinking (Deep)** | 🛡️ **Sovereign** |
 | **Total Duration** | 21.0s | **40.2s** | **46.3s** | ⏱️ **Zero Latency** |
