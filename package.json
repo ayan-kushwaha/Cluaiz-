@@ -42,7 +42,7 @@
     },
     "docs": {
       "version": "dev-release",
-      "manifest_url": "https://github.com/cluaiz/cluaiz/blob/main/docs/registry.md" 
+      "manifest_url": "https://github.com/cluaiz/cluaiz/blob/main/docs/registry.json" 
     }
   }
 }
