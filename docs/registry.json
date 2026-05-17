@@ -1,0 +1,33 @@
+{
+  "name": "Cluaiz Sovereign Docs",
+  "last_updated": "2026-05-17T13:30:00Z",
+  "categories": [
+    {
+      "id": "foundations",
+      "title": "Sovereign Foundations",
+      "pages": [
+        {
+          "slug": "technical-specifications",
+          "title": "Sovereign Technical Spec v1.0",
+          "file_path": "docs/sovereign-technical-spec-v1.0.md"
+        }
+      ]
+    },
+    {
+      "id": "getting-started",
+      "title": "Getting Started",
+      "pages": [
+        {
+          "slug": "introduction",
+          "title": "Introduction to Cluaiz",
+          "file_path": "docs/user-guides/introduction.md"
+        },
+        {
+          "slug": "installation",
+          "title": "Local Installation",
+          "file_path": "docs/user-guides/installation.md"
+        }
+      ]
+    }
+  ]
+}
