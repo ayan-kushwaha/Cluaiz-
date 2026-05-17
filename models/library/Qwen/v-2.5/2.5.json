@@ -1,0 +1,260 @@
+{
+  "family": "Qwen 2.5",
+  "qwen2.5:0.5b": {
+    "name": "Qwen 2.5 0.5B",
+    "architecture": "Qwen2",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "Ultra-low latency model for extreme edge/mobile devices.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/Qwen2.5-0.5B-Instruct-Q4_K_M.gguf",
+          "ram_required_gb": 1.0,
+          "download_size_gb": 0.4
+        },
+        "q8_0": {
+          "download_url": "https://huggingface.co/bartowski/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/Qwen2.5-0.5B-Instruct-Q8_0.gguf",
+          "ram_required_gb": 1.5,
+          "download_size_gb": 0.6
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/bartowski/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/Qwen2.5-0.5B-Instruct-f16.gguf",
+          "ram_required_gb": 2.0,
+          "download_size_gb": 1.0
+        }
+      }
+    }
+  },
+  "qwen2.5:1.5b": {
+    "name": "Qwen 2.5 1.5B",
+    "architecture": "Qwen2",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "High-efficiency 1.5B model for everyday mobile tasks.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/Qwen2.5-1.5B-Instruct-Q4_K_M.gguf",
+          "ram_required_gb": 2.0,
+          "download_size_gb": 1.1
+        },
+        "q8_0": {
+          "download_url": "https://huggingface.co/bartowski/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/Qwen2.5-1.5B-Instruct-Q8_0.gguf",
+          "ram_required_gb": 3.0,
+          "download_size_gb": 1.7
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/bartowski/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/Qwen2.5-1.5B-Instruct-f16.gguf",
+          "ram_required_gb": 4.5,
+          "download_size_gb": 3.1
+        }
+      }
+    }
+  },
+  "qwen2.5:3b": {
+    "name": "Qwen 2.5 3B",
+    "architecture": "Qwen2",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "Massive reasoning leap for consumer laptops.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/Qwen2.5-3B-Instruct-GGUF/resolve/main/Qwen2.5-3B-Instruct-Q4_K_M.gguf",
+          "ram_required_gb": 3.5,
+          "download_size_gb": 2.0
+        },
+        "q8_0": {
+          "download_url": "https://huggingface.co/bartowski/Qwen2.5-3B-Instruct-GGUF/resolve/main/Qwen2.5-3B-Instruct-Q8_0.gguf",
+          "ram_required_gb": 5.0,
+          "download_size_gb": 3.3
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/bartowski/Qwen2.5-3B-Instruct-GGUF/resolve/main/Qwen2.5-3B-Instruct-f16.gguf",
+          "ram_required_gb": 8.0,
+          "download_size_gb": 6.2
+        }
+      }
+    }
+  },
+  "qwen2.5:7b": {
+    "name": "Qwen 2.5 7B",
+    "architecture": "Qwen2",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "Flagship 7B model for professional technical reasoning.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-Q4_K_M.gguf",
+          "ram_required_gb": 7.0,
+          "download_size_gb": 4.8
+        },
+        "q8_0": {
+          "download_url": "https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-Q8_0.gguf",
+          "ram_required_gb": 10.0,
+          "download_size_gb": 7.7
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-f16.gguf",
+          "ram_required_gb": 16.0,
+          "download_size_gb": 15.0
+        }
+      }
+    }
+  },
+  "qwen2.5:14b": {
+    "name": "Qwen 2.5 14B",
+    "architecture": "Qwen2",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "Enterprise-grade model for multi-step reasoning.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/Qwen2.5-14B-Instruct-GGUF/resolve/main/Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+          "ram_required_gb": 15.0,
+          "download_size_gb": 9.0
+        },
+        "q8_0": {
+          "download_url": "https://huggingface.co/bartowski/Qwen2.5-14B-Instruct-GGUF/resolve/main/Qwen2.5-14B-Instruct-Q8_0.gguf",
+          "ram_required_gb": 22.0,
+          "download_size_gb": 15.5
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/mradermacher/Qwen2.5-14B-Instruct-GGUF/resolve/main/Qwen2.5-14B-Instruct.f16.gguf",
+          "ram_required_gb": 32.0,
+          "download_size_gb": 28.0
+        }
+      },
+      "awq": {
+        "4bit": {
+          "download_url": "https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-AWQ/resolve/main/model.safetensors",
+          "ram_required_gb": 15.0,
+          "download_size_gb": 9.5
+        },
+        "8bit": {
+          "download_url": "https://huggingface.co/mradermacher/Qwen2.5-14B-Instruct-AWQ-8bit/resolve/main/model.safetensors",
+          "ram_required_gb": 24.0,
+          "download_size_gb": 18.0
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/Qwen/Qwen2.5-14B-Instruct/resolve/main/model.safetensors",
+          "ram_required_gb": 32.0,
+          "download_size_gb": 28.0
+        }
+      }
+    }
+  },
+  "qwen2.5:32b": {
+    "name": "Qwen 2.5 32B",
+    "architecture": "Qwen2",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "High-performance dense model for technical deep-dives.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/Qwen2.5-32B-Instruct-GGUF/resolve/main/Qwen2.5-32B-Instruct-Q4_K_M.gguf",
+          "ram_required_gb": 30.0,
+          "download_size_gb": 20.0
+        },
+        "q8_0": {
+          "download_url": "https://huggingface.co/mradermacher/Qwen2.5-32B-Instruct-GGUF/resolve/main/Qwen2.5-32B-Instruct.Q8_0.gguf",
+          "ram_required_gb": 48.0,
+          "download_size_gb": 35.0
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/mradermacher/Qwen2.5-32B-Instruct-GGUF/resolve/main/Qwen2.5-32B-Instruct.f16.gguf",
+          "ram_required_gb": 70.0,
+          "download_size_gb": 64.0
+        }
+      },
+      "awq": {
+        "4bit": {
+          "download_url": "https://huggingface.co/Qwen/Qwen2.5-32B-Instruct-AWQ/resolve/main/model.safetensors",
+          "ram_required_gb": 22.0,
+          "download_size_gb": 18.0
+        },
+        "8bit": {
+          "download_url": "https://huggingface.co/mradermacher/Qwen2.5-32B-Instruct-AWQ-8bit/resolve/main/model.safetensors",
+          "ram_required_gb": 45.0,
+          "download_size_gb": 38.0
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/Qwen/Qwen2.5-32B-Instruct/resolve/main/model.safetensors",
+          "ram_required_gb": 70.0,
+          "download_size_gb": 64.0
+        }
+      }
+    }
+  },
+  "qwen2.5:72b": {
+    "name": "Qwen 2.5 72B",
+    "architecture": "Qwen2",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "The ultimate reasoning engine for local workstations.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/Qwen2.5-72B-Instruct-GGUF/resolve/main/Qwen2.5-72B-Instruct-Q4_K_M.gguf",
+          "ram_required_gb": 60.0,
+          "download_size_gb": 48.0
+        },
+        "q8_0": {
+          "download_url": "https://huggingface.co/mradermacher/Qwen2.5-72B-Instruct-GGUF/resolve/main/Qwen2.5-72B-Instruct.Q8_0.gguf.part1of2",
+          "ram_required_gb": 90.0,
+          "download_size_gb": 85.0
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/mradermacher/Qwen2.5-72B-Instruct-GGUF/resolve/main/Qwen2.5-72B-Instruct.f16.gguf.part1of4",
+          "ram_required_gb": 160.0,
+          "download_size_gb": 144.0
+        }
+      },
+      "awq": {
+        "4bit": {
+          "download_url": "https://huggingface.co/Qwen/Qwen2.5-72B-Instruct-AWQ/resolve/main/model.safetensors",
+          "ram_required_gb": 45.0,
+          "download_size_gb": 40.0
+        },
+        "8bit": {
+          "download_url": "https://huggingface.co/mradermacher/Qwen2.5-72B-Instruct-AWQ-8bit/resolve/main/model.safetensors",
+          "ram_required_gb": 90.0,
+          "download_size_gb": 85.0
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/Qwen/Qwen2.5-72B-Instruct/resolve/main/model.safetensors",
+          "ram_required_gb": 160.0,
+          "download_size_gb": 144.0
+        }
+      },
+      "gptq": {
+        "int4": {
+          "download_url": "https://huggingface.co/Qwen/Qwen2.5-72B-Instruct-GPTQ-Int4/resolve/main/model.safetensors",
+          "ram_required_gb": 45.0,
+          "download_size_gb": 40.0
+        },
+        "int8": {
+          "download_url": "https://huggingface.co/Qwen/Qwen2.5-72B-Instruct-GPTQ-Int8/resolve/main/model.safetensors",
+          "ram_required_gb": 90.0,
+          "download_size_gb": 85.0
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/Qwen/Qwen2.5-72B-Instruct/resolve/main/model.safetensors",
+          "ram_required_gb": 160.0,
+          "download_size_gb": 144.0
+        }
+      }
+    }
+  }
+}

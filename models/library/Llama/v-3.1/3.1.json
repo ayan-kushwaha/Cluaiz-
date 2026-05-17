@@ -1,36 +1,172 @@
 {
-  "family": "Llama 3.1",
-  "models": [
-    {
-      "id": "llama-3.1-8b-it",
-      "name": "Llama 3.1 8B",
-      "architecture": "Llama",
-      "parameters": "8B",
-      "training_tokens": "15.0 Trillion",
-      "bit_depth": 4.0,
-      "ram_required_gb": 4.8,
-      "download_size_gb": 4.6,
-      "huggingface_repo": "meta-llama/Llama-3.1-8B-Instruct",
-      "download_url": "https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
-      "description": "Meta's most advanced 8B model. Specialized for multi-step reasoning, tool usage, and complex dialogue. Optimized for smooth inference on Candle and llama.cpp backends.",
-      "is_cloud_api": false,
-      "requires_gpu": true,
-      "context_window": "128k",
-      "category": "chat",
-      "assets": [
-        {
-          "name": "tokenizer.json",
-          "url": "https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct/resolve/main/tokenizer.json"
+  "family": "Llama 3.1/3.2",
+  "llama3.2:1b": {
+    "name": "Llama 3.2 1B",
+    "architecture": "Llama3",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "Ultra-efficient 1B model for extreme mobile edge tasks.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.gguf",
+          "ram_required_gb": 1.5,
+          "download_size_gb": 0.8
         },
-        {
-          "name": "config.json",
-          "url": "https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct/resolve/main/config.json"
+        "q8_0": {
+          "download_url": "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q8_0.gguf",
+          "ram_required_gb": 2.5,
+          "download_size_gb": 1.3
         },
-        {
-          "name": "tokenizer_config.json",
-          "url": "https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct/resolve/main/tokenizer_config.json"
+        "f16": {
+          "download_url": "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-f16.gguf",
+          "ram_required_gb": 4.5,
+          "download_size_gb": 2.5
         }
-      ]
+      }
     }
-  ]
+  },
+  "llama3.2:3b": {
+    "name": "Llama 3.2 3B",
+    "architecture": "Llama3",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "The perfect balance of size and reasoning for local laptops.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_M.gguf",
+          "ram_required_gb": 4.0,
+          "download_size_gb": 2.2
+        },
+        "q8_0": {
+          "download_url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q8_0.gguf",
+          "ram_required_gb": 6.5,
+          "download_size_gb": 3.6
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-f16.gguf",
+          "ram_required_gb": 10.0,
+          "download_size_gb": 6.5
+        }
+      }
+    }
+  },
+  "llama3.1:8b": {
+    "name": "Llama 3.1 8B",
+    "architecture": "Llama3",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "Professional 8B flagship for high-precision technical tasks.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf",
+          "ram_required_gb": 8.0,
+          "download_size_gb": 5.2
+        },
+        "q8_0": {
+          "download_url": "https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
+          "ram_required_gb": 12.0,
+          "download_size_gb": 8.5
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-f16.gguf",
+          "ram_required_gb": 20.0,
+          "download_size_gb": 16.5
+        }
+      }
+    }
+  },
+  "llama3.1:70b": {
+    "name": "Llama 3.1 70B",
+    "architecture": "Llama3",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "High-performance dense model for advanced research and multi-step reasoning.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/Meta-Llama-3.1-70B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-70B-Instruct-Q4_K_M.gguf",
+          "ram_required_gb": 60.0,
+          "download_size_gb": 48.0
+        },
+        "q8_0": {
+          "download_url": "https://huggingface.co/bartowski/Meta-Llama-3.1-70B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-70B-Instruct-Q8_0.gguf",
+          "ram_required_gb": 90.0,
+          "download_size_gb": 82.0
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/bartowski/Meta-Llama-3.1-70B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-70B-Instruct-f16.gguf",
+          "ram_required_gb": 160.0,
+          "download_size_gb": 142.0
+        }
+      },
+      "awq": {
+        "4bit": {
+          "download_url": "https://huggingface.co/hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4/resolve/main/model.safetensors",
+          "ram_required_gb": 45.0,
+          "download_size_gb": 40.0
+        },
+        "8bit": {
+          "download_url": "https://huggingface.co/mradermacher/Meta-Llama-3.1-70B-Instruct-AWQ-8bit/resolve/main/model.safetensors",
+          "ram_required_gb": 90.0,
+          "download_size_gb": 82.0
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/meta-llama/Meta-Llama-3.1-70B-Instruct/resolve/main/model.safetensors",
+          "ram_required_gb": 160.0,
+          "download_size_gb": 142.0
+        }
+      }
+    }
+  },
+  "llama3.1:405b": {
+    "name": "Llama 3.1 405B",
+    "architecture": "Llama3",
+    "context_window": "128k",
+    "category": "frontier",
+    "default_quant": "q4_k_m",
+    "description": "The absolute dense flagship for enterprise-scale frontier reasoning.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/mradermacher/Meta-Llama-3.1-405B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-405B-Instruct.Q4_K_M.gguf.part1of14",
+          "ram_required_gb": 320.0,
+          "download_size_gb": 280.0
+        },
+        "q8_0": {
+          "download_url": "https://huggingface.co/mradermacher/Meta-Llama-3.1-405B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-405B-Instruct.Q8_0.gguf.part1of28",
+          "ram_required_gb": 550.0,
+          "download_size_gb": 520.0
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/mradermacher/Meta-Llama-3.1-405B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-405B-Instruct.f16.gguf.part1of56",
+          "ram_required_gb": 950.0,
+          "download_size_gb": 880.0
+        }
+      },
+      "awq": {
+        "4bit": {
+          "download_url": "https://huggingface.co/meta-llama/Meta-Llama-3.1-405B-Instruct-AWQ/resolve/main/model.safetensors",
+          "ram_required_gb": 280.0,
+          "download_size_gb": 250.0
+        },
+        "8bit": {
+          "download_url": "https://huggingface.co/mradermacher/Meta-Llama-3.1-405B-Instruct-AWQ-8bit/resolve/main/model.safetensors",
+          "ram_required_gb": 550.0,
+          "download_size_gb": 520.0
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/meta-llama/Meta-Llama-3.1-405B-Instruct/resolve/main/model.safetensors",
+          "ram_required_gb": 950.0,
+          "download_size_gb": 880.0
+        }
+      }
+    }
+  }
 }

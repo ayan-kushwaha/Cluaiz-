@@ -1,4 +1,4 @@
-# <img src="../../logo.png" width="48" height="48" style="vertical-align:middle"> 🏛️ 1-bit Bonsai: Sovereign Reasoning Engine (v1.1)
+# <img src="../bonsai-logo.svg" width="48" height="48" style="vertical-align:middle">  1-bit Bonsai | v1.1
 
 > **The world's first commercially viable 1-bit LLM family, delivering elite cognitive reasoning at the extreme edge.**
 
@@ -13,20 +13,20 @@ cluaiz run bonsai:1.1
 ---
 
 ## 📊 Model Matrix (Silicon Specs)
-| Attribute | Specification |
-| :--- | :--- |
-| **Version** | v1.1 (Industrial Release) |
-| **Parameters** | 8.2 Billion |
-| **Architecture** | True 1-bit Neural Kernel |
-| **Memory (VRAM)** | 1.15 GB (Ultra-Lite) |
-| **Download Size** | 1.02 GB |
-| **Context Window** | 256K Tokens |
+| Attribute          | Specification             |
+| :----------------- | :------------------------ |
+| **Version**        | v1.1 (Industrial Release) |
+| **Parameters**     | 8.2 Billion               |
+| **Architecture**   | True 1-bit Neural Kernel  |
+| **Memory (VRAM)**  | 1.15 GB (Ultra-Lite)      |
+| **Download Size**  | 1.02 GB                   |
+| **Context Window** | 256K Tokens               |
 
 ---
 
 ## 🎨 Visual Identity & Benchmarks
 
-![Sovereign Banner](../../poster.webp)
+<!-- ![Sovereign Banner](../../poster.webp) -->
 
 ### Intelligence Density Analysis
 Bonsai 8B redefines the Pareto frontier by focusing on **Intelligence per GB**, ensuring high-accuracy reasoning on mobile and edge devices.

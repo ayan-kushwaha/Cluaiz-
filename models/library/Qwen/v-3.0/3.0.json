@@ -1,0 +1,233 @@
+{
+  "family": "Qwen 3.0",
+  "qwen3:0.6b": {
+    "name": "Qwen 3 0.6B",
+    "architecture": "Qwen3",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "Next-gen ultra-low latency model for extreme edge devices.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/Qwen3-0.6B-Instruct-GGUF/resolve/main/Qwen3-0.6B-Instruct-Q4_K_M.gguf",
+          "ram_required_gb": 1.0,
+          "download_size_gb": 0.5
+        },
+        "q8_0": {
+          "download_url": "https://huggingface.co/bartowski/Qwen3-0.6B-Instruct-GGUF/resolve/main/Qwen3-0.6B-Instruct-Q8_0.gguf",
+          "ram_required_gb": 1.5,
+          "download_size_gb": 0.7
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/bartowski/Qwen3-0.6B-Instruct-GGUF/resolve/main/Qwen3-0.6B-Instruct-f16.gguf",
+          "ram_required_gb": 2.5,
+          "download_size_gb": 1.2
+        }
+      }
+    }
+  },
+  "qwen3:1.7b": {
+    "name": "Qwen 3 1.7B",
+    "architecture": "Qwen3",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "High-efficiency 1.7B model for sovereign mobile AI.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/Qwen3-1.7B-Instruct-GGUF/resolve/main/Qwen3-1.7B-Instruct-Q4_K_M.gguf",
+          "ram_required_gb": 2.5,
+          "download_size_gb": 1.3
+        },
+        "q8_0": {
+          "download_url": "https://huggingface.co/bartowski/Qwen3-1.7B-Instruct-GGUF/resolve/main/Qwen3-1.7B-Instruct-Q8_0.gguf",
+          "ram_required_gb": 4.0,
+          "download_size_gb": 2.1
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/bartowski/Qwen3-1.7B-Instruct-GGUF/resolve/main/Qwen3-1.7B-Instruct-f16.gguf",
+          "ram_required_gb": 5.5,
+          "download_size_gb": 3.8
+        }
+      }
+    }
+  },
+  "qwen3:8b": {
+    "name": "Qwen 3 8B",
+    "architecture": "Qwen3",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "The new 8B flagship for professional local reasoning.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/Qwen3-8B-Instruct-GGUF/resolve/main/Qwen3-8B-Instruct-Q4_K_M.gguf",
+          "ram_required_gb": 8.5,
+          "download_size_gb": 5.5
+        },
+        "q8_0": {
+          "download_url": "https://huggingface.co/bartowski/Qwen3-8B-Instruct-GGUF/resolve/main/Qwen3-8B-Instruct-Q8_0.gguf",
+          "ram_required_gb": 12.0,
+          "download_size_gb": 9.2
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/bartowski/Qwen3-8B-Instruct-GGUF/resolve/main/Qwen3-8B-Instruct-f16.gguf",
+          "ram_required_gb": 20.0,
+          "download_size_gb": 18.0
+        }
+      }
+    }
+  },
+  "qwen3:14b": {
+    "name": "Qwen 3 14B",
+    "architecture": "Qwen3",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "Enterprise-grade model for balanced mid-tier reasoning.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/Qwen3-14B-Instruct-GGUF/resolve/main/Qwen3-14B-Instruct-Q4_K_M.gguf",
+          "ram_required_gb": 16.0,
+          "download_size_gb": 10.0
+        },
+        "q8_0": {
+          "download_url": "https://huggingface.co/bartowski/Qwen3-14B-Instruct-GGUF/resolve/main/Qwen3-14B-Instruct-Q8_0.gguf",
+          "ram_required_gb": 24.0,
+          "download_size_gb": 16.5
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/bartowski/Qwen3-14B-Instruct-GGUF/resolve/main/Qwen3-14B-Instruct-f16.gguf",
+          "ram_required_gb": 35.0,
+          "download_size_gb": 30.0
+        }
+      },
+      "awq": {
+        "4bit": {
+          "download_url": "https://huggingface.co/Qwen/Qwen3-14B-Instruct-AWQ/resolve/main/model.safetensors",
+          "ram_required_gb": 16.0,
+          "download_size_gb": 10.5
+        },
+        "8bit": {
+          "download_url": "https://huggingface.co/mradermacher/Qwen3-14B-Instruct-AWQ-8bit/resolve/main/model.safetensors",
+          "ram_required_gb": 28.0,
+          "download_size_gb": 20.0
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/Qwen/Qwen3-14B-Instruct/resolve/main/model.safetensors",
+          "ram_required_gb": 35.0,
+          "download_size_gb": 30.0
+        }
+      }
+    }
+  },
+  "qwen3:30b-moe": {
+    "name": "Qwen 3 30B MoE",
+    "architecture": "Qwen3",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "High-intelligence Mixture-of-Experts for dense technical tasks.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/Qwen3-30B-A3B-Instruct-GGUF/resolve/main/Qwen3-30B-A3B-Instruct-Q4_K_M.gguf",
+          "ram_required_gb": 32.0,
+          "download_size_gb": 22.0
+        },
+        "q8_0": {
+          "download_url": "https://huggingface.co/mradermacher/Qwen3-30B-A3B-Instruct-GGUF/resolve/main/Qwen3-30B-A3B-Instruct.Q8_0.gguf",
+          "ram_required_gb": 52.0,
+          "download_size_gb": 40.0
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/mradermacher/Qwen3-30B-A3B-Instruct-GGUF/resolve/main/Qwen3-30B-A3B-Instruct.f16.gguf",
+          "ram_required_gb": 75.0,
+          "download_size_gb": 68.0
+        }
+      },
+      "awq": {
+        "4bit": {
+          "download_url": "https://huggingface.co/Qwen/Qwen3-30B-A3B-Instruct-AWQ/resolve/main/model.safetensors",
+          "ram_required_gb": 24.0,
+          "download_size_gb": 20.0
+        },
+        "8bit": {
+          "download_url": "https://huggingface.co/mradermacher/Qwen3-30B-A3B-Instruct-AWQ-8bit/resolve/main/model.safetensors",
+          "ram_required_gb": 48.0,
+          "download_size_gb": 42.0
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/Qwen/Qwen3-30B-A3B-Instruct/resolve/main/model.safetensors",
+          "ram_required_gb": 75.0,
+          "download_size_gb": 68.0
+        }
+      }
+    }
+  },
+  "qwen3:235b": {
+    "name": "Qwen 3 235B MoE",
+    "architecture": "Qwen3",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "The ultimate frontier model for enterprise AI clusters.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/mradermacher/Qwen3-235B-A22B-Instruct-GGUF/resolve/main/Qwen3-235B-A22B-Instruct.Q4_K_M.gguf.part1of8",
+          "ram_required_gb": 180.0,
+          "download_size_gb": 145.0
+        },
+        "q8_0": {
+          "download_url": "https://huggingface.co/mradermacher/Qwen3-235B-A22B-Instruct-GGUF/resolve/main/Qwen3-235B-A22B-Instruct.Q8_0.gguf.part1of12",
+          "ram_required_gb": 320.0,
+          "download_size_gb": 260.0
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/mradermacher/Qwen3-235B-A22B-Instruct-GGUF/resolve/main/Qwen3-235B-A22B-Instruct.f16.gguf.part1of24",
+          "ram_required_gb": 520.0,
+          "download_size_gb": 480.0
+        }
+      },
+      "awq": {
+        "4bit": {
+          "download_url": "https://huggingface.co/Qwen/Qwen3-235B-A22B-Instruct-AWQ/resolve/main/model.safetensors",
+          "ram_required_gb": 150.0,
+          "download_size_gb": 130.0
+        },
+        "8bit": {
+          "download_url": "https://huggingface.co/mradermacher/Qwen3-235B-A22B-Instruct-AWQ-8bit/resolve/main/model.safetensors",
+          "ram_required_gb": 320.0,
+          "download_size_gb": 260.0
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/Qwen/Qwen3-235B-A22B-Instruct/resolve/main/model.safetensors",
+          "ram_required_gb": 520.0,
+          "download_size_gb": 480.0
+        }
+      },
+      "gptq": {
+        "int4": {
+          "download_url": "https://huggingface.co/Qwen/Qwen3-235B-A22B-Instruct-GPTQ-Int4/resolve/main/model.safetensors",
+          "ram_required_gb": 150.0,
+          "download_size_gb": 130.0
+        },
+        "int8": {
+          "download_url": "https://huggingface.co/Qwen/Qwen3-235B-A22B-Instruct-GPTQ-Int8/resolve/main/model.safetensors",
+          "ram_required_gb": 320.0,
+          "download_size_gb": 260.0
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/Qwen/Qwen3-235B-A22B-Instruct/resolve/main/model.safetensors",
+          "ram_required_gb": 520.0,
+          "download_size_gb": 480.0
+        }
+      }
+    }
+  }
+}

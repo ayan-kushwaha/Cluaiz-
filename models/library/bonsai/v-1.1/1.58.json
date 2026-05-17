@@ -1,99 +1,54 @@
 {
-  "family": "Ternary-Bonsai (1.58-bit Neural Cluster)",
-  "bonsai1.58:8b": [
-    {
-      "name": "Bonsai 8B (1.58-bit)",
-      "architecture": "Bonsai (1.58-bit)",
-      "parameters": "8.19B",
-      "training_tokens": "36.0 Trillion",
-      "bit_depth": 1.58,
-      "ram_required_gb": 2.5,
-      "download_size_gb": 2.2,
-      "huggingface_repo": "prism-ml/Ternary-Bonsai-8B-gguf",
-      "download_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-8B-gguf/resolve/main/Ternary-Bonsai-8B.gguf",
-      "description": "Ternary-Bonsai 8B (Precision Tier) uses the 1.58-bit BitNet algorithm for superior logical depth. It balances a slightly larger 2.2GB footprint with frontier-level accuracy, making it the ideal choice for complex coding, math, and multi-step reasoning tasks.",
-      "is_cloud_api": false,
-      "requires_gpu": false,
-      "context_window": "64k",
-      "category": "chat",
-      "assets": [
-        {
-          "name": "tokenizer.json",
-          "url": "https://huggingface.co/prism-ml/Ternary-Bonsai-8B-unpacked/resolve/main/tokenizer.json"
-        },
-        {
-          "name": "config.json",
-          "url": "https://huggingface.co/prism-ml/Ternary-Bonsai-8B-unpacked/resolve/main/config.json"
-        },
-        {
-          "name": "tokenizer_config.json",
-          "url": "https://huggingface.co/prism-ml/Ternary-Bonsai-8B-unpacked/resolve/main/tokenizer_config.json"
+  "family": "Bonsai 1.58b (BitNet Frontier)",
+  "bonsai1.58:1.7b": {
+    "name": "Bonsai 1.58b 1.7B",
+    "architecture": "BitNet-1.58b",
+    "context_window": "32k",
+    "category": "chat",
+    "default_quant": "ternary",
+    "description": "Ultra-efficient agile edge unit using 1.58-bit ternary encoding for zero-latency response.",
+    "variants": {
+      "gguf": {
+        "ternary": {
+          "download_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-1.7B-gguf/resolve/main/Ternary-Bonsai-1.7B.gguf",
+          "ram_required_gb": 0.5,
+          "download_size_gb": 0.45
         }
-      ]
+      }
     }
-  ],
-  "bonsai1.58:4b": [
-    {
-      "name": "Bonsai 4B (1.58-bit)",
-      "architecture": "Bonsai (1.58-bit)",
-      "parameters": "4.0B",
-      "training_tokens": "36.0 Trillion",
-      "bit_depth": 1.58,
-      "ram_required_gb": 1.2,
-      "download_size_gb": 1.1,
-      "huggingface_repo": "prism-ml/Ternary-Bonsai-4B-gguf",
-      "download_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-4B-gguf/resolve/main/Ternary-Bonsai-4B.gguf",
-      "description": "The refined 4B parameter ternary unit. Balanced for high-fidelity chat simulation and logical depth on mobile silicon. Uses 1.58-bit encoding for peak performance.",
-      "is_cloud_api": false,
-      "requires_gpu": false,
-      "context_window": "64k",
-      "category": "chat",
-      "assets": [
-        {
-          "name": "tokenizer.json",
-          "url": "https://huggingface.co/prism-ml/Ternary-Bonsai-4B-unpacked/resolve/main/tokenizer.json"
-        },
-        {
-          "name": "config.json",
-          "url": "https://huggingface.co/prism-ml/Ternary-Bonsai-4B-unpacked/resolve/main/config.json"
-        },
-        {
-          "name": "tokenizer_config.json",
-          "url": "https://huggingface.co/prism-ml/Ternary-Bonsai-4B-unpacked/resolve/main/tokenizer_config.json"
+  },
+  "bonsai1.58:4b": {
+    "name": "Bonsai 1.58b 4B",
+    "architecture": "BitNet-1.58b",
+    "context_window": "64k",
+    "category": "chat",
+    "default_quant": "ternary",
+    "description": "Balanced ternary model for high-fidelity reasoning on mobile silicon.",
+    "variants": {
+      "gguf": {
+        "ternary": {
+          "download_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-4B-gguf/resolve/main/Ternary-Bonsai-4B.gguf",
+          "ram_required_gb": 1.2,
+          "download_size_gb": 1.1
         }
-      ]
+      }
     }
-  ],
-  "bonsai1.58:1.7b": [
-    {
-      "name": "Bonsai 1.7B (1.58-bit)",
-      "architecture": "Bonsai (1.58-bit)",
-      "parameters": "1.7B",
-      "training_tokens": "36.0 Trillion",
-      "bit_depth": 1.58,
-      "ram_required_gb": 0.5,
-      "download_size_gb": 0.45,
-      "huggingface_repo": "prism-ml/Ternary-Bonsai-1.7B-gguf",
-      "download_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-1.7B-gguf/resolve/main/Ternary-Bonsai-1.7B.gguf",
-      "description": "Ultra-efficient agile edge unit. The Ternary-Bonsai 1.7B model is designed for zero-latency response on any device, utilizing 36T token training knowledge in a sub-500MB footprint.",
-      "is_cloud_api": false,
-      "requires_gpu": false,
-      "context_window": "32k",
-      "category": "chat",
-      "assets": [
-        {
-          "name": "tokenizer.json",
-          "url": "https://huggingface.co/prism-ml/Ternary-Bonsai-1.7B-unpacked/resolve/main/tokenizer.json"
-        },
-        {
-          "name": "config.json",
-          "url": "https://huggingface.co/prism-ml/Ternary-Bonsai-1.7B-unpacked/resolve/main/config.json"
-        },
-        {
-          "name": "tokenizer_config.json",
-          "url": "https://huggingface.co/prism-ml/Ternary-Bonsai-1.7B-unpacked/resolve/main/tokenizer_config.json"
+  },
+  "bonsai1.58:8b": {
+    "name": "Bonsai 1.58b 8B",
+    "architecture": "BitNet-1.58b",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "ternary",
+    "description": "The flagship 8B ternary powerhouse for professional edge deployment.",
+    "variants": {
+      "gguf": {
+        "ternary": {
+          "download_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-8B-gguf/resolve/main/Ternary-Bonsai-8B.gguf",
+          "ram_required_gb": 2.2,
+          "download_size_gb": 2.1
         }
-      ]
+      }
     }
-  ]
+  }
 }

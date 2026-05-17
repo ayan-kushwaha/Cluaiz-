@@ -26,3 +26,36 @@
 2026-05-14T18:04:26.364700Z  INFO engines::interface_engines::manager: ✅ [Linker] 7ns Handshake Complete. Kernel Linked.
 2026-05-14T18:04:29.393292Z  INFO engines::interface_engines::manager: 🚀 [Linker] Core Kernel Instantiated at Bare-Metal level.
 2026-05-14T18:04:29.393338Z  INFO engines::runtime::execution::hub: 🧬 [Orchestrator] Hardware Handshake SUCCESS. Neural Bridge Established.
+2026-05-14T18:04:38.674188Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: ../../models
+2026-05-14T18:04:38.678008Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-05-14T18:04:38.678465Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-05-14T18:04:38.678604Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
+2026-05-14T18:04:38.679056Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
+2026-05-14T18:04:38.679139Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
+2026-05-14T18:04:38.679228Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-05-14T18:04:38.679249Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
+2026-05-14T18:04:38.679363Z  INFO engines::models::registry: 📚 [Roster] Library source found at: ../../models/library
+2026-05-14T18:04:38.686120Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:1.7b Status: Optimal, Cached: false
+2026-05-14T18:04:38.686274Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:1.7b Status: Optimal, Cached: false
+2026-05-14T18:04:38.686394Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:4b Status: Optimal, Cached: false
+2026-05-14T18:04:38.686502Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:4b Status: Optimal, Cached: false
+2026-05-14T18:04:38.686615Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:8b Status: Optimal, Cached: true
+2026-05-14T18:04:38.686709Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:8b Status: Optimal, Cached: false
+2026-05-14T18:04:38.686804Z  INFO engines::models::registry: 🧬 [Roster] Model models Status: Optimal, Cached: false
+2026-05-14T18:04:38.686908Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b Status: Incompatible, Cached: false
+2026-05-14T18:04:38.687063Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b Status: Optimal, Cached: false
+2026-05-14T18:04:38.687158Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b Status: Incompatible, Cached: false
+2026-05-14T18:04:38.687242Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b Status: Incompatible, Cached: false
+2026-05-14T18:04:38.687325Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b Status: Optimal, Cached: false
+2026-05-14T18:04:38.687404Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b Status: Optimal, Cached: false
+2026-05-14T18:04:38.687486Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-a4b Status: Incompatible, Cached: false
+2026-05-14T18:04:38.687574Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b Status: Optimal, Cached: true
+2026-05-14T18:04:38.687654Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b Status: Incompatible, Cached: false
+2026-05-14T18:04:38.687737Z  INFO engines::models::registry: 🧬 [Roster] Model Llama-4-Maverick-17B-128E-Instruct Status: Incompatible, Cached: false
+2026-05-14T18:04:38.687831Z  INFO engines::models::registry: 🧬 [Roster] Model Llama-4-Scout-17B-16E-Instruct Status: Incompatible, Cached: false
+2026-05-14T18:04:38.687849Z  INFO engines::models::registry: 📊 [Roster] Generated 18 model recommendations for UI.
+2026-05-14T18:04:38.692596Z  INFO cluaiz_shared::metadata::dna: ✅ [DNA] Governor Discovery Complete: Mode UltraMaxBoost | Window 3k
+2026-05-14T18:04:38.692732Z  INFO engines::runtime::execution::hub: 🔩 [Orchestrator] Initiating Dynamic Hardware Handshake...
+2026-05-14T18:04:39.095518Z  WARN engines::interface_engines::manager: ⚠️ [Arbiter] VRAM Arbitration Failed (❌ [VRAM Arbiter] Out of Memory! Requested: 2.00GB, Available: 1.52GB (Limit: 88% Utilization)). Falling back to CPU.
+2026-05-14T18:04:39.096104Z  WARN engines::interface_engines::manager::kernel_loader: ⚠️ [KernelLoader] Cluaiz path not found for llama-cpu. Falling back to dev path: "C:\\Users\\Aryan\\.cluaiz\\target\\release\\archer_llama-cpu.dll"
+2026-05-14T18:04:39.096615Z  WARN engines::interface_engines::manager::kernel_loader: ⚠️ [KernelLoader] Cluaiz path not found for llama-cpu. Falling back to dev path: "C:\\Users\\Aryan\\.cluaiz\\target\\release\\archer_llama-cpu.dll"

@@ -19,6 +19,13 @@
     "gemma4:e2b": "Gemma/v-4.0/4.0.json",
     "gemma4:e4b": "Gemma/v-4.0/4.0.json",
     "gemma4:26b-a4b": "Gemma/v-4.0/4.0.json",
+    "qwen2.5:0.5b": "Qwen/v-2.5/2.5.json",
+    "qwen2.5:1.5b": "Qwen/v-2.5/2.5.json",
+    "qwen2.5:3b": "Qwen/v-2.5/2.5.json",
+    "qwen2.5:7b": "Qwen/v-2.5/2.5.json",
+    "qwen2.5:14b": "Qwen/v-2.5/2.5.json",
+    "qwen2.5:32b": "Qwen/v-2.5/2.5.json",
+    "qwen2.5:72b": "Qwen/v-2.5/2.5.json",
     "Llama-4-Scout-17B-16E-Instruct": "Llama/v-4.0/4.0.json",
     "Llama-4-Maverick-17B-128E-Instruct": "Llama/v-4.0/4.0.json",
     "bitnet-personalized-llm": "Persona.json"

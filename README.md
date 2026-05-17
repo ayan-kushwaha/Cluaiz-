@@ -41,12 +41,12 @@
 
 Cluaiz is a **Silicon-Native Neural Kernel** designed to orchestrate local inference with minimized abstraction overhead. It is **NOT** an AI model, but the orchestrator that speaks the native language of the silicon.
 
-| Component | Role | Implementation |
-| :--- | :--- | :--- |
-| **Engine** | Orchestrator | Rust-Native Kernel Management |
-| **DNA** | Manifest | Unified Identity & Versioning |
-| **AtmaSteer** | Steering | Constrained Decoding & Masking |
-| **Drivers** | Interface | Native FFI (CUDA, Metal, Vulkan) |
+| Component     | Role         | Implementation                   |
+| :------------ | :----------- | :------------------------------- |
+| **Engine**    | Orchestrator | Rust-Native Kernel Management    |
+| **DNA**       | Manifest     | Unified Identity & Versioning    |
+| **AtmaSteer** | Steering     | Constrained Decoding & Masking   |
+| **Drivers**   | Interface    | Native FFI (CUDA, Metal, Vulkan) |
 
 ---
 
@@ -96,20 +96,20 @@ graph TD
 ## 📊 **Hardware & Compatibility Matrix**
 
 ### **Silicon Backend Matrix**
-| Backend | Vendor | Acceleration | Status |
-| :--- | :--- | :--- | :--- |
-| **CUDA** | NVIDIA | Tensor Cores (v12+) | ✅ Alpha |
-| **Metal** | Apple | MPS / Neural Engine | ✅ Alpha |
-| **Vulkan** | Universal | Cross-Vendor Compute | ✅ Alpha |
-| **OpenVINO** | Intel | NPU / iGPU | 🧪 Experimental |
+| Backend      | Vendor    | Acceleration         | Status         |
+| :----------- | :-------- | :------------------- | :------------- |
+| **CUDA**     | NVIDIA    | Tensor Cores (v12+)  | ✅ Alpha        |
+| **Metal**    | Apple     | MPS / Neural Engine  | ✅ Alpha        |
+| **Vulkan**   | Universal | Cross-Vendor Compute | ✅ Alpha        |
+| **OpenVINO** | Intel     | NPU / iGPU           | 🧪 Experimental |
 
 ### **OS Availability**
-| OS | Architecture | Target | Status |
-| :--- | :--- | :--- | :--- |
-| **Windows** | x86_64 | MSVC Native | ✅ Alpha |
-| **Linux** | x86_64 | GNU / Musl | ✅ Alpha |
-| **macOS** | ARM64 (M1+) | Mach-O Native | ✅ Alpha |
-| **Android** | ARM64 | NDK / Neon | 🧪 Planned |
+| OS          | Architecture | Target        | Status    |
+| :---------- | :----------- | :------------ | :-------- |
+| **Windows** | x86_64       | MSVC Native   | ✅ Alpha   |
+| **Linux**   | x86_64       | GNU / Musl    | ✅ Alpha   |
+| **macOS**   | ARM64 (M1+)  | Mach-O Native | ✅ Alpha   |
+| **Android** | ARM64        | NDK / Neon    | 🧪 Planned |
 
 ### **Model Compatibility**
 - ✅ **GGUF** (Universal Quantization)
@@ -134,19 +134,19 @@ Automatically maps neural tasks to specialized kernels based on hardware efficie
 ### **Performance Snapshot**
 *Measured on AMD Ryzen 7 7435HS + NVIDIA RTX 4050.*
 
-| Metric | Cluaiz (Alpha) | Standard Middleware |
-| :--- | :--- | :--- |
-| **Signaling Latency** | **Sub-microsecond** | ~20ms - 50ms |
-| **Memory Footprint** | **~25MB** | ~800MB (Docker) |
-| **Startup Time** | **~150ms** | ~2.5s - 5s |
+| Metric                | Cluaiz (Alpha)      | Standard Middleware |
+| :-------------------- | :------------------ | :------------------ |
+| **Signaling Latency** | **Sub-microsecond** | ~20ms - 50ms        |
+| **Memory Footprint**  | **~25MB**           | ~800MB (Docker)     |
+| **Startup Time**      | **~150ms**          | ~2.5s - 5s          |
 
 ### **Cluaiz vs. Legacy Wrappers**
-| Feature | **Cluaiz** | **Generic Wrappers** |
-| :--- | :--- | :--- |
-| **Runtime Routing** | ✅ **Dynamic** | ❌ Fixed |
-| **Hardware Probing** | ✅ **Atomic** | ⚠️ Limited |
-| **Memory Policy** | ✅ **LRU Arbiter** | ❌ None |
-| **Abstraction** | **Native FFI** | HTTP/API Layer |
+| Feature              | **Cluaiz**        | **Generic Wrappers** |
+| :------------------- | :---------------- | :------------------- |
+| **Runtime Routing**  | ✅ **Dynamic**     | ❌ Fixed              |
+| **Hardware Probing** | ✅ **Atomic**      | ⚠️ Limited            |
+| **Memory Policy**    | ✅ **LRU Arbiter** | ❌ None               |
+| **Abstraction**      | **Native FFI**    | HTTP/API Layer       |
 
 ---
 
@@ -190,15 +190,15 @@ Automatically maps neural tasks to specialized kernels based on hardware efficie
 
 All tests performed on an **RTX 3050 (Laptop)** using the prompt: *"What is Local AI and why is it important?"*
 
-| **Metric** | **Gemini (Cloud)** | **Bonsai1:8B (Cluaiz)** | **Gemma4:e2B (Cluaiz)** | **Verdict** |
-| :--- | :--- | :--- | :--- | :--- |
-| **Speed (TPS)** | 25.8 | **48.6** | **31.6** | 🚀 **Cluaiz is 2x Faster** |
-| **Tokens Out** | 543 Tokens | **1911 Tokens** | **1465 Tokens** | 🧠 **High Throughput** |
-| **Reasoning Mode**| Standard | **Thinking (Deep)** | **Thinking (Deep)** | 🛡️ **Sovereign** |
-| **Total Duration** | 21.0s | **40.2s** | **46.3s** | ⏱️ **Zero Latency** |
-| **Memory (VRAM)** | N/A | **2.82 GB** | **1.90 GB** | ⚖️ **Hyper-Efficient** |
-| **Power Used** | N/A | **52W** | **31W** | 🔋 **Green AI** |
-| **Privacy** | Cloud Logged | **100% Sovereign** | **100% Sovereign** | 🛡️ **100% Secure** |
+| **Metric**         | **Gemini (Cloud)** | **Bonsai1:8B (Cluaiz)** | **Gemma4:e2B (Cluaiz)** | **Verdict**               |
+| :----------------- | :----------------- | :---------------------- | :---------------------- | :------------------------ |
+| **Speed (TPS)**    | 25.8               | **48.6**                | **31.6**                | 🚀 **Cluaiz is 2x Faster** |
+| **Tokens Out**     | 543 Tokens         | **1911 Tokens**         | **1465 Tokens**         | 🧠 **High Throughput**     |
+| **Reasoning Mode** | Standard           | **Thinking (Deep)**     | **Thinking (Deep)**     | 🛡️ **Sovereign**           |
+| **Total Duration** | 21.0s              | **40.2s**               | **46.3s**               | ⏱️ **Zero Latency**        |
+| **Memory (VRAM)**  | N/A                | **2.82 GB**             | **1.90 GB**             | ⚖️ **Hyper-Efficient**     |
+| **Power Used**     | N/A                | **52W**                 | **31W**                 | 🔋 **Green AI**            |
+| **Privacy**        | Cloud Logged       | **100% Sovereign**      | **100% Sovereign**      | 🛡️ **100% Secure**         |
 
 > [!NOTE]
 > Cluaiz-OS bypasses heavy middleware (Docker, Python, Node) to achieve direct silicon access, resulting in a **4x speedup** compared to standard local engines (Ollama/llama.cpp) for BitNet architectures.

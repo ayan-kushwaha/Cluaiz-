@@ -1,99 +1,145 @@
 {
-  "family": "Gemma 3.0",
-  "gemma3:1b": [
-    {
-      "name": "Gemma 3 1B",
-      "architecture": "Gemma 3",
-      "parameters": "1B",
-      "training_tokens": "Professional Grade",
-      "bit_depth": 4.0,
-      "ram_required_gb": 1.2,
-      "download_size_gb": 0.9,
-      "huggingface_repo": "google/gemma-3-1b-it",
-      "download_url": "https://huggingface.co/unsloth/gemma-3-1b-it-GGUF/resolve/main/gemma-3-1b-it-Q4_K_M.gguf",
-      "description": "Gemma 3 1B is a high-speed small language model optimized for mobile and edge deployment with 128K context support.",
-      "is_cloud_api": false,
-      "requires_gpu": false,
-      "context_window": "128k",
-      "category": "chat",
-      "assets": [
-        {
-          "name": "tokenizer.json",
-          "url": "https://huggingface.co/unsloth/gemma-3-1b-it/resolve/main/tokenizer.json"
+  "family": "Gemma 3",
+  "gemma3:1b": {
+    "name": "Gemma 3 1B",
+    "architecture": "Gemma3",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "Ultra-low latency 1B model for extreme edge sovereignty.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/gemma-3-1b-it-GGUF/resolve/main/gemma-3-1b-it-Q4_K_M.gguf",
+          "ram_required_gb": 1.5,
+          "download_size_gb": 0.8
         },
-        {
-          "name": "config.json",
-          "url": "https://huggingface.co/unsloth/gemma-3-1b-it/resolve/main/config.json"
+        "q8_0": {
+          "download_url": "https://huggingface.co/bartowski/gemma-3-1b-it-GGUF/resolve/main/gemma-3-1b-it-Q8_0.gguf",
+          "ram_required_gb": 2.5,
+          "download_size_gb": 1.2
         },
-        {
-          "name": "tokenizer_config.json",
-          "url": "https://huggingface.co/unsloth/gemma-3-1b-it/resolve/main/tokenizer_config.json"
+        "f16": {
+          "download_url": "https://huggingface.co/bartowski/gemma-3-1b-it-GGUF/resolve/main/gemma-3-1b-it-f16.gguf",
+          "ram_required_gb": 4.0,
+          "download_size_gb": 2.2
         }
-      ]
+      }
     }
-  ],
-  "gemma3:4b": [
-    {
-      "name": "Gemma 3 4B",
-      "architecture": "Gemma 3",
-      "parameters": "4B",
-      "training_tokens": "High Cognitive",
-      "bit_depth": 4.0,
-      "ram_required_gb": 4.2,
-      "download_size_gb": 3.2,
-      "huggingface_repo": "google/gemma-3-4b-it",
-      "download_url": "https://huggingface.co/unsloth/gemma-3-4b-it-GGUF/resolve/main/gemma-3-4b-it-Q4_K_M.gguf",
-      "description": "Gemma 3 4B offers a massive leap in reasoning performance, ideal for coding and structured technical instruction following.",
-      "is_cloud_api": false,
-      "requires_gpu": false,
-      "context_window": "128k",
-      "category": "chat",
-      "assets": [
-        {
-          "name": "tokenizer.json",
-          "url": "https://huggingface.co/unsloth/gemma-3-4b-it/resolve/main/tokenizer.json"
+  },
+  "gemma3:4b": {
+    "name": "Gemma 3 4B",
+    "architecture": "Gemma3",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "The perfect efficiency-to-intelligence model for mobile devices.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/gemma-3-4b-it-GGUF/resolve/main/gemma-3-4b-it-Q4_K_M.gguf",
+          "ram_required_gb": 4.5,
+          "download_size_gb": 2.8
         },
-        {
-          "name": "config.json",
-          "url": "https://huggingface.co/unsloth/gemma-3-4b-it/resolve/main/config.json"
+        "q8_0": {
+          "download_url": "https://huggingface.co/bartowski/gemma-3-4b-it-GGUF/resolve/main/gemma-3-4b-it-Q8_0.gguf",
+          "ram_required_gb": 7.0,
+          "download_size_gb": 4.5
         },
-        {
-          "name": "tokenizer_config.json",
-          "url": "https://huggingface.co/unsloth/gemma-3-4b-it/resolve/main/tokenizer_config.json"
+        "f16": {
+          "download_url": "https://huggingface.co/bartowski/gemma-3-4b-it-GGUF/resolve/main/gemma-3-4b-it-f16.gguf",
+          "ram_required_gb": 12.0,
+          "download_size_gb": 9.0
         }
-      ]
+      }
     }
-  ],
-  "gemma3:12b": [
-    {
-      "name": "Gemma 3 12B",
-      "architecture": "Gemma 3",
-      "parameters": "12B",
-      "training_tokens": "Superior Logic",
-      "bit_depth": 4.0,
-      "ram_required_gb": 10.5,
-      "download_size_gb": 8.4,
-      "huggingface_repo": "google/gemma-3-12b-it",
-      "download_url": "https://huggingface.co/unsloth/gemma-3-12b-it-GGUF/resolve/main/gemma-3-12b-it-Q4_K_M.gguf",
-      "description": "The enterprise-ready Gemma 3 12B variant provides superior logical depth and high-fidelity creative output with 128K context window.",
-      "is_cloud_api": false,
-      "requires_gpu": true,
-      "context_window": "128k",
-      "category": "chat",
-      "assets": [
-        {
-          "name": "tokenizer.json",
-          "url": "https://huggingface.co/unsloth/gemma-3-12b-it/resolve/main/tokenizer.json"
+  },
+  "gemma3:12b": {
+    "name": "Gemma 3 12B",
+    "architecture": "Gemma3",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "High-performance mid-range flagship for balanced reasoning.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/gemma-3-12b-it-GGUF/resolve/main/gemma-3-12b-it-Q4_K_M.gguf",
+          "ram_required_gb": 14.0,
+          "download_size_gb": 8.2
         },
-        {
-          "name": "config.json",
-          "url": "https://huggingface.co/unsloth/gemma-3-12b-it/resolve/main/config.json"
+        "q8_0": {
+          "download_url": "https://huggingface.co/bartowski/gemma-3-12b-it-GGUF/resolve/main/gemma-3-12b-it-Q8_0.gguf",
+          "ram_required_gb": 20.0,
+          "download_size_gb": 13.5
         },
-        {
-          "name": "tokenizer_config.json",
-          "url": "https://huggingface.co/unsloth/gemma-3-12b-it/resolve/main/tokenizer_config.json"
+        "f16": {
+          "download_url": "https://huggingface.co/bartowski/gemma-3-12b-it-GGUF/resolve/main/gemma-3-12b-it-f16.gguf",
+          "ram_required_gb": 32.0,
+          "download_size_gb": 26.0
         }
-      ]
+      }
     }
-  ]
+  },
+  "gemma3:27b": {
+    "name": "Gemma 3 27B",
+    "architecture": "Gemma3",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "The dense power-house for advanced technical orchestration.",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/bartowski/gemma-3-27b-it-GGUF/resolve/main/gemma-3-27b-it-Q4_K_M.gguf",
+          "ram_required_gb": 28.0,
+          "download_size_gb": 18.0
+        },
+        "q8_0": {
+          "download_url": "https://huggingface.co/bartowski/gemma-3-27b-it-GGUF/resolve/main/gemma-3-27b-it-Q8_0.gguf",
+          "ram_required_gb": 45.0,
+          "download_size_gb": 32.0
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/bartowski/gemma-3-27b-it-GGUF/resolve/main/gemma-3-27b-it-f16.gguf",
+          "ram_required_gb": 65.0,
+          "download_size_gb": 55.0
+        }
+      },
+      "awq": {
+        "4bit": {
+          "download_url": "https://huggingface.co/google/gemma-3-27b-it-awq/resolve/main/model.safetensors",
+          "ram_required_gb": 22.0,
+          "download_size_gb": 17.5
+        },
+        "8bit": {
+          "download_url": "https://huggingface.co/mradermacher/gemma-3-27b-it-AWQ-8bit/resolve/main/model.safetensors",
+          "ram_required_gb": 45.0,
+          "download_size_gb": 32.0
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/google/gemma-3-27b-it/resolve/main/model.safetensors",
+          "ram_required_gb": 65.0,
+          "download_size_gb": 55.0
+        }
+      },
+      "gptq": {
+        "int4": {
+          "download_url": "https://huggingface.co/google/gemma-3-27b-it-gptq-int4/resolve/main/model.safetensors",
+          "ram_required_gb": 22.0,
+          "download_size_gb": 17.5
+        },
+        "int8": {
+          "download_url": "https://huggingface.co/google/gemma-3-27b-it-gptq-int8/resolve/main/model.safetensors",
+          "ram_required_gb": 45.0,
+          "download_size_gb": 32.0
+        },
+        "f16": {
+          "download_url": "https://huggingface.co/google/gemma-3-27b-it/resolve/main/model.safetensors",
+          "ram_required_gb": 65.0,
+          "download_size_gb": 55.0
+        }
+      }
+    }
+  }
 }
