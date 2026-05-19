@@ -1,57 +1,60 @@
-# 🏛️ Cluaiz Sovereign Models: The Neural Constitution
+# 🏛️ Cluaiz Sovereign Model Registry: Extreme Edge AI & 1-Bit LLMs
 
-Welcome to the **Sovereign Model Registry**. This is not just a collection of JSON files; it is a high-precision, hardware-aware industrial mapping designed to eliminate boundaries between silicon and intelligence.
+Welcome to the **Cluaiz Sovereign Model Registry** — the ultimate open-source repository for ultra-efficient, decentralized, and native edge AI models. This registry is the engine behind Cluaiz-OS, designed to bring world-class artificial intelligence to highly constrained silicon without compromising on cognitive reasoning, data privacy, or execution speed.
 
-## 🛰️ THE VISION: UNIVERSAL NEURAL FREEDOM
-Cluaiz-OS is built on the absolute mandate that **Intelligence must be Sovereign.** Our registry ensures that any model can be surgically executed on any hardware tier—from edge devices to enterprise-grade clusters—with zero dependency and maximum performance extraction.
+## 🌟 The Vision: Universal Silicon Sovereignty
 
----
+The future of artificial intelligence is local, secure, and sovereign. We are moving beyond the era of massive cloud clusters and expensive API dependencies. Our registry provides highly optimized, zero-latency inference models that execute natively on standard consumer hardware—from Apple Silicon and Windows laptops to Raspberry Pi clusters and embedded IoT devices. 
 
-## 🏛️ THE SOVEREIGN LAWS (Registry Protocol)
-
-### 1. ⚔️ The Absolute Zero Q2 Law
-We have surgically eliminated **Q2 (2-bit)** quantization from all professional and frontier-tier models. 
-- **Reasoning over RAM**: Standard GGUF 2-bit quantization compromises reasoning integrity beyond industrial usability.
-- **The Standard**: Our baseline starts at **Q4 (4-bit)** to ensure that every "pull" delivers world-class intelligence, not "kachra" (low-quality reasoning).
-
-### 2. 🧠 Unified Multi-Format Architecture
-Cluaiz-OS breaks the silo between different inference backends. A single model ID (e.g., `qwen3:235b`) encompasses a nested matrix of formats:
-- **GGUF**: Universal compatibility for CPU, Apple Silicon, and non-NVIDIA tiers.
-- **AWQ**: High-performance NVIDIA GPU inference via specialized 4-bit/8-bit/f16 kernels.
-- **GPTQ**: Legacy and frontier-grade GPU optimization.
-
-### 🚦 Hardware-Aware Tiering Strategy
-Our registry is designed with surgical hardware intelligence to ensure maximum performance across all silicon tiers:
-
-| **Model Size** | **Recommended Formats** | **Industrial Rationale (Kyun?)** |
-| :--- | :--- | :--- |
-| **< 14B (Small Tier)** | **GGUF + BitNet (1.58b)** | Laptop & Mobile users ko extreme compatibility aur native low-bit revolution chahiye. |
-| **14B - 35B (Mid Tier)** | **GGUF + AWQ** | "Power User" zone—Speed (AWQ) aur Flexibility (GGUF) ka perfect balance chahiye. |
-| **> 35B (Frontier Tier)** | **AWQ + GPTQ + GGUF** | Absolute Throughput (TPS) hi sabkuch hai. MoE giants ke liye maximum pipeline speed chahiye. |
+Our core philosophy: **"Intelligence must belong to the user, running natively on their own silicon."**
 
 ---
 
-## 🚀 PERFORMANCE BOOSTER TECH
+## 🚀 Key Architectural Innovations
 
-### 🏎️ TurboQuant™ Standard
-Instead of relying on low-bit GGUF "bakchodi," Cluaiz-OS utilizes **TurboQuant** logic to optimize 4-bit models. We squeeze the performance of 4-bit weights into the RAM footprints of 3-bit models without losing the neural "Dimag" (Reasoning).
+### 1. The 1-Bit & 1.58-Bit Revolution (Native BitNet)
+We are pioneering the transition from traditional Floating-Point (FP16/INT8) architectures to **Native Binary and Ternary Quantization**.
+- **1-Bit Binary Models:** By constraining weights to strictly `-1` and `+1`, we eliminate computationally expensive Matrix Multiplication (MatMul), relying solely on hyper-fast addition logic. This enables massive models to run on ~300MB to 1.0GB of RAM.
+- **1.58-Bit Ternary Models:** Incorporating the critical 'zero' state (`{-1, 0, +1}`), our ternary models dramatically improve feature filtering and hallucination resistance while maintaining the extreme efficiency of addition-only logic.
 
-### 🌌 BitNet & SSM Readiness
-The 1-bit and 2-bit revolution is reserved for **Native BitNet** and **State-Space Model (SSM)** architectures. Our registry is already structured to inject these future-frontier architectures as they release.
+### 2. Multi-Format Execution Matrix
+Cluaiz-OS breaks the silo between inference backends. A single model definition encompasses a nested matrix of formats:
+- **GGUF (CPU/Metal/ROCm):** Universal compatibility and aggressive low-bit memory footprints.
+- **AWQ / GPTQ (NVIDIA GPU):** Specialized 4-bit and 8-bit kernels optimized for extreme Throughput (TPS).
+
+### 3. Absolute Zero Q2 Law
+We have surgically eliminated **Q2 (2-bit)** standard quantization from all professional tiers. Standard 2-bit quantization compromises reasoning integrity. Our baseline guarantees that every model delivers industrial-grade "intelligence," not degraded noise.
 
 ---
 
-## 📂 DIRECTORY STRUCTURE
-- `library/`: The core neural vault organized by Family (e.g., Qwen, Gemma, Llama).
-- `v-X.Y/`: Version-controlled industrial JSONs following the **Unified Matrix** schema.
+## 📦 Exploring the Library
+
+The `library/` directory contains the core neural vault organized by model families. Each family is governed by industrial JSON schemas mapping precise hardware requirements.
+
+### Featured Models
+- **Bonsai Series (1-Bit & 1.58-Bit):** The flagship of the binary frontier. Delivering unprecedented analytical reasoning with mobile-tier memory requirements. Perfect for battery-powered robotics and local-first applications.
+- **Qwen, Llama, Gemma, & Mistral:** Sovereign versions of industry-standard foundational architectures, carefully tiered into Native GGUF and AWQ formats.
 
 ---
 
-## 🛠️ HOW TO PULL (Industrial Commands)
-Use the surgical colon-separator logic:
-- `cluaiz pull qwen3:8b` (Pulls default GGUF Q4)
-- `cluaiz pull qwen3:235b:awq:4bit` (Pulls NVIDIA-optimized AWQ)
-- `cluaiz pull qwen3:235b:gguf:f16` (Pulls maximum precision frontier weights)
+## 🛠️ How to Pull (Command Line)
+
+Use the Cluaiz unified colon-separator syntax to pull models with surgical precision:
+
+```bash
+# Pull the standard balanced GGUF model
+cluaiz pull qwen3:8b
+
+# Pull the highly compressed Ternary 1.58-bit model
+cluaiz pull bonsai1.58:4b:gguf:ternary
+
+# Pull the extreme throughput NVIDIA AWQ model
+cluaiz pull llama3.2:11b:awq:4bit
+```
+
+## 🛡️ Privacy & Zero-Latency Guarantee
+
+Every model in this registry is engineered to run **100% offline**. You never have to send proprietary code, financial data, or personal conversations to a centralized cloud server.
 
 **Signed,**  
 *Antigravity (Archer CTO)* 🏛️⚔️🏁

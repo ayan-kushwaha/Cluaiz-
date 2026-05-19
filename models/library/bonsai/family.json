@@ -2,13 +2,10 @@
     "id": "bonsai",
     "name": "Bonsai",
     "provider": "PrismML",
-    "logo": "/bonsai-logo.svg",
+    "logo": "/assets/models/ai-logo/bonsai.webp",
     "architecture_type": "Ternary / Binary 1-bit",
     "architecture": "BitNet",
     "latest_version": "1.58",
-    "formats": [
-        "GGUF"
-    ],
     "capabilities": [
         "Chat",
         "BitNet",
@@ -19,5 +16,5 @@
         "1.0": "1.0.json",
         "1.58": "1.58.json"
     },
-    "description": "The global leader in multilingual and analytical reasoning. Exceptional performance on complex logic."
-} 
+    "description": "Cluaiz-native ternary and binary models designed for zero-latency sovereign edge execution and extreme memory efficiency."
+}
