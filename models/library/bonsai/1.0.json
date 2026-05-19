@@ -1,0 +1,57 @@
+{
+  "family": "Bonsai 1.0b (Binary Frontier)",
+  "version": "1.0",
+  "release_date": "2026-04-15",
+  "about": "The Bonsai 1.0b release represents a historic paradigm shift in artificial intelligence, marking the transition from traditional floating-point architectures to the frontier of Native 1-bit Binary Logic. Built on the foundational BitNet b1.0 architecture, this release is fundamentally engineered to run massive language models on the absolute edge without the thermal, memory, or power constraints that plague standard Neural Networks.\n\nThe End of MatMul\nTraditional Large Language Models (LLMs) rely heavily on 16-bit or 8-bit floating-point (FP16/INT8) weights. During inference, these models perform billions of computationally expensive Matrix Multiplication (MatMul) operations, which demand dedicated GPUs, massive memory bandwidth, and high power consumption.\n\nThe Bonsai 1.0b architecture shatters this limitation. Every single weight in this model is strictly constrained to a binary state: either -1 or +1. By forcing the network to learn using only two states, we completely eliminate the need for Matrix Multiplication. Instead, inference is performed using hyper-efficient addition and subtraction instructions. This allows Bonsai 1.0b models to achieve processing speeds on standard CPUs that were previously only possible on enterprise-grade accelerators.\n\nSilicon Sovereignty and Privacy\nWe believe the future of AI is decentralized, private, and owned by the user. The Bonsai 1.0b release is the ultimate manifestation of Silicon Sovereignty. Because of its extreme compression and efficiency, models that would typically require 16GB of VRAM can now run natively on 1GB to 2GB of standard system RAM.\n\nThis means world-class, professional-grade artificial intelligence can now be deployed entirely offline on standard consumer laptops (Windows, macOS), mobile processors (Snapdragon, Apple A-Series), and embedded IoT systems and Raspberry Pi clusters. You no longer need to send private company data, personal conversations, or proprietary source code to a centralized cloud server. Bonsai 1.0b processes everything locally, guaranteeing 100% data security and zero network latency.\n\nExtreme Energy Efficiency\nBeyond speed and memory, the most profound advantage of the Bonsai 1.0b release is its energy efficiency. By replacing complex floating-point math with simple binary additions, the models consume a fraction of the energy per token generated. This drastically reduces thermal throttling and extends battery life, making it the perfect cognitive engine for mobile-first applications, battery-powered robotics, and sustainable AI infrastructure. The Bonsai 1.0b release is not merely a model update; it is the dawn of ultra-dense, ubiquitous intelligence.",
+  "bonsai1.0:1.7b": {
+    "name": "Bonsai 1.0b 1.7B",
+    "architecture": "BitNet-1.0b",
+    "context_window": "32k",
+    "category": "chat",
+    "default_quant": "binary",
+    "description": "The Bonsai 1.0b 1.7B represents an absolute engineering marvel in the realm of extreme edge AI, meticulously engineered for uncompromising performance on constrained silicon architectures. By fundamentally abandoning traditional 16-bit floating-point representations, this model utilizes a native 1-bit binary quantization state (where weights are strictly constrained to -1 and +1). This paradigm shift completely bypasses the computationally expensive Matrix Multiplication (MatMul) operations that bottleneck standard architectures, replacing them with hyper-efficient addition and subtraction instructions.\n\nArchitectural Breakthrough and Silicon Sovereignty\nThis architectural breakthrough allows the 1.7 billion parameter network to achieve an unprecedented memory footprint. Requiring merely 300MB of active VRAM to execute natively, it shatters previous limits of what is possible on edge devices. Designed explicitly for real-time, offline inference on smartphones, Raspberry Pi clusters, wearables, and embedded IoT systems, it delivers zero-latency analytical reasoning directly at the edge without any dependency on centralized cloud infrastructure. The Bonsai 1-bit ecosystem is the ultimate realization of Silicon Sovereignty, providing high-density intelligence that executes locally, privately, and securely on ubiquitous consumer-grade hardware.\n\nPerformance and Efficiency Profile\nDespite its aggressive 1-bit binarization, the model retains a robust capacity for fundamental chat interactions, dynamic contextual reasoning, and strict instruction following. It achieves this while reducing operational energy consumption and thermal output by an order of magnitude compared to traditional FP16 models. The elimination of floating-point overhead means the model can run at maximum token generation speeds even on legacy or low-power CPUs.\n\nDeployment and Use Cases\nPerfectly suited for on-device personal assistants, local document summarization, and embedded cognitive tasks, the Bonsai 1.7B operates entirely offline. It ensures absolute data privacy and sovereign control over intelligence. This is not merely a post-training quantization trick; it is a fundamental rethinking of neural network execution, built from the ground up for the decentralized AI era. For developers and enterprises looking to embed LLM capabilities into highly constrained environments where power, memory, and privacy are critical, the Bonsai 1.0b 1.7B stands as the definitive solution.",
+    "license": "Apache 2.0",
+    "prompt_template": "ChatML",
+    "variants": {
+      "gguf": {
+        "binary": {
+          "download_url": "https://huggingface.co/prism-ml/Bonsai-1.7B-gguf/resolve/main/Bonsai-1.7B-Q1_0.gguf",
+          "readme_url": "https://huggingface.co/prism-ml/Bonsai-1.7B-gguf/raw/main/README.md",
+          "license_url": "https://huggingface.co/prism-ml/Bonsai-1.7B-gguf/blob/main/LICENSE",
+          "ram_required_gb": 0.3,
+          "download_size_gb": 0.25
+        }
+      }
+    }
+  },
+  "bonsai1.0:8b": {
+    "name": "Bonsai 1.0b 8B",
+    "architecture": "BitNet-1.0b",
+    "context_window": "64k",
+    "category": "chat",
+    "default_quant": "binary",
+    "description": "The Bonsai 1.0b 8B is the flagship powerhouse of the 1-bit binary frontier, engineered to deliver desktop-class analytical intelligence with the memory footprint of a mobile application. Operating entirely on native 1-bit binary logic (weights of -1 and +1), this 8 billion parameter giant bypasses traditional Matrix Multiplication (MatMul) entirely. The result is a monumental achievement in neural compression: a massive 8B foundational model that requires only ~1.0GB of RAM for full native execution.\n\nRedefining High-Density Intelligence\nThis model represents the pinnacle of Silicon Sovereignty. By completely eliminating the 16-bit floating-point overhead that plagues traditional Large Language Models, the Bonsai 8B executes with unprecedented speed and energy efficiency on standard consumer hardware, including MacBooks, Windows laptops, and high-end smartphones. It brings complex analytical reasoning, advanced coding assistance, and deep contextual comprehension directly to the edge, operating 100% offline and privately without any cloud dependency.\n\nUncompromising Capability at the Edge\nWhile typical 8B models demand dedicated GPUs and significant thermal headroom, the Bonsai 1.0b 8B is designed to run seamlessly on standard CPUs and integrated graphics. The binary architecture relies on hyper-fast addition operations, drastically lowering power consumption and extending battery life for mobile workstations. Despite its 1-bit state, it maintains a massive 64k context window, allowing for extensive document analysis, massive code base parsing, and long-form conversational continuity.\n\nThe Definitive Enterprise Edge Solution\nFor developers, researchers, and enterprises, this model unlocks entirely new deployment paradigms. It enables the integration of local, secure, and sovereign AI into local applications, private servers, and remote edge nodes where internet connectivity is impossible or data privacy is legally mandated. The Bonsai 1.0b 8B is not just a quantized model; it is a native binary architecture that proves massive intelligence does not require massive infrastructure. It is the definitive engine for decentralized, high-performance cognitive computing.",
+    "license": "Apache 2.0",
+    "prompt_template": "ChatML",
+    "variants": {
+      "gguf": {
+        "binary": {
+          "download_url": "https://huggingface.co/prism-ml/Bonsai-8B-gguf/resolve/main/Bonsai-8B-Q1_0.gguf",
+          "readme_url": "https://huggingface.co/prism-ml/Bonsai-8B-gguf/raw/main/README.md",
+          "license_url": "https://huggingface.co/prism-ml/Bonsai-8B-gguf/blob/main/LICENSE",
+          "ram_required_gb": 1.0,
+          "download_size_gb": 0.9
+        }
+      },
+      "awq": {
+        "4bit": {
+          "repo_id": "prism-ml/Bonsai-8B-AWQ-4-bit",
+          "readme_url": "https://huggingface.co/prism-ml/Bonsai-8B-AWQ-4-bit/raw/main/README.md",
+          "license_url": "https://huggingface.co/prism-ml/Bonsai-8B-AWQ-4-bit/blob/main/LICENSE",
+          "ram_required_gb": 5.5,
+          "download_size_gb": 4.8
+        }
+      }
+    }
+  }
+}

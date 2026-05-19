@@ -1,0 +1,69 @@
+{
+  "family": "Bonsai 1.58b (BitNet Frontier)",
+  "version": "1.58",
+  "release_date": "2026-04-20",
+  "about": "The Bonsai 1.58b release introduces the next major evolutionary leap in extreme edge AI. While the 1.0b release proved that LLMs could function on pure binary logic, the 1.58b release leverages the revolutionary BitNet b1.58 Architecture, introducing a native ternary state. By representing weights as {-1, 0, +1}, this release achieves the holy grail of quantization: near full-precision (FP16) accuracy with the memory and speed profile of a 1-bit model.\n\nThe Power of the Zero State\nIn a pure binary network (-1, +1), every parameter is forced to actively contribute to the output, which can sometimes lead to noisy activations. The Bonsai 1.58b architecture introduces the crucial 'zero' state. This seemingly simple addition allows the neural network to explicitly filter out irrelevant features by assigning them a zero weight, effectively turning off unnecessary connections during inference.\n\nThis results in a model that is exponentially more accurate, hallucination-resistant, and contextually aware than its binary predecessors, while requiring exactly the same integer-addition hardware logic. It effectively operates at 1.58 bits per weight, completely bypassing traditional Matrix Multiplication (MatMul) operations.\n\nUncompromising Fidelity at the Edge\nThe primary mission of the Bonsai 1.58b release is to completely erase the performance gap between cloud-based AI and local-edge AI. By utilizing ternary weights, these models demonstrate perplexity and benchmark scores that rival unquantized 16-bit models. Yet, they require an astonishingly small memory footprint.\n\nWith Bonsai 1.58b, complex instruction following, advanced reasoning, multilingual translation, and intricate coding assistance are fully localized. Models that perform at a desktop-class level now seamlessly fit into the RAM of standard smartphones and lightweight laptops.\n\nThe Standard for Silicon Sovereignty\nBonsai 1.58b is built for a future where high-density intelligence is decentralized. It empowers Silicon Sovereignty, allowing enterprises and individual developers to host highly capable AI entirely offline. It provides zero latency with no cloud round-trips, ensuring instantaneous response times. It ensures absolute privacy where data never leaves the device. It champions Green AI with tremendous reductions in power consumption and thermal load.\n\nThe Bonsai 1.58b release sets a new global standard. It proves that we no longer have to choose between extreme efficiency and extreme intelligence, we can now deploy both, simultaneously, on any silicon.",
+  "bonsai1.58:1.7b": {
+    "name": "Bonsai 1.58b 1.7B",
+    "architecture": "BitNet-1.58b",
+    "context_window": "32k",
+    "category": "chat",
+    "default_quant": "ternary",
+    "description": "The Bonsai 1.58b 1.7B introduces a revolutionary leap in extreme edge AI through the implementation of native ternary (1.58-bit) weight quantization. Unlike binary models, the ternary architecture utilizes three distinct weight states: {-1, 0, +1}. This crucial addition of the 'zero' state provides the network with the ability to explicitly ignore certain connections, dramatically increasing its representational capacity and feature-filtering capabilities while maintaining an incredibly low memory footprint.\n\nThe Ternary Sweet Spot\nRequiring only ~500MB of RAM for execution, this 1.7 billion parameter model represents the perfect equilibrium between the extreme efficiency of 1-bit binary systems and the high fidelity of full-precision (FP16) networks. By operating at effectively 1.58 bits per weight, the Bonsai 1.58b completely eliminates traditional Matrix Multiplication (MatMul), replacing it with hyper-efficient addition operations. This architecture delivers zero-latency response times on highly constrained silicon, including smartphones, IoT devices, and embedded systems, without sacrificing cognitive depth.\n\nOptimized for Silicon Sovereignty\nDesigned for the decentralized AI era, this model champions Silicon Sovereignty. It runs 100% offline, guaranteeing absolute user privacy and data security. The ternary architecture not only ensures rapid token generation on low-power CPUs but also significantly reduces energy consumption and thermal throttling. This makes it an ideal cognitive engine for battery-powered devices where continuous, real-time intelligence is required.\n\nPrecision Engineering for the Edge\nDespite its ultra-compact size, the Bonsai 1.58b 1.7B boasts a robust 32k context window, enabling sustained conversational engagement and local context processing. It excels at on-device natural language understanding, rapid query resolution, and semantic routing. For developers building next-generation edge applications, this model offers an uncompromising blend of speed, efficiency, and intelligence, proving that sophisticated AI can thrive outside the cloud.",
+    "license": "Apache 2.0",
+    "prompt_template": "ChatML",
+    "variants": { 
+      "gguf": {
+        "ternary": {
+          "download_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-1.7B-gguf/resolve/main/Ternary-Bonsai-1.7B-Q2_0.gguf",
+          "readme_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-1.7B-gguf/raw/main/README.md",
+          "license_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-1.7B-gguf/blob/main/LICENSE",
+          "ram_required_gb": 0.5,
+          "download_size_gb": 0.45
+        }
+      }
+    }
+  },
+  "bonsai1.58:4b": {
+    "name": "Bonsai 1.58b 4B",
+    "architecture": "BitNet-1.58b",
+    "context_window": "64k",
+    "category": "chat",
+    "default_quant": "ternary",
+    "description": "The Bonsai 1.58b 4B is a highly balanced, mid-tier cognitive engine designed to bring advanced reasoning capabilities to mobile workstations and premium edge devices. Utilizing the groundbreaking BitNet b1.58 architecture, this model represents all weights in a ternary state ({-1, 0, +1}). This 1.58-bit representation allows the 4 billion parameter network to retain near-FP16 accuracy while slashing its memory footprint to a mere 1.2GB of RAM.\n\nBridging the Gap Between Mobile and Desktop\nThis model is meticulously engineered for scenarios where the 1.7B model lacks the necessary parameter depth, but an 8B model is too resource-intensive. It perfectly bridges the gap, delivering high-fidelity conversational AI, complex instruction following, and nuanced analytical reasoning directly to consumer-grade hardware. By eliminating standard Matrix Multiplication (MatMul) in favor of addition-only operations, the Bonsai 4B ensures rapid inference speeds even on older CPUs and integrated graphics.\n\nUnleashing Sovereign Intelligence\nOperating entirely offline, the Bonsai 1.58b 4B guarantees Silicon Sovereignty, providing secure, private, and censorship-resistant intelligence. It is uniquely optimized for prolonged execution on laptops and advanced mobile silicon (such as Apple Silicon and Snapdragon X Elite), drawing a fraction of the power required by traditional LLMs. This drastically reduces thermal load and extends battery life, making it the premier choice for on-the-go professionals and local-first applications.\n\nExpansive Context and Capability\nEquipped with a massive 64k context window, the Bonsai 4B can seamlessly ingest and process large documents, lengthy code snippets, and extensive conversation histories without losing focus. It is the ultimate tool for developers seeking to embed deep contextual understanding into local software ecosystems. The Bonsai 1.58b 4B proves that ternary quantization is not just a compression technique, but the future foundation of highly capable, decentralized artificial intelligence.",
+    "license": "Apache 2.0",
+    "prompt_template": "ChatML",
+    "variants": {
+      "gguf": {
+        "ternary": {
+          "download_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-4B-gguf/resolve/main/Ternary-Bonsai-4B-Q2_0.gguf",
+          "readme_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-4B-gguf/raw/main/README.md",
+          "license_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-4B-gguf/blob/main/LICENSE",
+          "ram_required_gb": 1.2,
+          "download_size_gb": 1.1
+        }
+      }
+    }
+  },
+  "bonsai1.58:8b": {
+    "name": "Bonsai 1.58b 8B",
+    "architecture": "BitNet-1.58b",
+    "context_window": "128k",
+    "category": "chat",
+    "default_quant": "ternary",
+    "description": "The Bonsai 1.58b 8B stands as the definitive flagship of the ternary frontier, a monumental achievement in high-density, decentralized artificial intelligence. Built upon the revolutionary BitNet b1.58 architecture, this 8 billion parameter titan utilizes ternary weight representations ({-1, 0, +1}) to achieve unprecedented cognitive depth while requiring only ~2.2GB of RAM. It delivers the analytical prowess, coding capability, and reasoning accuracy of a full-precision FP16 model, but at a fraction of the hardware cost.\n\nThe Pinnacle of Zero-Copy Efficiency\nBy completely abandoning traditional Matrix Multiplication (MatMul) operations, the Bonsai 1.58b 8B executes via highly optimized, addition-only logic. This fundamental architectural shift allows desktop-class intelligence to run flawlessly on standard consumer hardware, from fanless MacBooks to standard Windows laptops, without the need for high-end discrete GPUs. The inclusion of the 'zero' state in its ternary weights enables exceptional feature selection and noise reduction, resulting in highly coherent and hallucination-resistant outputs.\n\nAbsolute Silicon Sovereignty\nThis model is the ultimate embodiment of Silicon Sovereignty. It empowers users to run world-class AI entirely offline, ensuring absolute data privacy, zero latency from network round-trips, and complete independence from centralized cloud infrastructure. Whether deployed in secure enterprise environments, remote edge nodes, or privacy-first personal applications, the Bonsai 8B guarantees that your intelligence remains under your absolute control.\n\nProfessional-Grade Cognitive Engine\nFeaturing an expansive 128k context window, the Bonsai 1.58b 8B is capable of digesting massive codebases, entire books, and complex financial reports in a single localized pass. It excels in professional coding assistance, deep logical reasoning, and intricate multi-step problem solving. It drastically reduces energy consumption and thermal output, making it the most sustainable and efficient 8B model available today. For developers and enterprises demanding uncompromising intelligence at the absolute edge, the Bonsai 1.58b 8B is the undisputed standard.",
+    "license": "Apache 2.0",
+    "prompt_template": "ChatML",
+    "variants": {
+      "gguf": {
+        "ternary": {
+          "download_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-8B-gguf/resolve/main/Ternary-Bonsai-8B-Q2_0.gguf",
+          "readme_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-8B-gguf/raw/main/README.md",
+          "license_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-8B-gguf/blob/main/LICENSE",
+          "ram_required_gb": 2.2,
+          "download_size_gb": 2.1
+        }
+      }
+    }
+  }
+}
