@@ -29,19 +29,19 @@
   },
   "web": {
     "ps1": {
-      "version": "dev-release",
+      "version": "main",
       "manifest_url": "https://github.com/cluaiz/cluaiz/blob/main/install.ps1"
     },
     "sh": {
-      "version": "dev-release",
+      "version": "main",
       "manifest_url": "https://github.com/cluaiz/cluaiz/blob/main/install.sh"
     },
     "models": {
-      "version": "dev-release",
+      "version": "main",
       "manifest_url": "https://github.com/cluaiz/cluaiz/blob/main/models/library/registry.json"
     },
     "docs": {
-      "version": "dev-release",
+      "version": "main",
       "manifest_url": "https://github.com/cluaiz/cluaiz/blob/main/docs/registry.json" 
     }
   }
