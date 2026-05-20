@@ -280,7 +280,7 @@ Since the pre-compiled `cluaiz` executables are built dynamically on GitHub Acti
 
 Cluaiz is governed by the **Cluaiz Industrial License (CSL) v1.0**:
 - **Personal Use**: Free for individuals and startups under $10M revenue.
-- **Institutional Standing**: Maintained by Cluaiz, a registered Micro Enterprise under the **Ministry of MSME, India** (Reg: UDYAM-UP-03-0131764).
+- **Sovereign Standing**: Maintained by Cluaiz as a decentralized, open-source technology framework for the builder community.
 
 ---
 

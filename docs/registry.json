@@ -1,33 +1,89 @@
 {
-  "name": "Cluaiz Sovereign Docs",
-  "last_updated": "2026-05-17T13:30:00Z",
-  "categories": [
-    {
-      "id": "foundations",
-      "title": "Sovereign Foundations",
-      "pages": [
-        {
-          "slug": "technical-specifications",
-          "title": "Sovereign Technical Spec v1.0",
-          "file_path": "docs/sovereign-technical-spec-v1.0.md"
-        }
-      ]
-    },
-    {
-      "id": "getting-started",
-      "title": "Getting Started",
-      "pages": [
-        {
-          "slug": "introduction",
-          "title": "Introduction to Cluaiz",
-          "file_path": "docs/user-guides/introduction.md"
-        },
-        {
-          "slug": "installation",
-          "title": "Local Installation",
-          "file_path": "docs/user-guides/installation.md"
-        }
-      ]
-    }
-  ]
+  "name": "Cluaiz Docs",
+  "version": "1.0.0",
+  "last_updated": "2026-05-19T00:15:00Z",
+  "theme": {
+    "primary": "#10b981",
+    "dark": "#000000",
+    "light": "#ffffff",
+    "font_family": "var(--font-mono)"
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "id": "get-started",
+        "title": "🚀 Get Started",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              { "slug": "introduction", "title": "📖 Introduction", "file_path": "docs/get-started/introduction.md" },
+              { "slug": "architecture", "title": "📡 System Architecture", "file_path": "docs/get-started/architecture.md" }
+            ]
+          },
+          {
+            "group": "Quickstart",
+            "pages": [
+              { "slug": "quickstart", "title": "⚡ Quickstart", "file_path": "docs/get-started/quickstart.md" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "cli-tui",
+        "title": "💻 CLI & TUI",
+        "groups": [
+          {
+            "group": "TUI Dashboard",
+            "pages": [
+              { "slug": "tui-dashboard", "title": "🧿 TUI Dashboard", "file_path": "docs/cli/tui.md" },
+              { "slug": "onboarding", "title": "🕯️ Onboarding", "file_path": "docs/cli/onboarding.md" }
+            ]
+          },
+          {
+            "group": "Command Manual",
+            "pages": [
+              { "slug": "cli-manual", "title": "⚙️ CLI Manual", "file_path": "docs/cli/manual.md" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "cluaiz-engine",
+        "title": "🧠 Cluaiz Engine",
+        "groups": [
+          {
+            "group": "Core Engine",
+            "pages": [
+              { "slug": "system-booster", "title": "🚀 System Booster", "file_path": "docs/engine/booster.md" }
+            ]
+          },
+          {
+            "group": "REST API Gateway",
+            "pages": [
+              { "slug": "engine-api", "title": "📡 Axum API", "file_path": "docs/engine/api.md" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "deployments-matrix",
+        "title": "⚙️ CI/CD & Deployments",
+        "groups": [
+          {
+            "group": "Universal Matrix",
+            "pages": [
+              { "slug": "platforms-matrix", "title": "🌌 Platform Support", "file_path": "docs/deployments/platforms.md" }
+            ]
+          },
+          {
+            "group": "CI/CD Workflows",
+            "pages": [
+              { "slug": "cicd-workflows", "title": "⛓️ Release Workflows", "file_path": "docs/deployments/cicd.md" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }

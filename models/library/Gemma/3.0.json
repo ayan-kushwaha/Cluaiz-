@@ -1,5 +1,8 @@
 {
   "family": "Gemma 3",
+  "version": "3.0",
+  "release_date": "2025-01-15",
+  "about": "Gemma 3 models are cutting-edge multimodal AI architectures built from the advanced Gemini foundations, optimizing both computational efficiency and deep reasoning tasks. Designed for rigorous industrial and edge deployments, Gemma 3 completely redefines open-weight cognitive boundaries. By effectively balancing raw inference power with extreme memory conservation, this generation ensures that highly sophisticated conversational agents and coding assistants can run locally on mobile or low-power embedded devices without compromising data sovereignty or speed.",
   "gemma3:1b": {
     "name": "Gemma 3 1B",
     "architecture": "Gemma3",
@@ -7,20 +10,28 @@
     "category": "chat",
     "default_quant": "q4_k_m",
     "description": "Ultra-low latency 1B model for extreme edge sovereignty.",
+    "license": "Gemma",
+    "prompt_template": "Gemma",
     "variants": {
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/bartowski/gemma-3-1b-it-GGUF/resolve/main/gemma-3-1b-it-Q4_K_M.gguf",
+          "readme_url": "https://huggingface.co/bartowski/gemma-3-1b-it-GGUF/raw/main/README.md",
+          "license_url": "https://huggingface.co/bartowski/gemma-3-1b-it-GGUF/blob/main/LICENSE",
           "ram_required_gb": 1.5,
           "download_size_gb": 0.8
         },
         "q8_0": {
           "download_url": "https://huggingface.co/bartowski/gemma-3-1b-it-GGUF/resolve/main/gemma-3-1b-it-Q8_0.gguf",
+          "readme_url": "https://huggingface.co/bartowski/gemma-3-1b-it-GGUF/raw/main/README.md",
+          "license_url": "https://huggingface.co/bartowski/gemma-3-1b-it-GGUF/blob/main/LICENSE",
           "ram_required_gb": 2.5,
           "download_size_gb": 1.2
         },
         "f16": {
           "download_url": "https://huggingface.co/bartowski/gemma-3-1b-it-GGUF/resolve/main/gemma-3-1b-it-f16.gguf",
+          "readme_url": "https://huggingface.co/bartowski/gemma-3-1b-it-GGUF/raw/main/README.md",
+          "license_url": "https://huggingface.co/bartowski/gemma-3-1b-it-GGUF/blob/main/LICENSE",
           "ram_required_gb": 4.0,
           "download_size_gb": 2.2
         }
@@ -34,20 +45,28 @@
     "category": "chat",
     "default_quant": "q4_k_m",
     "description": "The perfect efficiency-to-intelligence model for mobile devices.",
+    "license": "Gemma",
+    "prompt_template": "Gemma",
     "variants": {
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/bartowski/gemma-3-4b-it-GGUF/resolve/main/gemma-3-4b-it-Q4_K_M.gguf",
+          "readme_url": "https://huggingface.co/bartowski/gemma-3-4b-it-GGUF/raw/main/README.md",
+          "license_url": "https://huggingface.co/bartowski/gemma-3-4b-it-GGUF/blob/main/LICENSE",
           "ram_required_gb": 4.5,
           "download_size_gb": 2.8
         },
         "q8_0": {
           "download_url": "https://huggingface.co/bartowski/gemma-3-4b-it-GGUF/resolve/main/gemma-3-4b-it-Q8_0.gguf",
+          "readme_url": "https://huggingface.co/bartowski/gemma-3-4b-it-GGUF/raw/main/README.md",
+          "license_url": "https://huggingface.co/bartowski/gemma-3-4b-it-GGUF/blob/main/LICENSE",
           "ram_required_gb": 7.0,
           "download_size_gb": 4.5
         },
         "f16": {
           "download_url": "https://huggingface.co/bartowski/gemma-3-4b-it-GGUF/resolve/main/gemma-3-4b-it-f16.gguf",
+          "readme_url": "https://huggingface.co/bartowski/gemma-3-4b-it-GGUF/raw/main/README.md",
+          "license_url": "https://huggingface.co/bartowski/gemma-3-4b-it-GGUF/blob/main/LICENSE",
           "ram_required_gb": 12.0,
           "download_size_gb": 9.0
         }
@@ -61,20 +80,28 @@
     "category": "chat",
     "default_quant": "q4_k_m",
     "description": "High-performance mid-range flagship for balanced reasoning.",
+    "license": "Gemma",
+    "prompt_template": "Gemma",
     "variants": {
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/bartowski/gemma-3-12b-it-GGUF/resolve/main/gemma-3-12b-it-Q4_K_M.gguf",
+          "readme_url": "https://huggingface.co/bartowski/gemma-3-12b-it-GGUF/raw/main/README.md",
+          "license_url": "https://huggingface.co/bartowski/gemma-3-12b-it-GGUF/blob/main/LICENSE",
           "ram_required_gb": 14.0,
           "download_size_gb": 8.2
         },
         "q8_0": {
           "download_url": "https://huggingface.co/bartowski/gemma-3-12b-it-GGUF/resolve/main/gemma-3-12b-it-Q8_0.gguf",
+          "readme_url": "https://huggingface.co/bartowski/gemma-3-12b-it-GGUF/raw/main/README.md",
+          "license_url": "https://huggingface.co/bartowski/gemma-3-12b-it-GGUF/blob/main/LICENSE",
           "ram_required_gb": 20.0,
           "download_size_gb": 13.5
         },
         "f16": {
           "download_url": "https://huggingface.co/bartowski/gemma-3-12b-it-GGUF/resolve/main/gemma-3-12b-it-f16.gguf",
+          "readme_url": "https://huggingface.co/bartowski/gemma-3-12b-it-GGUF/raw/main/README.md",
+          "license_url": "https://huggingface.co/bartowski/gemma-3-12b-it-GGUF/blob/main/LICENSE",
           "ram_required_gb": 32.0,
           "download_size_gb": 26.0
         }
@@ -88,20 +115,28 @@
     "category": "chat",
     "default_quant": "q4_k_m",
     "description": "The dense power-house for advanced technical orchestration.",
+    "license": "Gemma",
+    "prompt_template": "Gemma",
     "variants": {
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/bartowski/gemma-3-27b-it-GGUF/resolve/main/gemma-3-27b-it-Q4_K_M.gguf",
+          "readme_url": "https://huggingface.co/bartowski/gemma-3-27b-it-GGUF/raw/main/README.md",
+          "license_url": "https://huggingface.co/bartowski/gemma-3-27b-it-GGUF/blob/main/LICENSE",
           "ram_required_gb": 28.0,
           "download_size_gb": 18.0
         },
         "q8_0": {
           "download_url": "https://huggingface.co/bartowski/gemma-3-27b-it-GGUF/resolve/main/gemma-3-27b-it-Q8_0.gguf",
+          "readme_url": "https://huggingface.co/bartowski/gemma-3-27b-it-GGUF/raw/main/README.md",
+          "license_url": "https://huggingface.co/bartowski/gemma-3-27b-it-GGUF/blob/main/LICENSE",
           "ram_required_gb": 45.0,
           "download_size_gb": 32.0
         },
         "f16": {
           "download_url": "https://huggingface.co/bartowski/gemma-3-27b-it-GGUF/resolve/main/gemma-3-27b-it-f16.gguf",
+          "readme_url": "https://huggingface.co/bartowski/gemma-3-27b-it-GGUF/raw/main/README.md",
+          "license_url": "https://huggingface.co/bartowski/gemma-3-27b-it-GGUF/blob/main/LICENSE",
           "ram_required_gb": 65.0,
           "download_size_gb": 55.0
         }
@@ -109,16 +144,22 @@
       "awq": {
         "4bit": {
           "download_url": "https://huggingface.co/google/gemma-3-27b-it-awq/resolve/main/model.safetensors",
+          "readme_url": "https://huggingface.co/google/gemma-3-27b-it-awq/raw/main/README.md",
+          "license_url": "https://huggingface.co/google/gemma-3-27b-it-awq/blob/main/LICENSE",
           "ram_required_gb": 22.0,
           "download_size_gb": 17.5
         },
         "8bit": {
           "download_url": "https://huggingface.co/mradermacher/gemma-3-27b-it-AWQ-8bit/resolve/main/model.safetensors",
+          "readme_url": "https://huggingface.co/mradermacher/gemma-3-27b-it-AWQ-8bit/raw/main/README.md",
+          "license_url": "https://huggingface.co/mradermacher/gemma-3-27b-it-AWQ-8bit/blob/main/LICENSE",
           "ram_required_gb": 45.0,
           "download_size_gb": 32.0
         },
         "f16": {
           "download_url": "https://huggingface.co/google/gemma-3-27b-it/resolve/main/model.safetensors",
+          "readme_url": "https://huggingface.co/google/gemma-3-27b-it/raw/main/README.md",
+          "license_url": "https://huggingface.co/google/gemma-3-27b-it/blob/main/LICENSE",
           "ram_required_gb": 65.0,
           "download_size_gb": 55.0
         }
@@ -126,16 +167,22 @@
       "gptq": {
         "int4": {
           "download_url": "https://huggingface.co/google/gemma-3-27b-it-gptq-int4/resolve/main/model.safetensors",
+          "readme_url": "https://huggingface.co/google/gemma-3-27b-it-gptq-int4/raw/main/README.md",
+          "license_url": "https://huggingface.co/google/gemma-3-27b-it-gptq-int4/blob/main/LICENSE",
           "ram_required_gb": 22.0,
           "download_size_gb": 17.5
         },
         "int8": {
           "download_url": "https://huggingface.co/google/gemma-3-27b-it-gptq-int8/resolve/main/model.safetensors",
+          "readme_url": "https://huggingface.co/google/gemma-3-27b-it-gptq-int8/raw/main/README.md",
+          "license_url": "https://huggingface.co/google/gemma-3-27b-it-gptq-int8/blob/main/LICENSE",
           "ram_required_gb": 45.0,
           "download_size_gb": 32.0
         },
         "f16": {
           "download_url": "https://huggingface.co/google/gemma-3-27b-it/resolve/main/model.safetensors",
+          "readme_url": "https://huggingface.co/google/gemma-3-27b-it/raw/main/README.md",
+          "license_url": "https://huggingface.co/google/gemma-3-27b-it/blob/main/LICENSE",
           "ram_required_gb": 65.0,
           "download_size_gb": 55.0
         }

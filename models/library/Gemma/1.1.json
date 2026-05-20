@@ -1,0 +1,48 @@
+{
+  "family": "Gemma 1.1",
+  "version": "1.1",
+  "release_date": "2024-04-09",
+  "about": "Gemma 1.1 represents a significant update to the original Gemma architecture, developed by Google DeepMind. It introduces powerful new capabilities in instruction following and conversational alignment. Built using the same fundamental technologies behind the Gemini models, Gemma 1.1 focuses on optimizing performance while maintaining a lightweight footprint suitable for localized execution. This release significantly enhances the model's ability to handle complex reasoning tasks, creative generation, and technical prompts with improved safety guardrails. Designed for developers seeking robust, open-weights AI, Gemma 1.1 enables high-fidelity cognitive tasks directly on consumer hardware without the need for cloud dependencies, thereby ensuring absolute privacy and zero-latency interactions.",
+  "gemma1.1:2b": {
+    "name": "Gemma 1.1 2B",
+    "architecture": "Gemma 1.1",
+    "context_window": "8k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "Gemma 1.1 2B is a highly optimized version of the original Gemma architecture, specifically tuned for improved instruction following and safety guardrails. It offers an excellent balance between capability and efficiency.",
+    "license": "Gemma",
+    "prompt_template": "Gemma",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/unsloth/gemma-1.1-2b-it-GGUF/resolve/main/gemma-1.1-2b-it-Q4_K_M.gguf",
+          "readme_url": "https://huggingface.co/unsloth/gemma-1.1-2b-it-GGUF/raw/main/README.md",
+          "license_url": "https://huggingface.co/unsloth/gemma-1.1-2b-it-GGUF/blob/main/LICENSE",
+          "ram_required_gb": 1.6,
+          "download_size_gb": 1.5
+        }
+      }
+    }
+  },
+  "gemma1.1:7b": {
+    "name": "Gemma 1.1 7B",
+    "architecture": "Gemma 1.1",
+    "context_window": "8k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "Gemma 1.1 7B provides professional-grade cognitive depth for complex reasoning and technical creative generation tasks, acting as a robust foundational model for decentralized deployments.",
+    "license": "Gemma",
+    "prompt_template": "Gemma",
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/unsloth/gemma-1.1-7b-it-GGUF/resolve/main/gemma-1.1-7b-it-Q4_K_M.gguf",
+          "readme_url": "https://huggingface.co/unsloth/gemma-1.1-7b-it-GGUF/raw/main/README.md",
+          "license_url": "https://huggingface.co/unsloth/gemma-1.1-7b-it-GGUF/blob/main/LICENSE",
+          "ram_required_gb": 5.5,
+          "download_size_gb": 4.8
+        }
+      }
+    }
+  }
+}
