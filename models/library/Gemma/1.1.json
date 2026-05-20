@@ -16,7 +16,7 @@
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/unsloth/gemma-1.1-2b-it-GGUF/resolve/main/gemma-1.1-2b-it-Q4_K_M.gguf",
-          "readme_url": "https://raw.githubusercontent.com/google/gemma.cpp/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE",
           "ram_required_gb": 1.6,
           "download_size_gb": 1.5
@@ -37,7 +37,7 @@
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/unsloth/gemma-1.1-7b-it-GGUF/resolve/main/gemma-1.1-7b-it-Q4_K_M.gguf",
-          "readme_url": "https://raw.githubusercontent.com/google/gemma.cpp/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE",
           "ram_required_gb": 5.5,
           "download_size_gb": 4.8
@@ -46,3 +46,4 @@
     }
   }
 }
+

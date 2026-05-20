@@ -16,14 +16,14 @@
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/unsloth/Qwen3.5-0.5B-GGUF/resolve/main/Qwen3.5-0.5B-UD-Q4_K_XL.gguf",
-          "readme_url": "https://huggingface.co/unsloth/Qwen3.5-0.5B-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://huggingface.co/Qwen/Qwen3.5-0.5B/raw/main/LICENSE",
           "ram_required_gb": 1.0,
           "download_size_gb": 0.5
         },
         "q8_0": {
           "download_url": "https://huggingface.co/unsloth/Qwen3.5-0.5B-GGUF/resolve/main/Qwen3.5-0.5B-UD-Q8_K_XL.gguf",
-          "readme_url": "https://huggingface.co/unsloth/Qwen3.5-0.5B-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://huggingface.co/Qwen/Qwen3.5-0.5B/raw/main/LICENSE",
           "ram_required_gb": 1.5,
           "download_size_gb": 0.9
@@ -44,21 +44,21 @@
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/bartowski/Qwen_Qwen3.5-2B-GGUF/resolve/main/Qwen_Qwen3.5-2B-Q4_K_M.gguf",
-          "readme_url": "https://huggingface.co/bartowski/Qwen_Qwen3.5-2B-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://huggingface.co/Qwen/Qwen3.5-2B/raw/main/LICENSE",
           "ram_required_gb": 2.5,
           "download_size_gb": 1.5
         },
         "q8_0": {
           "download_url": "https://huggingface.co/bartowski/Qwen_Qwen3.5-2B-GGUF/resolve/main/Qwen_Qwen3.5-2B-Q8_0.gguf",
-          "readme_url": "https://huggingface.co/bartowski/Qwen_Qwen3.5-2B-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://huggingface.co/Qwen/Qwen3.5-2B/raw/main/LICENSE",
           "ram_required_gb": 4.0,
           "download_size_gb": 2.5
         },
         "f16": {
           "download_url": "https://huggingface.co/bartowski/Qwen_Qwen3.5-2B-GGUF/resolve/main/Qwen_Qwen3.5-2B-F16.gguf",
-          "readme_url": "https://huggingface.co/bartowski/Qwen_Qwen3.5-2B-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://huggingface.co/Qwen/Qwen3.5-2B/raw/main/LICENSE",
           "ram_required_gb": 7.0,
           "download_size_gb": 4.0
@@ -79,14 +79,14 @@
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/bartowski/Qwen_Qwen3.5-27B-GGUF/resolve/main/Qwen_Qwen3.5-27B-Q4_K_M.gguf",
-          "readme_url": "https://huggingface.co/bartowski/Qwen_Qwen3.5-27B-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://huggingface.co/Qwen/Qwen3.5-27B/raw/main/LICENSE",
           "ram_required_gb": 22.0,
           "download_size_gb": 16.0
         },
         "q8_0": {
           "download_url": "https://huggingface.co/bartowski/Qwen_Qwen3.5-27B-GGUF/resolve/main/Qwen_Qwen3.5-27B-Q8_0.gguf",
-          "readme_url": "https://huggingface.co/bartowski/Qwen_Qwen3.5-27B-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://huggingface.co/Qwen/Qwen3.5-27B/raw/main/LICENSE",
           "ram_required_gb": 38.0,
           "download_size_gb": 29.0
@@ -95,7 +95,7 @@
       "gptq": {
         "int4": {
           "download_url": "https://huggingface.co/Qwen/Qwen3.5-27B-GPTQ-Int4/resolve/main/model.safetensors",
-          "readme_url": "https://huggingface.co/Qwen/Qwen3.5-27B-GPTQ-Int4/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://huggingface.co/Qwen/Qwen3.5-27B-GPTQ-Int4/raw/main/LICENSE",
           "ram_required_gb": 18.0,
           "download_size_gb": 15.0
@@ -116,7 +116,7 @@
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/unsloth/Qwen3.5-35B-A3B-GGUF/resolve/main/Qwen3.5-35B-A3B-UD-Q4_K_XL.gguf",
-          "readme_url": "https://huggingface.co/unsloth/Qwen3.5-35B-A3B-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://huggingface.co/Qwen/Qwen3.5-35B-A3B/raw/main/LICENSE",
           "ram_required_gb": 20.0,
           "download_size_gb": 15.0
@@ -125,7 +125,7 @@
       "gptq": {
         "int4": {
           "download_url": "https://huggingface.co/Qwen/Qwen3.5-35B-A3B-GPTQ-Int4/resolve/main/model.safetensors",
-          "readme_url": "https://huggingface.co/Qwen/Qwen3.5-35B-A3B-GPTQ-Int4/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://huggingface.co/Qwen/Qwen3.5-35B-A3B-GPTQ-Int4/raw/main/LICENSE",
           "ram_required_gb": 18.0,
           "download_size_gb": 14.0

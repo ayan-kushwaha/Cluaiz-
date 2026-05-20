@@ -14,14 +14,14 @@
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf",
           "ram_required_gb": 1.0,
           "download_size_gb": 0.4,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         },
         "q8_0": {
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q8_0.gguf",
           "ram_required_gb": 1.5,
           "download_size_gb": 0.6,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         }
       }
@@ -42,14 +42,14 @@
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf",
           "ram_required_gb": 2.0,
           "download_size_gb": 1.1,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         },
         "q8_0": {
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q8_0.gguf",
           "ram_required_gb": 3.0,
           "download_size_gb": 1.7,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         }
       }
@@ -70,14 +70,14 @@
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main/qwen2.5-3b-instruct-q4_k_m.gguf",
           "ram_required_gb": 3.5,
           "download_size_gb": 2.0,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         },
         "q8_0": {
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main/qwen2.5-3b-instruct-q8_0.gguf",
           "ram_required_gb": 5.0,
           "download_size_gb": 3.3,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         }
       }
@@ -98,14 +98,14 @@
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF/resolve/main/qwen2.5-7b-instruct-q4_k_m.gguf",
           "ram_required_gb": 7.0,
           "download_size_gb": 4.8,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         },
         "q8_0": {
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF/resolve/main/qwen2.5-7b-instruct-q8_0.gguf",
           "ram_required_gb": 10.0,
           "download_size_gb": 7.7,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         }
       },
@@ -114,7 +114,7 @@
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-AWQ/resolve/main/model.safetensors",
           "ram_required_gb": 7.0,
           "download_size_gb": 5.0,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-AWQ/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         }
       },
@@ -123,14 +123,14 @@
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GPTQ-Int4/resolve/main/model.safetensors",
           "ram_required_gb": 7.0,
           "download_size_gb": 5.0,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GPTQ-Int4/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         },
         "int8": {
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GPTQ-Int8/resolve/main/model.safetensors",
           "ram_required_gb": 12.0,
           "download_size_gb": 8.0,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GPTQ-Int8/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         }
       }
@@ -151,14 +151,14 @@
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-GGUF/resolve/main/qwen2.5-14b-instruct-q4_k_m.gguf",
           "ram_required_gb": 15.0,
           "download_size_gb": 9.0,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         },
         "q8_0": {
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-GGUF/resolve/main/qwen2.5-14b-instruct-q8_0.gguf",
           "ram_required_gb": 22.0,
           "download_size_gb": 15.5,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         }
       },
@@ -167,7 +167,7 @@
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-AWQ/resolve/main/model.safetensors",
           "ram_required_gb": 15.0,
           "download_size_gb": 9.5,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-AWQ/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         }
       },
@@ -176,14 +176,14 @@
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-GPTQ-Int4/resolve/main/model.safetensors",
           "ram_required_gb": 15.0,
           "download_size_gb": 9.5,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-GPTQ-Int4/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         },
         "int8": {
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8/resolve/main/model.safetensors",
           "ram_required_gb": 22.0,
           "download_size_gb": 16.0,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-GPTQ-Int8/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         }
       }
@@ -204,14 +204,14 @@
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-32B-Instruct-GGUF/resolve/main/qwen2.5-32b-instruct-q4_k_m.gguf",
           "ram_required_gb": 30.0,
           "download_size_gb": 20.0,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-32B-Instruct-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         },
         "q8_0": {
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-32B-Instruct-GGUF/resolve/main/qwen2.5-32b-instruct-q8_0.gguf",
           "ram_required_gb": 48.0,
           "download_size_gb": 35.0,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-32B-Instruct-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         }
       },
@@ -220,7 +220,7 @@
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-32B-Instruct-AWQ/resolve/main/model.safetensors",
           "ram_required_gb": 22.0,
           "download_size_gb": 18.0,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-32B-Instruct-AWQ/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         }
       },
@@ -229,14 +229,14 @@
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-32B-Instruct-GPTQ-Int4/resolve/main/model.safetensors",
           "ram_required_gb": 22.0,
           "download_size_gb": 18.0,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-32B-Instruct-GPTQ-Int4/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         },
         "int8": {
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-32B-Instruct-GPTQ-Int8/resolve/main/model.safetensors",
           "ram_required_gb": 45.0,
           "download_size_gb": 35.0,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-32B-Instruct-GPTQ-Int8/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         }
       }
@@ -257,14 +257,14 @@
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-72B-Instruct-GGUF/resolve/main/qwen2.5-72b-instruct-q4_k_m.gguf",
           "ram_required_gb": 60.0,
           "download_size_gb": 48.0,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-72B-Instruct-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         },
         "q8_0": {
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-72B-Instruct-GGUF/resolve/main/qwen2.5-72b-instruct-q8_0.gguf",
           "ram_required_gb": 90.0,
           "download_size_gb": 85.0,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-72B-Instruct-GGUF/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         }
       },
@@ -273,7 +273,7 @@
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-72B-Instruct-AWQ/resolve/main/model.safetensors",
           "ram_required_gb": 45.0,
           "download_size_gb": 40.0,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-72B-Instruct-AWQ/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         }
       },
@@ -282,14 +282,14 @@
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-72B-Instruct-GPTQ-Int4/resolve/main/model.safetensors",
           "ram_required_gb": 45.0,
           "download_size_gb": 40.0,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-72B-Instruct-GPTQ-Int4/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         },
         "int8": {
           "download_url": "https://huggingface.co/Qwen/Qwen2.5-72B-Instruct-GPTQ-Int8/resolve/main/model.safetensors",
           "ram_required_gb": 90.0,
           "download_size_gb": 85.0,
-          "readme_url": "https://huggingface.co/Qwen/Qwen2.5-72B-Instruct-GPTQ-Int8/raw/main/README.md",
+          "readme_url": "",
           "license_url": "https://raw.githubusercontent.com/QwenLM/Qwen2.5/main/LICENSE"
         }
       }
