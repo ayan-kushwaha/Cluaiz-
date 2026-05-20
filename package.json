@@ -1,8 +1,8 @@
 {
   "name": "cluaiz-package-manager",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "id": "https://github.com/cluaiz/cluaiz/raw/main/package.json",
-  "last_updated": "2026-05-11T11:07:00Z",
+  "last_updated": "2026-05-20T10:00:00Z",
   "author": "cluaiz",
   "cdn": "https://cdn.jsdelivr.net",
   "components": {
