@@ -10,8 +10,8 @@
     "category": "chat",
     "default_quant": "q4_k_m",
     "description": "Ultra-efficient 2B effective model for low-latency edge tasks.",
-    "license": "Gemma",
-    "prompt_template": "Gemma",
+    "license": "Apache 2.0",
+    "prompt_template": "Gemma-Instruct",
     "variants": {
       "gguf": {
         "q4_k_m": {
@@ -45,8 +45,8 @@
     "category": "chat",
     "default_quant": "q4_k_m",
     "description": "High-precision 4B effective model for multimodal reasoning.",
-    "license": "Gemma",
-    "prompt_template": "Gemma",
+    "license": "Apache 2.0",
+    "prompt_template": "Gemma-Instruct",
     "variants": {
       "gguf": {
         "q4_k_m": {
@@ -80,8 +80,8 @@
     "category": "chat",
     "default_quant": "q4_k_m",
     "description": "High-throughput Mixture-of-Experts for agentic workflows.",
-    "license": "Gemma",
-    "prompt_template": "Gemma",
+    "license": "Apache 2.0",
+    "prompt_template": "Gemma-Instruct",
     "variants": {
       "gguf": {
         "q4_k_m": {
@@ -138,8 +138,8 @@
     "category": "chat",
     "default_quant": "q4_k_m",
     "description": "The dense flagship frontier model for complex reasoning.",
-    "license": "Gemma",
-    "prompt_template": "Gemma",
+    "license": "Apache 2.0",
+    "prompt_template": "Gemma-Instruct",
     "variants": {
       "gguf": {
         "q4_k_m": {

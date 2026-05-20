@@ -10,8 +10,8 @@
     "category": "chat",
     "default_quant": "q4_k_m",
     "description": "Ultra-low latency 1B model for extreme edge sovereignty.",
-    "license": "Gemma",
-    "prompt_template": "Gemma",
+    "license": "Apache 2.0",
+    "prompt_template": "Gemma-Instruct",
     "variants": {
       "gguf": {
         "q4_k_m": {
@@ -45,8 +45,8 @@
     "category": "chat",
     "default_quant": "q4_k_m",
     "description": "The perfect efficiency-to-intelligence model for mobile devices.",
-    "license": "Gemma",
-    "prompt_template": "Gemma",
+    "license": "Apache 2.0",
+    "prompt_template": "Gemma-Instruct",
     "variants": {
       "gguf": {
         "q4_k_m": {
@@ -80,8 +80,8 @@
     "category": "chat",
     "default_quant": "q4_k_m",
     "description": "High-performance mid-range flagship for balanced reasoning.",
-    "license": "Gemma",
-    "prompt_template": "Gemma",
+    "license": "Apache 2.0",
+    "prompt_template": "Gemma-Instruct",
     "variants": {
       "gguf": {
         "q4_k_m": {
@@ -115,8 +115,8 @@
     "category": "chat",
     "default_quant": "q4_k_m",
     "description": "The dense power-house for advanced technical orchestration.",
-    "license": "Gemma",
-    "prompt_template": "Gemma",
+    "license": "Apache 2.0",
+    "prompt_template": "Gemma-Instruct",
     "variants": {
       "gguf": {
         "q4_k_m": {
