@@ -2,10 +2,10 @@
     "id": "gemma",
     "name": "Gemma",
     "provider": "Google DeepMind",
-    "logo": "/assets/models/ai-logo/gemma.png",
+    "logo": "/assets/models/ai-logo/gemma.webp",
     "architecture_type": "Transformer",
     "architecture": "Gemma",
-    "latest_version": "2.0",
+    "latest_version": "4.0",
     "capabilities": [
         "Chat",
         "Reasoning",
