@@ -17,7 +17,7 @@
         "binary": {
           "download_url": "https://huggingface.co/prism-ml/Bonsai-1.7B-gguf/resolve/main/Bonsai-1.7B-Q1_0.gguf",
           "readme_url": "",
-          "license_url": "https://huggingface.co/prism-ml/Bonsai-1.7B-gguf/blob/main/LICENSE",
+          "license_url": "https://huggingface.co/prism-ml/Bonsai-1.7B-gguf/resolve/main/LICENSE",
           "ram_required_gb": 0.3,
           "download_size_gb": 0.25
         }
@@ -38,7 +38,7 @@
         "binary": {
           "download_url": "https://huggingface.co/prism-ml/Bonsai-8B-gguf/resolve/main/Bonsai-8B-Q1_0.gguf",
           "readme_url": "",
-          "license_url": "https://huggingface.co/prism-ml/Bonsai-8B-gguf/blob/main/LICENSE",
+          "license_url": "https://huggingface.co/prism-ml/Bonsai-8B-gguf/resolve/main/LICENSE",
           "ram_required_gb": 1.0,
           "download_size_gb": 0.9
         }
@@ -47,7 +47,7 @@
         "4bit": {
           "repo_id": "prism-ml/Bonsai-8B-AWQ-4-bit",
           "readme_url": "",
-          "license_url": "https://huggingface.co/prism-ml/Bonsai-8B-AWQ-4-bit/blob/main/LICENSE",
+          "license_url": "https://huggingface.co/prism-ml/Bonsai-8B-AWQ-4-bit/resolve/main/LICENSE",
           "ram_required_gb": 5.5,
           "download_size_gb": 4.8
         }

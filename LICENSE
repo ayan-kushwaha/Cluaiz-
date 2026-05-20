@@ -1,23 +1,22 @@
 ================================================================================
-                    CLUAIZ SOURCE-AVAILABLE LICENSE (CSL)
-                                 Version 1.0
+                        CLUAIZ OPEN SOURCE LICENSE (COL)
+                                  Version 1.0
 ================================================================================
 
             👉 QUICK SUMMARY (HUMAN-READABLE, NOT A LEGAL SUBSTITUTE)
 
   FREE FOR:
   ✅ Personal & Hobbyist use
-  ✅ Startups (Pre-scale companies with Annual Gross Revenue below $10M USD)
+  ✅ Startups & Commercial businesses
   ✅ Academic & Scientific Research
   ✅ Local deployments and self-hosting
 
   COMMERCIAL LICENSE REQUIRED FOR:
-  ❌ Large Enterprises (Annual Gross Revenue above $10M USD)
   ❌ Hosting competing SaaS, cloud utilities, or managed API offerings
   ❌ Commercial redistribution of the core runtime
 
-  "Source-available AI runtime platform. Free for developers, startups, and 
-  research. Commercial licensing available for enterprises and hosted services."
+  "Open-source AI runtime platform. Free for everyone — developers, startups,
+  businesses, and enterprises. No revenue thresholds, no barriers."
 
 ================================================================================
 
@@ -26,16 +25,14 @@ Copyright (c) 2026 Cluaiz Technologies. All Rights Reserved.
 --------------------------------------------------------------------------------
 1. PREAMBLE
 --------------------------------------------------------------------------------
-The Cluaiz Source-Available License (CSL) is designed to cultivate a high-performance,
-collaborative ecosystem. By making our source code visible and adaptable, we empower
-individual developers, startups, researchers, and hobbyists to build freely. At the 
-same time, this license requires fair commercial participation from large-scale 
-enterprises and protects the platform from competing hosted clones.
+The Cluaiz Open Source License (COL) is designed to cultivate a high-performance,
+collaborative ecosystem. By making our source code fully open, we empower every
+developer, startup, researcher, and enterprise to build freely. This license protects
+the platform from competing hosted clones while remaining free for all.
 
-This is a SOURCE-AVAILABLE license. It is NOT an OSI-approved Open Source license.
-It offers a balanced "Open-Core" model: completely free for personal, educational, 
-startup, and local self-hosted use, with commercial licensing required for large 
-enterprises and managed service providers.
+This is an OPEN SOURCE license. Anyone can use, modify, distribute, and self-host
+the Licensed Software — whether for personal projects, commercial products, or
+enterprise deployments — without any revenue threshold or mandatory commercial fee.
 
 --------------------------------------------------------------------------------
 2. DEFINITIONS
@@ -43,9 +40,8 @@ enterprises and managed service providers.
 "Licensed Software" means the source code, build scripts, configuration files, 
 and documentation of the Cluaiz ecosystem made available under this License.
 
-"Enterprise" means any corporate entity, business, or organization (including 
-its parent company, subsidiaries, and controlled affiliates) whose annual gross 
-revenue exceeded Ten Million USD ($10,000,000 USD) in its preceding fiscal year.
+"Enterprise" means any corporate entity, business, or organization that operates
+a Competing SaaS / Hosted Service using the Licensed Software.
 
 "Contributor" means any individual or corporate entity that has authored and 
 had an accepted merged contribution in the official upstream repository of the 
@@ -78,12 +74,11 @@ provided that:
   (2) The Contributor's usage does not involve operating a Competing SaaS / Hosted Service.
 
 --------------------------------------------------------------------------------
-4. ENTERPRISE COMMERCIAL MANDATE
+4. HOSTING PROVIDER MANDATE
 --------------------------------------------------------------------------------
-If you are an Enterprise, you may evaluate the Licensed Software in a non-production 
-environment for up to thirty (30) days. Continued or production use of the Licensed 
-Software within an Enterprise requires a separate, written Enterprise Commercial Agreement 
-or Strategic Partnership Agreement from Cluaiz Technologies.
+If you operate a Competing SaaS / Hosted Service using the Licensed Software, you 
+require a separate, written Hosting Provider Agreement or Strategic Partnership 
+Agreement from Cluaiz Technologies before offering such services commercially.
 
 --------------------------------------------------------------------------------
 5. PROTECTIVE COVENANTS & RESTRICTIONS
@@ -138,16 +133,14 @@ contributors, and enterprise clusters.
 ================================================================================
 
 Q: Is Cluaiz open-source?
-A: Cluaiz is "source-available" or "open-core". You have complete access to the 
-   source code, and you can compile, modify, and self-host it freely. However, 
-   because we restrict competing hosted services and charge enterprises with 
-   annual revenue above $10M, it does not meet the strict OSI definition of 
-   "open-source".
+A: Yes! Cluaiz is fully open-source. You have complete access to the source code
+   and can use, compile, modify, fork, and self-host it freely — for any purpose,
+   personal or commercial, without any revenue threshold.
 
 Q: Can I use Cluaiz commercially?
-A: Yes! If your company's annual revenue is under $10M USD, you can use Cluaiz 
-   commercially for free. If you exceed this threshold, or if you are active contributors 
-   (who get a full waiver), or if you run a competing SaaS, you need a commercial agreement.
+A: Yes! Any individual, startup, or business can use Cluaiz commercially for free. 
+   A commercial agreement is only required if you are an active contributor (who gets 
+   a full waiver automatically) or if you operate a competing SaaS / Hosted Service.
 
 Q: Can I fork the repository and make modifications?
 A: Absolutely! You can fork, modify, and distribute your changes under this 

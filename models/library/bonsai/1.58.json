@@ -17,7 +17,7 @@
         "ternary": {
           "download_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-1.7B-gguf/resolve/main/Ternary-Bonsai-1.7B-Q2_0.gguf",
           "readme_url": "",
-          "license_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-1.7B-gguf/blob/main/LICENSE",
+          "license_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-1.7B-gguf/resolve/main/LICENSE",
           "ram_required_gb": 0.5,
           "download_size_gb": 0.45
         }
@@ -38,7 +38,7 @@
         "ternary": {
           "download_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-4B-gguf/resolve/main/Ternary-Bonsai-4B-Q2_0.gguf",
           "readme_url": "",
-          "license_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-4B-gguf/blob/main/LICENSE",
+          "license_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-4B-gguf/resolve/main/LICENSE",
           "ram_required_gb": 1.2,
           "download_size_gb": 1.1
         }
@@ -59,7 +59,7 @@
         "ternary": {
           "download_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-8B-gguf/resolve/main/Ternary-Bonsai-8B-Q2_0.gguf",
           "readme_url": "",
-          "license_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-8B-gguf/blob/main/LICENSE",
+          "license_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-8B-gguf/resolve/main/LICENSE",
           "ram_required_gb": 2.2,
           "download_size_gb": 2.1
         }

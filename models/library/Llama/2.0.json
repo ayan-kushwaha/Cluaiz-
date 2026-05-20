@@ -1,0 +1,90 @@
+{
+  "family": "Llama 2",
+  "version": "2.0",
+  "release_date": "2023-07-18",
+  "about": "The Meta Llama 2 models represent the first major leap into open-weights AI. While they have a smaller context window (4K), they remain highly stable for legacy applications.",
+  "llama2:7b": {
+    "name": "Llama 2 7B",
+    "architecture": "Llama2",
+    "context_window": "4k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "Legacy 7B model for reliable basic reasoning.",
+    "license": "Llama 2 Community",
+    "prompt_template": "Llama2-Chat",
+    "licenses": [
+      {
+        "type": "Llama 2 Community License",
+        "url": "https://huggingface.co/meta-llama/Llama-2-7b-chat-hf/resolve/main/LICENSE.txt"
+      }
+    ],
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q4_K_M.gguf",
+          "readme_url": "",
+          "ram_required_gb": 6.5,
+          "download_size_gb": 4.1
+        },
+        "q8_0": {
+          "download_url": "https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q8_0.gguf",
+          "readme_url": "",
+          "ram_required_gb": 9.5,
+          "download_size_gb": 7.2
+        }
+      }
+    }
+  },
+  "llama2:13b": {
+    "name": "Llama 2 13B",
+    "architecture": "Llama2",
+    "context_window": "4k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "Legacy 13B model for enhanced conversational logic.",
+    "license": "Llama 2 Community",
+    "prompt_template": "Llama2-Chat",
+    "licenses": [
+      {
+        "type": "Llama 2 Community License",
+        "url": "https://huggingface.co/meta-llama/Llama-2-13b-chat-hf/resolve/main/LICENSE.txt"
+      }
+    ],
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/TheBloke/Llama-2-13B-chat-GGUF/resolve/main/llama-2-13b-chat.Q4_K_M.gguf",
+          "readme_url": "",
+          "ram_required_gb": 10.0,
+          "download_size_gb": 7.9
+        }
+      }
+    }
+  },
+  "llama2:70b": {
+    "name": "Llama 2 70B",
+    "architecture": "Llama2",
+    "context_window": "4k",
+    "category": "chat",
+    "default_quant": "q4_k_m",
+    "description": "Legacy 70B monolithic model.",
+    "license": "Llama 2 Community",
+    "prompt_template": "Llama2-Chat",
+    "licenses": [
+      {
+        "type": "Llama 2 Community License",
+        "url": "https://huggingface.co/meta-llama/Llama-2-70b-chat-hf/resolve/main/LICENSE.txt"
+      }
+    ],
+    "variants": {
+      "gguf": {
+        "q4_k_m": {
+          "download_url": "https://huggingface.co/TheBloke/Llama-2-70B-chat-GGUF/resolve/main/llama-2-70b-chat.Q4_K_M.gguf",
+          "readme_url": "",
+          "ram_required_gb": 45.0,
+          "download_size_gb": 38.0
+        }
+      }
+    }
+  }
+}
