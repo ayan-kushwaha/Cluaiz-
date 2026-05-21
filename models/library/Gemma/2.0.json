@@ -10,30 +10,24 @@
     "category": "chat",
     "default_quant": "q4_k_m",
     "description": "Ultra-efficient 2B model for local mobile reasoning.",
-    "license": "Apache 2.0",
     "prompt_template": "Gemma-Instruct",
+    "licenses": [
+      {
+        "type": "Apache 2.0",
+        "url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE"
+      }
+    ],
     "variants": {
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/bartowski/gemma-2-2b-it-GGUF/resolve/main/gemma-2-2b-it-Q4_K_M.gguf",
-          "readme_url": "",
-          "license_url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE",
           "ram_required_gb": 2.5,
           "download_size_gb": 1.6
         },
         "q8_0": {
           "download_url": "https://huggingface.co/bartowski/gemma-2-2b-it-GGUF/resolve/main/gemma-2-2b-it-Q8_0.gguf",
-          "readme_url": "",
-          "license_url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE",
           "ram_required_gb": 4.0,
           "download_size_gb": 2.6
-        },
-        "f16": {
-          "download_url": "https://huggingface.co/bartowski/gemma-2-2b-it-GGUF/resolve/main/gemma-2-2b-it-f16.gguf",
-          "readme_url": "",
-          "license_url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE",
-          "ram_required_gb": 6.0,
-          "download_size_gb": 5.2
         }
       }
     }
@@ -45,30 +39,36 @@
     "category": "chat",
     "default_quant": "q4_k_m",
     "description": "Professional 9B flagship with frontier-grade reasoning.",
-    "license": "Apache 2.0",
     "prompt_template": "Gemma-Instruct",
+    "licenses": [
+      {
+        "type": "Apache 2.0",
+        "url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE"
+      }
+    ],
     "variants": {
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/bartowski/gemma-2-9b-it-GGUF/resolve/main/gemma-2-9b-it-Q4_K_M.gguf",
-          "readme_url": "",
-          "license_url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE",
           "ram_required_gb": 8.5,
           "download_size_gb": 5.8
         },
         "q8_0": {
           "download_url": "https://huggingface.co/bartowski/gemma-2-9b-it-GGUF/resolve/main/gemma-2-9b-it-Q8_0.gguf",
-          "readme_url": "",
-          "license_url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE",
           "ram_required_gb": 13.0,
           "download_size_gb": 9.6
+        }
+      },
+      "awq": {
+        "4bit": {
+          "repo_url": "https://huggingface.co/hugging-quants/gemma-2-9b-it-AWQ-INT4",
+          "ram_required_gb": 8.0,
+          "download_size_gb": 6.5
         },
-        "f16": {
-          "download_url": "https://huggingface.co/bartowski/gemma-2-9b-it-GGUF/resolve/main/gemma-2-9b-it-f16.gguf",
-          "readme_url": "",
-          "license_url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE",
-          "ram_required_gb": 22.0,
-          "download_size_gb": 18.0
+        "8bit": {
+          "repo_url": "https://huggingface.co/solidrust/gemma-2-9b-it-AWQ",
+          "ram_required_gb": 13.0,
+          "download_size_gb": 10.5
         }
       }
     }
@@ -80,79 +80,38 @@
     "category": "chat",
     "default_quant": "q4_k_m",
     "description": "High-performance dense model for complex workstation tasks.",
-    "license": "Apache 2.0",
     "prompt_template": "Gemma-Instruct",
+    "licenses": [
+      {
+        "type": "Apache 2.0",
+        "url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE"
+      }
+    ],
     "variants": {
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/bartowski/gemma-2-27b-it-GGUF/resolve/main/gemma-2-27b-it-Q4_K_M.gguf",
-          "readme_url": "",
-          "license_url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE",
           "ram_required_gb": 28.0,
           "download_size_gb": 17.5
         },
         "q8_0": {
           "download_url": "https://huggingface.co/bartowski/gemma-2-27b-it-GGUF/resolve/main/gemma-2-27b-it-Q8_0.gguf",
-          "readme_url": "",
-          "license_url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE",
           "ram_required_gb": 42.0,
           "download_size_gb": 29.5
-        },
-        "f16": {
-          "download_url": "https://huggingface.co/bartowski/gemma-2-27b-it-GGUF/resolve/main/gemma-2-27b-it-f16.gguf",
-          "readme_url": "",
-          "license_url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE",
-          "ram_required_gb": 60.0,
-          "download_size_gb": 55.0
         }
       },
       "awq": {
         "4bit": {
-          "download_url": "https://huggingface.co/google/gemma-2-27b-it-awq/resolve/main/model.safetensors",
-          "readme_url": "",
-          "license_url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE",
+          "repo_url": "https://huggingface.co/mbley/google-gemma-2-27b-it-AWQ",
           "ram_required_gb": 20.0,
           "download_size_gb": 16.5
         },
         "8bit": {
-          "download_url": "https://huggingface.co/mradermacher/gemma-2-27b-it-AWQ-8bit/resolve/main/model.safetensors",
-          "readme_url": "",
-          "license_url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE",
+          "repo_url": "https://huggingface.co/mbley/google-gemma-2-27b-it-AWQ",
           "ram_required_gb": 40.0,
           "download_size_gb": 32.0
-        },
-        "f16": {
-          "download_url": "https://huggingface.co/google/gemma-2-27b-it/resolve/main/model.safetensors",
-          "readme_url": "",
-          "license_url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE",
-          "ram_required_gb": 60.0,
-          "download_size_gb": 55.0
-        }
-      },
-      "gptq": {
-        "int4": {
-          "download_url": "https://huggingface.co/google/gemma-2-27b-it-gptq-int4/resolve/main/model.safetensors",
-          "readme_url": "",
-          "license_url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE",
-          "ram_required_gb": 20.0,
-          "download_size_gb": 16.5
-        },
-        "int8": {
-          "download_url": "https://huggingface.co/google/gemma-2-27b-it-gptq-int8/resolve/main/model.safetensors",
-          "readme_url": "",
-          "license_url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE",
-          "ram_required_gb": 40.0,
-          "download_size_gb": 32.0
-        },
-        "f16": {
-          "download_url": "https://huggingface.co/google/gemma-2-27b-it/resolve/main/model.safetensors",
-          "readme_url": "",
-          "license_url": "https://raw.githubusercontent.com/google/gemma_pytorch/main/LICENSE",
-          "ram_required_gb": 60.0,
-          "download_size_gb": 55.0
         }
       }
     }
   }
 }
-

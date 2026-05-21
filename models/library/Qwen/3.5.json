@@ -10,21 +10,22 @@
     "category": "multimodal",
     "default_quant": "q4_k_m",
     "description": "Ultra-compact 0.5B multimodal model for extreme edge vision-language tasks.",
-    "license": "Apache 2.0",
     "prompt_template": "ChatML",
+    "licenses": [
+      {
+        "type": "Apache 2.0",
+        "url": "https://huggingface.co/Qwen/Qwen3.5-0.5B/resolve/main/LICENSE"
+      }
+    ],
     "variants": {
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/unsloth/Qwen3.5-0.5B-GGUF/resolve/main/Qwen3.5-0.5B-UD-Q4_K_XL.gguf",
-          "readme_url": "",
-          "license_url": "https://huggingface.co/Qwen/Qwen3.5-0.5B/raw/main/LICENSE",
           "ram_required_gb": 1.0,
           "download_size_gb": 0.5
         },
         "q8_0": {
           "download_url": "https://huggingface.co/unsloth/Qwen3.5-0.5B-GGUF/resolve/main/Qwen3.5-0.5B-UD-Q8_K_XL.gguf",
-          "readme_url": "",
-          "license_url": "https://huggingface.co/Qwen/Qwen3.5-0.5B/raw/main/LICENSE",
           "ram_required_gb": 1.5,
           "download_size_gb": 0.9
         }
@@ -38,28 +39,27 @@
     "category": "multimodal",
     "default_quant": "q4_k_m",
     "description": "Compact 2B multimodal model combining vision and language for mobile-grade local inference.",
-    "license": "Apache 2.0",
     "prompt_template": "ChatML",
+    "licenses": [
+      {
+        "type": "Apache 2.0",
+        "url": "https://huggingface.co/Qwen/Qwen3.5-2B/resolve/main/LICENSE"
+      }
+    ],
     "variants": {
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/bartowski/Qwen_Qwen3.5-2B-GGUF/resolve/main/Qwen_Qwen3.5-2B-Q4_K_M.gguf",
-          "readme_url": "",
-          "license_url": "https://huggingface.co/Qwen/Qwen3.5-2B/raw/main/LICENSE",
           "ram_required_gb": 2.5,
           "download_size_gb": 1.5
         },
         "q8_0": {
           "download_url": "https://huggingface.co/bartowski/Qwen_Qwen3.5-2B-GGUF/resolve/main/Qwen_Qwen3.5-2B-Q8_0.gguf",
-          "readme_url": "",
-          "license_url": "https://huggingface.co/Qwen/Qwen3.5-2B/raw/main/LICENSE",
           "ram_required_gb": 4.0,
           "download_size_gb": 2.5
         },
         "f16": {
           "download_url": "https://huggingface.co/bartowski/Qwen_Qwen3.5-2B-GGUF/resolve/main/Qwen_Qwen3.5-2B-F16.gguf",
-          "readme_url": "",
-          "license_url": "https://huggingface.co/Qwen/Qwen3.5-2B/raw/main/LICENSE",
           "ram_required_gb": 7.0,
           "download_size_gb": 4.0
         }
@@ -73,21 +73,22 @@
     "category": "multimodal",
     "default_quant": "q4_k_m",
     "description": "Flagship 27B multimodal dense model for professional vision-language reasoning tasks.",
-    "license": "Apache 2.0",
     "prompt_template": "ChatML",
+    "licenses": [
+      {
+        "type": "Apache 2.0",
+        "url": "https://huggingface.co/Qwen/Qwen3.5-27B/resolve/main/LICENSE"
+      }
+    ],
     "variants": {
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/bartowski/Qwen_Qwen3.5-27B-GGUF/resolve/main/Qwen_Qwen3.5-27B-Q4_K_M.gguf",
-          "readme_url": "",
-          "license_url": "https://huggingface.co/Qwen/Qwen3.5-27B/raw/main/LICENSE",
           "ram_required_gb": 22.0,
           "download_size_gb": 16.0
         },
         "q8_0": {
           "download_url": "https://huggingface.co/bartowski/Qwen_Qwen3.5-27B-GGUF/resolve/main/Qwen_Qwen3.5-27B-Q8_0.gguf",
-          "readme_url": "",
-          "license_url": "https://huggingface.co/Qwen/Qwen3.5-27B/raw/main/LICENSE",
           "ram_required_gb": 38.0,
           "download_size_gb": 29.0
         }
@@ -95,8 +96,6 @@
       "gptq": {
         "int4": {
           "download_url": "https://huggingface.co/Qwen/Qwen3.5-27B-GPTQ-Int4/resolve/main/model.safetensors",
-          "readme_url": "",
-          "license_url": "https://huggingface.co/Qwen/Qwen3.5-27B-GPTQ-Int4/raw/main/LICENSE",
           "ram_required_gb": 18.0,
           "download_size_gb": 15.0
         }
@@ -110,14 +109,17 @@
     "category": "multimodal",
     "default_quant": "q4_k_m",
     "description": "35B MoE multimodal model with 3B active params — frontier vision-language at low inference cost.",
-    "license": "Apache 2.0",
     "prompt_template": "ChatML",
+    "licenses": [
+      {
+        "type": "Apache 2.0",
+        "url": "https://huggingface.co/Qwen/Qwen3.5-35B-A3B/resolve/main/LICENSE"
+      }
+    ],
     "variants": {
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/unsloth/Qwen3.5-35B-A3B-GGUF/resolve/main/Qwen3.5-35B-A3B-UD-Q4_K_XL.gguf",
-          "readme_url": "",
-          "license_url": "https://huggingface.co/Qwen/Qwen3.5-35B-A3B/raw/main/LICENSE",
           "ram_required_gb": 20.0,
           "download_size_gb": 15.0
         }
@@ -125,8 +127,6 @@
       "gptq": {
         "int4": {
           "download_url": "https://huggingface.co/Qwen/Qwen3.5-35B-A3B-GPTQ-Int4/resolve/main/model.safetensors",
-          "readme_url": "",
-          "license_url": "https://huggingface.co/Qwen/Qwen3.5-35B-A3B-GPTQ-Int4/raw/main/LICENSE",
           "ram_required_gb": 18.0,
           "download_size_gb": 14.0
         }

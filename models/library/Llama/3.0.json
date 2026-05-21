@@ -10,7 +10,6 @@
     "category": "chat",
     "default_quant": "q4_k_m",
     "description": "Highly capable 8B model for local reasoning.",
-    "license": "Llama 3 Community",
     "prompt_template": "Llama3-Instruct",
     "licenses": [
       {
@@ -22,14 +21,24 @@
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/bartowski/Meta-Llama-3-8B-Instruct-GGUF/resolve/main/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf",
-          "readme_url": "",
-          "ram_required_gb": 8.0,
+          "ram_required_gb": 6.7,
           "download_size_gb": 4.9
         },
         "q8_0": {
           "download_url": "https://huggingface.co/bartowski/Meta-Llama-3-8B-Instruct-GGUF/resolve/main/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
-          "readme_url": "",
-          "ram_required_gb": 12.0,
+          "ram_required_gb": 10.5,
+          "download_size_gb": 8.5
+        }
+      },
+      "awq": {
+        "4bit": {
+          "repo_url": "https://huggingface.co/casperhansen/llama-3-8b-instruct-awq",
+          "ram_required_gb": 7.5,
+          "download_size_gb": 5.73
+        },
+        "8bit": {
+          "repo_url": "https://huggingface.co/mradermacher/Meta-Llama-3-8B-Instruct-AWQ-8bit",
+          "ram_required_gb": 10.4,
           "download_size_gb": 8.5
         }
       }
@@ -42,7 +51,6 @@
     "category": "chat",
     "default_quant": "q4_k_m",
     "description": "High-end 70B monolithic model.",
-    "license": "Llama 3 Community",
     "prompt_template": "Llama3-Instruct",
     "licenses": [
       {
@@ -54,9 +62,20 @@
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/bartowski/Meta-Llama-3-70B-Instruct-GGUF/resolve/main/Meta-Llama-3-70B-Instruct-Q4_K_M.gguf",
-          "readme_url": "",
-          "ram_required_gb": 60.0,
-          "download_size_gb": 42.0
+          "ram_required_gb": 48.6,
+          "download_size_gb": 42.5
+        }
+      },
+      "awq": {
+        "4bit": {
+          "repo_url": "https://huggingface.co/casperhansen/llama-3-70b-instruct-awq",
+          "ram_required_gb": 45.8,
+          "download_size_gb": 39.77
+        },
+        "8bit": {
+          "repo_url": "https://huggingface.co/mradermacher/Meta-Llama-3-70B-Instruct-AWQ-8bit",
+          "ram_required_gb": 82.2,
+          "download_size_gb": 74.5
         }
       }
     }

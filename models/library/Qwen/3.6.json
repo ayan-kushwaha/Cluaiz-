@@ -10,28 +10,27 @@
     "category": "multimodal",
     "default_quant": "q4_k_m",
     "description": "Flagship dense 27B multimodal model for professional vision-language reasoning and agentic workflows.",
-    "license": "Apache 2.0",
     "prompt_template": "ChatML",
+    "licenses": [
+      {
+        "type": "Apache 2.0",
+        "url": "https://huggingface.co/Qwen/Qwen3.6-27B/resolve/main/LICENSE"
+      }
+    ],
     "variants": {
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/unsloth/Qwen3.6-27B-GGUF/resolve/main/Qwen3.6-27B-Q4_K_M.gguf",
-          "readme_url": "",
-          "license_url": "https://huggingface.co/Qwen/Qwen3.6-27B/raw/main/LICENSE",
           "ram_required_gb": 22.0,
           "download_size_gb": 17.0
         },
         "q8_0": {
           "download_url": "https://huggingface.co/unsloth/Qwen3.6-27B-GGUF/resolve/main/Qwen3.6-27B-Q8_0.gguf",
-          "readme_url": "",
-          "license_url": "https://huggingface.co/Qwen/Qwen3.6-27B/raw/main/LICENSE",
           "ram_required_gb": 38.0,
           "download_size_gb": 29.0
         },
         "f16": {
           "download_url": "https://huggingface.co/unsloth/Qwen3.6-27B-GGUF/resolve/main/Qwen3.6-27B-F16.gguf",
-          "readme_url": "",
-          "license_url": "https://huggingface.co/Qwen/Qwen3.6-27B/raw/main/LICENSE",
           "ram_required_gb": 60.0,
           "download_size_gb": 55.0
         }
@@ -45,21 +44,22 @@
     "category": "multimodal",
     "default_quant": "q4_k_m",
     "description": "High-throughput 35B MoE multimodal model with 3B active params for cost-efficient frontier vision tasks.",
-    "license": "Apache 2.0",
     "prompt_template": "ChatML",
+    "licenses": [
+      {
+        "type": "Apache 2.0",
+        "url": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B/resolve/main/LICENSE"
+      }
+    ],
     "variants": {
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF/resolve/main/Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf",
-          "readme_url": "",
-          "license_url": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B/raw/main/LICENSE",
           "ram_required_gb": 20.0,
           "download_size_gb": 15.0
         },
         "q8_0": {
           "download_url": "https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF/resolve/main/Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf",
-          "readme_url": "",
-          "license_url": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B/raw/main/LICENSE",
           "ram_required_gb": 35.0,
           "download_size_gb": 28.0
         }
@@ -67,3 +67,5 @@
     }
   }
 }
+
+

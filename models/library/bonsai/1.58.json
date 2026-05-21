@@ -10,14 +10,17 @@
     "category": "chat",
     "default_quant": "ternary",
     "description": "The Bonsai 1.58b 1.7B represents a leap in extreme edge AI, featuring native ternary (1.58-bit) weight quantization with {-1, 0, +1} states. This 'zero' state dramatically boosts feature filtering while keeping memory footprint under ~500MB. Replacing MatMul with pure addition logic, it ensures zero-latency offline performance on highly constrained silicon, like smartphones or IoT. It guarantees absolute privacy, minimal thermal load, and a 32k context window for real-time edge processing.",
-    "license": "Apache 2.0",
     "prompt_template": "ChatML",
-    "variants": { 
+    "licenses": [
+      {
+        "type": "Apache 2.0",
+        "url": "https://huggingface.co/prism-ml/Ternary-Bonsai-1.7B-gguf/resolve/main/LICENSE"
+      }
+    ],
+    "variants": {
       "gguf": {
         "ternary": {
           "download_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-1.7B-gguf/resolve/main/Ternary-Bonsai-1.7B-Q2_0.gguf",
-          "readme_url": "",
-          "license_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-1.7B-gguf/resolve/main/LICENSE",
           "ram_required_gb": 0.5,
           "download_size_gb": 0.45
         }
@@ -31,14 +34,17 @@
     "category": "chat",
     "default_quant": "ternary",
     "description": "The Bonsai 1.58b 4B is a highly balanced ternary cognitive engine designed for premium edge devices. Utilizing the BitNet b1.58 architecture, this 4 billion parameter network retains near-FP16 fidelity while requiring a mere 1.2GB of RAM. Operating entirely offline, it guarantees Silicon Sovereignty, ensuring secure, fast intelligence without cloud dependence. With a 64k context window, it bridges the gap between mobile and desktop AI, perfectly tuned for complex reasoning and battery efficiency.",
-    "license": "Apache 2.0",
     "prompt_template": "ChatML",
+    "licenses": [
+      {
+        "type": "Apache 2.0",
+        "url": "https://huggingface.co/prism-ml/Ternary-Bonsai-4B-gguf/resolve/main/LICENSE"
+      }
+    ],
     "variants": {
       "gguf": {
         "ternary": {
           "download_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-4B-gguf/resolve/main/Ternary-Bonsai-4B-Q2_0.gguf",
-          "readme_url": "",
-          "license_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-4B-gguf/resolve/main/LICENSE",
           "ram_required_gb": 1.2,
           "download_size_gb": 1.1
         }
@@ -52,14 +58,17 @@
     "category": "chat",
     "default_quant": "ternary",
     "description": "The Bonsai 1.58b 8B is the definitive flagship of the ternary AI frontier. This 8 billion parameter titan utilizes {-1, 0, +1} weight states to achieve unprecedented cognitive depth, demanding only ~2.2GB of RAM. Abandoning standard MatMul for addition-only logic, it executes desktop-class intelligence natively on standard laptops. With a massive 128k context window, it excels in professional coding and deep reasoning, guaranteeing zero-latency sovereign deployment without thermal throttling.",
-    "license": "Apache 2.0",
     "prompt_template": "ChatML",
+    "licenses": [
+      {
+        "type": "Apache 2.0",
+        "url": "https://huggingface.co/prism-ml/Ternary-Bonsai-8B-gguf/resolve/main/LICENSE"
+      }
+    ],
     "variants": {
       "gguf": {
         "ternary": {
           "download_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-8B-gguf/resolve/main/Ternary-Bonsai-8B-Q2_0.gguf",
-          "readme_url": "",
-          "license_url": "https://huggingface.co/prism-ml/Ternary-Bonsai-8B-gguf/resolve/main/LICENSE",
           "ram_required_gb": 2.2,
           "download_size_gb": 2.1
         }
@@ -67,4 +76,3 @@
     }
   }
 }
-

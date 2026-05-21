@@ -10,7 +10,6 @@
     "category": "chat",
     "default_quant": "q4_k_m",
     "description": "Ultra-efficient 1B model for extreme mobile edge tasks.",
-    "license": "Llama 3.2 Community",
     "prompt_template": "Llama3-Instruct",
     "licenses": [
       {
@@ -22,21 +21,13 @@
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.gguf",
-          "readme_url": "",
-          "ram_required_gb": 1.5,
+          "ram_required_gb": 2.3,
           "download_size_gb": 0.8
         },
         "q8_0": {
           "download_url": "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q8_0.gguf",
-          "readme_url": "",
-          "ram_required_gb": 2.5,
+          "ram_required_gb": 2.9,
           "download_size_gb": 1.3
-        },
-        "f16": {
-          "download_url": "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-f16.gguf",
-          "readme_url": "",
-          "ram_required_gb": 4.5,
-          "download_size_gb": 2.5
         }
       }
     }
@@ -48,7 +39,6 @@
     "category": "chat",
     "default_quant": "q4_k_m",
     "description": "The perfect balance of size and reasoning for local laptops and IoT gateways.",
-    "license": "Llama 3.2 Community",
     "prompt_template": "Llama3-Instruct",
     "licenses": [
       {
@@ -60,21 +50,20 @@
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_M.gguf",
-          "readme_url": "",
-          "ram_required_gb": 4.0,
-          "download_size_gb": 2.2
+          "ram_required_gb": 4.6,
+          "download_size_gb": 2.0
         },
         "q8_0": {
           "download_url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q8_0.gguf",
-          "readme_url": "",
-          "ram_required_gb": 6.5,
-          "download_size_gb": 3.6
-        },
-        "f16": {
-          "download_url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-f16.gguf",
-          "readme_url": "",
-          "ram_required_gb": 10.0,
-          "download_size_gb": 6.5
+          "ram_required_gb": 6.1,
+          "download_size_gb": 3.4
+        }
+      },
+      "awq": {
+        "4bit": {
+          "repo_url": "https://huggingface.co/casperhansen/llama-3.2-3b-instruct-awq",
+          "ram_required_gb": 4.6,
+          "download_size_gb": 2.0
         }
       }
     }

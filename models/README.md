@@ -1,60 +1,82 @@
-# 🏛️ Cluaiz Sovereign Model Registry: Extreme Edge AI & 1-Bit LLMs
+# 🏛️ Cluaiz Model Library:  Rules & Architecture
 
-Welcome to the **Cluaiz Sovereign Model Registry** — the ultimate open-source repository for ultra-efficient, decentralized, and native edge AI models. This registry is the engine behind Cluaiz-OS, designed to bring world-class artificial intelligence to highly constrained silicon without compromising on cognitive reasoning, data privacy, or execution speed.
+This repository holds the JSON schemas for the Cluaiz Universal Model Library. Cluaiz is built to run natively anywhere—from Mobile and Laptops (Edge) to Enterprise Servers (Cloud). 
 
-## 🌟 The Vision: Universal Silicon Sovereignty
-
-The future of artificial intelligence is local, secure, and sovereign. We are moving beyond the era of massive cloud clusters and expensive API dependencies. Our registry provides highly optimized, zero-latency inference models that execute natively on standard consumer hardware—from Apple Silicon and Windows laptops to Raspberry Pi clusters and embedded IoT devices. 
-
-Our core philosophy: **"Intelligence must belong to the user, running natively on their own silicon."**
+To ensure a "makkhan" (smooth) download and execution experience without authentication crashes or RAM allocation failures, **every model added to this library MUST follow these ironclad rules.**
 
 ---
 
-## 🚀 Key Architectural Innovations
-
-### 1. The 1-Bit & 1.58-Bit Revolution (Native BitNet)
-We are pioneering the transition from traditional Floating-Point (FP16/INT8) architectures to **Native Binary and Ternary Quantization**.
-- **1-Bit Binary Models:** By constraining weights to strictly `-1` and `+1`, we eliminate computationally expensive Matrix Multiplication (MatMul), relying solely on hyper-fast addition logic. This enables massive models to run on ~300MB to 1.0GB of RAM.
-- **1.58-Bit Ternary Models:** Incorporating the critical 'zero' state (`{-1, 0, +1}`), our ternary models dramatically improve feature filtering and hallucination resistance while maintaining the extreme efficiency of addition-only logic.
-
-### 2. Multi-Format Execution Matrix
-Cluaiz-OS breaks the silo between inference backends. A single model definition encompasses a nested matrix of formats:
-- **GGUF (CPU/Metal/ROCm):** Universal compatibility and aggressive low-bit memory footprints.
-- **AWQ / GPTQ (NVIDIA GPU):** Specialized 4-bit and 8-bit kernels optimized for extreme Throughput (TPS).
-
-### 3. Absolute Zero Q2 Law
-We have surgically eliminated **Q2 (2-bit)** standard quantization from all professional tiers. Standard 2-bit quantization compromises reasoning integrity. Our baseline guarantees that every model delivers industrial-grade "intelligence," not degraded noise.
+## 🛑 1. The Gated Repo Rule (Auth Bypass)
+**RULE:** Never use official gated repositories directly in the JSON files.
+- **Why:** Official repos (like `google/gemma-2-27b-it` or `meta-llama/Meta-Llama-3-8B`) require the user to accept a license and provide a HuggingFace Access Token. This will cause a `403 Access Denied` error for normal users.
+- **Action:** Always use trusted, **ungated community mirrors** for the JSON links. 
+  - *Trusted Uploaders:* `unsloth`, `bartowski`, `MaziyarPanahi`, `mbley`, `shuyuej`, etc.
 
 ---
 
-## 📦 Exploring the Library
+## 🔗 2. The URL Structure Rule (GGUF vs AWQ)
+This is the most critical rule for the Cluaiz Downloader Backend. 
 
-The `library/` directory contains the core neural vault organized by model families. Each family is governed by industrial JSON schemas mapping precise hardware requirements.
+### A. GGUF Models (Edge / CPU / Mac)
+- **Format:** MUST use a **Direct Single File URL**.
+- **Example:** `"download_url": "https://huggingface.co/bartowski/gemma-2-9b-it-GGUF/resolve/main/gemma-2-9b-it-Q4_K_M.gguf"`
+- **Why:** A single GGUF repo contains all quantizations (100+ GB of data). If the backend triggers a folder download, it will download everything and waste storage. We must pinpoint the exact `.gguf` file.
 
-### Featured Models
-- **Bonsai Series (1-Bit & 1.58-Bit):** The flagship of the binary frontier. Delivering unprecedented analytical reasoning with mobile-tier memory requirements. Perfect for battery-powered robotics and local-first applications.
-- **Qwen, Llama, Gemma, & Mistral:** Sovereign versions of industry-standard foundational architectures, carefully tiered into Native GGUF and AWQ formats.
+### B. AWQ and F16 (Servers / GPUs)
+- **Format:** MUST keep the official structure ending in `/resolve/main/model.safetensors` (or directly use a `repo_id` key depending on the backend parser). 
+- **Example:** `"download_url": "https://huggingface.co/mbley/google-gemma-2-27b-it-AWQ/resolve/main/model.safetensors"`
+- **CRITICAL:** **NEVER put `.index.json` at the end of the URL.**
+- **Why:** Large models (like 27B or 35B) exceed HuggingFace's 50GB file limit and are split into 4-5 "shards" (e.g., `model-00001-of-00004.safetensors`). If you give `.index.json`, the app downloads a 40KB text file instead of weights and crashes. The Cluaiz backend should parse the repository name from the URL and use HuggingFace Hub logic to download the entire folder (all shards + tiny config files) together.
 
 ---
 
-## 🛠️ How to Pull (Command Line)
+## 🧠 3. Supported Architecture & Engine Routing (What & Why)
+Cluaiz supports specific formats tailored to backend execution engines:
 
-Use the Cluaiz unified colon-separator syntax to pull models with surgical precision:
+1. **GGUF (Q4, Q8):**
+   - *Backend Engine:* Ollama, LocalAI (powered by `llama.cpp`).
+   - *Target Hardware:* Laptops, PCs, Macs, Mobile (Edge devices).
+   - *Why:* Highly optimized for CPU and unified memory architectures (like Apple Silicon M-series).
 
-```bash
-# Pull the standard balanced GGUF model
-cluaiz pull qwen3:8b
+2. **AWQ (4-bit / 8-bit):**
+   - *Backend Engine:* vLLM, SGLang, LMDeploy.
+   - *Target Hardware:* Consumer GPUs (RTX 4080/4090) and Enterprise Servers.
+   - *Why:* AWQ (Activation-aware Weight Quantization) is the modern industry standard for GPU serving. Providing both 4-bit (for consumer GPUs) and 8-bit (for enterprise servers with extra VRAM) gives perfect flexibility.
+   - *Note on GPTQ:* **We do NOT support GPTQ.** AWQ and GPTQ serve the identical purpose of VRAM reduction, but AWQ is newer, faster on modern GPUs, and retains higher accuracy. Supporting both is unnecessary library bloat.
 
-# Pull the highly compressed Ternary 1.58-bit model
-cluaiz pull bonsai1.58:4b:gguf:ternary
+3. **BitNet / 1-bit / 1.58-bit:**
+   - *Target Hardware:* Ultra-edge devices (Raspberry Pi, Low-end Phones).
+   - *Why:* The next generation of neural networks, requiring minimal hardware power for inference.
 
-# Pull the extreme throughput NVIDIA AWQ model
-cluaiz pull llama3.2:11b:awq:4bit
-```
+---
 
-## 🛡️ Privacy & Zero-Latency Guarantee
+## 🗑️ 4. The Lean Library Protocol (No F16/Base Models in JSON)
+**RULE:** Do NOT include F16 (FP16/BF16) uncompressed Base models in the JSON library UI.
+- *Why:* 99% of normal users will accidentally click a 60GB F16 model, wasting bandwidth and crashing their edge devices due to lack of VRAM. We must keep the curated library clean ("kachra nahi failayenge").
+- *How Whales use F16:* The Cluaiz engine fully supports F16/Base models (for fine-tuning or high-end multi-A100 server usage). However, advanced users must manually input the HuggingFace Repo ID via an "Advanced/Custom Download" input field. We provide the engine support, but do not advertise heavy base models in the default curated UI.
 
-Every model in this registry is engineered to run **100% offline**. You never have to send proprietary code, financial data, or personal conversations to a centralized cloud server.
+---
 
-**Signed,**  
-*Antigravity (Archer CTO)* 🏛️⚔️🏁
+## 📏 5. The Ultimate Size Matrix (Hardware vs Quantization)
+**RULE:** We map Quantization formats based on Model Size and target hardware logic.
+
+1. **Tiny Models (< 8B Parameters) - e.g., Gemma 2B, Qwen 1.5B, Llama 3.2 1B:**
+   - **Allowed Formats:** ONLY `GGUF` (Q4_K_M, Q8_0) and `BitNet`.
+   - **Banned Formats:** `AWQ`.
+   - *Logic:* Providing GPU-heavy AWQ for 2B models is completely illogical. Users with 24GB VRAM GPUs (RTX 4090) do not run 2B models; they run 27B models. Tiny models are exclusively for Edge devices, which run `llama.cpp` (GGUF). 
+
+2. **Medium/Large Models (8B to 35B Parameters) - e.g., Gemma 9B, Gemma 27B, Qwen 35B:**
+   - **Allowed Formats:** `GGUF` (Q4, Q8 for Edge) + `AWQ` (4-bit, 8-bit for GPU/Servers).
+   - *Logic:* Servers and high-end GPUs have the VRAM headroom to run 8-bit AWQ, providing near-uncompressed accuracy while still saving significant memory compared to F16. Therefore, both 4-bit and 8-bit AWQ are fully supported for medium/large models.
+
+---
+
+## 🗑️ 4. The Lean Library Protocol (No F16/Base Models in JSON)
+**RULE:** Do NOT include F16 or uncompressed Base models in the JSON library.
+- **Why:** 99% of normal users will accidentally click a 60GB F16 model, wasting bandwidth and crashing their devices because they lack VRAM. We will not clutter the curated library ("kachra nahi failayenge").
+- **How Whales use F16:** The engine fully supports F16/Base models. However, advanced users/whales must manually paste the HuggingFace Repo ID into an "Advanced Download" field in the Cluaiz App. We provide the engine support, but we do not advertise heavy models in the curated UI.
+
+---
+
+*Written by the Antigravity CTO AI.*  
+*Any deviation from these rules will break the Cluaiz Downloader Pipeline.*

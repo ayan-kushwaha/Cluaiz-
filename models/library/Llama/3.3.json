@@ -10,53 +10,26 @@
     "category": "frontier",
     "default_quant": "q4_k_m",
     "description": "Achieves 405B-level performance at a fraction of the cost, making it the ultimate local reasoning engine.",
-    "license": "Llama 3.3 Community",
     "prompt_template": "Llama3-Instruct",
     "licenses": [
       {
         "type": "Llama 3.3 Community License",
-        "url": "https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct/resolve/main/LICENSE.txt"
+        "url": "https://raw.githubusercontent.com/meta-llama/llama-models/main/models/llama3_3/LICENSE"
       }
     ],
     "variants": {
       "gguf": {
         "q4_k_m": {
           "download_url": "https://huggingface.co/bartowski/Llama-3.3-70B-Instruct-GGUF/resolve/main/Llama-3.3-70B-Instruct-Q4_K_M.gguf",
-          "readme_url": "",
-          "ram_required_gb": 60.0,
-          "download_size_gb": 48.0
-        },
-        "q8_0": {
-          "download_url": "https://huggingface.co/bartowski/Llama-3.3-70B-Instruct-GGUF/resolve/main/Llama-3.3-70B-Instruct-Q8_0.gguf",
-          "readme_url": "",
-          "ram_required_gb": 90.0,
-          "download_size_gb": 82.0
-        },
-        "f16": {
-          "download_url": "https://huggingface.co/bartowski/Llama-3.3-70B-Instruct-GGUF/resolve/main/Llama-3.3-70B-Instruct-f16.gguf",
-          "readme_url": "",
-          "ram_required_gb": 160.0,
-          "download_size_gb": 142.0
+          "ram_required_gb": 60.6,
+          "download_size_gb": 40.0
         }
       },
       "awq": {
         "4bit": {
-          "download_url": "https://huggingface.co/hugging-quants/Llama-3.3-70B-Instruct-AWQ-INT4/resolve/main/model.safetensors",
-          "readme_url": "",
-          "ram_required_gb": 45.0,
+          "repo_url": "https://huggingface.co/casperhansen/llama-3.3-70b-instruct-awq",
+          "ram_required_gb": 58.0,
           "download_size_gb": 40.0
-        },
-        "8bit": {
-          "download_url": "https://huggingface.co/mradermacher/Llama-3.3-70B-Instruct-AWQ-8bit/resolve/main/model.safetensors",
-          "readme_url": "",
-          "ram_required_gb": 90.0,
-          "download_size_gb": 82.0
-        },
-        "f16": {
-          "download_url": "https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct/resolve/main/model.safetensors",
-          "readme_url": "",
-          "ram_required_gb": 160.0,
-          "download_size_gb": 142.0
         }
       }
     }
