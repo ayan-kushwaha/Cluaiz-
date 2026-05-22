@@ -22,17 +22,12 @@
         "q4_k_m": {
           "download_url": "https://huggingface.co/unsloth/Qwen3.6-27B-GGUF/resolve/main/Qwen3.6-27B-Q4_K_M.gguf",
           "ram_required_gb": 22.0,
-          "download_size_gb": 17.0
+          "download_size_gb": 15.66
         },
         "q8_0": {
           "download_url": "https://huggingface.co/unsloth/Qwen3.6-27B-GGUF/resolve/main/Qwen3.6-27B-Q8_0.gguf",
           "ram_required_gb": 38.0,
-          "download_size_gb": 29.0
-        },
-        "f16": {
-          "download_url": "https://huggingface.co/unsloth/Qwen3.6-27B-GGUF/resolve/main/Qwen3.6-27B-F16.gguf",
-          "ram_required_gb": 60.0,
-          "download_size_gb": 55.0
+          "download_size_gb": 26.63
         }
       }
     }
@@ -56,12 +51,12 @@
         "q4_k_m": {
           "download_url": "https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF/resolve/main/Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf",
           "ram_required_gb": 20.0,
-          "download_size_gb": 15.0
+          "download_size_gb": 20.82
         },
         "q8_0": {
           "download_url": "https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF/resolve/main/Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf",
           "ram_required_gb": 35.0,
-          "download_size_gb": 28.0
+          "download_size_gb": 35.81
         }
       }
     }

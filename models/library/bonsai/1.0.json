@@ -21,8 +21,8 @@
       "gguf": {
         "binary": {
           "download_url": "https://huggingface.co/prism-ml/Bonsai-1.7B-gguf/resolve/main/Bonsai-1.7B-Q1_0.gguf",
-          "ram_required_gb": 0.3,
-          "download_size_gb": 0.23
+          "ram_required_gb": 0.4,
+          "download_size_gb": 0.24
         }
       }
     }

@@ -123,13 +123,6 @@
           "ram_required_gb": 20.0,
           "download_size_gb": 15.0
         }
-      },
-      "gptq": {
-        "int4": {
-          "download_url": "https://huggingface.co/Qwen/Qwen3.5-35B-A3B-GPTQ-Int4/resolve/main/model.safetensors",
-          "ram_required_gb": 18.0,
-          "download_size_gb": 14.0
-        }
       }
     }
   }

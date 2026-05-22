@@ -98,11 +98,11 @@ fn main() {
     if feature_sycl {
         if let Ok(v) = env::var("DPCPP_CXX") { config.define("CMAKE_CXX_COMPILER", &v); }
         if let Ok(v) = env::var("DPCPP_CC")  { config.define("CMAKE_C_COMPILER",   &v); }
+    }
 
-        // Use MSVC-style flags only on Windows. Linux icpx expects GCC-style flags.
-        if target_os == "windows" {
-            config.cxxflag("/EHsc");
-        }
+    // Use MSVC-style flags only on Windows.
+    if target_os == "windows" {
+        config.cxxflag("/EHsc");
     }
 
     if feature_cann {

@@ -278,9 +278,8 @@ Since the pre-compiled `cluaiz` executables are built dynamically on GitHub Acti
 
 ## 📜 **License & Legal**
 
-Cluaiz is governed by the **Cluaiz Industrial License (CSL) v1.0**:
-- **Personal Use**: Free for individuals and startups under $10M revenue.
-- **Sovereign Standing**: Maintained by Cluaiz as a decentralized, open-source technology framework for the builder community.
+Cluaiz is released under the **Apache License 2.0**.
+See the [LICENSE](LICENSE) file for more details.
 
 ---
 
