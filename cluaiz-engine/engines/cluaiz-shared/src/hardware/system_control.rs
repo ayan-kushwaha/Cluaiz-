@@ -461,6 +461,27 @@ impl HardwareOrchestrator {
         Accelerators { gpus, npus, tpus }
     }
 
+    /// 🚀 SOVEREIGN FAST-PATH: Instant live VRAM probe bypassing all other benchmarks
+    pub fn live_vram_probe() -> f64 {
+        if let Ok(nvml) = nvml_wrapper::Nvml::init() {
+            if let Ok(device_count) = nvml.device_count() {
+                let mut total_free = 0.0;
+                for i in 0..device_count {
+                    if let Ok(device) = nvml.device_by_index(i) {
+                        if let Ok(memory) = device.memory_info() {
+                            total_free += memory.free as f64 / 1_073_741_824.0;
+                        }
+                    }
+                }
+                if total_free > 0.0 {
+                    return total_free;
+                }
+            }
+        }
+        // Fallback: If NVML fails or AMD/Intel, return 0.0 so governor uses math
+        0.0
+    }
+
     fn probe_drivers() -> Vec<crate::hardware::schema::profiles::EngineDriver> {
         let mut drivers = Vec::new();
 

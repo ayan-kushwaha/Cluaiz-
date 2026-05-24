@@ -161,11 +161,20 @@ impl Bootstrapper {
     fn sync_dev_artifacts() -> Result<()> {
         let hub_path = cluaiz_shared::HardwareGovernor::resolve_hub_path();
         
-        // Resolve project root (assuming we are in Apps/cli)
-        let current_dir = std::env::current_dir().unwrap_or_default();
-        let project_root = current_dir.parent()
-            .and_then(|p| p.parent())
-            .map(|p| p.to_path_buf());
+        // Robust workspace root lookup by traversing parent directories
+        let mut project_root = None;
+        let mut path = std::env::current_dir().unwrap_or_default();
+        for _ in 0..5 {
+            if path.join("Apps").exists() && path.join("interface-engines").exists() {
+                project_root = Some(path.clone());
+                break;
+            }
+            if let Some(parent) = path.parent() {
+                path = parent.to_path_buf();
+            } else {
+                break;
+            }
+        }
         
         if let Some(root) = project_root {
             let target_dir = root.join("target").join("debug");
@@ -185,18 +194,44 @@ impl Bootstrapper {
                 }
             }
 
-            // 2. Kernel Sync (cluaiz_llama.dll -> cluaiz-llama.dll)
+            // 2. Kernel Sync (cluaiz_llama.dll -> cluaiz-llama.dll or cluaiz-llama-cuda.dll)
             let kernel_src = target_dir.join(format!("cluaiz_llama.{}", ext));
-            let kernel_dest = hub_path.join("interface-engines").join("kernels").join(format!("cluaiz-llama.{}", ext));
+            let control_path = cluaiz_shared::HardwareGovernor::resolve_engine_path().join("system_control.json");
+            let has_nvidia = if control_path.exists() {
+                if let Ok(content) = std::fs::read_to_string(&control_path) {
+                    if let Ok(control_data) = serde_json::from_str::<serde_json::Value>(&content) {
+                        control_data["silicon_truth"]["accelerators"]["gpus"]
+                            .as_array()
+                            .map(|gpus| gpus.iter().any(|g| g["vendor"].as_str().map(|v| v.to_uppercase()).unwrap_or_default().contains("NVIDIA")))
+                            .unwrap_or(false)
+                    } else { false }
+                } else { false }
+            } else { false };
+
+            let kernel_name = if has_nvidia { "cluaiz-llama-cuda" } else { "cluaiz-llama" };
+            let kernel_dest = hub_path.join("interface-engines").join(format!("{}.{}", kernel_name, ext));
+            let kernel_dest_subdir = hub_path.join("interface-engines").join("kernels").join(format!("{}.{}", kernel_name, ext));
             
             if kernel_src.exists() {
+                // Copy to both root and kernels subdirectory to ensure loader finds it
                 let _ = std::fs::create_dir_all(kernel_dest.parent().unwrap());
+                let _ = std::fs::create_dir_all(kernel_dest_subdir.parent().unwrap());
+                
                 if let Err(e) = std::fs::copy(&kernel_src, &kernel_dest) {
-                    tracing::warn!("⚠️ [DevSync] Kernel Link Failed: {}. (DLL might be in use)", e);
+                    tracing::warn!("⚠️ [DevSync] Kernel Link Failed (root): {}.", e);
                 } else {
-                    let _ = std::fs::write(hub_path.join("interface-engines").join("kernels").join("cluaiz-llama.ready"), "dev-release");
-                    tracing::info!("🧬 [DevSync] Kernel Linked: {:?}", kernel_dest);
+                    let _ = std::fs::write(hub_path.join("interface-engines").join(format!("{}.ready", kernel_name)), "dev-release");
+                    tracing::info!("🧬 [DevSync] Kernel Linked (root): {:?}", kernel_dest);
                 }
+                
+                if let Err(e) = std::fs::copy(&kernel_src, &kernel_dest_subdir) {
+                    tracing::warn!("⚠️ [DevSync] Kernel Link Failed (subdir): {}.", e);
+                } else {
+                    let _ = std::fs::write(hub_path.join("interface-engines").join("kernels").join(format!("{}.ready", kernel_name)), "dev-release");
+                    tracing::info!("🧬 [DevSync] Kernel Linked (subdir): {:?}", kernel_dest_subdir);
+                }
+            } else {
+                tracing::warn!("⚠️ [DevSync] Kernel source not found at: {:?}", kernel_src);
             }
         } else {
             tracing::error!("❌ [DevSync] Failed to resolve project root. Binaries will not be synced.");

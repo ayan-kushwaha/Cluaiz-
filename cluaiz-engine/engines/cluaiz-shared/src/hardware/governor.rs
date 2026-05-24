@@ -14,6 +14,15 @@ pub struct ArbiterState {
     pub active_allocations: HashMap<String, f64>,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+pub struct ProcessInfo {
+    pub pid: u32,
+    pub model_id: String,
+    pub vram_gb: f64,
+    pub context_size: usize,
+    pub engine: String,
+}
+
 static ARBITER: Lazy<Mutex<ArbiterState>> = Lazy::new(|| {
     Mutex::new(ArbiterState {
         total_vram_gb: 0.0,
@@ -89,7 +98,8 @@ impl HardwareGovernor {
         // 🛡️ Sovereign Limit: In Max Boost, we allow 98% utilization.
         let booster = Self::load_booster_settings().unwrap_or_default();
         let safety_margin = match booster.mode_run {
-            crate::hardware::schema::booster::BoosterMode::MaxBoost => 0.02, // 2% Margin for DWM
+            crate::hardware::schema::booster::BoosterMode::UltraMaxBoost | crate::hardware::schema::booster::BoosterMode::HyperCluster => 0.025, // 2.5% Margin for extreme modes (102MB on 4GB)
+            crate::hardware::schema::booster::BoosterMode::MaxBoost => 0.05, // 5% Margin
             crate::hardware::schema::booster::BoosterMode::Balance => 0.07,  // 7% Margin
             _ => 0.12,                                                      // 12% for multitasking 
         };
@@ -113,6 +123,17 @@ impl HardwareGovernor {
             "✅ [VRAM Arbiter] Allocated {:.2}GB to '{}'. Current Load: {:.2}/{:.2}GB",
             required_gb, engine_id, arbiter.allocated_vram_gb, arbiter.total_vram_gb
         );
+
+        // Sync to cross-process registry
+        let mut registry = Self::load_process_registry();
+        registry.insert(std::process::id().to_string(), ProcessInfo {
+            pid: std::process::id(),
+            model_id: engine_id.to_string(),
+            vram_gb: required_gb,
+            context_size: 0, // Will be updated by negotiate_vram_envelope
+            engine: "Native Llama".to_string(),
+        });
+        Self::save_process_registry(&registry);
 
         Ok(())
     }
@@ -152,12 +173,12 @@ impl HardwareGovernor {
             crate::hardware::schema::booster::BoosterMode::Edge => 0.05f64.min(0.2 / total_gb),         // 📱 Max 5% or 200MB
             crate::hardware::schema::booster::BoosterMode::Multitasking => 0.30f64.min(1.5 / total_gb), // 💻 Max 30% or 1.5GB
             crate::hardware::schema::booster::BoosterMode::Balance => 0.15f64.min(2.0 / total_gb),      // ⚖️ Max 15% or 2GB
-            crate::hardware::schema::booster::BoosterMode::MaxBoost => 0.05f64.min(1.0 / total_gb),     // 🚀 Max 5% or 1GB
-            crate::hardware::schema::booster::BoosterMode::UltraMaxBoost => 0.01f64.min(0.4 / total_gb), // 🔥 Max 1% or 400MB
+            crate::hardware::schema::booster::BoosterMode::MaxBoost => 0.10f64.max(0.6 / total_gb),     // 🚀 Safe Aggressive: 600MB Margin (Zero Spill)
+            crate::hardware::schema::booster::BoosterMode::UltraMaxBoost => 0.01f64.max(0.25 / total_gb), // 🔥 Absolute Limit: 250MB Margin (Maximum Context, Risk of Spill)
             crate::hardware::schema::booster::BoosterMode::HyperCluster => {
                 if total_gb < 40.0 {
                     println!("⚠️ [Arbiter] VRAM GUARD: HyperCluster rejected (<40GB). Falling back to UltraMaxBoost.");
-                    0.01f64.min(0.3 / total_gb) // Fallback to UltraMaxBoost safety
+                    0.01f64.max(0.25 / total_gb) // Fallback to UltraMaxBoost safety
                 } else {
                     0.15 // 🌌 Server (True Zero-ish)
                 }
@@ -165,11 +186,10 @@ impl HardwareGovernor {
         }; 
 
         // 🛡️ FLOOR SAFETY: Ensure OS always has breathing room.
-        // Aryan's Rule: Below 100MB, even the cursor lags.
         let floor_gb = if matches!(booster.mode_run, crate::hardware::schema::booster::BoosterMode::UltraMaxBoost | crate::hardware::schema::booster::BoosterMode::HyperCluster) {
-            0.10 // 100MB Absolute Minimum for Sovereign Modes
+            0.25 // 250MB Absolute Minimum
         } else {
-            0.25 // 250MB Standard Safety Floor
+            0.60 // 600MB Standard Safety Floor
         };
 
         // Apply floor unless we are on massive server hardware (>24GB)
@@ -184,26 +204,31 @@ impl HardwareGovernor {
             println!("🔥 [Arbiter] ULTRAMAX RECLAIM: Forcing ultra-tight {}MB VRAM margin.", (margin * total_gb * 1024.0) as usize);
         }
 
-        // 🛡️ DYNAMIC HEADROOM: Calculate available space without double-counting.
-        // We only subtract allocations that DON'T belong to the current model identity.
-        let other_allocations = arbiter.active_allocations.iter()
-            .filter(|(id, _)| !id.contains(&dna.model_identity))
-            .map(|(_, gb)| gb)
-            .sum::<f64>();
-
-        let available_gb = (total_gb * (1.0 - margin)) - other_allocations;
-        
-        // Final Safety Check: If weights aren't loaded, we must reserve space for them.
-        let weights_already_loaded = arbiter.active_allocations.keys().any(|k| k.contains(&dna.model_identity));
+        // 🛡️ DYNAMIC HEADROOM & LIVE SOVEREIGN PROBE
+        // If weights are already loaded, we don't trust static math. We poll the raw silicon for TRUE free VRAM!
+        let weights_already_loaded = dna.weights_already_loaded || arbiter.active_allocations.keys().any(|k| k.contains(&dna.model_identity));
         let final_available_gb = if weights_already_loaded {
-            available_gb // Weights already accounted for in allocated_vram_gb (if we tracked it that way)
+            let live_free = crate::hardware::system_control::HardwareOrchestrator::live_vram_probe();
+            if live_free > 0.0 {
+                let margin_gb = margin * total_gb;
+                println!("🔍 [Arbiter] Live VRAM Probe: {:.2}GB Physically Free. Reserving {:.2}GB Margin.", live_free, margin_gb);
+                (live_free - margin_gb).max(0.0)
+            } else {
+                // Fallback math if NVML fails (AMD/Intel)
+                let other_allocations = arbiter.active_allocations.iter().filter(|(id, _)| !id.contains(&dna.model_identity)).map(|(_, gb)| gb).sum::<f64>();
+                let available_gb = (total_gb * (1.0 - margin)) - other_allocations;
+                available_gb.max(0.0)
+            }
         } else {
-            available_gb - (dna.weights_size_gb as f64)
-        }.max(0.0);
+            // First pass (Pre-load): Calculate theoretically
+            let other_allocations = arbiter.active_allocations.iter().filter(|(id, _)| !id.contains(&dna.model_identity)).map(|(_, gb)| gb).sum::<f64>();
+            let available_gb = (total_gb * (1.0 - margin)) - other_allocations;
+            (available_gb - (dna.weights_size_gb as f64)).max(0.0)
+        };
         
         // 🧪 SOVEREIGN MATH: Calculate KV-Cache cost per 1024 tokens for THIS model
         let layers = dna.layer_count.unwrap_or(32) as f64;
-        let heads = dna.attention_head_count.unwrap_or(32) as f64;
+        let kv_heads = dna.attention_head_count_kv.or(dna.attention_head_count).unwrap_or(32) as f64;
         
         // 🧬 DNA Interrogation: head_dim = hidden_size / heads (Architecture Truth)
         let head_dim_calc = if let (Some(h), Some(c)) = (dna.hidden_size, dna.attention_head_count) {
@@ -218,7 +243,7 @@ impl HardwareGovernor {
         let bytes_per_element = 2.0; // FP16 standard (Safe)
 
         // GB per 1024 tokens
-        let gb_per_k = (1024.0 * layers * heads * head_dim * bytes_per_element * 2.0) / (1024.0 * 1024.0 * 1024.0);
+        let gb_per_k = (1024.0 * layers * kv_heads * head_dim * bytes_per_element * 2.0) / (1024.0 * 1024.0 * 1024.0);
         
         // 🛑 DYNAMIC STABILITY CAP: No more static traps.
         // Rule: Never exceed what the model architecture supports (DNA Truth).
@@ -231,7 +256,7 @@ impl HardwareGovernor {
         
         // Expansion logic for high-power modes (Only if architecture allows)
         if matches!(booster.mode_run, crate::hardware::schema::booster::BoosterMode::MaxBoost | crate::hardware::schema::booster::BoosterMode::UltraMaxBoost | crate::hardware::schema::booster::BoosterMode::HyperCluster) {
-            let possible_max = (available_gb / gb_per_k) * 1024.0;
+            let possible_max = (final_available_gb / gb_per_k) * 1024.0;
             // Expand to physical VRAM limit, but never exceed architecture DNA
             current_ctx = current_ctx.max(possible_max as usize).min(arch_cap);
         }
@@ -245,15 +270,23 @@ impl HardwareGovernor {
         // Iterative step down if OOM risk detected
         while current_ctx > 1024 {
             let required_gb = (current_ctx as f64 / 1024.0) * gb_per_k;
-            if required_gb <= available_gb {
+            if required_gb <= final_available_gb {
                 break;
             }
-            current_ctx -= 1024; 
+            current_ctx -= 512; 
         }
 
         println!("⚖️ [Arbiter] Envelope Negotiated: Mode={:?}, Available: {:.2}GB, Margin: {:.1}MB -> Safe Context: {} tokens", 
-            booster.mode_run, available_gb, margin * total_gb * 1024.0, current_ctx);
+            booster.mode_run, final_available_gb, margin * total_gb * 1024.0, current_ctx);
             
+        // Sync context size to cross-process registry
+        let mut registry = Self::load_process_registry();
+        let pid_str = std::process::id().to_string();
+        if let Some(info) = registry.get_mut(&pid_str) {
+            info.context_size = current_ctx;
+            Self::save_process_registry(&registry);
+        }
+
         current_ctx
     }
 
@@ -271,7 +304,30 @@ impl HardwareGovernor {
             );
         }
 
+        // Remove from cross-process registry
+        let mut registry = Self::load_process_registry();
+        registry.remove(&std::process::id().to_string());
+        Self::save_process_registry(&registry);
+
         Ok(())
+    }
+
+    /// Load the cross-process registry of active LLMs.
+    pub fn load_process_registry() -> HashMap<String, ProcessInfo> {
+        let path = Self::resolve_engine_path().join("active_processes.json");
+        if let Ok(data) = std::fs::read_to_string(&path) {
+            serde_json::from_str(&data).unwrap_or_default()
+        } else {
+            HashMap::new()
+        }
+    }
+
+    /// Save the cross-process registry.
+    pub fn save_process_registry(registry: &HashMap<String, ProcessInfo>) {
+        let path = Self::resolve_engine_path().join("active_processes.json");
+        if let Ok(data) = serde_json::to_string_pretty(registry) {
+            let _ = std::fs::write(&path, data);
+        }
     }
 
     /// ⚙️ Updates a specific field in the sovereign configuration.

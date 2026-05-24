@@ -317,55 +317,84 @@ impl CoreRoster {
                     continue;
                 }
 
-                // 🧬 Each Key is an ID, Value is an Array of Model variants
-                if let Some(models_array) = value.as_array() {
-                    for m_val in models_array {
-                        let mut m: InstallationModel = serde_json::from_value(m_val.clone())
-                            .map_err(|e| format!("Parsing error in {}: {}", key, e))?;
-                        
-                        // 💉 INJECT ID from Key (The Sovereign Way)
-                        m.id = key.clone();
+                // 🧬 Each Key is an ID, Value is an Object representing the Model
+                if let Some(model_obj) = value.as_object() {
+                    let name = model_obj.get("name").and_then(|v| v.as_str()).unwrap_or("Unknown").to_string();
+                    let architecture = model_obj.get("architecture").and_then(|v| v.as_str()).unwrap_or("Unknown").to_string();
+                    let context_window = model_obj.get("context_window").and_then(|v| v.as_str()).unwrap_or("8k").to_string();
+                    let category = model_obj.get("category").and_then(|v| v.as_str()).unwrap_or("chat").to_string();
+                    let default_quant = model_obj.get("default_quant").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                    let description = model_obj.get("description").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                    
+                    if let Some(variants) = model_obj.get("variants").and_then(|v| v.as_object()) {
+                        for (format_key, format_val) in variants {
+                            if let Some(quants) = format_val.as_object() {
+                                for (quant_key, quant_val) in quants {
+                                    if let Some(q_obj) = quant_val.as_object() {
+                                        let download_url = q_obj.get("download_url").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                                        let ram_required_gb = q_obj.get("ram_required_gb").and_then(|v| {
+                                            if v.is_f64() { v.as_f64() } else if v.is_i64() { Some(v.as_i64().unwrap() as f64) } else { None }
+                                        }).unwrap_or(0.0);
+                                        let download_size_gb = q_obj.get("download_size_gb").and_then(|v| {
+                                            if v.is_f64() { v.as_f64() } else if v.is_i64() { Some(v.as_i64().unwrap() as f64) } else { None }
+                                        }).unwrap_or(0.0);
+                                        
+                                        // 💉 INJECT ID from Key + Format + Quant (The Sovereign Way)
+                                        let full_id = format!("{}:{}:{}", key, format_key, quant_key);
 
-                        let gguf_filename = m.download_url
-                            .split('/')
-                            .next_back()
-                            .map(|s| s.to_string())
-                            .unwrap_or_else(|| format!("{}-Q4_K_M.gguf", m.id));
+                                        let gguf_filename = download_url
+                                            .split('/')
+                                            .next_back()
+                                            .map(|s| s.to_string())
+                                            .unwrap_or_else(|| format!("{}-{}.{}", key, quant_key, format_key));
 
-                        let input_modality = if m.context_window.contains("256k") || m.context_window.contains("128k") {
-                            "Text + Vision".to_string()
-                        } else {
-                            "Text".to_string()
-                        };
+                                        let input_modality = if context_window.contains("256k") || context_window.contains("128k") {
+                                            "Text + Vision".to_string()
+                                        } else {
+                                            "Text".to_string()
+                                        };
 
-                        manifests.push(ModelManifest {
-                            id: m.id,
-                            name: m.name,
-                            architecture: m.architecture,
-                            parameters: m.parameters,
-                            training_tokens: m.training_tokens,
-                            bit_depth: m.bit_depth,
-                            ram_required_gb: m.ram_required_gb,
-                            download_size_gb: m.download_size_gb,
-                            huggingface_repo: m.huggingface_repo,
-                            huggingface_filename: gguf_filename,
-                            download_url: m.download_url,
-                            description: m.description,
-                            is_cloud_api: m.is_cloud_api,
-                            requires_gpu: m.requires_gpu,
-                            is_free_tier: true,
-                            input_modality,
-                            context_window: m.context_window,
-                            family: family_name.to_string(),
-                            category: m.category,
-                            assets: m.assets,
-                            local_path: None,
-                            dna_path: None,
-                            has_vision: m.has_vision,
-                            has_audio: m.has_audio,
-                            expert_count: m.expert_count,
-                            experts_per_token: m.experts_per_token,
-                        });
+                                        let mut m = ModelManifest {
+                                            id: full_id,
+                                            name: name.clone(),
+                                            architecture: architecture.clone(),
+                                            parameters: "".to_string(), // can be deduced if needed
+                                            training_tokens: "".to_string(),
+                                            bit_depth: 4.0, // default approximation
+                                            ram_required_gb,
+                                            download_size_gb,
+                                            huggingface_repo: "".to_string(),
+                                            huggingface_filename: gguf_filename,
+                                            download_url: download_url.clone(),
+                                            description: description.clone(),
+                                            is_cloud_api: false,
+                                            requires_gpu: format_key != "gguf" && format_key != "bitnet",
+                                            is_free_tier: true,
+                                            input_modality,
+                                            context_window: context_window.clone(),
+                                            family: family_name.to_string(),
+                                            category: category.clone(),
+                                            assets: Vec::new(),
+                                            local_path: None,
+                                            dna_path: None,
+                                            has_vision: category == "multimodal" || architecture.contains("VL"),
+                                            has_audio: category == "audio",
+                                            expert_count: None,
+                                            experts_per_token: None,
+                                        };
+
+                                        // Also add base alias for default_quant
+                                        if quant_key == &default_quant && format_key == "gguf" {
+                                            let mut alias = m.clone();
+                                            alias.id = key.clone();
+                                            manifests.push(alias);
+                                        }
+
+                                        manifests.push(m);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

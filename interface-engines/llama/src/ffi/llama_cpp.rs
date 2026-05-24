@@ -3,6 +3,10 @@
 
 use std::os::raw::{c_char, c_int, c_float};
 
+pub const GGML_TYPE_F16: i32 = 1;
+pub const GGML_TYPE_Q8_0: i32 = 8;
+pub const GGML_TYPE_Q4_0: i32 = 2;
+
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct LlamaModelParams {
@@ -32,8 +36,10 @@ pub struct LlamaContextParams {
     pub n_batch: u32,
     pub n_ubatch: u32,
     pub n_seq_max: u32,
+    pub n_rs_seq: u32,
     pub n_threads: i32,
     pub n_threads_batch: i32,
+    pub ctx_type: i32, // enum llama_context_type
     pub rope_scaling_type: i32,
     pub pooling_type: i32,
     pub attention_type: i32,
@@ -136,7 +142,7 @@ extern "C" {
     pub fn llama_get_memory(ctx: *const std::ffi::c_void) -> *mut std::ffi::c_void;
     pub fn llama_memory_seq_add(mem: *mut std::ffi::c_void, seq_id: i32, p0: i32, p1: i32, delta: i32);
     pub fn llama_memory_seq_cp(mem: *mut std::ffi::c_void, seq_id_src: i32, seq_id_dst: i32, p0: i32, p1: i32);
-    pub fn llama_memory_seq_rm(mem: *mut std::ffi::c_void, seq_id: i32, p0: i32, p1: i32);
+    pub fn llama_memory_seq_rm(mem: *mut std::ffi::c_void, seq_id: i32, p0: i32, p1: i32) -> bool;
     pub fn llama_get_kv_cache_token_count(ctx: *const std::ffi::c_void) -> i32;
 
     /// 🔤 Convert token to piece (string).

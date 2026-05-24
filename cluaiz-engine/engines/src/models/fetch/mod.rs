@@ -96,25 +96,10 @@ impl ModelDownloader {
             .build()
             .map_err(|e| e.to_string())?;
 
-        // 1. Download the main weights
+        // 1. Download the main weights (The ONLY file downloaded)
         Self::download_single_file(&client, download_url, &dest_dir.join(filename), tx.clone(), abort.clone()).await?;
 
-        // 2. Download all specified assets (tokenizer, config, etc.)
-        for asset in assets {
-            if abort.load(Ordering::SeqCst) { break; }
-            let asset_path = dest_dir.join(&asset.name);
-            if !asset_path.exists() {
-                // Try mirror first, if it fails, trigger Auto-Heal from alternative sources
-                if let Err(_) = Self::download_single_file(&client, &asset.url, &asset_path, tx.clone(), abort.clone()).await {
-                    let _ = Self::fetch_asset_auto_heal(repo_id, &dest_dir, &asset.name).await;
-                }
-            }
-        }
-
-        // 3. Final safety check for critical assets (tokenizer.json)
-        let _ = Self::fetch_asset_auto_heal(repo_id, &dest_dir, "tokenizer.json").await;
-
-        // 4. ✅ Save model_manifest.json — makes the folder fully self-contained & portable
+        // 2. ✅ Save model_manifest.json — makes the folder fully self-contained & portable
         let weight_path = dest_dir.join(filename);
         if let Some(m) = manifest {
             let manifest_path = dest_dir.join("model_manifest.json");
@@ -157,20 +142,41 @@ impl ModelDownloader {
 
         // 🔍 BINARY PROBE: Extracting truth directly from GGUF Hardware (Framework-Free)
         if weight_path.exists() {
-            // info!("🧬 [DNA] Probing weight binary: {:?}", weight_path);
-            // TODO: Fix GGUFProber memory allocation bug causing 0xc0000409
-            /*
-            if let Ok((metadata, tensor_infos)) = cluaiz_shared::utils::GGUFProber::probe(weight_path) {
-                dna.sync_with_metadata(&metadata, &tensor_infos);
+            info!("🧬 [DNA] Probing weight binary: {:?}", weight_path);
+            if let Ok((metadata, tensor_infos, _tensor_count)) = cluaiz_shared::utils::gguf_prober::GGUFProber::probe(weight_path) {
+                // If the engine has sync_with_metadata, call it. If not, we map values manually.
+                if let Some(ctx) = metadata.get("llama.context_length").or(metadata.get("qwen2.context_length")) {
+                    dna.max_context_length = ctx.parse().ok();
+                }
+                
+                // Store tokenizer configs in dynamic_attributes so they can be written to config.json
+                if let Some(chat_tmpl) = metadata.get("tokenizer.chat_template") {
+                    dna.chat_template = Some(chat_tmpl.clone());
+                }
+                if let Some(eos) = metadata.get("tokenizer.ggml.eos_token_id") {
+                    dna.eos_token = Some(eos.clone());
+                }
+                
+                info!("🧬 [DNA] Truth-Grounding complete via Binary Header Prober.");
+            } else {
+                info!("⚠️ [DNA] Failed to probe binary, falling back to Manifest.");
             }
-            */
-            info!("🧬 [DNA] Truth-Grounding complete via Manifest.");
         }
 
         let dna_path = dest_dir.join("structural_dna.json");
         if let Ok(json) = serde_json::to_string_pretty(&dna) {
             std::fs::write(&dna_path, json).map_err(|e| e.to_string())?;
         }
+        
+        // As requested by Founder, we also generate config.json locally from the DNA!
+        // This is a minimal wrapper.
+        let config_path = dest_dir.join("config.json");
+        let config_json = serde_json::json!({
+            "architectures": [manifest.architecture],
+            "model_type": manifest.architecture.to_lowercase(),
+            "max_position_embeddings": dna.max_context_length.unwrap_or(8192)
+        });
+        let _ = std::fs::write(&config_path, serde_json::to_string_pretty(&config_json).unwrap());
         
         Ok(())
     }
@@ -227,13 +233,16 @@ impl ModelDownloader {
         let model_name = repo_id.split('/').next_back().unwrap_or(repo_id);
         
         // 🚀 SMART FALLBACK LIST: Try various repository formats to bypass gating/missing files
+        let model_name_clean = model_name.replace("-GGUF", "").replace("-gguf", "");
         let repo_ids_to_try = vec![
             repo_id.to_string(),                                      // 1. Original (e.g., google/gemma-3-12b-it)
-            format!("unsloth/{}", model_name),                        // 2. Unsloth Mirror (Highest probability for assets)
-            format!("bartowski/{}", model_name),                       // 3. Bartowski GGUF (Community standard)
-            format!("lmstudio-community/{}", model_name),              // 4. LM Studio Mirror
-            repo_id.replace("-GGUF", ""),                             // 5. Stripped GGUF
-            repo_id.replace("-GGUF", "-it"),                          // 6. IT variant
+            format!("unsloth/{}", model_name_clean),                  // 2. Unsloth Mirror (Highest probability for assets - e.g. unsloth/gemma-4-E4B-it)
+            format!("bartowski/{}", model_name_clean),                 // 3. Bartowski Mirror
+            format!("lmstudio-community/{}", model_name_clean),         // 4. LM Studio Mirror
+            repo_id.replace("-GGUF", "").replace("-gguf", ""),        // 5. Stripped GGUF
+            format!("unsloth/{}", model_name),                        // 6. Unsloth GGUF
+            format!("bartowski/{}", model_name),                       // 7. Bartowski GGUF
+            format!("lmstudio-community/{}", model_name),              // 8. LM Studio GGUF
         ];
 
         for id in repo_ids_to_try {

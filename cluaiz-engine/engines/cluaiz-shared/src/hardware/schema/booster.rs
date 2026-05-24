@@ -61,6 +61,42 @@ pub struct DFlashConfig {
     Debug, Clone, Serialize, Deserialize, Archive, RkyvSerialize, RkyvDeserialize, PartialEq, Default,
 )]
 #[archive(check_bytes)]
+pub enum KvCacheQuantization {
+    #[default]
+    #[serde(rename = "Auto", alias = "auto")]
+    Auto,
+    #[serde(rename = "Kv16", alias = "kv16")]
+    Kv16,
+    #[serde(rename = "Kv8", alias = "kv8")]
+    Kv8,
+    #[serde(rename = "Kv4", alias = "kv4")]
+    Kv4,
+}
+
+#[derive(
+    Debug, Clone, Serialize, Deserialize, Archive, RkyvSerialize, RkyvDeserialize, PartialEq, Default,
+)]
+#[archive(check_bytes)]
+pub enum ContextShiftingMode {
+    #[default]
+    #[serde(rename = "Auto", alias = "auto")]
+    Auto, // Defaults to Balanced (10%)
+    #[serde(rename = "Off", alias = "off")]
+    Off,
+    #[serde(rename = "Minimal", alias = "minimal")]
+    Minimal, // 5% shift
+    #[serde(rename = "Standard", alias = "standard", alias = "on", alias = "On")]
+    Standard, // 10% shift
+    #[serde(rename = "Aggressive", alias = "aggressive")]
+    Aggressive, // 25% shift
+    #[serde(rename = "Extreme", alias = "extreme")]
+    Extreme, // 50% shift
+}
+
+#[derive(
+    Debug, Clone, Serialize, Deserialize, Archive, RkyvSerialize, RkyvDeserialize, PartialEq, Default,
+)]
+#[archive(check_bytes)]
 pub enum BoosterMode {
     #[serde(rename = "edge")]
     Edge,           // 📱 Mobile/NPU/Pi (Extreme pruning)
@@ -88,6 +124,8 @@ pub struct BoosterControl {
     pub speculative_decoding: FeatureState,
     pub auto_round: FeatureState,
     pub dflash: SmartState<DFlashConfig>,
+    pub kv_cache_quantization: KvCacheQuantization,
+    pub context_shifting: ContextShiftingMode,
     pub force_vram_reclaim: FeatureState, // 🏠 'Landlord' Mode Flag
 }
 
@@ -135,6 +173,8 @@ impl Default for BoosterControl {
             speculative_decoding: FeatureState::Off,
             auto_round: FeatureState::Auto,
             dflash: SmartState::Static("Auto".into()),
+            kv_cache_quantization: KvCacheQuantization::Auto,
+            context_shifting: ContextShiftingMode::Auto,
             force_vram_reclaim: FeatureState::Off,
         }
     }
@@ -146,15 +186,40 @@ impl Default for BoosterControl {
 pub struct CluaizBoosterContext {
     pub turbo_quant: bool,
     pub flash_attention: bool,
-    pub speculative_decoding: bool,
+    // Provide integer-based flags for C++ FFI compatibility
+    pub speculative_decoding_mode: u8, // 0 = Off, 1 = On, 2 = Auto
+    pub kv_cache_quantization_mode: u8, // 0 = Auto/Kv16, 1 = Kv8, 2 = Kv4
+    pub context_shifting_mode: u8, // 0 = Off, 1 = Small, 2 = Balanced, 3 = Boost, 4 = Ultra
 }
 
 impl From<&BoosterControl> for CluaizBoosterContext {
     fn from(config: &BoosterControl) -> Self {
+        let kv_mode = match config.kv_cache_quantization {
+            KvCacheQuantization::Auto | KvCacheQuantization::Kv16 => 0,
+            KvCacheQuantization::Kv8 => 1,
+            KvCacheQuantization::Kv4 => 2,
+        };
+
+        let shift_mode = match config.context_shifting {
+            ContextShiftingMode::Off => 0,
+            ContextShiftingMode::Minimal => 1,
+            ContextShiftingMode::Auto | ContextShiftingMode::Standard => 2,
+            ContextShiftingMode::Aggressive => 3,
+            ContextShiftingMode::Extreme => 4,
+        };
+
+        let spec_mode = match config.speculative_decoding {
+            FeatureState::Off => 0,
+            FeatureState::On => 1,
+            FeatureState::Auto => 2,
+        };
+
         Self {
             turbo_quant: config.turbo_quant == FeatureState::On,
-            flash_attention: config.flash_attention == FeatureState::On || config.flash_attention == FeatureState::Auto,
-            speculative_decoding: config.speculative_decoding == FeatureState::On,
+            flash_attention: config.flash_attention == FeatureState::On,
+            speculative_decoding_mode: spec_mode,
+            kv_cache_quantization_mode: kv_mode,
+            context_shifting_mode: shift_mode,
         }
     }
 }

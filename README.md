@@ -132,7 +132,7 @@ Automatically maps neural tasks to specialized kernels based on hardware efficie
 ## 📊 **Benchmarking & Comparison**
 
 ### **Performance Snapshot**
-*Measured on AMD Ryzen 7 7435HS + NVIDIA RTX 4050.*
+*Measured on AMD Ryzen 7 7435HS + NVIDIA RTX 3050.*
 
 | Metric                | Cluaiz (Alpha)      | Standard Middleware |
 | :-------------------- | :------------------ | :------------------ |
@@ -181,6 +181,29 @@ Automatically maps neural tasks to specialized kernels based on hardware efficie
 - **v0.1-dev-release (Alpha)** (Current): Core shared-memory signaling, **Dynamic DNA Negotiation**, Hardware-Aware Arbiter, and **Thinking Mode** optimized runtime.
 - **v0.2 Runtime Probe**: AtmaSteer v2 integration and automated kernel provisioning.
 - **v0.3 Distributed Scheduler**: Distributed inference across local nodes (P2P).
+
+---
+
+## ⚡ **Hardware & Performance Troubleshooting**
+
+Cluaiz pushes hardware to its absolute mathematical limits. If you experience unexpected performance drops (e.g., TPS falling from 50 to 15), check the following native constraints:
+
+### 1. **Laptop Power-Saving Throttling (The 10W vs 30W Rule)**
+Modern GPUs (like the RTX 3050 Laptop GPU) require adequate wattage for optimal tensor processing. 
+* **Observation:** If your battery drops to ~10% and is unplugged, Windows OS automatically forces the GPU into **Whisper Mode / Battery Saver**. The GPU will draw only **~10W**, dropping your TPS to ~15-17.
+* **Fix:** Plug in your laptop charger. The GPU will immediately scale up to **~30W - 33W**, pushing your speed back up to 33+ TPS.
+
+
+### 2. **Context Window vs Memory Bandwidth**
+Unlike cloud APIs, local inference speed is bound by physical **Memory Bandwidth (GB/s)**. 
+* A 5,000 token context window is small and blazingly fast to compute.
+* A massive 20,000 token context window requires the GPU to read over 2.5GB of KV Cache over the bus *for every single word generated*.
+* **Impact:** Extreme context windows inherently reduce TPS due to PCIe/VRAM bandwidth physical limits.
+
+### 3. **The "PCIe Spill" Phenomenon (Shared Memory)**
+Cluaiz uses a dynamic VRAM Arbiter to negotiate memory. If the engine pushes too close to the physical 100% VRAM limit (e.g., allocating 3.9GB on a 4GB card), the Windows Desktop Window Manager (DWM) will forcefully evict part of the KV Cache into **Shared GPU Memory (System RAM)**.
+* **Impact:** System RAM is 30x slower than VRAM. Even a tiny 0.2GB spill will force the GPU to fetch cache over the PCIe cable, crashing TPS from 50 to 15.
+* **Fix:** The `UltraMaxBoost` mode includes a strict **7.5% Safety Margin** (~300MB) to give the OS breathing room and completely prevent PCIe spilling.
 
 ---
 

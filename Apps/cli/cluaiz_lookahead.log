@@ -1,0 +1,22 @@
+[DECODE FAILURE] ❌ [Native-Llama] llama_decode FAILED (ret=-1) at n_gen=131 n_cur=149 batch_n_tokens=1. Aborting speculative step, falling back to next token.
+
+=== Lookahead Session: 1779649577 ===
+🔍 Match found at ngram_size 3: [198, 9, 256] -> drafts [2972, 45884, 64700, 6180]
+✅ Draft ACCEPTED: 2972
+❌ Draft REJECTED: expected 45884, got 24342
+🧹 Flushed 3 rejected drafts from KV cache (n_cur=149).
+❌ [Native-Llama] llama_decode FAILED (ret=-1) at n_gen=131 n_cur=149 batch_n_tokens=1. Aborting speculative step, falling back to next token.
+[DECODE FAILURE] ❌ [Native-Llama] llama_decode FAILED (ret=1) at n_gen=1012 n_cur=1024 batch_n_tokens=1. Aborting speculative step, falling back to next token.
+
+=== Lookahead Session: 1779655460 ===
+❌ [Native-Llama] llama_decode FAILED (ret=1) at n_gen=1012 n_cur=1024 batch_n_tokens=1. Aborting speculative step, falling back to next token.
+[DECODE FAILURE] ❌ [Native-Llama] llama_decode FAILED (ret=1) at n_gen=1012 n_cur=1024 batch_n_tokens=1. Aborting speculative step, falling back to next token.
+
+=== Lookahead Session: 1779655600 ===
+❌ [Native-Llama] llama_decode FAILED (ret=1) at n_gen=1012 n_cur=1024 batch_n_tokens=1. Aborting speculative step, falling back to next token.
+
+=== Lookahead Session: 1779656385 ===
+🌊 Sliding Window Shift: Pruned 102 tokens from KV-cache. n_cur is now 918.
+🌊 Sliding Window Shift: Pruned 102 tokens from KV-cache. n_cur is now 918.
+🌊 Sliding Window Shift: Pruned 102 tokens from KV-cache. n_cur is now 918.
+🌊 Sliding Window Shift: Pruned 102 tokens from KV-cache. n_cur is now 918.

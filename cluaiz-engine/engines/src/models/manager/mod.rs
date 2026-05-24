@@ -7,6 +7,7 @@ use crate::models::manager::auditor::{HardwareAuditor, HealthStatus};
 pub mod client;
 pub mod installer;
 pub mod auditor;
+pub mod hf_hub;
 
 /// The Cluaiz Model Manager
 /// Responsible for model discovery, health auditing, and atomic installation/repair.
@@ -46,6 +47,13 @@ impl ModelManager {
             return Err("Cluaiz Audit Failed: Insufficient hardware resources for this model.".to_string());
         }
 
+        self.pull_model_with_manifest(&manifest).await
+    }
+
+    /// Installation & Repair: Pull a specific model using an already resolved manifest
+    pub async fn pull_model_with_manifest(&self, manifest: &crate::models::registry::ModelManifest) -> Result<(), String> {
+
+
         // 3. Construct Path
         let safe_id = manifest.id.replace(':', "-");
         let mut model_path = self.base_models_dir.clone();
@@ -63,15 +71,7 @@ impl ModelManager {
         let dna_file = model_path.join("structural_dna.json");
 
         let mut needs_repair = !weight_file.exists() || !dna_file.exists();
-        
-        // Check if any asset is missing
-        for asset in &manifest.assets {
-            if !model_path.join(&asset.name).exists() {
-                needs_repair = true;
-                break;
-            }
-        }
-
+        // Check if any asset is missing (Removed external JSON checks, only check weights and DNA)
         if !needs_repair {
             println!("  {} Model '{}' is healthy and ready.", "✅".green(), manifest.id);
             return Ok(());
@@ -83,12 +83,6 @@ impl ModelManager {
         } else {
             println!("  {} Weights verified.", "✅".green());
         }
-
-        // 7. Pull Missing Assets
-        let asset_pairs: Vec<(String, String)> = manifest.assets.clone().into_iter()
-            .map(|a| (a.name, a.url))
-            .collect();
-        installer.pull_assets(asset_pairs).await?;
 
         // 8. Save/Refresh local manifest
         let local_manifest_path = model_path.join("model_manifest.json");

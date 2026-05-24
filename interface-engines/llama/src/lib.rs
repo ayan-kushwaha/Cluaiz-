@@ -101,13 +101,50 @@ impl RuntimeB {
             ctx_params.n_ctx = ctx as u32;
         }
 
+        // 🧠 RESOLVE SPECULATIVE MODE & SYNC DNA
+        let has_native_mtp = if let Ok((_, tensor_infos, _)) = cluaiz_shared::utils::GGUFProber::probe(std::path::Path::new(&self.model_path)) {
+            cluaiz_shared::utils::GGUFProber::check_native_mtp(&tensor_infos)
+        } else {
+            false
+        };
+
+        let speculative_mode = if self.booster.speculative_decoding.to_lowercase() != "off" {
+            if has_native_mtp {
+                "native_mtp"
+            } else {
+                "eagle"
+            }
+        } else {
+            "off"
+        };
+        println!("🧠 [Llama-Engine] Dynamic Speculative Sync: Mode resolved as '{}' (booster: {})", speculative_mode, self.booster.speculative_decoding);
+        self.context.dna.dynamic_attributes.insert("speculative_mode".to_string(), speculative_mode.to_string());
+
         tracing::info!("🧬 [Native-Llama] Loading model: {} | ctx: {} tokens", self.model_path, ctx_params.n_ctx);
         
         // 🚀 BATCH SYNC: Optimized for 4GB hardware by default, scalable via BoosterConfig.
         ctx_params.n_batch = if ctx_params.n_batch == 0 { 512 } else { ctx_params.n_batch };
         ctx_params.n_ubatch = if ctx_params.n_ubatch == 0 { 512 } else { ctx_params.n_ubatch }; 
         
-        let native = NativeLlama::load(&self.model_path, model_params, ctx_params, &mut self.context.dna)?;
+        let native = NativeLlama::load(
+            &self.model_path,
+            model_params,
+            ctx_params,
+            &mut self.context.dna,
+            match self.booster.kv_cache_quantization.to_lowercase().as_str() {
+                "kv8" => 1,
+                "kv4" => 2,
+                _ => 0,
+            },
+            match self.booster.context_shifting.to_lowercase().as_str() {
+                "off" => 0,
+                "minimal" => 1,
+                "standard" | "auto" => 2,
+                "aggressive" => 3,
+                "extreme" => 4,
+                _ => 2,
+            }
+        )?;
         self.native = Some(native);
         tracing::info!("✅ [Llama-Engine] Native Model Loaded & Optimized.");
         Ok(())
@@ -260,6 +297,20 @@ impl CluaizInference for RuntimeB {
             let new_ctx = cluaiz_shared::hardware::governor::HardwareGovernor::negotiate_vram_envelope_with_booster(&self.context.dna, control);
             ctx_params.n_ctx = new_ctx as u32;
             
+            // Sync settings dynamically
+            native.kv_cache_quantization_mode = match control.kv_cache_quantization {
+                cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Kv8 => 1,
+                cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Kv4 => 2,
+                _ => 0,
+            };
+            native.context_shifting_mode = match control.context_shifting {
+                cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Off => 0,
+                cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Minimal => 1,
+                cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Standard | cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Auto => 2,
+                cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Aggressive => 3,
+                cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Extreme => 4,
+            };
+            
             native.resize_context(ctx_params)?;
             tracing::info!("🌊 [Llama-Engine] Elastic Resize Success: Context now {} tokens.", new_ctx);
         }
@@ -299,8 +350,11 @@ pub extern "C" fn cluaiz_kernel_init() -> *const std::os::raw::c_char {
         }
 
         // Also set the callback for handled logs
-        extern "C" fn silent_log(_level: i32, _text: *const std::os::raw::c_char, _data: *mut std::ffi::c_void) {}
-        crate::ffi::llama_cpp::llama_log_set(Some(silent_log), std::ptr::null_mut());
+        extern "C" fn verbose_log(_level: i32, text: *const std::os::raw::c_char, _data: *mut std::ffi::c_void) {
+            let s = unsafe { std::ffi::CStr::from_ptr(text) }.to_string_lossy();
+            eprint!("{}", s);
+        }
+        crate::ffi::llama_cpp::llama_log_set(Some(verbose_log), std::ptr::null_mut());
         
         ffi::llama_cpp::llama_backend_init();
     }
@@ -348,6 +402,25 @@ pub extern "C" fn cluaiz_kernel_instantiate(
             tracing::info!("🚀 [Llama.cpp-Kernel] Received CluaizBoosterContext via FFI: {:?}", booster_ctx);
             engine.booster.flash_attn = booster_ctx.flash_attention;
             engine.booster.turbo_quant = if booster_ctx.turbo_quant { "active".to_string() } else { "none".to_string() };
+            engine.booster.kv_cache_quantization = match booster_ctx.kv_cache_quantization_mode {
+                1 => "Kv8".to_string(),
+                2 => "Kv4".to_string(),
+                _ => "Auto".to_string(),
+            };
+            engine.booster.context_shifting = match booster_ctx.context_shifting_mode {
+                0 => "Off".to_string(),
+                1 => "Minimal".to_string(),
+                2 => "Standard".to_string(),
+                3 => "Aggressive".to_string(),
+                4 => "Extreme".to_string(),
+                _ => "Auto".to_string(),
+            };
+            engine.booster.speculative_decoding = match booster_ctx.speculative_decoding_mode {
+                0 => "Off".to_string(),
+                1 => "On".to_string(),
+                2 => "Auto".to_string(),
+                _ => "Auto".to_string(),
+            };
             engine.booster.use_mmap = true;
         } else {
             // Self-load from Binary Booster Truth if FFI was blank
@@ -358,6 +431,7 @@ pub extern "C" fn cluaiz_kernel_instantiate(
 
         // 🧬 Trigger Native Load immediately on instantiation
         if let Err(e) = engine.load_native() {
+            eprintln!("❌ [Llama.cpp-Kernel] Native Load Failed: {}", e);
             tracing::error!("❌ [Llama.cpp-Kernel] Native Load Failed: {}", e);
             return std::ptr::null_mut();
         }

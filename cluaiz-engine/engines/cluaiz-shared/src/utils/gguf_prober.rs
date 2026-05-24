@@ -8,7 +8,7 @@ use anyhow::{Result, bail};
 pub struct GGUFProber;
 
 impl GGUFProber {
-    pub fn probe(path: &std::path::Path) -> Result<(HashMap<String, String>, HashMap<String, Vec<usize>>)> {
+    pub fn probe(path: &std::path::Path) -> Result<(HashMap<String, String>, HashMap<String, Vec<usize>>, usize)> {
         let mut file = File::open(path)?;
         
         // 1. Magic Check (GGUF)
@@ -32,26 +32,48 @@ impl GGUFProber {
 
         // 4. Extract Metadata KVs
         for _ in 0..metadata_kv_count {
-            let key = Self::read_string(&mut file)?;
-            let value_type = Self::read_u32(&mut file)?;
-            let value = Self::read_value(&mut file, value_type)?;
+            let key_res = Self::read_string(&mut file);
+            if key_res.is_err() { break; }
+            let key = key_res.unwrap();
+            
+            let vtype_res = Self::read_u32(&mut file);
+            if vtype_res.is_err() { break; }
+            let value_type = vtype_res.unwrap();
+            
+            let val_res = Self::read_value(&mut file, value_type);
+            if val_res.is_err() { break; }
+            let value = val_res.unwrap();
+            
             metadata.insert(key, value);
         }
 
         // 5. Extract Tensor Infos (Partial for Dimension Truth)
         for _ in 0..tensor_count {
-            let name = Self::read_string(&mut file)?;
-            let n_dims = Self::read_u32(&mut file)?;
+            let name_res = Self::read_string(&mut file);
+            if name_res.is_err() { break; } // Graceful fallback if partial file ends here
+            let name = name_res.unwrap();
+            
+            let n_dims_res = Self::read_u32(&mut file);
+            if n_dims_res.is_err() { break; }
+            let n_dims = n_dims_res.unwrap();
+            
             let mut dims = Vec::new();
+            let mut failed = false;
             for _ in 0..n_dims {
-                dims.push(Self::read_u64(&mut file)? as usize);
+                match Self::read_u64(&mut file) {
+                    Ok(d) => dims.push(d as usize),
+                    Err(_) => { failed = true; break; }
+                }
             }
-            let _dtype = Self::read_u32(&mut file)?;
-            let _offset = Self::read_u64(&mut file)?;
+            if failed { break; }
+            
+            if Self::read_u32(&mut file).is_err() { break; }
+            if Self::read_u64(&mut file).is_err() { break; }
+            
             tensor_infos.insert(name, dims);
         }
 
-        Ok((metadata, tensor_infos))
+        Ok((metadata, tensor_infos, tensor_count as usize))
     }
 
     fn read_string(file: &mut File) -> Result<String> {
@@ -75,31 +97,85 @@ impl GGUFProber {
 
     fn read_value(file: &mut File, value_type: u32) -> Result<String> {
         match value_type {
-            0..=11 => { // Numeric types
-                let mut buf = [0u8; 8]; // Max size for u64/f64
-                let size = match value_type {
-                    0 | 1 | 6 => 1,
-                    2 | 3 | 7 => 2,
-                    4 | 5 | 8 | 10 => 4,
-                    9 | 11 => 8,
-                    _ => 0,
-                };
-                file.read_exact(&mut buf[..size])?;
-                Ok(format!("{:?}", &buf[..size])) // Basic representation
+            0 | 1 | 7 => { // UINT8, INT8, BOOL
+                let mut buf = [0u8; 1];
+                file.read_exact(&mut buf)?;
+                if value_type == 7 {
+                    Ok(if buf[0] == 0 { "false".into() } else { "true".into() })
+                } else {
+                    Ok(format!("{}", buf[0]))
+                }
             }
-            12 => Ok(if Self::read_u8(file)? == 0 { "false".into() } else { "true".into() }),
-            13 => Self::read_string(file),
-            14 => { // Array
-                let _item_type = Self::read_u32(file)?;
+            2 | 3 => { // UINT16, INT16
+                let mut buf = [0u8; 2];
+                file.read_exact(&mut buf)?;
+                Ok(format!("{}", u16::from_le_bytes(buf)))
+            }
+            4 | 5 | 6 => { // UINT32, INT32, FLOAT32
+                let mut buf = [0u8; 4];
+                file.read_exact(&mut buf)?;
+                if value_type == 6 {
+                    Ok(format!("{}", f32::from_le_bytes(buf)))
+                } else {
+                    Ok(format!("{}", u32::from_le_bytes(buf)))
+                }
+            }
+            10 | 11 | 12 => { // UINT64, INT64, FLOAT64
+                let mut buf = [0u8; 8];
+                file.read_exact(&mut buf)?;
+                if value_type == 12 {
+                    Ok(format!("{}", f64::from_le_bytes(buf)))
+                } else {
+                    Ok(format!("{}", u64::from_le_bytes(buf)))
+                }
+            }
+            8 => { // STRING
+                Self::read_string(file)
+            }
+            9 => { // ARRAY
+                let item_type = Self::read_u32(file)?;
                 let len = Self::read_u64(file)?;
-                // Skipping array content for now, just returning length
-                file.seek(SeekFrom::Current(8 * len as i64))?; // Rough skip
-                Ok(format!("[Array: len={}]", len))
+                
+                // Safety check to prevent massive allocations
+                if len > 1_000_000 {
+                    bail!("Array length too large: {}", len);
+                }
+
+                // If it's a primitive array, we can just skip it quickly if we don't need the elements
+                // But wait, the metadata might contain important arrays (like tokenizer tokens!)
+                // Let's parse string arrays properly, and just record length for others.
+                if item_type == 8 {
+                    let mut elements = Vec::new();
+                    // Limit reading to prevent massive logs
+                    let read_len = std::cmp::min(len, 10); 
+                    for _ in 0..read_len {
+                        elements.push(Self::read_string(file)?);
+                    }
+                    // Skip the rest
+                    for _ in read_len..len {
+                        let str_len = Self::read_u64(file)?;
+                        file.seek(SeekFrom::Current(str_len as i64))?;
+                    }
+                    Ok(format!("[StringArray: len={}, first_few={:?}]", len, elements))
+                } else {
+                    // Primitive skips
+                    let size_per_item = match item_type {
+                        0 | 1 | 7 => 1,
+                        2 | 3 => 2,
+                        4 | 5 | 6 => 4,
+                        10 | 11 | 12 => 8,
+                        _ => 0,
+                    };
+                    if size_per_item > 0 {
+                        file.seek(SeekFrom::Current((size_per_item as u64 * len) as i64))?;
+                    } else {
+                        // Unknown array type
+                        bail!("Unsupported array item type: {}", item_type);
+                    }
+                    Ok(format!("[PrimitiveArray: len={}, type={}]", len, item_type))
+                }
             }
-            _ => {
-                file.seek(SeekFrom::Current(4))?; // Skip unknown
-                Ok("UNKNOWN_TYPE".into())
-            }
+            _ => bail!("Unknown GGUF value type: {}", value_type),
         }
     }
 
@@ -107,5 +183,11 @@ impl GGUFProber {
         let mut buf = [0u8; 1];
         file.read_exact(&mut buf)?;
         Ok(buf[0])
+    }
+
+    /// ⚡ Checks if the model has Native MTP (Multi-Token Prediction) support
+    pub fn check_native_mtp(tensor_infos: &HashMap<String, Vec<usize>>) -> bool {
+        // Universal Structural Check: Looks for generic MTP tensor patterns across any model
+        tensor_infos.keys().any(|k| k.contains(".mtp") || k.ends_with("mtp"))
     }
 }

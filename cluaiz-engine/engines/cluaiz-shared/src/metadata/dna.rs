@@ -30,6 +30,9 @@ pub struct StructuralDNA {
     pub ram_headroom_gb: f32,
     pub requires_gpu: bool,
     pub weights_size_gb: f32,
+    
+    #[serde(default)]
+    pub weights_already_loaded: bool,
 }
 
 impl Default for StructuralDNA {
@@ -56,6 +59,7 @@ impl Default for StructuralDNA {
             ram_headroom_gb: 0.0,
             requires_gpu: false,
             weights_size_gb: 0.0,
+            weights_already_loaded: false,
         }
     }
 }

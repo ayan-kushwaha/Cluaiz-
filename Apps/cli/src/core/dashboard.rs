@@ -188,7 +188,7 @@ impl DashboardEngine {
                             cur_y -= 1; 
                         }
 
-                        // ── 🎨 COMPACT TELEMETRY ENGINE ──
+                        // ── 🎨 RESPONSIVE TELEMETRY ENGINE ──
                         let is_compact = cols < 120;
                         let is_minimal = cols < 85;
 
@@ -209,28 +209,16 @@ impl DashboardEngine {
                             let _ = execute!(stdout, style::Print(format!(" {} │ ", neural_label).with(neural_color).bold()));
                         }
 
-                        // CPU
-                        if is_minimal {
-                            let _ = execute!(stdout, style::Print(format!(" CPU:{:.0}%", cpu).dim()));
+                        if is_compact {
+                            // Shortened version but STILL has all data to prevent terminal wrap loop!
+                            let _ = execute!(stdout, style::Print(format!(" CPU:{:.0}% │ GPU:{:.0}% │ RAM:{:.0}%", cpu, vram_pct, ram_pct).dim()));
+                            if total_tokens > 0 {
+                                let _ = execute!(stdout, style::Print(format!(" │ TPS:{:.1} │ TKN:{} │ TIM:{:.0}s │ PWR:{:.0}W", last_tps, total_tokens, inf_duration, peak_pwr).dim().bold()));
+                            }
                         } else {
-                            let _ = execute!(stdout, style::Print(format!(" CPU: {:.0}°C ({:.0}%)", cpu_temp, cpu).dim()));
-                        }
-
-                        // GPU
-                        if !is_minimal {
-                            let _ = execute!(stdout, style::Print(format!(" │ GPU: {:.0}°C ({:.0}%)", gpu_temp, vram_pct).dim()));
-                        }
-
-                        // RAM
-                        if !is_compact {
-                            let _ = execute!(stdout, style::Print(format!(" │ RAM: {:.1}GB ({:.0}%)", ram_used, ram_pct).dim()));
-                        }
-
-                        // Neural Stats
-                        if total_tokens > 0 {
-                            if is_compact {
-                                let _ = execute!(stdout, style::Print(format!(" │ TPS: {:.1} │ TKN: {}", last_tps, total_tokens).dim().bold()));
-                            } else {
+                            // Full expanded version
+                            let _ = execute!(stdout, style::Print(format!(" CPU: {:.0}°C ({:.0}%) │ GPU: {:.0}°C ({:.0}%) │ RAM: {:.1}GB ({:.0}%)", cpu_temp, cpu, gpu_temp, vram_pct, ram_used, ram_pct).dim()));
+                            if total_tokens > 0 {
                                 let _ = execute!(stdout, style::Print(format!(" │ TPS: {:.1} │ TKN: {} │ TTFT: {:.2}s │ TIM: {:.1}s │ PWR: {:.0}W", last_tps, total_tokens, ttft, inf_duration, peak_pwr).dim().bold()));
                             }
                         }
@@ -279,12 +267,13 @@ impl DashboardEngine {
                 std::thread::sleep(std::time::Duration::from_millis(150));
             }
         });
-        // 🚀 CLUAIZ AUTO-BOOT: Activate the latest engine silently
-        let auto_boot_name = state.sorted_models.iter().filter(|m| m.is_cached).next().map(|m| m.manifest.name.clone());
-        if let Some(name) = auto_boot_name {
-            println!("\n  {} Auto-Booting Neural Kernel: {}...", "🚀".magenta(), name.bold());
-            // show_dashboard.store(true, std::sync::atomic::Ordering::SeqCst);
-            let _ = Self::handle_model_switch(state, tx, rx, "", Some(&name));
+        // 🚀 CLUAIZ AUTO-BOOT: Activate the latest engine silently only if no model is loaded
+        if state._active_model_id.is_none() {
+            let auto_boot_name = state.sorted_models.iter().filter(|m| m.is_cached).next().map(|m| m.manifest.name.clone());
+            if let Some(name) = auto_boot_name {
+                println!("\n  {} Auto-Booting Neural Kernel: {}...", "🚀".magenta(), name.bold());
+                let _ = Self::handle_model_switch(state, tx, rx, "", Some(&name));
+            }
         }
         // 🖊️ INPUT FIX: Ensure cursor is on a fresh line before inquire renders
         println!();

@@ -23,6 +23,8 @@ pub struct BoosterConfig {
     pub auto_round: String,
     pub mode_run: String,
     pub force_vram_reclaim: String,
+    pub kv_cache_quantization: String,
+    pub context_shifting: String,
 }
 
 impl Default for BoosterConfig {
@@ -39,6 +41,8 @@ impl Default for BoosterConfig {
             auto_round: "Auto".to_string(),
             mode_run: "balance".to_string(),
             force_vram_reclaim: "Off".to_string(),
+            kv_cache_quantization: "Auto".to_string(),
+            context_shifting: "Auto".to_string(),
         }
     }
 }
@@ -49,7 +53,7 @@ impl BoosterConfig {
         // Default to Industrial Auto standards
         let mut config = Self {
             flash_attn: true,
-            use_mmap: true,
+            use_mmap: false, // 🛑 Disable MMAP to save 1GB+ System RAM
             n_gpu_layers: -1, // Full Offload
             n_ctx: 0,        // Auto-detect from model
             n_threads: -1,   // Auto-detect CPU cores
@@ -59,6 +63,8 @@ impl BoosterConfig {
             auto_round: "Auto".to_string(),
             mode_run: "balance".to_string(),
             force_vram_reclaim: "Off".to_string(),
+            kv_cache_quantization: "Auto".to_string(),
+            context_shifting: "Auto".to_string(),
         };
         
         // 🛡️ Sovereign Dynamic Pathing: Use cluaiz-shared to resolve the engine path universally.
@@ -89,6 +95,12 @@ impl BoosterConfig {
                 if let Some(fr) = json.get("force_vram_reclaim") {
                     config.force_vram_reclaim = fr.as_str().unwrap_or("Off").to_string();
                 }
+                if let Some(kv) = json.get("kv_cache_quantization") {
+                    config.kv_cache_quantization = kv.as_str().unwrap_or("Auto").to_string();
+                }
+                if let Some(cs) = json.get("context_shifting") {
+                    config.context_shifting = cs.as_str().unwrap_or("Auto").to_string();
+                }
             }
         }
         config
@@ -113,11 +125,30 @@ impl BoosterConfig {
         params.n_threads = self.n_threads;
         params.flash_attn_type = if self.flash_attn { 1 } else { 0 }; // 1 = LLAMA_FLASH_ATTN_TYPE_ENABLED
         
-        // 🚀 TurboQuant: Inject KV-cache quantization to save memory
-        // 2 = GGML_TYPE_Q4_0, 1 = GGML_TYPE_F16 (Default)
-        if self.turbo_quant == "On" || self.turbo_quant == "Auto" {
-            params.type_k = 2; 
-            params.type_v = 2;
+        // 🚀 KV-Cache Quantization Config:
+        match self.kv_cache_quantization.to_lowercase().as_str() {
+            "kv16" => {
+                params.type_k = 1; // GGML_TYPE_F16
+                params.type_v = 1;
+            }
+            "kv8" => {
+                params.type_k = 8; // GGML_TYPE_Q8_0
+                params.type_v = 8;
+            }
+            "kv4" => {
+                params.type_k = 2; // GGML_TYPE_Q4_0
+                params.type_v = 2;
+            }
+            _ => {
+                // "Auto" (or "turbo_quant" fallback)
+                if self.turbo_quant == "On" || self.turbo_quant == "Auto" {
+                    params.type_k = 2; // GGML_TYPE_Q4_0
+                    params.type_v = 2;
+                } else {
+                    params.type_k = 1; // GGML_TYPE_F16
+                    params.type_v = 1;
+                }
+            }
         }
 
         params
@@ -139,6 +170,20 @@ impl BoosterConfig {
             speculative_decoding: if self.speculative_decoding == "On" { FeatureState::On } else if self.speculative_decoding == "Off" { FeatureState::Off } else { FeatureState::Auto },
             auto_round: if self.auto_round == "On" { FeatureState::On } else if self.auto_round == "Off" { FeatureState::Off } else { FeatureState::Auto },
             dflash: SmartState::Static(self.dflash.clone()),
+            kv_cache_quantization: match self.kv_cache_quantization.to_lowercase().as_str() {
+                "kv16" => cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Kv16,
+                "kv8" => cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Kv8,
+                "kv4" => cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Kv4,
+                _ => cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Auto,
+            },
+            context_shifting: match self.context_shifting.to_lowercase().as_str() {
+                "off" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Off,
+                "minimal" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Minimal,
+                "standard" | "on" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Standard,
+                "aggressive" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Aggressive,
+                "extreme" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Extreme,
+                _ => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Auto,
+            },
             force_vram_reclaim: if self.force_vram_reclaim == "On" { FeatureState::On } else { FeatureState::Off },
         }
     }

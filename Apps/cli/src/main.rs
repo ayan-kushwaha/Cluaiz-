@@ -35,6 +35,12 @@ enum CliCommand {
     /// List all downloaded models in the vault.
     List,
 
+    /// Download and register a model into the local vault.
+    Pull {
+        /// Model ID (e.g. gemma2:2b, unsloth/Qwen3.5-4B-GGUF)
+        model_id: String,
+    },
+
     /// Remove a model from the local vault.
     Rm {
         /// Model ID to remove
@@ -52,12 +58,42 @@ enum CliCommand {
 
     /// Show the dynamic help screen.
     Help,
+
+    /// Show active neural engines in memory.
+    Ps,
+
+    /// View or configure the system performance booster settings.
+    Booster {
+        /// Set KV-Cache Quantization level (auto, kv16, kv8, kv4)
+        #[arg(long)]
+        kv_quant: Option<String>,
+
+        /// Set Context Shifting / Sliding Window mode (auto, off, minimal, standard, aggressive, extreme)
+        #[arg(long)]
+        context_shift: Option<String>,
+
+        /// Set execution performance mode (edge, multitasking, balance, max_boost, ultra_max_boost, hyper_cluster)
+        #[arg(long)]
+        mode: Option<String>,
+
+        /// Enable/Disable Hybrid Speculative Decoding (on, off, auto)
+        #[arg(long)]
+        spec_decode: Option<String>,
+    },
 }
 
 // ──────────────────────────────────────────────────────────────────────────
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // ══ FORCE UTF-8 FOR WINDOWS CONSOLE ══
+    #[cfg(windows)]
+    unsafe {
+        extern "system" {
+            fn SetConsoleOutputCP(wCodePageID: u32) -> i32;
+        }
+        SetConsoleOutputCP(65001);
+    }
     // ══ SOVEREIGN KERNEL SILENCE ══
     // These env vars suppress CUDA Graph + ggml verbose logs at the source.
     // NOTE: We do NOT redirect stderr here because inquire (input box) uses stderr to render.
@@ -70,8 +106,29 @@ async fn main() -> Result<()> {
 
     let cli = Cli::parse();
 
-    // 🚀 SILENCE THE VOID: Redirect all logs to file before anything else
-    if let Ok(log_file) = std::fs::File::create("cluaiz_Core.log") {
+    // 🚀 SILENCE THE VOID: Redirect all logs to file at the project root
+    let log_path = {
+        let mut path = std::env::current_dir().unwrap_or_default();
+        let mut root = None;
+        for _ in 0..5 {
+            if path.join("Apps").exists() && path.join("interface-engines").exists() {
+                root = Some(path.clone());
+                break;
+            }
+            if let Some(parent) = path.parent() {
+                path = parent.to_path_buf();
+            } else {
+                break;
+            }
+        }
+        if let Some(r) = root {
+            r.join("cluaiz_Core.log")
+        } else {
+            std::path::PathBuf::from("cluaiz_Core.log")
+        }
+    };
+
+    if let Ok(log_file) = std::fs::File::create(&log_path) {
         let _ = tracing_subscriber::fmt()
             .with_writer(log_file)
             .with_ansi(false)
@@ -91,6 +148,12 @@ async fn main() -> Result<()> {
         Some(CliCommand::Run { model_id, interactive }) => {
             if let Err(e) = crate::cli::run::execute(&model_id, interactive).await {
                 eprintln!("\n  {} [Cluaiz] Run Error: {}\n", "❌".red(), e);
+                std::process::exit(1);
+            }
+        }
+        Some(CliCommand::Pull { model_id }) => {
+            if let Err(e) = crate::cli::pull::execute(&model_id).await {
+                eprintln!("\n  {} [Cluaiz] Pull Error: {}\n", "❌".red(), e);
                 std::process::exit(1);
             }
         }
@@ -123,6 +186,18 @@ async fn main() -> Result<()> {
                 reg.generate_help();
             } else {
                 println!("  {} Error loading commands.json", "❌".red());
+            }
+        }
+        Some(CliCommand::Ps) => {
+            if let Err(e) = crate::cli::ps::execute().await {
+                eprintln!("\n  {} [Cluaiz] Process Status Error: {}\n", "❌".red(), e);
+                std::process::exit(1);
+            }
+        }
+        Some(CliCommand::Booster { kv_quant, context_shift, mode, spec_decode }) => {
+            if let Err(e) = crate::cli::booster::execute(kv_quant, context_shift, mode, spec_decode).await {
+                eprintln!("\n  {} [Cluaiz] Booster Config Error: {}\n", "❌".red(), e);
+                std::process::exit(1);
             }
         }
         None => {

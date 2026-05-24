@@ -80,7 +80,24 @@ impl CoreRouter {
 
     pub async fn load_model(path: PathBuf, runtime: BackendType) -> Result<Self, String> {
         if let Some(parent) = path.parent() {
-            let repo_id = path.file_stem().map(|s| s.to_string_lossy()).unwrap_or_default();
+            let mut repo_id = path.file_stem().map(|s| s.to_string_lossy()).unwrap_or_default().to_string();
+            let manifest_path = parent.join("model_manifest.json");
+            if manifest_path.exists() {
+                if let Ok(content) = std::fs::read_to_string(&manifest_path) {
+                    if let Ok(manifest) = serde_json::from_str::<crate::models::registry::ModelManifest>(&content) {
+                        if manifest.download_url.contains("huggingface.co/") {
+                            repo_id = manifest.download_url
+                                .split("huggingface.co/")
+                                .nth(1)
+                                .unwrap_or("")
+                                .split("/resolve")
+                                .next()
+                                .unwrap_or(&repo_id)
+                                .to_string();
+                        }
+                    }
+                }
+            }
             let _ = AutoHealer::heal_missing_tokenizer(&repo_id, parent).await;
         }
 

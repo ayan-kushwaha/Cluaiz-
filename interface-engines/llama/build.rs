@@ -6,18 +6,101 @@ fn main() {
     println!("cargo:rerun-if-changed=build.rs");
 
     let out_dir = env::var("OUT_DIR").unwrap();
-    let llama_path = Path::new(&out_dir).join("llama.cpp");
+    let mut llama_path = Path::new(&out_dir).join("llama.cpp");
 
     // ═══════════════════════════════════════════════════════════════
-    // PHASE 1: SOVEREIGN CLONE
+    // PHASE 1: SOVEREIGN CLONE (Prioritize local cached copy)
     // ═══════════════════════════════════════════════════════════════
-    if !llama_path.exists() {
+    let local_cache_path = Path::new(&env::var("CARGO_MANIFEST_DIR").unwrap()).join("llama.cpp");
+    if local_cache_path.exists() {
+        println!("cargo:warning=🔩 Found local cached llama.cpp at {:?}", local_cache_path);
+        llama_path = local_cache_path;
+    } else if !llama_path.exists() {
         println!("cargo:warning=🔩 Cloning official ggml-org/llama.cpp source...");
         let status = Command::new("git")
             .args(["clone", "--depth", "1", "https://github.com/ggml-org/llama.cpp", llama_path.to_str().unwrap()])
             .status()
             .expect("Failed to clone llama.cpp");
         if !status.success() { panic!("Clone failed"); }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // PHASE 1.5: SOVEREIGN INJECTION (Apply BFE PTX Injection via Rust)
+    // ═══════════════════════════════════════════════════════════════
+    let dequantize_cuh_path = llama_path.join("ggml/src/ggml-cuda/dequantize.cuh");
+    if dequantize_cuh_path.exists() {
+        println!("cargo:warning=💉 Injecting 1-Cycle PTX BFE Assembly into ggml-cuda...");
+        let mut content = std::fs::read_to_string(&dequantize_cuh_path).unwrap();
+        content = content.replace("\r\n", "\n");
+        
+        let target_q1 = r#"    // Extract bits: 1 = +d, 0 = -d (branchless)
+    const int bit_0 = (x[ib].qs[byte_index_0] >> bit_offset_0) & 1;
+    const int bit_1 = (x[ib].qs[byte_index_1] >> bit_offset_1) & 1;"#.replace("\r\n", "\n");
+        
+        let inject_q1 = r#"    // Cluaiz Sovereign: 1-Cycle PTX bfe.u32 Injection
+    unsigned int qs_0 = x[ib].qs[byte_index_0];
+    unsigned int qs_1 = x[ib].qs[byte_index_1];
+    unsigned int bit_0, bit_1;
+    asm volatile("bfe.u32 %0, %1, %2, 1;" : "=r"(bit_0) : "r"(qs_0), "r"(bit_offset_0));
+    asm volatile("bfe.u32 %0, %1, %2, 1;" : "=r"(bit_1) : "r"(qs_1), "r"(bit_offset_1));"#.replace("\r\n", "\n");
+
+        let target_q4 = r#"    v.x = vui & 0xF;
+    v.y = vui >> 4;"#.replace("\r\n", "\n");
+
+        let inject_q4 = r#"    // Cluaiz Sovereign: 1-Cycle PTX bfe.u32 Injection
+    unsigned int vx_int, vy_int;
+    asm volatile("bfe.u32 %0, %1, 0, 4;" : "=r"(vx_int) : "r"((unsigned int)vui));
+    asm volatile("bfe.u32 %0, %1, 4, 4;" : "=r"(vy_int) : "r"((unsigned int)vui));
+    v.x = vx_int;
+    v.y = vy_int;"#.replace("\r\n", "\n");
+
+        if content.contains(&target_q4) || content.contains(&target_q1) {
+            let new_content = content.replace(&target_q1, &inject_q1).replace(&target_q4, &inject_q4);
+            std::fs::write(&dequantize_cuh_path, new_content).unwrap();
+            println!("cargo:warning=✅ BFE PTX Injection Complete!");
+        } else {
+            println!("cargo:warning=⚠️ BFE PTX already injected or target strings changed.");
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // PHASE 1.6: SOVEREIGN KV-CACHE PATCH (Bypass n_pos_per_embd assert for M-RoPE sliding window)
+    // ═══════════════════════════════════════════════════════════════
+    let kv_cache_cpp_path = llama_path.join("src/llama-kv-cache.cpp");
+    if kv_cache_cpp_path.exists() {
+        println!("cargo:warning=💉 Patching llama-kv-cache.cpp to support M-RoPE sliding window context shifting...");
+        let mut content = std::fs::read_to_string(&kv_cache_cpp_path).unwrap();
+        content = content.replace("\r\n", "\n");
+        
+        let target_add_assert = r#"    GGML_ASSERT(hparams.n_pos_per_embd() == 1 && "seq_add() is only supported for n_pos_per_embd() == 1");"#;
+        let patch_add_assert = r#"    // GGML_ASSERT(hparams.n_pos_per_embd() == 1 && "seq_add() is only supported for n_pos_per_embd() == 1"); // Cluaiz Sovereign: Bypassed for M-RoPE"#;
+
+        let target_div_assert = r#"    GGML_ASSERT(hparams.n_pos_per_embd() == 1 && "seq_div() is only supported for n_pos_per_embd() == 1");"#;
+        let patch_div_assert = r#"    // GGML_ASSERT(hparams.n_pos_per_embd() == 1 && "seq_div() is only supported for n_pos_per_embd() == 1"); // Cluaiz Sovereign: Bypassed for M-RoPE"#;
+
+        let target_can_shift = "bool llama_kv_cache::get_can_shift() const {\n    // Step35 uses per-layer RoPE dims; K-shift assumes a single global n_rot.\n    if (model.arch == LLM_ARCH_STEP35) {\n        return false;\n    }\n    if (hparams.n_pos_per_embd() > 1) {\n        return false;\n    }\n    return true;\n}";
+        let patch_can_shift = "bool llama_kv_cache::get_can_shift() const {\n    // Step35 uses per-layer RoPE dims; K-shift assumes a single global n_rot.\n    if (model.arch == LLM_ARCH_STEP35) {\n        return false;\n    }\n    if (hparams.n_pos_per_embd() > 1) {\n        // Cluaiz Sovereign: allow shifting for M-RoPE models (e.g. Qwen2-VL, Qwen3.5-VL)\n        if (hparams.rope_type == LLAMA_ROPE_TYPE_MROPE || hparams.rope_type == LLAMA_ROPE_TYPE_IMROPE) {\n            return true;\n        }\n        return false;\n    }\n    return true;\n}";
+
+        let mut modified = false;
+        if content.contains(target_add_assert) {
+            content = content.replace(target_add_assert, patch_add_assert);
+            modified = true;
+        }
+        if content.contains(target_div_assert) {
+            content = content.replace(target_div_assert, patch_div_assert);
+            modified = true;
+        }
+        if content.contains(target_can_shift) {
+            content = content.replace(target_can_shift, patch_can_shift);
+            modified = true;
+        }
+
+        if modified {
+            std::fs::write(&kv_cache_cpp_path, content).unwrap();
+            println!("cargo:warning=✅ M-RoPE KV-Cache Patches Applied!");
+        } else {
+            println!("cargo:warning=⚠️ M-RoPE KV-Cache Patches already applied or target assertions/checks not found.");
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -37,6 +120,7 @@ fn main() {
         // On macOS x64, OpenSSL is not in the default linker path → LNK error.
         // We only need the static libraries (llama.a, ggml.a, etc.), not any binaries.
         .define("LLAMA_BUILD_TOOLS",    "OFF")
+        .define("LLAMA_BUILD_APP",      "OFF")
         .define("LLAMA_STATIC",         "ON")
         .define("BUILD_SHARED_LIBS",    "OFF")
         // Use MultiThreaded (/MT) to match Rust's default static CRT on Windows MSVC.
@@ -71,6 +155,10 @@ fn main() {
 
     // Explicitly disable backends to prevent auto-detection "Bakchodi"
     config.define("GGML_CUDA",     if feature_cuda     { "ON" } else { "OFF" });
+    if feature_cuda {
+        config.define("GGML_CUDA_FA_ALL_QUANTS", "ON");
+        println!("cargo:warning=🔥 Cluaiz Sovereign: Forcing FlashAttention across ALL Quantizations!");
+    }
     config.define("GGML_METAL",    if feature_metal    { "ON" } else { "OFF" });
     config.define("GGML_VULKAN",   if feature_vulkan   { "ON" } else { "OFF" });
     config.define("GGML_HIPBLAS",  if feature_rocm     { "ON" } else { "OFF" });
