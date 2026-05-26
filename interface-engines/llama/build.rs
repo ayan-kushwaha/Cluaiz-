@@ -111,6 +111,25 @@ fn main() {
 
     let mut config = cmake::Config::new(&llama_path);
 
+    // ── CPU SIMD Vectorization Optimization ──────────────────────────
+    let is_ci = env::var("GITHUB_ACTIONS").is_ok();
+    
+    if is_ci {
+        // CI Build: Target baseline optimizations for distribution
+        if target_arch == "x86_64" {
+            // Enable AVX2 by default for distributed builds (standard for modern hardware)
+            config.define("GGML_AVX2", "ON");
+            config.define("GGML_FMA", "ON");
+            config.define("GGML_F16C", "ON");
+            config.define("GGML_AVX", "ON");
+            config.define("GGML_AVX512", "OFF");
+        }
+        config.define("GGML_NATIVE", "OFF");
+    } else {
+        // Local Build: Detect and compile native instruction set of the host CPU (AVX2, AVX512, AMX, etc.)
+        config.define("GGML_NATIVE", "ON");
+    }
+
     config
         .define("LLAMA_BUILD_EXAMPLES", "OFF")
         .define("LLAMA_BUILD_TESTS",    "OFF")

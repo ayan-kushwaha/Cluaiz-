@@ -122,7 +122,17 @@ impl BoosterConfig {
         // ensures this fits in VRAM before the engine is even initialized.
         params.n_ctx = self.n_ctx;
         
-        params.n_threads = self.n_threads;
+        let cores = std::thread::available_parallelism()
+            .map(|n| n.get())
+            .unwrap_or(4);
+        let optimal_threads = if cores > 4 {
+            (cores / 2).max(4) as i32
+        } else {
+            cores as i32
+        };
+
+        params.n_threads = if self.n_threads <= 0 { optimal_threads } else { self.n_threads };
+        params.n_threads_batch = params.n_threads;
         params.flash_attn_type = if self.flash_attn { 1 } else { 0 }; // 1 = LLAMA_FLASH_ATTN_TYPE_ENABLED
         
         // 🚀 KV-Cache Quantization Config:
@@ -185,6 +195,7 @@ impl BoosterConfig {
                 _ => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Auto,
             },
             force_vram_reclaim: if self.force_vram_reclaim == "On" { FeatureState::On } else { FeatureState::Off },
+            n_gpu_layers: self.n_gpu_layers,
         }
     }
 }

@@ -52,7 +52,10 @@ impl DriverProvisioner {
         let response = client.get(manifest_url).send().await
             .map_err(|e| anyhow!("Registry Sync Failed: {}", e))?;
 
-        let manifest: serde_json::Value = response.json().await?;
+        let text = response.text().await?;
+        let text = text.lines().filter(|l| !l.trim_start().starts_with("//")).collect::<Vec<_>>().join("\n");
+        let manifest: serde_json::Value = serde_json::from_str(&text)?;
+        
         let manifest_version = manifest["version"].as_str().unwrap_or("unknown");
 
         if marker.exists() {
@@ -95,7 +98,11 @@ impl DriverProvisioner {
 
         let client = reqwest::Client::builder().user_agent("Cluaiz-Neural-Engine/0.1.0").build()?;
         let response = client.get(manifest_url).send().await?;
-        let manifest: serde_json::Value = response.json().await?;
+        
+        let text = response.text().await?;
+        let text = text.lines().filter(|l| !l.trim_start().starts_with("//")).collect::<Vec<_>>().join("\n");
+        let manifest: serde_json::Value = serde_json::from_str(&text)?;
+        
         let manifest_version = manifest["version"].as_str().unwrap_or("unknown");
 
         let marker = driver_dir.join(format!("{}.ready", driver_type));

@@ -102,11 +102,26 @@ impl RuntimeB {
         }
 
         // 🧠 RESOLVE SPECULATIVE MODE & SYNC DNA
-        let has_native_mtp = if let Ok((_, tensor_infos, _)) = cluaiz_shared::utils::GGUFProber::probe(std::path::Path::new(&self.model_path)) {
-            cluaiz_shared::utils::GGUFProber::check_native_mtp(&tensor_infos)
+        // We probe GGUF metadata + tensor names to detect hybrid/recurrent models (e.g. Qwen3.5 GDN).
+        // GGUFProber now checks: architecture name, *.layer_types metadata, AND tensor patterns.
+        let (has_native_mtp, is_ssm_model) = if let Ok((metadata, tensor_infos, _)) = cluaiz_shared::utils::GGUFProber::probe(std::path::Path::new(&self.model_path)) {
+            (
+                cluaiz_shared::utils::GGUFProber::check_native_mtp(&tensor_infos),
+                cluaiz_shared::utils::GGUFProber::check_recurrent_ssm(&metadata, &tensor_infos)
+            )
         } else {
-            false
+            (false, false)
         };
+
+        if is_ssm_model {
+            // 🚨 For hybrid/recurrent models (Qwen3.5 GDN, Mamba, RWKV):
+            // Speculative decoding is incompatible with non-transformer architectures.
+            eprintln!("⚖️ [Llama-Engine] SSM/Hybrid architecture detected.");
+            eprintln!("⚖️ [Llama-Engine] → Speculative Decoding: FORCED OFF");
+            self.booster.speculative_decoding = "off".to_string();
+            // Note: We DO NOT force context_shifting off here anymore, as it breaks continuous generation.
+            // We let system_booster.json decide the context_shifting mode.
+        }
 
         let speculative_mode = if self.booster.speculative_decoding.to_lowercase() != "off" {
             if has_native_mtp {
@@ -117,7 +132,7 @@ impl RuntimeB {
         } else {
             "off"
         };
-        println!("🧠 [Llama-Engine] Dynamic Speculative Sync: Mode resolved as '{}' (booster: {})", speculative_mode, self.booster.speculative_decoding);
+        eprintln!("🧠 [Llama-Engine] Dynamic Speculative Sync: Mode resolved as '{}' (booster: {})", speculative_mode, self.booster.speculative_decoding);
         self.context.dna.dynamic_attributes.insert("speculative_mode".to_string(), speculative_mode.to_string());
 
         tracing::info!("🧬 [Native-Llama] Loading model: {} | ctx: {} tokens", self.model_path, ctx_params.n_ctx);
@@ -139,9 +154,14 @@ impl RuntimeB {
             match self.booster.context_shifting.to_lowercase().as_str() {
                 "off" => 0,
                 "minimal" => 1,
-                "standard" | "auto" => 2,
+                "standard" | "auto" | "on" => 2,
                 "aggressive" => 3,
                 "extreme" => 4,
+                _ => 2,
+            },
+            match self.booster.speculative_decoding.to_lowercase().as_str() {
+                "off" => 0,
+                "on" => 1,
                 _ => 2,
             }
         )?;
@@ -399,8 +419,10 @@ pub extern "C" fn cluaiz_kernel_instantiate(
         // Inject Booster Configuration from Caller
         if !booster_ptr.is_null() {
             let booster_ctx = unsafe { *booster_ptr };
+            println!("🚀 [Llama.cpp-Kernel] Received CluaizBoosterContext via FFI: {:?}", booster_ctx);
             tracing::info!("🚀 [Llama.cpp-Kernel] Received CluaizBoosterContext via FFI: {:?}", booster_ctx);
             engine.booster.flash_attn = booster_ctx.flash_attention;
+            engine.booster.n_gpu_layers = booster_ctx.n_gpu_layers;
             engine.booster.turbo_quant = if booster_ctx.turbo_quant { "active".to_string() } else { "none".to_string() };
             engine.booster.kv_cache_quantization = match booster_ctx.kv_cache_quantization_mode {
                 1 => "Kv8".to_string(),

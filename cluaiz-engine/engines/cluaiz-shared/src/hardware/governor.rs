@@ -520,14 +520,24 @@ impl HardwareGovernor {
 
     // ─── 🚀 BOOSTER CONTROL (USER SETTINGS) ───
 
-    /// 🏛️ Loads booster settings, prioritizing Binary Truth (.bin) for performance.
     pub fn load_booster_settings() -> anyhow::Result<BoosterControl> {
         let base = Self::resolve_engine_path();
         let bin_path = base.join("system_booster.bin");
         let json_path = base.join("system_booster.json");
 
+        let mut use_json = false;
+        if json_path.exists() && bin_path.exists() {
+            if let (Ok(json_meta), Ok(bin_meta)) = (std::fs::metadata(&json_path), std::fs::metadata(&bin_path)) {
+                if let (Ok(json_time), Ok(bin_time)) = (json_meta.modified(), bin_meta.modified()) {
+                    if json_time > bin_time {
+                        use_json = true;
+                    }
+                }
+            }
+        }
+
         // 🚀 Priority 1: Binary Truth (Panic-Safe Rkyv)
-        if bin_path.exists() {
+        if bin_path.exists() && !use_json {
             if let Ok(bytes) = std::fs::read(&bin_path) {
                 let result = std::panic::catch_unwind(|| {
                     if bytes.len() < 32 { return None; }
@@ -547,10 +557,15 @@ impl HardwareGovernor {
         if json_path.exists() {
             let data = std::fs::read_to_string(&json_path)?;
             println!("🔍 [Arbiter] Raw Booster JSON: {}", data);
-            if let Ok(control) = serde_json::from_str(&data) {
-                // Self-Heal: Sync binary if JSON was manual-edited
-                let _ = Self::save_booster_settings(&control); 
-                return Ok(control);
+            match serde_json::from_str::<BoosterControl>(&data) {
+                Ok(control) => {
+                    // Self-Heal: Sync binary if JSON was manual-edited
+                    let _ = Self::save_booster_settings(&control); 
+                    return Ok(control);
+                }
+                Err(e) => {
+                    eprintln!("❌ [Arbiter] Failed to parse system_booster.json: {}", e);
+                }
             }
         }
 

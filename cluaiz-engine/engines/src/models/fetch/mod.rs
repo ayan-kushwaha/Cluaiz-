@@ -229,28 +229,27 @@ impl ModelDownloader {
         let asset_path = dest_dir.join(asset_name);
         if asset_path.exists() { return Ok(()); }
 
-        let client = reqwest::Client::new();
+        let client = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(5))
+            .build()
+            .map_err(|e| e.to_string())?;
         let model_name = repo_id.split('/').next_back().unwrap_or(repo_id);
         
-        // 🚀 SMART FALLBACK LIST: Try various repository formats to bypass gating/missing files
-        let model_name_clean = model_name.replace("-GGUF", "").replace("-gguf", "");
-        let repo_ids_to_try = vec![
-            repo_id.to_string(),                                      // 1. Original (e.g., google/gemma-3-12b-it)
-            format!("unsloth/{}", model_name_clean),                  // 2. Unsloth Mirror (Highest probability for assets - e.g. unsloth/gemma-4-E4B-it)
-            format!("bartowski/{}", model_name_clean),                 // 3. Bartowski Mirror
-            format!("lmstudio-community/{}", model_name_clean),         // 4. LM Studio Mirror
-            repo_id.replace("-GGUF", "").replace("-gguf", ""),        // 5. Stripped GGUF
-            format!("unsloth/{}", model_name),                        // 6. Unsloth GGUF
-            format!("bartowski/{}", model_name),                       // 7. Bartowski GGUF
-            format!("lmstudio-community/{}", model_name),              // 8. LM Studio GGUF
-        ];
+        // 🚀 SMART FALLBACK LIST: Try repo and stripped format dynamically without hardcoded mirror prefix creators
+        let mut repo_ids_to_try = vec![repo_id.to_string()];
+        let stripped = repo_id.replace("-GGUF", "").replace("-gguf", "");
+        if stripped != repo_id {
+            repo_ids_to_try.push(stripped);
+        }
 
         for id in repo_ids_to_try {
             let url = format!("https://huggingface.co/{}/resolve/main/{}", id, asset_name);
-            let response = client.get(&url).send().await.map_err(|e: reqwest::Error| e.to_string())?;
+            let response = match client.get(&url).send().await {
+                Ok(res) => res,
+                Err(_) => continue, // Skip if request timed out or failed
+            };
 
             // ✅ If we get success, we recover. 
-            // ❌ If we get 401/403 (Gated) or 404, we continue to the next mirror.
             if response.status().is_success() {
                 let mut file = tokio::fs::File::create(&asset_path).await.map_err(|e: std::io::Error| e.to_string())?;
                 let mut stream = response.bytes_stream();
@@ -258,15 +257,16 @@ impl ModelDownloader {
                     let chunk = item.map_err(|e: reqwest::Error| e.to_string())?;
                     file.write_all(&chunk).await.map_err(|e: std::io::Error| e.to_string())?;
                 }
-                println!("🪄 [AUTO-HEAL] Recovered '{}' from public mirror: {}", asset_name, id);
+                println!("🪄 [AUTO-HEAL] Recovered '{}' from public repository: {}", asset_name, id);
                 return Ok(());
             } else if response.status() == reqwest::StatusCode::UNAUTHORIZED || response.status() == reqwest::StatusCode::FORBIDDEN {
-                println!("🛡️ [AUTO-HEAL] Gated repo detected ({}). Switching to next public mirror...", id);
+                println!("🛡️ [AUTO-HEAL] Gated repo detected ({}). Skipping...", id);
                 continue;
             }
         }
         
-        Err(format!("Asset '{}' not found in any repository.", asset_name))
+        println!("⚠️ [AUTO-HEAL] Optional asset '{}' not found. Continuing safely.", asset_name);
+        Ok(())
     }
 
     pub fn download_gguf(

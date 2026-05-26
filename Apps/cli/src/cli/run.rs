@@ -217,15 +217,15 @@ pub async fn execute(model_id: &str, _interactive: bool) -> Result<()> {
                 return Err(color_eyre::eyre::eyre!("Initialization aborted by user."));
             }
             manager.pull_model_with_manifest(&manifest).await.map_err(|e| color_eyre::eyre::eyre!(e))?;
-            println!("\n  {} HuggingFace Model Downloaded! To start chatting, please run:", "✅".green());
-            println!("      {} {}", "cluaiz run".cyan(), manifest.id.yellow());
-            return Ok(());
+            println!("\n  {} HuggingFace Model Downloaded! Launching dynamic chat session...", "✅".green());
+            is_local = true;
         } else {
             let confirm = inquire::Confirm::new("Sovereign audit passed. Proceed with model download and initialization?").with_default(true).prompt()?;
             if !confirm {
                 return Err(color_eyre::eyre::eyre!("Initialization aborted by user."));
             }
             manager.pull_model(&resolved_id).await.map_err(|e| color_eyre::eyre::eyre!(e))?;
+            is_local = true;
         }
     }
 

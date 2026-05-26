@@ -127,6 +127,12 @@ pub struct BoosterControl {
     pub kv_cache_quantization: KvCacheQuantization,
     pub context_shifting: ContextShiftingMode,
     pub force_vram_reclaim: FeatureState, // 🏠 'Landlord' Mode Flag
+    #[serde(default = "default_n_gpu_layers")]
+    pub n_gpu_layers: i32,
+}
+
+fn default_n_gpu_layers() -> i32 {
+    -1
 }
 
 impl BoosterControl {
@@ -176,6 +182,7 @@ impl Default for BoosterControl {
             kv_cache_quantization: KvCacheQuantization::Auto,
             context_shifting: ContextShiftingMode::Auto,
             force_vram_reclaim: FeatureState::Off,
+            n_gpu_layers: -1,
         }
     }
 }
@@ -190,6 +197,7 @@ pub struct CluaizBoosterContext {
     pub speculative_decoding_mode: u8, // 0 = Off, 1 = On, 2 = Auto
     pub kv_cache_quantization_mode: u8, // 0 = Auto/Kv16, 1 = Kv8, 2 = Kv4
     pub context_shifting_mode: u8, // 0 = Off, 1 = Small, 2 = Balanced, 3 = Boost, 4 = Ultra
+    pub n_gpu_layers: i32,
 }
 
 impl From<&BoosterControl> for CluaizBoosterContext {
@@ -220,6 +228,7 @@ impl From<&BoosterControl> for CluaizBoosterContext {
             speculative_decoding_mode: spec_mode,
             kv_cache_quantization_mode: kv_mode,
             context_shifting_mode: shift_mode,
+            n_gpu_layers: config.n_gpu_layers,
         }
     }
 }

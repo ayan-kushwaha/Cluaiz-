@@ -190,4 +190,50 @@ impl GGUFProber {
         // Universal Structural Check: Looks for generic MTP tensor patterns across any model
         tensor_infos.keys().any(|k| k.contains(".mtp") || k.ends_with("mtp"))
     }
+
+    /// ⚡ Checks if the model has recurrent/SSM (State Space Model) layers.
+    /// Handles pure SSM (Mamba, RWKV, Falcon-Mamba) AND hybrid models (Qwen3.5 GDN, Jamba).
+    /// Hybrid detection uses GGUF metadata `*.attention.layer_types` key, which llama.cpp
+    /// uses to declare mixed attention+recurrent layer topologies.
+    pub fn check_recurrent_ssm(
+        metadata: &HashMap<String, String>,
+        tensor_infos: &HashMap<String, Vec<usize>>,
+    ) -> bool {
+        // ── 1. Architecture-level: pure SSM architectures ───────────────────
+        if let Some(arch) = metadata.get("general.architecture") {
+            let arch_lower = arch.to_lowercase();
+            let recurrent_archs = ["mamba", "rwkv", "ssm", "falcon_mamba", "jamba", "zamba"];
+            if recurrent_archs.iter().any(|a| arch_lower.contains(a)) {
+                eprintln!("⚖️ [GGUFProber] Architecture '{}' is a known SSM architecture.", arch);
+                return true;
+            }
+        }
+
+        // ── 2. Hybrid layer-type metadata: Qwen3.5 GDN, and any future hybrid ─
+        // These metadata keys signal mixed attention+recurrent topologies.
+        let hybrid_meta_signals = [
+            "layer_types",       // qwen3.attention.layer_types → GDN/hybrid flag
+            "ssm_state_size",    // explicit SSM state dim
+            "d_state",           // Mamba-family state dim key
+            "conv_kernel",       // 1-D conv = SSM family
+            "time_mix_extra_dim",// RWKV-7 key
+        ];
+        if metadata.keys().any(|k| hybrid_meta_signals.iter().any(|sig| k.contains(sig))) {
+            eprintln!("⚖️ [GGUFProber] Hybrid SSM/recurrent layer metadata detected.");
+            return true;
+        }
+
+        // ── 3. Tensor name patterns: fallback for non-standard GGUF metadata ──
+        let ssm_tensor_patterns = [
+            ".ssm", "ssm_", ".conv_1d", ".a_log",
+            ".dt_", "time_mix", ".mamba", "rwkv_",
+        ];
+        if tensor_infos.keys().any(|k| ssm_tensor_patterns.iter().any(|p| k.contains(p))) {
+            eprintln!("⚖️ [GGUFProber] SSM tensor patterns found in model weights.");
+            return true;
+        }
+
+        false
+    }
 }
+

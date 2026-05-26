@@ -17,6 +17,7 @@ pub struct NativeLlama {
     pub n_ctx: u32,
     pub kv_cache_quantization_mode: u8,
     pub context_shifting_mode: u8,
+    pub speculative_decoding_mode: u8,
 }
 
 /// 🤫 Sovereign Silence: Mute verbose native logs to prevent TUI visual noise.
@@ -31,6 +32,7 @@ impl NativeLlama {
         dna: &mut cluaiz_shared::metadata::dna::StructuralDNA,
         kv_cache_quantization_mode: u8,
         context_shifting_mode: u8,
+        speculative_decoding_mode: u8,
     ) -> anyhow::Result<Self> {
         // ══ SOVEREIGN OPTIMIZATION (Hardware Overrides) ══
         // We let llama.cpp print errors so we can debug the VRAM crash!
@@ -39,11 +41,15 @@ impl NativeLlama {
         // Register default callback (null means default)
         unsafe { llama_cpp::llama_log_set(None, std::ptr::null_mut()) };
         
+        // 🚀 Initialize all native backends (CRITICAL for CUDA/GPU discovery)
+        unsafe { llama_cpp::llama_backend_init() };
+        
         // 🛡️ Sovereign Context Check: Capping is now handled by the Governor's fitting loop.
         // We no longer hard-cap at 4096 here.
         
         let c_path = CString::new(model_path)?;
         
+        println!("📊 [Native-Llama] FFI Parameters: n_gpu_layers = {}, use_mmap = {}, n_threads = {}, n_threads_batch = {}", model_params.n_gpu_layers, model_params.use_mmap, ctx_params.n_threads, ctx_params.n_threads_batch);
         info!("🧬 [Native-Llama] Loading model: {} | ctx: {} tokens", model_path, ctx_params.n_ctx);
         let model_ptr = unsafe { llama_cpp::llama_model_load_from_file(c_path.as_ptr(), model_params) };
         
@@ -64,10 +70,21 @@ impl NativeLlama {
         }
         eprintln!("✅ [Native-Llama] DNA Discovery Finished. Max Context: {:?}", dna.max_context_length);
         
-        // Sync context params with DNA's calculated context
         if let Some(ctx) = dna.max_context_length {
             info!("🎯 [Native-Llama] SOVEREIGN HANDSHAKE: Setting n_ctx = {} (DNA Truth)", ctx);
             ctx_params.n_ctx = ctx as u32;
+        }
+
+        // ⚡ CUDA GRAPH SOVEREIGN RULE:
+        // Disable CUDA graphs if speculative decoding (Lookahead/Eagle) is active.
+        // Speculative decoding uses variable batch sizes (1 + N drafts), which causes
+        // expensive synchronous CUDA graph recaptures on every batch size change.
+        if speculative_decoding_mode == 1 || speculative_decoding_mode == 2 {
+            std::env::set_var("GGML_CUDA_USE_GRAPHS", "0");
+            info!("⚡ [Native-Llama] CUDA Graphs DISABLED at context init for Speculative Decoding.");
+        } else {
+            std::env::set_var("GGML_CUDA_USE_GRAPHS", "1");
+            info!("⚡ [Native-Llama] CUDA Graphs ENABLED (Standard Mode).");
         }
 
         info!("🧬 [Native-Llama] Initializing context with n_ctx={}.", ctx_params.n_ctx);
@@ -89,6 +106,7 @@ impl NativeLlama {
             n_ctx: ctx_params.n_ctx,
             kv_cache_quantization_mode,
             context_shifting_mode,
+            speculative_decoding_mode,
         })
     }
 
@@ -219,22 +237,8 @@ impl NativeLlama {
             info!("🎲 [Native-Llama] Dynamic Sampler: temp={}, top_p={}", temp, top_p);
 
             // 🧬 Arbiter Mode Sync
-            let speculative_mode = dna.dynamic_attributes.get("speculative_mode").map(|s| s.as_str()).unwrap_or("off");
-            let is_lookahead = speculative_mode == "lookahead" || speculative_mode == "eagle";
-            println!("🚀 [Native-Llama] Speculative Mode: {} | Lookahead Engine Active: {}", speculative_mode, is_lookahead);
-            
-            // ⚡ CUDA GRAPH SOVEREIGN RULE:
-            // CUDA Graphs require a FIXED batch shape (same number of tokens per step).
-            // Speculative decoding sends batches of 1 + N draft tokens (variable size).
-            // Every batch size change triggers an expensive synchronous CUDA graph RECAPTURE.
-            // This degrades throughput from ~30 TPS → ~2 TPS. FIX: disable CUDA graphs for speculative mode.
-            // For standard autoregressive decoding, CUDA graphs stay ON for their 40% speed boost.
-            if is_lookahead {
-                std::env::set_var("GGML_CUDA_USE_GRAPHS", "0");
-                println!("⚡ [Native-Llama] CUDA Graphs DISABLED for speculative mode (prevents recapture overhead).");
-            } else {
-                std::env::set_var("GGML_CUDA_USE_GRAPHS", "1");
-            }
+            let is_lookahead = self.speculative_decoding_mode == 1 || self.speculative_decoding_mode == 2;
+            println!("🚀 [Native-Llama] Speculative Mode: {} | Lookahead Engine Active: {}", self.speculative_decoding_mode, is_lookahead);
             
             let mut history: Vec<i32> = tokens.clone();
             let mut lookahead_logs = Vec::new();
@@ -250,6 +254,38 @@ impl NativeLlama {
                 // 🛑 Check for Real-time Interrupt
                 if self.interrupt_signal.load(Ordering::SeqCst) {
                     break;
+                }
+
+                // 🛡️ Sliding Window / Context Shifting
+                // Shift BEFORE decoding to ensure space for main token + speculative drafts
+                if self.context_shifting_mode != 0 && n_cur >= (self.n_ctx as i32) - 6 {
+                    let shift_fraction = match self.context_shifting_mode {
+                        1 => 0.05, // Minimal (5%)
+                        2 => 0.10, // Standard (10%)
+                        3 => 0.25, // Aggressive (25%)
+                        4 => 0.50, // Extreme (50%)
+                        _ => 0.10,
+                    };
+                    let n_discard = (((self.n_ctx as f32) * shift_fraction) as i32).max(16);
+                    let n_keep = (tokens.len() as i32).min((self.n_ctx as i32) / 2).max(1);
+
+                    if n_keep + n_discard < n_cur {
+                        let mem = llama_cpp::llama_get_memory(self.ctx_ptr);
+                        
+                        // Delete oldest history tokens
+                        let p0_rm = n_keep;
+                        let p1_rm = n_keep + n_discard;
+                        let _rm_status = llama_cpp::llama_memory_seq_rm(mem, 0, p0_rm, p1_rm);
+                        
+                        // Shift remaining history left
+                        let p0_add = n_keep + n_discard;
+                        let p1_add = n_cur;
+                        let delta = -n_discard;
+                        llama_cpp::llama_memory_seq_add(mem, 0, p0_add, p1_add, delta);
+                        
+                        n_cur -= n_discard;
+                        lookahead_logs.push(format!("🌊 Sliding Window Shift: Pruned {} tokens from KV-cache. n_cur is now {}.", n_discard, n_cur));
+                    }
                 }
 
                 // 1. Output the current verified token
@@ -308,6 +344,12 @@ impl NativeLlama {
                             }
                         }
                     }
+                }
+
+                // Ensure drafts don't exceed remaining context space
+                let max_drafts = (self.n_ctx as i32 - n_cur - 2).max(0);
+                if drafts.len() > max_drafts as usize {
+                    drafts.truncate(max_drafts as usize);
                 }
 
                 // 3. Prepare Batch (Main Token + Drafts)
@@ -383,62 +425,18 @@ impl NativeLlama {
                         // Sample next token using the logits of the accepted draft
                         next_token_id = llama_cpp::llama_sampler_sample(sampler_chain, self.ctx_ptr, (i + 1) as i32);
                     } else {
-                        lookahead_logs.push(format!("❌ Draft REJECTED: expected {}, got {}", draft_token, next_token_id));
-                        break;
+                         // ❌ Draft REJECTED – rollback & continue normal decoding
+                         lookahead_logs.push(format!("❌ Draft REJECTED: expected {}, got {}", draft_token, next_token_id));
+                         break;
                     }
                 }
+
+                // Uniform rollback: Delete any rejected/remaining draft tokens from KV-cache starting from n_cur
+                let mem = llama_cpp::llama_get_memory(self.ctx_ptr);
+                llama_cpp::llama_memory_seq_rm(mem, 0, n_cur, -1);
 
                 if eos_detected {
-                    // 🧹 Flush remaining rejected drafts from KV cache (use -1 = "delete to end of cache",
-                    // same as llama.cpp native speculative-simple.cpp — avoids off-by-one errors).
-                    let n_rejected = drafts.len() as i32 - n_match;
-                    if n_rejected > 0 {
-                        let mem = llama_cpp::llama_get_memory(self.ctx_ptr);
-                        llama_cpp::llama_memory_seq_rm(mem, 0, n_cur, -1);
-                        lookahead_logs.push(format!("🧹 EOS flush: removed {} rejected draft tokens from KV cache (n_cur={}).", n_rejected, n_cur));
-                    }
                     break;
-                }
-
-                // 6. 🧹 Flush Rejected Drafts
-                // Use -1 for p1 ("delete all from p0 to end") — this is the standard llama.cpp rollback pattern
-                // used in lookup.cpp and speculative-simple.cpp. It avoids off-by-one miscalculations.
-                let n_rejected = drafts.len() as i32 - n_match;
-                if n_rejected > 0 {
-                    let mem = llama_cpp::llama_get_memory(self.ctx_ptr);
-                    llama_cpp::llama_memory_seq_rm(mem, 0, n_cur, -1);
-                    lookahead_logs.push(format!("🧹 Flushed {} rejected drafts from KV cache (n_cur={}).", n_rejected, n_cur));
-                }
-
-                // 🛡️ Sliding Window / Context Shifting
-                if self.context_shifting_mode != 0 && n_cur >= (self.n_ctx as i32) - 4 {
-                    let shift_fraction = match self.context_shifting_mode {
-                        1 => 0.05, // Minimal (5%)
-                        2 => 0.10, // Standard (10%)
-                        3 => 0.25, // Aggressive (25%)
-                        4 => 0.50, // Extreme (50%)
-                        _ => 0.10,
-                    };
-                    let n_discard = (((self.n_ctx as f32) * shift_fraction) as i32).max(16);
-                    let n_keep = (tokens.len() as i32).min((self.n_ctx as i32) / 2).max(1);
-
-                    if n_keep + n_discard < n_cur {
-                        let mem = llama_cpp::llama_get_memory(self.ctx_ptr);
-                        
-                        // Delete oldest history tokens
-                        let p0_rm = n_keep;
-                        let p1_rm = n_keep + n_discard;
-                        let rm_status = llama_cpp::llama_memory_seq_rm(mem, 0, p0_rm, p1_rm);
-                        
-                        // Shift remaining history left
-                        let p0_add = n_keep + n_discard;
-                        let p1_add = n_cur;
-                        let delta = -n_discard;
-                        llama_cpp::llama_memory_seq_add(mem, 0, p0_add, p1_add, delta);
-                        
-                        n_cur -= n_discard;
-                        lookahead_logs.push(format!("🌊 Sliding Window Shift: Pruned {} tokens from KV-cache. n_cur is now {}.", n_discard, n_cur));
-                    }
                 }
             }
 

@@ -268,7 +268,8 @@ impl DashboardEngine {
             }
         });
         // 🚀 CLUAIZ AUTO-BOOT: Activate the latest engine silently only if no model is loaded
-        if state._active_model_id.is_none() {
+        let is_engine_loaded = state.Core_engine.is_loaded.load(std::sync::atomic::Ordering::SeqCst);
+        if state._active_model_id.is_none() && !is_engine_loaded {
             let auto_boot_name = state.sorted_models.iter().filter(|m| m.is_cached).next().map(|m| m.manifest.name.clone());
             if let Some(name) = auto_boot_name {
                 println!("\n  {} Auto-Booting Neural Kernel: {}...", "🚀".magenta(), name.bold());
@@ -279,7 +280,7 @@ impl DashboardEngine {
         println!();
 
         loop {
-            show_dashboard.store(true, std::sync::atomic::Ordering::SeqCst);
+            show_dashboard.store(false, std::sync::atomic::Ordering::SeqCst);
             
             let input = Text::new(">")
                 .with_placeholder("Type your message or @ & / for menu")
@@ -398,7 +399,7 @@ impl DashboardEngine {
                             let max_t = lock.get_active_dna()
                                 .and_then(|d| d.inference_params.get("max_tokens"))
                                 .and_then(|v| v.parse::<usize>().ok())
-                                .unwrap_or(ctx_window.saturating_sub(prompt_tokens).saturating_sub(128)); // 🚀 DYNAMIC: Use full window headroom minus 128 safety tokens.
+                                .unwrap_or(8192); // 🚀 DYNAMIC: Allow large stream, context shifting will handle KV bounds.
 
                             // 🔇 SURGICAL SILENCE: freopen stderr→NUL only during inference.
                             #[cfg(windows)]
@@ -515,7 +516,14 @@ impl DashboardEngine {
 
                         // 🚀 REVEAL DASHBOARD: Manifest the Sovereign record after completion
                         show_dashboard.store(true, Ordering::SeqCst);
-println!(); // ensure prompt starts on fresh line
+                        
+                        println!("\n  {} │ {} tokens │ {:.1} TPS │ {:.2}s", 
+                            colored::Colorize::magenta("⚡ Sovereign Benchmark"), 
+                            colored::Colorize::cyan(tokens_in_this_run.to_string().as_str()), 
+                            avg_tps, 
+                            duration
+                        );
+                        println!(); // ensure prompt starts on fresh line
                     }
                 }
                 Err(_) => {
@@ -656,113 +664,256 @@ println!(); // ensure prompt starts on fresh line
                     booster_path.push("engine");
                     booster_path.push("system_booster.json");
 
-                loop {
-                    let mut booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
-                    
-                    let mut options = vec![
-                        format!("Neural Mode (Current: {:?})", booster.mode_run),
-                        format!("Turbo Quant (Current: {:?})", booster.turbo_quant),
-                        format!("Flash Attention (Current: {:?})", booster.flash_attention),
-                        format!("Speculative Decoding (Current: {:?})", booster.speculative_decoding),
-                        format!("Auto Round (Current: {:?})", booster.auto_round),
-                        format!("DFlash (FlashKDA) (Current: {:?})", booster.dflash),
-                    ];
-                    options.push("🔙 Back to Menu".to_string());
-                    
-                    let target_ans = match Select::new("Configure Setting:", options)
-                        .with_render_config(config.clone())
-                        .prompt() {
-                        Ok(ans) => ans,
-                        Err(_) => {
-                            print!("\x1B[1A\x1B[2K\r"); // Erase <canceled>
-                            stdout().flush()?;
-                            break; // One step back (returns to master menu)
-                        }
-                    };
-                    print!("\x1B[1A\x1B[2K\r");
-                    stdout().flush()?;
+                    loop {
+                        let mut booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+                        
+                        let compute_mode_str = match booster.n_gpu_layers {
+                            0 => "CPU Only".to_string(),
+                            -1 => "GPU (Full Offload)".to_string(),
+                            n => format!("Hybrid ({} Layers)", n),
+                        };
 
-                    if target_ans == "🔙 Back to Menu" {
-                        break; // One step back
-                    }
-
-                    let key_part = target_ans.split(" (").next().unwrap_or("").to_string();
-                    let values = vec!["On".to_string(), "Off".to_string(), "Auto".to_string()];
-                    
-                    let val_ans = match Select::new(&format!("Set {}:", key_part), values)
-                        .with_render_config(config.clone())
-                        .prompt() {
-                        Ok(ans) => ans,
-                        Err(_) => {
-                            print!("\x1B[1A\x1B[2K\r"); // Erase <canceled>
-                            stdout().flush()?;
-                            continue; // One step back (stays in System Booster list)
-                        }
-                    };
-                    print!("\x1B[1A\x1B[2K\r");
-                    stdout().flush()?;
-
-                    let feature_state = match val_ans.as_str() {
-                        "On" => cluaiz_shared::hardware::schema::booster::FeatureState::On,
-                        "Off" => cluaiz_shared::hardware::schema::booster::FeatureState::Off,
-                        _ => cluaiz_shared::hardware::schema::booster::FeatureState::Auto,
-                    };
-
-                    match key_part.as_str() {
-                        "Neural Mode" => {
-                            let mut modes = vec![
-                                "edge".to_string(), 
-                                "multitasking".to_string(), 
-                                "balance".to_string(), 
-                                "max_boost".to_string(), 
-                                "ultra_max_boost".to_string()
-                            ];
-
-                            // 🌌 VRAM GUARD: Only show HyperCluster if VRAM >= 40GB
-                            let total_vram = {
-                                let pulse_lock = state.live_pulse.pulse.read().unwrap();
-                                pulse_lock.vram_total_gb
-                            };
-                            if total_vram >= 40.0 {
-                                modes.push("hyper_cluster".to_string());
+                        let mut options = vec![
+                            format!("Neural Mode (Current: {:?})", booster.mode_run),
+                            format!("Compute Device (Current: {})", compute_mode_str),
+                            format!("Turbo Quant (Current: {:?})", booster.turbo_quant),
+                            format!("Flash Attention (Current: {:?})", booster.flash_attention),
+                            format!("Speculative Decoding (Current: {:?})", booster.speculative_decoding),
+                            format!("Auto Round (Current: {:?})", booster.auto_round),
+                            format!("DFlash (FlashKDA) (Current: {:?})", booster.dflash),
+                            format!("Context Shifting (Current: {:?})", booster.context_shifting),
+                            format!("Force VRAM Reclaim (Current: {:?})", booster.force_vram_reclaim),
+                            format!("KV Cache Quantization (Current: {:?})", booster.kv_cache_quantization),
+                        ];
+                        options.push("🔙 Back to Menu".to_string());
+                        
+                        let target_ans = match Select::new("Configure Setting:", options)
+                            .with_render_config(config.clone())
+                            .prompt() {
+                            Ok(ans) => ans,
+                            Err(_) => {
+                                print!("\x1B[1A\x1B[2K\r"); // Erase <canceled>
+                                stdout().flush()?;
+                                break; // One step back (returns to master menu)
                             }
+                        };
+                        print!("\x1B[1A\x1B[2K\r");
+                        stdout().flush()?;
 
-                            let selected_mode = match Select::new("Select Neural Mode:", modes)
+                        if target_ans == "🔙 Back to Menu" {
+                            break; // One step back
+                        }
+
+                        let key_part = target_ans.split(" (").next().unwrap_or("").to_string();
+
+                        // If they select Compute Device, show device sub-menu directly
+                        if key_part.as_str() == "Compute Device" {
+                            let device_options = vec![
+                                "GPU (Full Offload)".to_string(),
+                                "CPU Only".to_string(),
+                                "Custom Layers".to_string(),
+                            ];
+                            let selected_device = match Select::new("Select Compute Device:", device_options)
                                 .with_render_config(config.clone())
                                 .prompt() {
                                 Ok(ans) => ans,
-                                Err(_) => continue,
+                                Err(_) => {
+                                    print!("\x1B[1A\x1B[2K\r");
+                                    stdout().flush()?;
+                                    continue;
+                                }
                             };
-                            booster.mode_run = match selected_mode.as_str() {
-                                "edge" => cluaiz_shared::hardware::schema::booster::BoosterMode::Edge,
-                                "multitasking" => cluaiz_shared::hardware::schema::booster::BoosterMode::Multitasking,
-                                "balance" => cluaiz_shared::hardware::schema::booster::BoosterMode::Balance,
-                                "max_boost" => cluaiz_shared::hardware::schema::booster::BoosterMode::MaxBoost,
-                                "ultra_max_boost" => cluaiz_shared::hardware::schema::booster::BoosterMode::UltraMaxBoost,
-                                "hyper_cluster" => cluaiz_shared::hardware::schema::booster::BoosterMode::HyperCluster,
-                                _ => cluaiz_shared::hardware::schema::booster::BoosterMode::Balance,
+                            print!("\x1B[1A\x1B[2K\r");
+                            stdout().flush()?;
+
+                            match selected_device.as_str() {
+                                "GPU (Full Offload)" => {
+                                    booster.n_gpu_layers = -1;
+                                }
+                                "CPU Only" => {
+                                    booster.n_gpu_layers = 0;
+                                }
+                                "Custom Layers" => {
+                                    let layers_input = inquire::CustomType::<i32>::new("Enter number of GPU layers (-1 for full offload):")
+                                        .with_default(-1)
+                                        .with_render_config(config.clone())
+                                        .prompt();
+                                    match layers_input {
+                                        Ok(layers) => {
+                                            booster.n_gpu_layers = layers;
+                                        }
+                                        Err(_) => {
+                                            print!("\x1B[1A\x1B[2K\r");
+                                            stdout().flush()?;
+                                            continue;
+                                        }
+                                    }
+                                    print!("\x1B[1A\x1B[2K\r");
+                                    stdout().flush()?;
+                                }
+                                _ => {}
+                            }
+
+                            if let Ok(_) = cluaiz_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster) {
+                                println!("  {} System Booster updated: Compute Device = {}", "✅".green(), selected_device.bold());
+                            } else {
+                                println!("  {} Failed to save system booster settings.", "❌".red());
+                            }
+                            continue;
+                        }
+
+                        // Special sub-menus for context shifting & reclaim
+                        if key_part.as_str() == "Context Shifting" {
+                            let shift_modes = vec![
+                                "Off".to_string(),
+                                "Minimal".to_string(),
+                                "Standard".to_string(),
+                                "Aggressive".to_string(),
+                                "Extreme".to_string(),
+                                "Auto".to_string(),
+                            ];
+                            let selected_shift = match Select::new("Select Context Shifting:", shift_modes)
+                                .with_render_config(config.clone())
+                                .prompt() {
+                                Ok(ans) => ans,
+                                Err(_) => {
+                                    print!("\x1B[1A\x1B[2K\r");
+                                    stdout().flush()?;
+                                    continue;
+                                }
                             };
-                        },
-                        "Turbo Quant" => booster.turbo_quant = feature_state,
-                        "Flash Attention" => booster.flash_attention = feature_state,
-                        "Speculative Decoding" => booster.speculative_decoding = feature_state,
-                        "Auto Round" => booster.auto_round = feature_state,
-                        "DFlash (FlashKDA)" => {
-                            booster.dflash = match val_ans.as_str() {
-                                "On" => cluaiz_shared::hardware::schema::booster::SmartState::Static("On".to_string()),
-                                "Off" => cluaiz_shared::hardware::schema::booster::SmartState::Static("Off".to_string()),
-                                _ => cluaiz_shared::hardware::schema::booster::SmartState::Static("Auto".to_string()),
+                            print!("\x1B[1A\x1B[2K\r");
+                            stdout().flush()?;
+
+                            booster.context_shifting = match selected_shift.as_str() {
+                                "Off" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Off,
+                                "Minimal" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Minimal,
+                                "Standard" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Standard,
+                                "Aggressive" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Aggressive,
+                                "Extreme" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Extreme,
+                                _ => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Auto,
                             };
-                        },
-                        _ => {}
+
+                            if let Ok(_) = cluaiz_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster) {
+                                println!("  {} System Booster updated: Context Shifting = {}", "✅".green(), selected_shift.bold());
+                            } else {
+                                println!("  {} Failed to save system booster settings.", "❌".red());
+                            }
+                            continue;
+                        }
+
+                        if key_part.as_str() == "KV Cache Quantization" {
+                            let kv_options = vec![
+                                "16-bit (Lossless / High Precision)".to_string(),
+                                "8-bit (50% VRAM Saving / Balanced)".to_string(),
+                                "4-bit (75% VRAM Saving / High Compression)".to_string(),
+                                "Auto (Dynamic Quantization)".to_string(),
+                            ];
+                            let selected_kv = match Select::new("Select KV Cache Quantization:", kv_options)
+                                .with_render_config(config.clone())
+                                .prompt() {
+                                Ok(ans) => ans,
+                                Err(_) => {
+                                    print!("\x1B[1A\x1B[2K\r");
+                                    stdout().flush()?;
+                                    continue;
+                                }
+                            };
+                            print!("\x1B[1A\x1B[2K\r");
+                            stdout().flush()?;
+
+                            booster.kv_cache_quantization = match selected_kv.as_str() {
+                                s if s.starts_with("16-bit") => cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Kv16,
+                                s if s.starts_with("8-bit") => cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Kv8,
+                                s if s.starts_with("4-bit") => cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Kv4,
+                                _ => cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Auto,
+                            };
+
+                            if let Ok(_) = cluaiz_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster) {
+                                println!("  {} System Booster updated: KV Cache Quantization = {}", "✅".green(), selected_kv.bold());
+                            } else {
+                                println!("  {} Failed to save system booster settings.", "❌".red());
+                            }
+                            continue;
+                        }
+
+                        let values = vec!["On".to_string(), "Off".to_string(), "Auto".to_string()];
+                        
+                        let val_ans = match Select::new(&format!("Set {}:", key_part), values)
+                            .with_render_config(config.clone())
+                            .prompt() {
+                            Ok(ans) => ans,
+                            Err(_) => {
+                                print!("\x1B[1A\x1B[2K\r"); // Erase <canceled>
+                                stdout().flush()?;
+                                continue; // One step back (stays in System Booster list)
+                            }
+                        };
+                        print!("\x1B[1A\x1B[2K\r");
+                        stdout().flush()?;
+
+                        let feature_state = match val_ans.as_str() {
+                            "On" => cluaiz_shared::hardware::schema::booster::FeatureState::On,
+                            "Off" => cluaiz_shared::hardware::schema::booster::FeatureState::Off,
+                            _ => cluaiz_shared::hardware::schema::booster::FeatureState::Auto,
+                        };
+
+                        match key_part.as_str() {
+                            "Neural Mode" => {
+                                let mut modes = vec![
+                                    "edge".to_string(), 
+                                    "multitasking".to_string(), 
+                                    "balance".to_string(), 
+                                    "max_boost".to_string(), 
+                                    "ultra_max_boost".to_string()
+                                ];
+
+                                // 🌌 VRAM GUARD: Only show HyperCluster if VRAM >= 40GB
+                                let total_vram = {
+                                    let pulse_lock = state.live_pulse.pulse.read().unwrap();
+                                    pulse_lock.vram_total_gb
+                                };
+                                if total_vram >= 40.0 {
+                                    modes.push("hyper_cluster".to_string());
+                                }
+
+                                let selected_mode = match Select::new("Select Neural Mode:", modes)
+                                    .with_render_config(config.clone())
+                                    .prompt() {
+                                    Ok(ans) => ans,
+                                    Err(_) => continue,
+                                };
+                                booster.mode_run = match selected_mode.as_str() {
+                                    "edge" => cluaiz_shared::hardware::schema::booster::BoosterMode::Edge,
+                                    "multitasking" => cluaiz_shared::hardware::schema::booster::BoosterMode::Multitasking,
+                                    "balance" => cluaiz_shared::hardware::schema::booster::BoosterMode::Balance,
+                                    "max_boost" => cluaiz_shared::hardware::schema::booster::BoosterMode::MaxBoost,
+                                    "ultra_max_boost" => cluaiz_shared::hardware::schema::booster::BoosterMode::UltraMaxBoost,
+                                    "hyper_cluster" => cluaiz_shared::hardware::schema::booster::BoosterMode::HyperCluster,
+                                    _ => cluaiz_shared::hardware::schema::booster::BoosterMode::Balance,
+                                };
+                            },
+                            "Turbo Quant" => booster.turbo_quant = feature_state,
+                            "Flash Attention" => booster.flash_attention = feature_state,
+                            "Speculative Decoding" => booster.speculative_decoding = feature_state,
+                            "Auto Round" => booster.auto_round = feature_state,
+                            "DFlash (FlashKDA)" => {
+                                booster.dflash = match val_ans.as_str() {
+                                    "On" => cluaiz_shared::hardware::schema::booster::SmartState::Static("On".to_string()),
+                                    "Off" => cluaiz_shared::hardware::schema::booster::SmartState::Static("Off".to_string()),
+                                    _ => cluaiz_shared::hardware::schema::booster::SmartState::Static("Auto".to_string()),
+                                };
+                            },
+                            "Force VRAM Reclaim" => booster.force_vram_reclaim = feature_state,
+                            _ => {}
+                        }
+                        
+                        if let Ok(_) = cluaiz_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster) {
+                            println!("  {} System Booster updated: {} = {}", "✅".green(), key_part.cyan(), val_ans.bold());
+                        } else {
+                            println!("  {} Failed to save system booster settings.", "❌".red());
+                        }
                     }
-                    
-                    if let Ok(_) = cluaiz_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster) {
-                        println!("  {} System Booster updated: {} = {}", "✅".green(), key_part.cyan(), val_ans.bold());
-                    } else {
-                        println!("  {} Failed to save system booster settings.", "❌".red());
-                    }
-                }
                     continue; // Go back to Master Menu after exiting System Booster
                 }
 
