@@ -126,13 +126,17 @@ async fn run_single_model_isolated(model_name: &str) {
     }
     let tokenizer = tokenizer.unwrap();
     
+    // --- ⚙️ DYNAMIC THINK MODE CONTROL (Flash Mode) ---
+    // Force think_mode OFF in the system booster settings for the benchmark run
+    let mut booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+    booster.think_mode = cluaiz_shared::hardware::schema::booster::FeatureState::Off;
+    let _ = cluaiz_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster);
+
     // --- ⚙️ BEST SETTINGS (UltraMaxBoost logic) ---
     let mut dna = StructuralDNA::default();
     // 1. Reduced sliding window context (helps VRAM and speed)
     dna.max_context_length = Some(4096); 
-    // We can add other fast params if supported
     
-    // Disable thinking mode text generation via system prompt instruction
     let context = CluaizContext::boot(dna, TemplateManager::default());
     
     println!("🔥 Booting Engine in Process Isolation...");
@@ -156,12 +160,13 @@ async fn run_single_model_isolated(model_name: &str) {
     
     println!("⚡ Warmup complete. Running main benchmark...");
     
-    // Instruct the model to avoid thinking tags if it's an R1/reasoning model
-    let main_prompt = "You must output ONLY the list, no <think> tags, no reasoning. Give top 50 most popular songs list.";
+    // Keep prompt clean!
+    let main_prompt = "give top 50 most popular songs list";
     let mut highest_tps = 0.0;
     let mut best_run_output = String::new();
     let mut best_time = 0.0;
     let mut best_tokens = 0;
+    let mut best_ttft = 0.0;
     
     for i in 1..=2 {
         println!("  [Run {}/2] Generating...", i);
@@ -169,12 +174,18 @@ async fn run_single_model_isolated(model_name: &str) {
         let mut generated_text = String::new();
         
         let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
+        let first_token_time = std::sync::Arc::new(std::sync::Mutex::new(None));
+        let first_token_time_clone = first_token_time.clone();
         
         let _result = engine.generate_stream(
             main_prompt,
             2048,
             &tokenizer,
             Box::new(move |token| {
+                let mut lock = first_token_time_clone.lock().unwrap();
+                if lock.is_none() {
+                    *lock = Some(start.elapsed().as_secs_f64());
+                }
                 let _ = tx.send(token);
             }),
         );
@@ -186,14 +197,16 @@ async fn run_single_model_isolated(model_name: &str) {
         let elapsed = start.elapsed().as_secs_f64();
         let tokens = tokenizer.encode(generated_text.clone(), true).map(|e| e.len()).unwrap_or(0);
         let tps = if elapsed > 0.0 { tokens as f64 / elapsed } else { 0.0 };
+        let ttft = first_token_time.lock().unwrap().unwrap_or(0.0);
         
-        println!("    ⏱️ Time: {:.2}s | 🧩 Tokens: {} | 🚀 TPS: {:.2}", elapsed, tokens, tps);
+        println!("    ⏱️ Time: {:.2}s | 🧩 Tokens: {} | 🚀 TPS: {:.2} | ⏱️ TTFT: {:.2}s", elapsed, tokens, tps, ttft);
         
         if tps > highest_tps {
             highest_tps = tps;
             best_run_output = generated_text;
             best_time = elapsed;
             best_tokens = tokens;
+            best_ttft = ttft;
         }
     }
     
@@ -207,16 +220,17 @@ async fn run_single_model_isolated(model_name: &str) {
         ## 🤖 Model: {}\n\n\
         ### 🛠️ Hardware & Environment\n\
         - **Settings**: Process-Isolated / Reduced Sliding Window (4096 ctx) / Best Offload\n\
-        - **Thinking Mode**: Forced OFF via strict prompt formatting\n\
+        - **Thinking Mode**: Forced OFF via low-level engine booster settings\n\
         - **VRAM Clearance**: Guaranteed 100% flush due to isolated execution process\n\n\
         ### 📊 Benchmark Results\n\
         - **Prompt**: `{}`\n\
         - **Highest Speed**: {:.2} TPS\n\
+        - **Time to First Token (TTFT)**: {:.2} seconds\n\
         - **Total Tokens**: {}\n\
         - **Total Time**: {:.2} seconds\n\n\
         ### 📝 Output Log\n\
         ```text\n{}\n```\n",
-        model_name, main_prompt, highest_tps, best_tokens, best_time, best_run_output
+        model_name, main_prompt, highest_tps, best_ttft, best_tokens, best_time, best_run_output
     );
     
     fs::write(report_dir.join("record.md"), report_content).unwrap();

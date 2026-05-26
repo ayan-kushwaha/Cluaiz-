@@ -166,6 +166,11 @@ impl NativeLlama {
             let templater = cluaiz_shared::prompting::templater::TemplateManager::default();
             let formatted_prompt = templater.format(dna, prompt);
 
+            // 🧠 THINKING MODE CONTROL: Read from dashboard/JSON settings
+            let booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+            let suppress_thinking = booster.think_mode == cluaiz_shared::hardware::schema::booster::FeatureState::Off;
+            let mut in_think_block = false;
+
             // ✅ FIX 1: Single vocab binding — no duplicate
             let vocab = llama_cpp::llama_model_get_vocab(self.model_ptr);
             let n_vocab = llama_cpp::llama_vocab_n_tokens(vocab);
@@ -302,9 +307,34 @@ impl NativeLlama {
                 );
                 
                 if n_bytes > 0 {
-                    let piece = String::from_utf8_lossy(&buf[..n_bytes as usize]).to_string();
-                    callback(piece);
-                    let _ = std::io::Write::flush(&mut std::io::stdout());
+                    let mut piece = String::from_utf8_lossy(&buf[..n_bytes as usize]).to_string();
+                    
+                    if suppress_thinking {
+                        if piece.contains("<think>") {
+                            in_think_block = true;
+                            if let Some(idx) = piece.find("<think>") {
+                                piece = piece[..idx].to_string();
+                            }
+                        }
+                        
+                        let has_end_think = piece.contains("</think>");
+                        if has_end_think {
+                            in_think_block = false;
+                            if let Some(idx) = piece.find("</think>") {
+                                piece = piece[idx + "</think>".len()..].to_string();
+                            }
+                        }
+                        
+                        if in_think_block {
+                            // Suppress the thinking block entirely
+                        } else if !piece.is_empty() {
+                            callback(piece);
+                            let _ = std::io::Write::flush(&mut std::io::stdout());
+                        }
+                    } else {
+                        callback(piece);
+                        let _ = std::io::Write::flush(&mut std::io::stdout());
+                    }
                 }
 
                 // 🏁 Check for EOS
@@ -387,7 +417,9 @@ impl NativeLlama {
                 }
 
                 n_cur += 1;
-                n_gen += 1;
+                if !in_think_block {
+                    n_gen += 1;
+                }
                 cluaiz_shared::hardware::telemetry::get_pulse().tps_counter.fetch_add(1, Ordering::SeqCst);
 
                 // 5. 🛡️ Verification Loop
@@ -407,12 +439,35 @@ impl NativeLlama {
                             vocab, next_token_id, buf.as_mut_ptr() as *mut c_char, buf.len() as i32, 0, true
                         );
                         if n_b > 0 {
-                            callback(String::from_utf8_lossy(&buf[..n_b as usize]).to_string());
-                            let _ = std::io::Write::flush(&mut std::io::stdout());
+                            let mut piece = String::from_utf8_lossy(&buf[..n_b as usize]).to_string();
+                            if suppress_thinking {
+                                if piece.contains("<think>") {
+                                    in_think_block = true;
+                                    if let Some(idx) = piece.find("<think>") {
+                                        piece = piece[..idx].to_string();
+                                    }
+                                }
+                                let has_end_think = piece.contains("</think>");
+                                if has_end_think {
+                                    in_think_block = false;
+                                    if let Some(idx) = piece.find("</think>") {
+                                        piece = piece[idx + "</think>".len()..].to_string();
+                                    }
+                                }
+                                if !in_think_block && !piece.is_empty() {
+                                    callback(piece);
+                                    let _ = std::io::Write::flush(&mut std::io::stdout());
+                                }
+                            } else {
+                                callback(piece);
+                                let _ = std::io::Write::flush(&mut std::io::stdout());
+                            }
                         }
 
                         n_cur += 1;
-                        n_gen += 1;
+                        if !in_think_block {
+                            n_gen += 1;
+                        }
                         cluaiz_shared::hardware::telemetry::get_pulse().tps_counter.fetch_add(1, Ordering::SeqCst);
 
                         // Check for EOS within verification loop

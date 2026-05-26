@@ -656,7 +656,21 @@ impl DashboardEngine {
                     print!("\x1B[1A\x1B[2K\r");
                     stdout().flush()?;
                     
-                    println!("  {} {} activated.", "✅".green(), mode_ans.bold());
+                    let mut booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+                    if mode_ans.contains("Flash Mode") {
+                        booster.mode_run = cluaiz_shared::hardware::schema::booster::BoosterMode::Edge;
+                        booster.think_mode = cluaiz_shared::hardware::schema::booster::FeatureState::Off;
+                    } else if mode_ans.contains("Think Mode") {
+                        booster.mode_run = cluaiz_shared::hardware::schema::booster::BoosterMode::MaxBoost;
+                        booster.think_mode = cluaiz_shared::hardware::schema::booster::FeatureState::On;
+                    } else if mode_ans.contains("Boot Mode") {
+                        booster.mode_run = cluaiz_shared::hardware::schema::booster::BoosterMode::Balance;
+                        booster.think_mode = cluaiz_shared::hardware::schema::booster::FeatureState::Auto;
+                    }
+                    
+                    let _ = cluaiz_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster);
+                    
+                    println!("  {} {} activated and saved to system_booster.json.", "✅".green(), mode_ans.bold());
                     return Ok(());
                 } else if master_ans.contains("System Booster") {
                     let mut booster_path = dirs::home_dir().unwrap_or_default();

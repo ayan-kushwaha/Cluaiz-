@@ -129,6 +129,8 @@ pub struct BoosterControl {
     pub force_vram_reclaim: FeatureState, // 🏠 'Landlord' Mode Flag
     #[serde(default = "default_n_gpu_layers")]
     pub n_gpu_layers: i32,
+    #[serde(default)]
+    pub think_mode: FeatureState,
 }
 
 fn default_n_gpu_layers() -> i32 {
@@ -183,6 +185,7 @@ impl Default for BoosterControl {
             context_shifting: ContextShiftingMode::Auto,
             force_vram_reclaim: FeatureState::Off,
             n_gpu_layers: -1,
+            think_mode: FeatureState::Auto,
         }
     }
 }

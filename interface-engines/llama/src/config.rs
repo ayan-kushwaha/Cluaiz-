@@ -25,6 +25,7 @@ pub struct BoosterConfig {
     pub force_vram_reclaim: String,
     pub kv_cache_quantization: String,
     pub context_shifting: String,
+    pub think_mode: String,
 }
 
 impl Default for BoosterConfig {
@@ -43,6 +44,7 @@ impl Default for BoosterConfig {
             force_vram_reclaim: "Off".to_string(),
             kv_cache_quantization: "Auto".to_string(),
             context_shifting: "Auto".to_string(),
+            think_mode: "Auto".to_string(),
         }
     }
 }
@@ -65,6 +67,7 @@ impl BoosterConfig {
             force_vram_reclaim: "Off".to_string(),
             kv_cache_quantization: "Auto".to_string(),
             context_shifting: "Auto".to_string(),
+            think_mode: "Auto".to_string(),
         };
         
         // 🛡️ Sovereign Dynamic Pathing: Use cluaiz-shared to resolve the engine path universally.
@@ -100,6 +103,9 @@ impl BoosterConfig {
                 }
                 if let Some(cs) = json.get("context_shifting") {
                     config.context_shifting = cs.as_str().unwrap_or("Auto").to_string();
+                }
+                if let Some(tm) = json.get("think_mode") {
+                    config.think_mode = tm.as_str().unwrap_or("Auto").to_string();
                 }
             }
         }
@@ -196,6 +202,7 @@ impl BoosterConfig {
             },
             force_vram_reclaim: if self.force_vram_reclaim == "On" { FeatureState::On } else { FeatureState::Off },
             n_gpu_layers: self.n_gpu_layers,
+            think_mode: if self.think_mode == "On" { FeatureState::On } else if self.think_mode == "Off" { FeatureState::Off } else { FeatureState::Auto },
         }
     }
 }
