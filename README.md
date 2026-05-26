@@ -124,7 +124,7 @@ graph TD
 ### **AtmaSteer: Token Masking Protocol**
 Enforces structural output (JSON/Schema) through **constrained decoding**. By applying token-level masking during the sampling phase, Cluaiz prevents structural hallucinations at the hardware layer.
 
-### **Dynamic Skill Routing**
+
 Automatically maps neural tasks to specialized kernels based on hardware efficiency profiles, ensuring optimal "Silicon-to-Task" performance.
 
 ---
@@ -213,15 +213,14 @@ Cluaiz uses a dynamic VRAM Arbiter to negotiate memory. If the engine pushes too
 
 All tests performed on an **RTX 3050 (Laptop)** using the prompt: *"What is Local AI and why is it important?"*
 
-| **Metric**         | **Gemini (Cloud)** | **Bonsai1:8B (Cluaiz)** | **Gemma4:e2B (Cluaiz)** | **Verdict**               |
-| :----------------- | :----------------- | :---------------------- | :---------------------- | :------------------------ |
-| **Speed (TPS)**    | 25.8               | **48.6**                | **31.6**                | 🚀 **Cluaiz is 2x Faster** |
-| **Tokens Out**     | 543 Tokens         | **1911 Tokens**         | **1465 Tokens**         | 🧠 **High Throughput**     |
-| **Reasoning Mode** | Standard           | **Thinking (Deep)**     | **Thinking (Deep)**     | 🛡️ **Sovereign**           |
-| **Total Duration** | 21.0s              | **40.2s**               | **46.3s**               | ⏱️ **Zero Latency**        |
-| **Memory (VRAM)**  | N/A                | **2.82 GB**             | **1.90 GB**             | ⚖️ **Hyper-Efficient**     |
-| **Power Used**     | N/A                | **52W**                 | **31W**                 | 🔋 **Green AI**            |
-| **Privacy**        | Cloud Logged       | **100% Sovereign**      | **100% Sovereign**      | 🛡️ **100% Secure**         |
+| **Metric**         | **Bonsai1:8B** | **Gemma:4B** | **Gemma:2B** | **Qwen:4B** | **Qwen:2B** |
+| :----------------- | :------------- | :----------- | :----------- | :---------- | :---------- |
+| **Speed (TPS)**    | 48.6           | TBD          | 31.6         | TBD         | TBD         |
+| **Tokens Out**     | 1911           | TBD          | 1465         | TBD         | TBD         |
+| **Reasoning Mode** | Deep Thinking  | Standard     | Deep Thinking| Standard    | Standard    |
+| **Memory (VRAM)**  | 2.82 GB        | TBD          | 1.90 GB      | TBD         | TBD         |
+| **Power Used**     | ~52W           | TBD          | ~31W         | TBD         | TBD         |
+| **Privacy**        | 100% Offline   | 100% Offline | 100% Offline | 100% Offline| 100% Offline|
 
 > [!NOTE]
 > Cluaiz-OS bypasses heavy middleware (Docker, Python, Node) to achieve direct silicon access, resulting in a **4x speedup** compared to standard local engines (Ollama/llama.cpp) for BitNet architectures.
@@ -307,6 +306,5 @@ See the [LICENSE](LICENSE) file for more details.
 ---
 
 <p align="center">
-  <b>© 2026 Cluaiz. All Rights Reserved.</b><br>
-  <i>"Architecture is Power. Built on Rust. Born on Silicon."</i>
-</p>
+  <b>© 2026 Cluaiz. Open-Sourced under Apache 2.0.</b><br>
+ </p>

@@ -12,7 +12,6 @@ mod tests {
             "id": "{}",
             "name": "Skill {}",
             "version": "1.0.0",
-            "author": "Antigravity",
             "description": "Stress Test Skill",
             "triggers": {{
                 "semantic": ["{}"],

@@ -22,5 +22,5 @@ The build process is managed in GitHub Actions, split into four isolated workflo
 *   **Action:** Compiles the final user CLI TUI and Rust engine.
 *   **Testing Suite:** Runs complete unit test suites and validates Axum endpoint integrity before release approval.
 
-### 4. Sandbox Auditing (`skills.yml`)
-*   **Action:** Tests runtime skill injection security to ensure sandboxed operations are safe from unauthorized host access.
+### 4. Sandbox Auditing (`modules.yml`)
+*   **Action:** Tests runtime module injection security to ensure sandboxed operations are safe from unauthorized host access.

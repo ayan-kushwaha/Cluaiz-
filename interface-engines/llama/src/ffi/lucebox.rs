@@ -79,7 +79,7 @@ impl LuceboxBridge {
     }
 
     /// 💉 AtmaSteer: Direct Tensor Stitching
-    /// Injects a pre-computed skill tensor into a specific attention layer.
+    /// Injects a pre-computed state tensor into a specific attention layer.
     pub fn stitch_kv_layer(&self, layer_idx: i32, buffer: &dyn SovereignBuffer) -> anyhow::Result<()> {
         let result = unsafe {
             (self.fn_kv_stitch)(

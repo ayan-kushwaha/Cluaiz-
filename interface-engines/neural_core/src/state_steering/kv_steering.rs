@@ -19,7 +19,7 @@ impl SovereignMapper {
         Self { silicon }
     }
 
-    /// 🧠 Map Model Weights or KV Skills
+    /// 🧠 Map Model Weights or KV States
     /// Implements "Lazy Loading" for SSD and "Pre-faulting" for HDD.
     pub fn map_vault<P: AsRef<Path>>(&self, path: P) -> Result<MappedBuffer> {
         let buffer = MappedBuffer::from_file(&path)?;
@@ -36,12 +36,12 @@ impl SovereignMapper {
         Ok(buffer)
     }
 
-    /// ⚡ Skill Stitcher (AtmaSteer Tier 1)
-    /// Prepares a pre-computed skill tensor for injection.
-    pub fn prepare_skill_injection(&self, skill_path: &str) -> Result<Box<dyn SovereignBuffer>> {
-        let path = Path::new(skill_path);
+    /// ⚡ State Stitcher (AtmaSteer Tier 1)
+    /// Prepares a pre-computed state tensor for injection.
+    pub fn prepare_state_injection(&self, state_path: &str) -> Result<Box<dyn SovereignBuffer>> {
+        let path = Path::new(state_path);
         if !path.exists() {
-            return Err(anyhow!("❌ Skill file not found: {}", skill_path));
+            return Err(anyhow!("❌ State file not found: {}", state_path));
         }
 
         let mapped = self.map_vault(path)?;
@@ -54,12 +54,12 @@ impl SovereignMapper {
 pub struct KVStitcher;
 
 impl KVStitcher {
-    pub fn prepare_signal(skill_path: &Path, token_count: usize, head_dim: usize) -> Result<CluaizSignal> {
-        if !skill_path.exists() {
-            return Err(anyhow!("❌ Skill file not found: {:?}", skill_path));
+    pub fn prepare_signal(state_path: &Path, token_count: usize, head_dim: usize) -> Result<CluaizSignal> {
+        if !state_path.exists() {
+            return Err(anyhow!("❌ State file not found: {:?}", state_path));
         }
 
-        let buffer = MappedBuffer::from_file(skill_path)?;
+        let buffer = MappedBuffer::from_file(state_path)?;
         
         Ok(CluaizSignal {
             raw_data: Arc::new(buffer),

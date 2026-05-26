@@ -15,7 +15,6 @@ use system_booster::SystemBooster;
 use cluaiz_shared::backend::signature::KernelSignature;
 use std::env;
 use std::sync::Arc;
-use storage::EmbeddedManager;
 
 use state::AppState;
 
@@ -45,9 +44,8 @@ async fn main() {
 
     // ── Initialize the CURE pillars ──
     tracing::info!("🔧 Initializing CURE Engine...");
-
-    let embedded = EmbeddedManager::new(cure_root.clone());
     
+
     // 🚀 Ignite the SystemBooster to optimize hardware before booting engines
     let booster_state = SystemBooster::ignite().unwrap_or_default();
     
@@ -57,11 +55,8 @@ async fn main() {
         KernelSignature::default() // Default to CPU fallback; dynamically updated during /models/load
     );
 
-    // ── Boot Embedded databases ──
-    embedded.boot_all().await;
-
     // ── Create shared state ──
-    let state = Arc::new(AppState { dispatcher, embedded });
+    let state = Arc::new(AppState { dispatcher });
 
     // ── Build the Router ──
     let app = routes::build(state);
@@ -76,12 +71,10 @@ async fn main() {
     println!("{} {}", "┃".bright_blue(), format!("{}{}", "🌐 Gateway:   ".bright_black(), "http://localhost:8000".bright_green().bold()));
     println!("{} {}", "┃".bright_blue(), format!("{}{}", "💚 Status:    ".bright_black(), "ALL SYSTEMS ONLINE".bright_green().bold()));
     println!("{} {}", "┃".bright_blue(), format!("{}{}", "🧠 Kernel:    ".bright_black(), "ACTIVE".magenta().bold()));
-    println!("{} {}", "┃".bright_blue(), format!("{}{}", "💾 Storage:   ".bright_black(), "EMBEDDED NATIVE (100MB RAM)".yellow().bold()));
     println!("{}", "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫".bright_blue());
     println!("{} {}", "┃".bright_blue(), "📡 Endpoints:".bright_magenta().bold());
     println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "    POST ".bright_cyan().bold(), "/chat             ".white(), "→ Chat with CURE".bright_black()));
     println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "    GET  ".bright_cyan().bold(), "/sessions         ".white(), "→ List chat sessions".bright_black()));
-    println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "    GET  ".bright_cyan().bold(), "/status/embedded  ".white(), "→ DB memory status".bright_black()));
     println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "    GET  ".bright_cyan().bold(), "/hardware         ".white(), "→ Check system RAM/CPU".bright_black()));
     println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "    POST ".bright_cyan().bold(), "/models/download  ".white(), "→ Fetch from HF".bright_black()));
     println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "    POST ".bright_cyan().bold(), "/models/load      ".white(), "→ Activate Model".bright_black()));

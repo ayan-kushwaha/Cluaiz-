@@ -134,16 +134,16 @@ impl NativeLlama {
         Ok(())
     }
 
-    /// 💉 Neural Skill Stitching: Injects knowledge from the /skills vault into the KV-cache.
-    pub fn stitch_skill(&self, skill_id: i32, offset: i32, length: i32) -> anyhow::Result<()> {
-        info!("🧵 [Native-Llama] Stitching Neural Skill (ID: {}) into KV-Cache at offset: {}", skill_id, offset);
+    /// 💉 Neural Signal Stitching: Injects knowledge from the vault into the KV-cache.
+    pub fn stitch_signal(&self, signal_id: i32, offset: i32, length: i32) -> anyhow::Result<()> {
+        info!("🧵 [Native-Llama] Stitching Neural Signal (ID: {}) into KV-Cache at offset: {}", signal_id, offset);
         
         unsafe {
             // Sequence ID 0 is our main inference stream.
-            // Other sequence IDs contain pre-encoded skills.
+            // Other sequence IDs contain pre-encoded signals.
             let memory = llama_cpp::llama_get_memory(self.ctx_ptr);
-            llama_cpp::llama_memory_seq_cp(memory, skill_id, 0, 0, length);
-            info!("✅ [Native-Llama] Skill {} stitched successfully (Length: {} tokens).", skill_id, length);
+            llama_cpp::llama_memory_seq_cp(memory, signal_id, 0, 0, length);
+            info!("✅ [Native-Llama] Signal {} stitched successfully (Length: {} tokens).", signal_id, length);
         }
         
         Ok(())

@@ -425,8 +425,8 @@ impl HardwareGovernor {
         path
     }
 
-    pub fn resolve_skills_path() -> PathBuf {
-        let path = Self::resolve_hub_path().join("skills");
+    pub fn resolve_modules_path() -> PathBuf {
+        let path = Self::resolve_hub_path().join("modules");
         let _ = std::fs::create_dir_all(&path);
         path
     }

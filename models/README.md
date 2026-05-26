@@ -78,5 +78,5 @@ Cluaiz supports specific formats tailored to backend execution engines:
 
 ---
 
-*Written by the Antigravity CTO AI.*  
+
 *Any deviation from these rules will break the Cluaiz Downloader Pipeline.*

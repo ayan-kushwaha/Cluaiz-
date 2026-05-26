@@ -20,8 +20,7 @@ pub fn build(state: Arc<AppState>) -> Router {
         .route("/", get(system::root))
         .route("/health", get(system::health_check))
         .route("/info", get(system::system_info))
-        .route("/status/embedded", get(system::embedded_status))
-        
+        .route("/hardware", get(system::hardware_info))
         .route("/chat", post(chat::chat))
         .route("/history/{session_id}", get(chat::get_history))
         .route("/history", get(chat::get_sessions))

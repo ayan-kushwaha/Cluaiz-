@@ -138,7 +138,7 @@ extern "C" {
     pub fn llama_sampler_sample(sampler: *mut std::ffi::c_void, ctx: *mut std::ffi::c_void, idx: i32) -> i32;
     pub fn llama_sampler_free(sampler: *mut std::ffi::c_void);
 
-    /// 🧵 Memory Sequence Management (Skill Stitching)
+    /// 🧵 Memory Sequence Management (Signal Stitching)
     pub fn llama_get_memory(ctx: *const std::ffi::c_void) -> *mut std::ffi::c_void;
     pub fn llama_memory_seq_add(mem: *mut std::ffi::c_void, seq_id: i32, p0: i32, p1: i32, delta: i32);
     pub fn llama_memory_seq_cp(mem: *mut std::ffi::c_void, seq_id_src: i32, seq_id_dst: i32, p0: i32, p1: i32);

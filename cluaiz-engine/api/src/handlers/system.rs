@@ -54,12 +54,3 @@ pub async fn system_info() -> Json<Value> {
         "banned": ["Python", "Docker", "Ollama", "npm", "pip"]
     }))
 }
-
-// ─── GET /status/embedded ────────────────────────────────────────────
-pub async fn embedded_status(State(state): State<Arc<AppState>>) -> Json<Value> {
-    let statuses = state.embedded.health_check_all().await;
-    Json(json!({
-        "success": true,
-        "sidecars": statuses
-    }))
-}

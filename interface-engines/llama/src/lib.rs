@@ -256,7 +256,7 @@ impl CluaizInference for RuntimeB {
         }
     }
 
-    /// 💉 Neural Injection Hook: Injects multiple pre-encoded skill states into the Llama cache.
+    /// 💉 Neural Injection Hook: Injects multiple pre-encoded signal states into the Llama cache.
     fn inject_signals(&mut self, signals: Vec<cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Result<()> {
         let max_ctx = self.context.dna.max_context_length.unwrap_or(4096);
         let mut current_offset = 0;
@@ -265,7 +265,7 @@ impl CluaizInference for RuntimeB {
             return Ok(());
         }
 
-        println!("💉 [Llama-Engine] Multi-Signal Injection Active: {} skills detected.", signals.len());
+        println!("💉 [Llama-Engine] Multi-Signal Injection Active: {} signals detected.", signals.len());
 
         if let Some(ref lucebox) = self.lucebox {
             let max_layers = self.context.dna.layer_count.unwrap_or(32);
@@ -276,16 +276,16 @@ impl CluaizInference for RuntimeB {
                 // 🛑 Positional Guard
                 if current_offset + token_count > max_ctx {
                     tracing::error!("❌ [Llama-Engine] Positional Collision: Signal {} exceeds remaining context space.", i);
-                    return Err(anyhow::anyhow!("CluaizSignal: Context Overflow at Skill {}", i));
+                    return Err(anyhow::anyhow!("CluaizSignal: Context Overflow at Signal {}", i));
                 }
 
-                println!("🧵 [Llama-Engine] Stitching Skill {} ({} tokens) at offset {}.", i, token_count, current_offset);
+                println!("🧵 [Llama-Engine] Stitching Signal {} ({} tokens) at offset {}.", i, token_count, current_offset);
 
                 for layer_idx in 0..max_layers as i32 {
                     // Note: lucebox.stitch_kv_layer will eventually need to take the offset.
                     // For Phase 1 of Mission 10, we assume sequential allocation in the kernel.
                     if let Err(e) = lucebox.stitch_kv_layer(layer_idx, &*signal.raw_data) {
-                        tracing::error!("❌ [Llama-Engine] Stitching failed at Skill {}, Layer {}: {}", i, layer_idx, e);
+                        tracing::error!("❌ [Llama-Engine] Stitching failed at Signal {}, Layer {}: {}", i, layer_idx, e);
                         return Err(e);
                     }
                 }

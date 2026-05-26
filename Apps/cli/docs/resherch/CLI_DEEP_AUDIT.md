@@ -1,7 +1,7 @@
 # 🏛️ Sovereign CLI Deep Audit (Research)
 **Component**: Archer Sovereign Console (`Cluaiz-ai-CURE/cli`)  
 **Date**: 2026-04-20  
-**Researcher**: Antigravity (Archer CTO Protocol)
+
 
 ## 🎯 Internal Gap Analysis (The "Khichdi" Audit)
 The current implementation of the CLI suffers from extreme **Domain Leakage** and **Monolithic State Decay**.
