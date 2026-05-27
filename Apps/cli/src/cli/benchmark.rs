@@ -1,53 +1,102 @@
+use cluaiz_shared::backend::traits::{CluaizInference, UnifiedBackend};
+use cluaiz_shared::hardware::governor::HardwareGovernor;
+use cluaiz_shared::hardware::schema::booster::FeatureState;
+use cluaiz_shared::{CluaizContext, StructuralDNA, TemplateManager};
 use color_eyre::Result;
 use colored::Colorize;
 use engines::models::registry::CoreRoster;
 use engines::runtime::execution::hub::HardwareOrchestrator;
-use cluaiz_shared::{CluaizContext, StructuralDNA, TemplateManager};
-use cluaiz_shared::backend::traits::{CluaizInference, UnifiedBackend};
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use tokio::sync::mpsc;
-use std::sync::{Arc, Mutex};
-use std::sync::atomic::{AtomicUsize, Ordering};
 
-pub async fn execute() -> Result<()> {
-    println!("\n  {} [Performance] Starting Full System Benchmark...\n", "🚀".magenta());
-    
+#[derive(Deserialize, Serialize, Clone)]
+struct BenchmarkPrompt {
+    id: String,
+    category: String,
+    difficulty: String,
+    text: String,
+    min_model_size_b: usize,
+}
+
+#[derive(Deserialize, Serialize)]
+struct BenchmarkSuite {
+    prompts: Vec<BenchmarkPrompt>,
+}
+
+pub async fn execute(target_model_id: Option<String>, runs: usize) -> Result<()> {
+    println!(
+        "\n  {} [Performance] Starting Full System Benchmark...\n",
+        "🚀".magenta()
+    );
+
     // Check if we are running in process-isolated mode
     if let Ok(target_model) = std::env::var("BENCHMARK_MODEL_ID") {
-        run_single_model_isolated(&target_model).await;
+        let env_runs = std::env::var("BENCHMARK_RUNS")
+            .unwrap_or_else(|_| "1".to_string())
+            .parse::<usize>()
+            .unwrap_or(1);
+        run_single_model_isolated(&target_model, env_runs).await;
         return Ok(());
     }
 
     let roster = CoreRoster::load_roster();
-    
-    if roster.is_empty() {
-        println!("     {} No models found in the vault to benchmark.", "⚠️ ".yellow());
+    let targets = if let Some(id) = target_model_id {
+        roster
+            .into_iter()
+            .filter(|m| m.id == id)
+            .collect::<Vec<_>>()
+    } else {
+        roster
+    };
+
+    if targets.is_empty() {
+        println!(
+            "     {} No models found in the vault to benchmark.",
+            "⚠️ ".yellow()
+        );
         return Ok(());
     }
 
     let out_dir = get_benchmark_out_dir();
     fs::create_dir_all(&out_dir).unwrap_or_default();
-    
-    println!("  {} Found {} models in the vault. Preparing benchmark orchestrator...\n", "📊".blue(), roster.len());
+
+    println!(
+        "  {} Found {} models in the vault. Preparing benchmark orchestrator...\n",
+        "📊".blue(),
+        targets.len()
+    );
 
     let current_exe = std::env::current_exe().expect("Failed to get current executable path");
 
-    for model in &roster {
+    for model in &targets {
         println!("=======================================================");
-        println!("🧪 Spawning Isolated Process for Model: {}", model.id.green());
+        println!(
+            "🧪 Spawning Isolated Process for Model: {}",
+            model.id.green()
+        );
         println!("=======================================================");
-        
+
         let status = std::process::Command::new(&current_exe)
             .args(["benchmark"])
             .env("BENCHMARK_MODEL_ID", &model.id)
-            .env("BENCHMARK_FOLDER_NAME", model.local_path.as_deref().unwrap_or(&model.id))
+            .env(
+                "BENCHMARK_FOLDER_NAME",
+                model.local_path.as_deref().unwrap_or(&model.id),
+            )
+            .env("BENCHMARK_RUNS", runs.to_string())
             .status();
-            
+
         match status {
             Ok(s) if s.success() => {
                 println!("✅ Model {} completed successfully.", model.id);
+            }
+            Ok(s) if s.code() == Some(2) => {
+                println!("⏭️ Model {} skipped (Missing GGUF weights).", model.id);
             }
             Ok(s) => {
                 println!("❌ Model {} failed with exit code: {}", model.id, s);
@@ -56,12 +105,16 @@ pub async fn execute() -> Result<()> {
                 println!("❌ Failed to spawn process for {}: {}", model.id, e);
             }
         }
-        
+
         println!("🧹 Parent process waiting 3s for OS to absolutely flush VRAM...");
         tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
     }
-    
-    println!("\n  {} All benchmarks completed! Reports are in {:?}\n", "🎉".green(), out_dir);
+
+    println!(
+        "\n  {} All benchmarks completed! Reports are in {:?}\n",
+        "🎉".green(),
+        out_dir
+    );
     Ok(())
 }
 
@@ -75,7 +128,34 @@ fn get_benchmark_out_dir() -> PathBuf {
             break;
         }
     }
-    path.join("test").join("benchmark")
+
+    let base = path.join("test").join("benchmark");
+
+    if let Ok(control) = HardwareGovernor::load_system_control() {
+        let compute = if control.silicon_truth.accelerators.gpus.is_empty() {
+            "CPU_ONLY".to_string()
+        } else {
+            "GPU".to_string()
+        };
+
+        let hardware_name = if compute == "GPU" {
+            control.silicon_truth.accelerators.gpus[0]
+                .model
+                .replace(" ", "_")
+                .replace("/", "_")
+        } else {
+            control
+                .silicon_truth
+                .cpu
+                .brand
+                .replace(" ", "_")
+                .replace("/", "_")
+        };
+
+        base.join(compute).join(hardware_name)
+    } else {
+        base.join("Unknown_Hardware")
+    }
 }
 
 fn find_gguf_file(dir: &Path) -> Option<PathBuf> {
@@ -90,9 +170,10 @@ fn find_gguf_file(dir: &Path) -> Option<PathBuf> {
     None
 }
 
-async fn run_single_model_isolated(model_name: &str) {
-    let folder_name = std::env::var("BENCHMARK_FOLDER_NAME").unwrap_or_else(|_| model_name.replace(':', "-"));
-    
+async fn run_single_model_isolated(model_name: &str, runs: usize) {
+    let folder_name =
+        std::env::var("BENCHMARK_FOLDER_NAME").unwrap_or_else(|_| model_name.replace(':', "-"));
+
     let path_str = if folder_name.contains('/') || folder_name.contains('\\') {
         folder_name.clone()
     } else {
@@ -103,22 +184,45 @@ async fn run_single_model_isolated(model_name: &str) {
             .join("chat");
         models_dir.join(&folder_name).to_string_lossy().to_string()
     };
-    
+
     let model_folder = PathBuf::from(path_str);
     let out_dir = get_benchmark_out_dir();
-    
+
     let gguf_file = match find_gguf_file(&model_folder) {
         Some(file) => file,
         None => {
-            println!("⚠️ No .gguf file found for {} at {:?}", model_name, model_folder);
-            return;
+            println!(
+                "⚠️ No .gguf file found for {} at {:?}",
+                model_name, model_folder
+            );
+            std::process::exit(2);
         }
     };
-    
-    // Force think_mode OFF in the system booster settings for the benchmark run
-    let mut booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
-    booster.think_mode = cluaiz_shared::hardware::schema::booster::FeatureState::Off;
-    let _ = cluaiz_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster);
+
+    // Load suite JSON
+    let mut path = std::env::current_dir().unwrap_or_default();
+    while let Some(name) = path.file_name() {
+        if name.to_string_lossy() == "cluaiz" {
+            break;
+        }
+        if !path.pop() {
+            break;
+        }
+    }
+    let suite_path = path.join("test").join("benchmark_suite.json");
+
+    let suite = if let Ok(content) = fs::read_to_string(&suite_path) {
+        serde_json::from_str::<BenchmarkSuite>(&content)
+            .unwrap_or_else(|_| BenchmarkSuite { prompts: vec![] })
+    } else {
+        println!("⚠️ Could not find benchmark_suite.json at {:?}", suite_path);
+        BenchmarkSuite { prompts: vec![] }
+    };
+
+    if suite.prompts.is_empty() {
+        println!("⚠️ No prompts available in benchmark suite.");
+        return;
+    }
 
     // DYNAMIC DNA: Try to load structural DNA from the local path if available
     let dna_path = model_folder.join("structural_dna.json");
@@ -132,118 +236,245 @@ async fn run_single_model_isolated(model_name: &str) {
     } else {
         dna.model_identity = model_name.to_string();
     }
-    
-    // Hard limit context for benchmark to ensure VRAM safety
-    dna.max_context_length = Some(4096); 
-    
+
+    // Allow HardwareGovernor to negotiate context length dynamically based on VRAM
+    // dna.max_context_length is left untouched to represent the model's true architecture limit.
+
     let context = CluaizContext::boot(dna.clone(), TemplateManager::default());
-    
+
+    // Model Params Guess (for prompt filtering)
+    let approx_params_b = (dna.weights_size_gb * 1.0) as usize; // Roughly 1GB = 1B params for q4/q8. Simple heuristic.
+
     println!("🔥 Booting Engine in Process Isolation...");
-    let mut engine = match HardwareOrchestrator::instantiate(gguf_file.to_str().unwrap(), context).await {
-        Ok(engine) => engine,
-        Err(e) => {
-            println!("❌ Failed to instantiate engine for {}: {:?}", model_name, e);
-            return;
-        }
-    };
-    
+    let mut engine =
+        match HardwareOrchestrator::instantiate(gguf_file.to_str().unwrap(), context).await {
+            Ok(engine) => engine,
+            Err(e) => {
+                println!(
+                    "❌ Failed to instantiate engine for {}: {:?}",
+                    model_name, e
+                );
+                return;
+            }
+        };
+
     println!("🔥 Warming up {}...", model_name);
     let warmup_prompts = vec!["Hello", "Test"];
-    
+
     for prompt in warmup_prompts {
         let _ = engine.generate_stream(prompt, 5, Box::new(|_| {}));
     }
-    
+
     println!("⚡ Warmup complete. Running main benchmark...");
     
-    let main_prompt = "give top 50 most popular songs list";
-    let mut highest_tps = 0.0;
-    let mut best_run_output = String::new();
-    let mut best_time = 0.0;
-    let mut best_tokens = 0;
-    let mut best_ttft = 0.0;
-    
-    for i in 1..=2 {
-        println!("  [Run {}/2] Generating...", i);
-        let start = Instant::now();
-        let mut generated_text = String::new();
-        
-        let (tx, mut rx) = mpsc::unbounded_channel();
-        let first_token_time = Arc::new(Mutex::new(None));
-        let first_token_time_clone = first_token_time.clone();
-        let token_count = Arc::new(AtomicUsize::new(0));
-        let token_count_clone = token_count.clone();
-        
-        let result = engine.generate_stream(
-            main_prompt,
-            2048,
-            Box::new(move |token| {
-                let mut lock = first_token_time_clone.lock().unwrap();
-                if lock.is_none() {
-                    *lock = Some(start.elapsed().as_secs_f64());
-                }
-                token_count_clone.fetch_add(1, Ordering::Relaxed);
-                let _ = tx.send(token);
-            }),
-        );
-        
-        if let Err(ref e) = result {
-            println!("  ❌ [Run {}/2] generate_stream FAILED: {:?}", i, e);
-            println!("     → Check if model ID is fully supported, or if Template/Vocab alignment is failing.");
-            continue;
-        }
-        
-        while let Ok(token) = rx.try_recv() {
-            generated_text.push_str(&token);
-        }
-        
-        let elapsed = start.elapsed().as_secs_f64();
-        let tokens = token_count.load(Ordering::Relaxed);
-        let tps = if elapsed > 0.0 { tokens as f64 / elapsed } else { 0.0 };
-        let ttft = first_token_time.lock().unwrap().unwrap_or(0.0);
-        
-        println!("    ⏱️ Time: {:.2}s | 🧩 Tokens: {} | 🚀 TPS: {:.2} | ⏱️ TTFT: {:.2}s", elapsed, tokens, tps, ttft);
-        
-        // Output sanity check
-        if tokens == 0 {
-            println!("    ⚠️ WARNING: Model generated 0 tokens. This often indicates the model instantly returned an EOS token.");
-            println!("    ⚠️          Try checking if the model uses a strict ChatML/instruct template that wasn't fulfilled.");
-        }
-        
-        if tps > highest_tps {
-            highest_tps = tps;
-            best_run_output = generated_text;
-            best_time = elapsed;
-            best_tokens = tokens;
-            best_ttft = ttft;
-        }
-    }
-    
-    println!("🏆 Best TPS for {}: {:.2}", model_name, highest_tps);
-    
-    // Save report under safe folder name
+    let registry = HardwareGovernor::load_process_registry();
+    let my_pid = std::process::id().to_string();
+    let (vram_used_gb, context_size) = if let Some(info) = registry.get(&my_pid) {
+        (info.vram_gb, info.context_size)
+    } else {
+        (approx_params_b as f64 * 0.8, dna.max_context_length.unwrap_or(8192))
+    };
+
+    // Create report directory early
     let safe_folder_name = model_name.replace(':', "-").replace('/', "_");
     let report_dir = out_dir.join(&safe_folder_name);
     fs::create_dir_all(&report_dir).unwrap_or_default();
+
+    for prompt_def in suite.prompts {
+        if approx_params_b < prompt_def.min_model_size_b {
+            println!(
+                "⏭️ Skipping Prompt [{}] - Target Model Size Not Supported.",
+                prompt_def.id
+            );
+            continue;
+        }
+
+        println!(
+            "\n  🧪 Prompt: [{}] ({})",
+            prompt_def.id, prompt_def.difficulty
+        );
+
+        let mut prompt_report_md = format!(
+            "# 🚀 Cluaiz Hardware Benchmark Report\n\n\
+            ## 🤖 Model: {}\n\
+            ### 🛠️ Hardware & Environment\n\
+            - **Compute Node**: {:?}\n\
+            - **Approx. Parameters**: ~{}B\n\
+            - **Context Window**: {} (Dynamic Limit)\n\
+            - **VRAM Used**: {:.2} GB\n\n\
+            ## 📊 Benchmark Results\n\n\
+            ### 🧪 [{}] - {} ({})\n\
+            **Prompt**: `{}`\n\n",
+            model_name,
+            get_benchmark_out_dir(),
+            approx_params_b,
+            context_size,
+            vram_used_gb,
+            prompt_def.id,
+            prompt_def.category,
+            prompt_def.difficulty,
+            prompt_def.text
+        );
+
+        // Loop through Thinking Off and Thinking On
+        for think_mode in [false, true] {
+            println!(
+                "     🧠 Thinking Mode: {}",
+                if think_mode { "ON" } else { "OFF" }
+            );
+
+            // Reconfigure booster
+            let mut booster = HardwareGovernor::load_booster_settings().unwrap_or_default();
+            booster.think_mode = if think_mode {
+                FeatureState::On
+            } else {
+                FeatureState::Off
+            };
+            let _ = HardwareGovernor::save_booster_settings(&booster);
+
+            let mut highest_tps = 0.0;
+            let mut best_run_output = String::new();
+            let mut best_time = 0.0;
+            let mut best_tokens = 0;
+            let mut best_ttft = 0.0;
+
+            for i in 1..=runs {
+                println!("        [Run {}/{}] Generating...", i, runs);
+                let start = Instant::now();
+                let mut generated_text = String::new();
+
+                let (tx, mut rx) = mpsc::unbounded_channel();
+                let first_token_time = Arc::new(Mutex::new(None));
+                let first_token_time_clone = first_token_time.clone();
+                let token_count = Arc::new(AtomicUsize::new(0));
+                let token_count_clone = token_count.clone();
+
+                let result = engine.generate_stream(
+                    &prompt_def.text,
+                    2048,
+                    Box::new(move |token| {
+                        let mut lock = first_token_time_clone.lock().unwrap();
+                        if lock.is_none() {
+                            *lock = Some(start.elapsed().as_secs_f64());
+                        }
+                        token_count_clone.fetch_add(1, Ordering::Relaxed);
+                        let _ = tx.send(token);
+                    }),
+                );
+
+                if let Err(ref e) = result {
+                    println!("        ❌ [Run {}/{}] FAILED: {:?}", i, runs, e);
+                    continue;
+                }
+
+                while let Ok(token) = rx.try_recv() {
+                    generated_text.push_str(&token);
+                }
+
+                let elapsed = start.elapsed().as_secs_f64();
+                let tokens = token_count.load(Ordering::Relaxed);
+                let tps = if elapsed > 0.0 {
+                    tokens as f64 / elapsed
+                } else {
+                    0.0
+                };
+                let ttft = first_token_time.lock().unwrap().unwrap_or(0.0);
+
+                println!(
+                    "          ⏱️ Time: {:.2}s | 🧩 Tokens: {} | 🚀 TPS: {:.2} | ⏱️ TTFT: {:.2}s",
+                    elapsed, tokens, tps, ttft
+                );
+
+                if tps > highest_tps {
+                    highest_tps = tps;
+                    best_run_output = generated_text;
+                    best_time = elapsed;
+                    best_tokens = tokens;
+                    best_ttft = ttft;
+                }
+            }
+
+            prompt_report_md.push_str(&format!(
+                "#### 🧠 Thinking Mode: {}\n",
+                if think_mode { "ON" } else { "OFF" }
+            ));
+            prompt_report_md.push_str(&format!("- **Speed**: {:.2} TPS\n", highest_tps));
+            prompt_report_md.push_str(&format!("- **TTFT**: {:.2} s\n", best_ttft));
+            prompt_report_md.push_str(&format!("- **Tokens**: {}\n", best_tokens));
+            prompt_report_md.push_str(&format!("- **Time**: {:.2} s\n\n", best_time));
+            prompt_report_md.push_str(&format!(
+                "**Output:**\n{}\n\n",
+                format_model_output(&best_run_output)
+            ));
+        }
+
+        let mut counter = 0;
+        let mut file_name = format!("{}.md", prompt_def.id);
+        let mut file_path = report_dir.join(&file_name);
+
+        while file_path.exists() {
+            counter += 1;
+            file_name = format!("{}-{}.md", prompt_def.id, counter);
+            file_path = report_dir.join(&file_name);
+        }
+
+        fs::write(&file_path, prompt_report_md).unwrap_or_default();
+        println!("📝 Report for [{}] saved to {:?}", prompt_def.id, file_path);
+    }
+}
+
+fn format_model_output(raw: &str) -> String {
+    let mut result = String::new();
+    let mut current_idx = 0;
     
-    let report_content = format!(
-        "# 🚀 Cluaiz Local Benchmark Report\n\n\
-        ## 🤖 Model: {}\n\n\
-        ### 🛠️ Hardware & Environment\n\
-        - **Settings**: Process-Isolated / Reduced Sliding Window (4096 ctx) / Best Offload\n\
-        - **Thinking Mode**: Forced OFF via low-level engine booster settings\n\
-        - **VRAM Clearance**: Guaranteed 100% flush due to isolated execution process\n\n\
-        ### 📊 Benchmark Results\n\
-        - **Prompt**: `{}`\n\
-        - **Highest Speed**: {:.2} TPS\n\
-        - **Time to First Token (TTFT)**: {:.2} seconds\n\
-        - **Total Tokens**: {}\n\
-        - **Total Time**: {:.2} seconds\n\n\
-        ### 📝 Output Log\n\
-        ```text\n{}\n```\n",
-        model_name, main_prompt, highest_tps, best_ttft, best_tokens, best_time, best_run_output
-    );
+    while let Some(start) = raw[current_idx..].find("<think>") {
+        let absolute_start = current_idx + start;
+        
+        // Add anything before <think>
+        if absolute_start > current_idx {
+            let before = &raw[current_idx..absolute_start].trim();
+            if !before.is_empty() {
+                result.push_str(before);
+                result.push_str("\n\n");
+            }
+        }
+        
+        let search_start = absolute_start + 7;
+        if let Some(end) = raw[search_start..].find("</think>") {
+            let absolute_end = search_start + end;
+            let think_content = &raw[search_start..absolute_end].trim();
+            
+            result.push_str("> **🧠 Thinking Process:**\n");
+            for line in think_content.lines() {
+                result.push_str(&format!("> {}\n", line));
+            }
+            result.push_str("\n\n");
+            
+            current_idx = absolute_end + 8;
+        } else {
+            // Missing closing tag, treat rest of string as thinking
+            let think_content = &raw[search_start..].trim();
+            result.push_str("> **🧠 Thinking Process (Incomplete):**\n");
+            for line in think_content.lines() {
+                result.push_str(&format!("> {}\n", line));
+            }
+            result.push_str("\n\n");
+            current_idx = raw.len();
+            break;
+        }
+    }
     
-    fs::write(report_dir.join("record.md"), report_content).unwrap_or_default();
-    println!("📝 Report saved to {:?}", report_dir.join("record.md"));
+    // Add whatever is left
+    if current_idx < raw.len() {
+        let remaining = &raw[current_idx..].trim();
+        if !remaining.is_empty() {
+            result.push_str(remaining);
+        }
+    }
+    
+    if result.is_empty() {
+        raw.trim().to_string()
+    } else {
+        result
+    }
 }

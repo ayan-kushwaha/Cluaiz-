@@ -1,223 +1,223 @@
-2026-05-27T09:15:33.648776Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Engine Linked: "C:\\Users\\Aryan\\.cluaiz\\engine\\cluaiz-engine.dll"
-2026-05-27T09:15:33.674715Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Kernel Linked (root): "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
-2026-05-27T09:15:33.693841Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Kernel Linked (subdir): "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\kernels\\cluaiz-llama-cuda.dll"
-2026-05-27T09:15:33.694722Z  INFO cluaiz::core::bootstrapper: 🛰️ [Cluaiz] Synchronizing Neural Registry...
-2026-05-27T09:15:35.513195Z  INFO system_booster::os_tuning: 🚀 [Bare Metal] Attempting to elevate process priority to high (Value: 128) for PID 15800
-2026-05-27T09:15:38.632660Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: ../../models
-2026-05-27T09:15:38.636208Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
-2026-05-27T09:15:38.646843Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
-2026-05-27T09:15:38.647152Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
-2026-05-27T09:15:38.648093Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
-2026-05-27T09:15:38.648204Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
-2026-05-27T09:15:38.649062Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
-2026-05-27T09:15:38.649261Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
-2026-05-27T09:15:38.650625Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
-2026-05-27T09:15:38.650765Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
-2026-05-27T09:15:38.651675Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
-2026-05-27T09:15:38.651794Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
-2026-05-27T09:15:38.652821Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
-2026-05-27T09:15:38.652957Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
-2026-05-27T09:15:38.653954Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
-2026-05-27T09:15:38.654117Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
-2026-05-27T09:15:38.655272Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
-2026-05-27T09:15:38.655392Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
-2026-05-27T09:15:38.655780Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
-2026-05-27T09:15:38.655833Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
-2026-05-27T09:15:38.655842Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
-2026-05-27T09:15:38.655849Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
-2026-05-27T09:15:38.655860Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
-2026-05-27T09:15:38.655867Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
-2026-05-27T09:15:38.655919Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
-2026-05-27T09:15:38.655929Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
-2026-05-27T09:15:38.656105Z  INFO engines::models::registry: 📚 [Roster] Library source found at: ../../models/library
-2026-05-27T09:15:38.669087Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:1.7b Status: Optimal, Cached: false
-2026-05-27T09:15:38.669207Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:1.7b:gguf:binary Status: Optimal, Cached: false
-2026-05-27T09:15:38.669292Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:8b Status: Optimal, Cached: false
-2026-05-27T09:15:38.669375Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:8b:gguf:binary Status: Optimal, Cached: false
-2026-05-27T09:15:38.669460Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:1.7b:gguf:ternary Status: Optimal, Cached: false
-2026-05-27T09:15:38.669546Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:1.7b Status: Optimal, Cached: false
-2026-05-27T09:15:38.669628Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:4b Status: Optimal, Cached: false
-2026-05-27T09:15:38.669709Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:4b:gguf:ternary Status: Optimal, Cached: false
-2026-05-27T09:15:38.669790Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:8b:gguf:ternary Status: Optimal, Cached: false
-2026-05-27T09:15:38.669876Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:8b Status: Optimal, Cached: false
-2026-05-27T09:15:38.669984Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:8b Status: Optimal, Cached: true
-2026-05-27T09:15:38.670081Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:awq:8bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.670163Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.670245Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b Status: Impossible, Cached: false
-2026-05-27T09:15:38.670328Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-05-27T09:15:38.670409Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:gguf:q8_0 Status: Impossible, Cached: false
-2026-05-27T09:15:38.670491Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.670575Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.670657Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b Status: Optimal, Cached: false
-2026-05-27T09:15:38.670735Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:awq:8bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.670816Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.670903Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.670995Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b Status: Optimal, Cached: false
-2026-05-27T09:15:38.671074Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.671154Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b:gguf:q8_0 Status: Average, Cached: false
-2026-05-27T09:15:38.671235Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b Status: Optimal, Cached: false
-2026-05-27T09:15:38.671316Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.671394Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.671480Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b Status: Optimal, Cached: false
-2026-05-27T09:15:38.671563Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.671644Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.671724Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b:gguf:q4_k_m Status: Heavy, Cached: false
-2026-05-27T09:15:38.671801Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.671885Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b:gguf:q8_0 Status: Impossible, Cached: false
-2026-05-27T09:15:38.671965Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b Status: Heavy, Cached: false
-2026-05-27T09:15:38.672046Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.672126Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.672207Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b Status: Optimal, Cached: false
-2026-05-27T09:15:38.672286Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:gguf:q4_k_m Status: Heavy, Cached: false
-2026-05-27T09:15:38.672366Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe Status: Heavy, Cached: false
-2026-05-27T09:15:38.672443Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.672523Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:gguf:q8_0 Status: Impossible, Cached: false
-2026-05-27T09:15:38.672602Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:awq:8bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.672696Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:gguf:q4_k_m Status: Heavy, Cached: false
-2026-05-27T09:15:38.672778Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:gguf:q8_0 Status: Impossible, Cached: false
-2026-05-27T09:15:38.672856Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:awq:8bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.672944Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b Status: Heavy, Cached: false
-2026-05-27T09:15:38.673025Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.673104Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.674575Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b Status: Optimal, Cached: true
-2026-05-27T09:15:38.674717Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.674809Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.674912Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b:gguf:q4_k_m Status: Optimal, Cached: true
-2026-05-27T09:15:38.675005Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b Status: Optimal, Cached: false
-2026-05-27T09:15:38.675087Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.675170Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b Status: Optimal, Cached: false
-2026-05-27T09:15:38.675251Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.675332Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.675420Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:70b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.675510Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:70b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-05-27T09:15:38.675593Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:70b Status: Impossible, Cached: false
-2026-05-27T09:15:38.675676Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.675756Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b Status: Optimal, Cached: false
-2026-05-27T09:15:38.675834Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.675913Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.676005Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b Status: Impossible, Cached: false
-2026-05-27T09:15:38.676083Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b:awq:8bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.676166Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-05-27T09:15:38.676246Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.676327Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.676405Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.676484Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:awq:8bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.676565Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.676646Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b Status: Optimal, Cached: false
-2026-05-27T09:15:38.676726Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:405b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.676814Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:70b Status: Impossible, Cached: false
-2026-05-27T09:15:38.676896Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:70b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-05-27T09:15:38.676975Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:70b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.677055Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.677146Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.677229Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.677309Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b Status: Optimal, Cached: false
-2026-05-27T09:15:38.677390Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:1b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.677487Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:1b Status: Optimal, Cached: false
-2026-05-27T09:15:38.677568Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:1b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.677649Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.677730Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.677810Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b Status: Optimal, Cached: false
-2026-05-27T09:15:38.677889Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.677971Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.3:70b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-05-27T09:15:38.678100Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.3:70b Status: Impossible, Cached: false
-2026-05-27T09:15:38.678183Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.3:70b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.678262Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b Status: Impossible, Cached: false
-2026-05-27T09:15:38.678351Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.678431Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b:gguf:q8_0 Status: Impossible, Cached: false
-2026-05-27T09:15:38.678509Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-05-27T09:15:38.678586Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b Status: Impossible, Cached: false
-2026-05-27T09:15:38.678663Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b:gguf:q8_0 Status: Impossible, Cached: false
-2026-05-27T09:15:38.678741Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-05-27T09:15:38.678818Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.678901Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:0.5b Status: Optimal, Cached: false
-2026-05-27T09:15:38.678982Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:0.5b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.679063Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:0.5b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.679143Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:1.5b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.679224Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:1.5b Status: Optimal, Cached: false
-2026-05-27T09:15:38.679305Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:1.5b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.679386Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gptq:int8 Status: Incompatible, Cached: false
-2026-05-27T09:15:38.679477Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.679557Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b Status: Optimal, Cached: false
-2026-05-27T09:15:38.679638Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gptq:int4 Status: Incompatible, Cached: false
-2026-05-27T09:15:38.679719Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gguf:q8_0 Status: Heavy, Cached: false
-2026-05-27T09:15:38.679799Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.679881Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b Status: Impossible, Cached: false
-2026-05-27T09:15:38.679962Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.680043Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-05-27T09:15:38.680123Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gguf:q8_0 Status: Impossible, Cached: false
-2026-05-27T09:15:38.680204Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gptq:int4 Status: Incompatible, Cached: false
-2026-05-27T09:15:38.680286Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gptq:int8 Status: Incompatible, Cached: false
-2026-05-27T09:15:38.680367Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:3b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.680447Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:3b Status: Optimal, Cached: false
-2026-05-27T09:15:38.680532Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:3b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.680615Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-05-27T09:15:38.680696Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b Status: Impossible, Cached: false
-2026-05-27T09:15:38.680777Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gptq:int8 Status: Incompatible, Cached: false
-2026-05-27T09:15:38.680859Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.680940Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gguf:q8_0 Status: Impossible, Cached: false
-2026-05-27T09:15:38.681020Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gptq:int4 Status: Incompatible, Cached: false
-2026-05-27T09:15:38.681103Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gptq:int8 Status: Incompatible, Cached: false
-2026-05-27T09:15:38.681185Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b Status: Optimal, Cached: false
-2026-05-27T09:15:38.681278Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.681358Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gptq:int4 Status: Incompatible, Cached: false
-2026-05-27T09:15:38.681448Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.681532Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.681612Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:0.6b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.681692Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:0.6b Status: Optimal, Cached: false
-2026-05-27T09:15:38.681808Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:0.6b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.681888Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:1.7b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.681968Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:1.7b Status: Optimal, Cached: false
-2026-05-27T09:15:38.682048Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:1.7b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.682129Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gptq:int4 Status: Incompatible, Cached: false
-2026-05-27T09:15:38.682211Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.682293Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gguf:q8_0 Status: Impossible, Cached: false
-2026-05-27T09:15:38.682374Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b Status: Optimal, Cached: false
-2026-05-27T09:15:38.682455Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.682534Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gptq:int8 Status: Incompatible, Cached: false
-2026-05-27T09:15:38.682615Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b Status: Impossible, Cached: false
-2026-05-27T09:15:38.682695Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.682776Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:gptq:int4 Status: Incompatible, Cached: false
-2026-05-27T09:15:38.682858Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:gptq:int8 Status: Incompatible, Cached: false
-2026-05-27T09:15:38.682940Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-05-27T09:15:38.683020Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe Status: Impossible, Cached: false
-2026-05-27T09:15:38.683107Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:gguf:q4_k_m Status: Impossible, Cached: false
-2026-05-27T09:15:38.683191Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.683271Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:gguf:q8_0 Status: Impossible, Cached: false
-2026-05-27T09:15:38.683362Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:gptq:int4 Status: Incompatible, Cached: false
-2026-05-27T09:15:38.683452Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:gptq:int4 Status: Incompatible, Cached: false
-2026-05-27T09:15:38.683534Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.683620Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b Status: Optimal, Cached: false
-2026-05-27T09:15:38.683699Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.683791Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:awq:4bit Status: Incompatible, Cached: false
-2026-05-27T09:15:38.683873Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:0.5b Status: Optimal, Cached: false
-2026-05-27T09:15:38.683953Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:0.5b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.684032Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:0.5b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-05-27T09:15:38.684111Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b:gguf:q4_k_m Status: Heavy, Cached: false
-2026-05-27T09:15:38.684191Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b:gptq:int4 Status: Incompatible, Cached: false
-2026-05-27T09:15:38.684270Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b:gguf:q8_0 Status: Impossible, Cached: false
-2026-05-27T09:15:38.684348Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b Status: Heavy, Cached: false
-2026-05-27T09:15:38.684427Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:2b Status: Optimal, Cached: false
-2026-05-27T09:15:38.684516Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:2b:gguf:q8_0 Status: Optimal, Cached: false
-2026-05-27T09:15:38.684594Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:35b-a3b Status: Average, Cached: false
-2026-05-27T09:15:38.684674Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:35b-a3b:gguf:q4_k_m Status: Average, Cached: false
-2026-05-27T09:15:38.684752Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:27b:gguf:q4_k_m Status: Heavy, Cached: false
-2026-05-27T09:15:38.684831Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:27b:gguf:q8_0 Status: Impossible, Cached: false
-2026-05-27T09:15:38.684908Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:27b Status: Heavy, Cached: false
-2026-05-27T09:15:38.684987Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:35b-a3b Status: Average, Cached: false
-2026-05-27T09:15:38.685065Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:35b-a3b:gguf:q8_0 Status: Impossible, Cached: false
-2026-05-27T09:15:38.685144Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:35b-a3b:gguf:q4_k_m Status: Average, Cached: false
-2026-05-27T09:15:38.685252Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai:4b:gguf:q1_0 Status: Optimal, Cached: true
-2026-05-27T09:15:38.685360Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:2b:gguf:q4_k_m Status: Optimal, Cached: true
-2026-05-27T09:15:38.685493Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:4b:gguf:q4_k_m Status: Optimal, Cached: true
-2026-05-27T09:15:38.685641Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3vl_instruct:2b:gguf:q4_k_m Status: Optimal, Cached: true
-2026-05-27T09:15:38.685779Z  INFO engines::models::registry: 🧬 [Roster] Model ternary_bonsai:1.7b:gguf:q2_0 Status: Optimal, Cached: true
-2026-05-27T09:15:38.685871Z  INFO engines::models::registry: 📊 [Roster] Generated 182 model recommendations for UI.
-2026-05-27T09:15:38.693076Z  INFO cluaiz_shared::metadata::dna: ✅ [DNA] Governor Discovery Complete: Mode UltraMaxBoost | Window 18k
-2026-05-27T09:15:38.693220Z  INFO engines::runtime::execution::hub: 🔩 [Orchestrator] Initiating Dynamic Hardware Handshake...
-2026-05-27T09:15:39.082595Z  INFO engines::interface_engines::manager::kernel_loader: 🎯 [KernelLoader] Cluaiz path resolved: "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
-2026-05-27T09:15:39.082988Z  INFO engines::interface_engines::manager::kernel_loader: 🎯 [KernelLoader] Cluaiz path resolved: "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
-2026-05-27T09:15:39.083211Z  INFO engines::interface_engines::manager: 🧬 [Linker] Mapping binary: "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
-2026-05-27T09:15:41.394783Z  INFO engines::interface_engines::manager: ✅ [Linker] 7ns Handshake Complete. Kernel Linked.
-2026-05-27T09:15:44.362843Z  INFO engines::interface_engines::manager: 🚀 [Linker] Core Kernel Instantiated at Bare-Metal level.
-2026-05-27T09:15:44.362896Z  INFO engines::runtime::execution::hub: 🧬 [Orchestrator] Hardware Handshake SUCCESS. Neural Bridge Established.
+2026-05-27T18:26:27.208921Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Engine Linked: "C:\\Users\\Aryan\\.cluaiz\\engine\\cluaiz-engine.dll"
+2026-05-27T18:26:27.237125Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Kernel Linked (root): "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
+2026-05-27T18:26:27.263391Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Kernel Linked (subdir): "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\kernels\\cluaiz-llama-cuda.dll"
+2026-05-27T18:26:27.264009Z  INFO cluaiz::core::bootstrapper: 🛰️ [Cluaiz] Synchronizing Neural Registry...
+2026-05-27T18:26:28.119882Z  INFO system_booster::os_tuning: 🚀 [Bare Metal] Attempting to elevate process priority to high (Value: 128) for PID 19464
+2026-05-27T18:26:31.546065Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: ../../models
+2026-05-27T18:26:31.550862Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-05-27T18:26:31.551637Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
+2026-05-27T18:26:31.551881Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
+2026-05-27T18:26:31.552329Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-05-27T18:26:31.552442Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
+2026-05-27T18:26:31.552847Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
+2026-05-27T18:26:31.552959Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
+2026-05-27T18:26:31.553354Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
+2026-05-27T18:26:31.553465Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
+2026-05-27T18:26:31.553850Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
+2026-05-27T18:26:31.553958Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
+2026-05-27T18:26:31.554340Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
+2026-05-27T18:26:31.554449Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
+2026-05-27T18:26:31.554836Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
+2026-05-27T18:26:31.554943Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
+2026-05-27T18:26:31.555313Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
+2026-05-27T18:26:31.555419Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
+2026-05-27T18:26:31.555812Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
+2026-05-27T18:26:31.555848Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-05-27T18:26:31.555858Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
+2026-05-27T18:26:31.555866Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
+2026-05-27T18:26:31.555878Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
+2026-05-27T18:26:31.555887Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
+2026-05-27T18:26:31.555941Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
+2026-05-27T18:26:31.555955Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
+2026-05-27T18:26:31.556141Z  INFO engines::models::registry: 📚 [Roster] Library source found at: ../../models/library
+2026-05-27T18:26:31.563903Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:1.7b:gguf:binary Status: Optimal, Cached: false
+2026-05-27T18:26:31.564068Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:1.7b Status: Optimal, Cached: false
+2026-05-27T18:26:31.564358Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:8b Status: Optimal, Cached: false
+2026-05-27T18:26:31.564530Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:8b:gguf:binary Status: Optimal, Cached: false
+2026-05-27T18:26:31.564709Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:1.7b Status: Optimal, Cached: false
+2026-05-27T18:26:31.564876Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:1.7b:gguf:ternary Status: Optimal, Cached: false
+2026-05-27T18:26:31.565054Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:4b Status: Optimal, Cached: false
+2026-05-27T18:26:31.565223Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:4b:gguf:ternary Status: Optimal, Cached: false
+2026-05-27T18:26:31.565383Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:8b:gguf:ternary Status: Optimal, Cached: false
+2026-05-27T18:26:31.565551Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:8b Status: Optimal, Cached: false
+2026-05-27T18:26:31.565719Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:8b Status: Optimal, Cached: true
+2026-05-27T18:26:31.565995Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.566155Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b Status: Impossible, Cached: false
+2026-05-27T18:26:31.566300Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-05-27T18:26:31.566412Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:awq:8bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.566542Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:gguf:q8_0 Status: Impossible, Cached: false
+2026-05-27T18:26:31.566667Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.566792Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b Status: Optimal, Cached: false
+2026-05-27T18:26:31.566901Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.567008Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.567131Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.567240Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.567362Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b Status: Optimal, Cached: false
+2026-05-27T18:26:31.567475Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:awq:8bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.567615Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b Status: Optimal, Cached: false
+2026-05-27T18:26:31.567745Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b:gguf:q8_0 Status: Average, Cached: false
+2026-05-27T18:26:31.567854Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.567956Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.568068Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.568177Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b Status: Optimal, Cached: false
+2026-05-27T18:26:31.568281Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.568385Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b:gguf:q8_0 Status: Impossible, Cached: false
+2026-05-27T18:26:31.568490Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b:gguf:q4_k_m Status: Heavy, Cached: false
+2026-05-27T18:26:31.568600Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b Status: Heavy, Cached: false
+2026-05-27T18:26:31.568739Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.568964Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b Status: Optimal, Cached: false
+2026-05-27T18:26:31.569162Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.569308Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.569472Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:gguf:q8_0 Status: Impossible, Cached: false
+2026-05-27T18:26:31.569662Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe Status: Heavy, Cached: false
+2026-05-27T18:26:31.569818Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:gguf:q4_k_m Status: Heavy, Cached: false
+2026-05-27T18:26:31.569956Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.570094Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:awq:8bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.570249Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b Status: Heavy, Cached: false
+2026-05-27T18:26:31.570421Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:gguf:q4_k_m Status: Heavy, Cached: false
+2026-05-27T18:26:31.570591Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:gguf:q8_0 Status: Impossible, Cached: false
+2026-05-27T18:26:31.570777Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:awq:8bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.570944Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.571110Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.571276Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.571445Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b Status: Optimal, Cached: true
+2026-05-27T18:26:31.571606Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.571793Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b Status: Optimal, Cached: false
+2026-05-27T18:26:31.571957Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b:gguf:q4_k_m Status: Optimal, Cached: true
+2026-05-27T18:26:31.572115Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.572285Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b Status: Optimal, Cached: false
+2026-05-27T18:26:31.572441Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.572579Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.572800Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:70b Status: Impossible, Cached: false
+2026-05-27T18:26:31.572977Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:70b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.573137Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:70b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-05-27T18:26:31.573286Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b Status: Optimal, Cached: false
+2026-05-27T18:26:31.573432Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.573596Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.573755Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.573922Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-05-27T18:26:31.574064Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b Status: Impossible, Cached: false
+2026-05-27T18:26:31.574217Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b:awq:8bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.574355Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.574502Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.574656Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:awq:8bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.574804Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.575015Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b Status: Optimal, Cached: false
+2026-05-27T18:26:31.575219Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.575383Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:405b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.575500Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:70b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.575608Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:70b Status: Impossible, Cached: false
+2026-05-27T18:26:31.575740Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:70b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-05-27T18:26:31.575916Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.576070Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.576201Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.576343Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b Status: Optimal, Cached: false
+2026-05-27T18:26:31.576484Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:1b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.576660Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:1b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.576868Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:1b Status: Optimal, Cached: false
+2026-05-27T18:26:31.577006Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b Status: Optimal, Cached: false
+2026-05-27T18:26:31.577128Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.577236Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.577341Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.577448Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.3:70b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-05-27T18:26:31.577603Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.3:70b Status: Impossible, Cached: false
+2026-05-27T18:26:31.577710Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.3:70b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.577819Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b:gguf:q8_0 Status: Impossible, Cached: false
+2026-05-27T18:26:31.577936Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-05-27T18:26:31.578038Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b Status: Impossible, Cached: false
+2026-05-27T18:26:31.578140Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.578242Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b:gguf:q8_0 Status: Impossible, Cached: false
+2026-05-27T18:26:31.578343Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b Status: Impossible, Cached: false
+2026-05-27T18:26:31.578443Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-05-27T18:26:31.578542Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.578648Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:0.5b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.578752Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:0.5b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.578856Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:0.5b Status: Optimal, Cached: false
+2026-05-27T18:26:31.579063Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:1.5b Status: Optimal, Cached: false
+2026-05-27T18:26:31.579209Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:1.5b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.579322Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:1.5b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.579430Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gptq:int8 Status: Incompatible, Cached: false
+2026-05-27T18:26:31.579587Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gptq:int4 Status: Incompatible, Cached: false
+2026-05-27T18:26:31.579696Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.579802Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gguf:q8_0 Status: Heavy, Cached: false
+2026-05-27T18:26:31.579909Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.580014Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b Status: Optimal, Cached: false
+2026-05-27T18:26:31.580145Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b Status: Impossible, Cached: false
+2026-05-27T18:26:31.580280Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gptq:int4 Status: Incompatible, Cached: false
+2026-05-27T18:26:31.580388Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gguf:q8_0 Status: Impossible, Cached: false
+2026-05-27T18:26:31.580544Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-05-27T18:26:31.580658Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gptq:int8 Status: Incompatible, Cached: false
+2026-05-27T18:26:31.580765Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.580870Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:3b Status: Optimal, Cached: false
+2026-05-27T18:26:31.580975Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:3b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.581123Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:3b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.581235Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gguf:q8_0 Status: Impossible, Cached: false
+2026-05-27T18:26:31.581338Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b Status: Impossible, Cached: false
+2026-05-27T18:26:31.581444Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gptq:int4 Status: Incompatible, Cached: false
+2026-05-27T18:26:31.581661Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gptq:int8 Status: Incompatible, Cached: false
+2026-05-27T18:26:31.581779Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.581885Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-05-27T18:26:31.582034Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.582194Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gptq:int8 Status: Incompatible, Cached: false
+2026-05-27T18:26:31.582390Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.582556Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.582750Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gptq:int4 Status: Incompatible, Cached: false
+2026-05-27T18:26:31.582994Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b Status: Optimal, Cached: false
+2026-05-27T18:26:31.583334Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:0.6b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.583704Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:0.6b Status: Optimal, Cached: false
+2026-05-27T18:26:31.584394Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:0.6b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.584578Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:1.7b Status: Optimal, Cached: false
+2026-05-27T18:26:31.584729Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:1.7b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.584928Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:1.7b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.585074Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gptq:int8 Status: Incompatible, Cached: false
+2026-05-27T18:26:31.585231Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b Status: Optimal, Cached: false
+2026-05-27T18:26:31.585392Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gguf:q8_0 Status: Impossible, Cached: false
+2026-05-27T18:26:31.585512Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gptq:int4 Status: Incompatible, Cached: false
+2026-05-27T18:26:31.585621Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.585788Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.585903Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-05-27T18:26:31.586011Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.586119Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b Status: Impossible, Cached: false
+2026-05-27T18:26:31.586239Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:gptq:int4 Status: Incompatible, Cached: false
+2026-05-27T18:26:31.586397Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:gptq:int8 Status: Incompatible, Cached: false
+2026-05-27T18:26:31.586514Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe Status: Impossible, Cached: false
+2026-05-27T18:26:31.586720Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:gptq:int4 Status: Incompatible, Cached: false
+2026-05-27T18:26:31.586879Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:gguf:q4_k_m Status: Impossible, Cached: false
+2026-05-27T18:26:31.586997Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:gguf:q8_0 Status: Impossible, Cached: false
+2026-05-27T18:26:31.587116Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.587255Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b Status: Optimal, Cached: false
+2026-05-27T18:26:31.587364Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:gptq:int4 Status: Incompatible, Cached: false
+2026-05-27T18:26:31.587471Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.587576Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:awq:4bit Status: Incompatible, Cached: false
+2026-05-27T18:26:31.587698Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.587824Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:0.5b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.587930Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:0.5b Status: Optimal, Cached: false
+2026-05-27T18:26:31.588035Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:0.5b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-05-27T18:26:31.588140Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b Status: Heavy, Cached: false
+2026-05-27T18:26:31.588309Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b:gguf:q8_0 Status: Impossible, Cached: false
+2026-05-27T18:26:31.588454Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b:gguf:q4_k_m Status: Heavy, Cached: false
+2026-05-27T18:26:31.588563Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b:gptq:int4 Status: Incompatible, Cached: false
+2026-05-27T18:26:31.588685Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:2b:gguf:q8_0 Status: Optimal, Cached: false
+2026-05-27T18:26:31.588821Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:2b Status: Optimal, Cached: false
+2026-05-27T18:26:31.588929Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:35b-a3b Status: Average, Cached: false
+2026-05-27T18:26:31.589049Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:35b-a3b:gguf:q4_k_m Status: Average, Cached: false
+2026-05-27T18:26:31.589160Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:27b:gguf:q4_k_m Status: Heavy, Cached: false
+2026-05-27T18:26:31.589296Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:27b Status: Heavy, Cached: false
+2026-05-27T18:26:31.589418Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:27b:gguf:q8_0 Status: Impossible, Cached: false
+2026-05-27T18:26:31.589534Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:35b-a3b:gguf:q4_k_m Status: Average, Cached: false
+2026-05-27T18:26:31.589668Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:35b-a3b:gguf:q8_0 Status: Impossible, Cached: false
+2026-05-27T18:26:31.589943Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:35b-a3b Status: Average, Cached: false
+2026-05-27T18:26:31.590088Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai:4b:gguf:q1_0 Status: Optimal, Cached: true
+2026-05-27T18:26:31.590199Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:2b:gguf:q4_k_m Status: Optimal, Cached: true
+2026-05-27T18:26:31.590305Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:4b:gguf:q4_k_m Status: Optimal, Cached: true
+2026-05-27T18:26:31.590413Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3vl_instruct:2b:gguf:q4_k_m Status: Optimal, Cached: true
+2026-05-27T18:26:31.590760Z  INFO engines::models::registry: 🧬 [Roster] Model ternary_bonsai:1.7b:gguf:q2_0 Status: Optimal, Cached: true
+2026-05-27T18:26:31.590912Z  INFO engines::models::registry: 📊 [Roster] Generated 182 model recommendations for UI.
+2026-05-27T18:26:31.645223Z  INFO cluaiz_shared::metadata::dna: ✅ [DNA] Governor Discovery Complete: Mode UltraMaxBoost | Window 18k
+2026-05-27T18:26:31.645700Z  INFO engines::runtime::execution::hub: 🔩 [Orchestrator] Initiating Dynamic Hardware Handshake...
+2026-05-27T18:26:32.203447Z  INFO engines::interface_engines::manager::kernel_loader: 🎯 [KernelLoader] Cluaiz path resolved: "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
+2026-05-27T18:26:32.204138Z  INFO engines::interface_engines::manager::kernel_loader: 🎯 [KernelLoader] Cluaiz path resolved: "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
+2026-05-27T18:26:32.204418Z  INFO engines::interface_engines::manager: 🧬 [Linker] Mapping binary: "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
+2026-05-27T18:26:34.014155Z  INFO engines::interface_engines::manager: ✅ [Linker] 7ns Handshake Complete. Kernel Linked.
+2026-05-27T18:26:37.142785Z  INFO engines::interface_engines::manager: 🚀 [Linker] Core Kernel Instantiated at Bare-Metal level.
+2026-05-27T18:26:37.142858Z  INFO engines::runtime::execution::hub: 🧬 [Orchestrator] Hardware Handshake SUCCESS. Neural Bridge Established.

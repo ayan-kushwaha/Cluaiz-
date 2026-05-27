@@ -23,12 +23,12 @@ async fn main() {
     // ── CLI ARGUMENTS PROCESSING ──────────────────────────────────────────
     let args: Vec<String> = env::args().collect();
     if args.iter().any(|arg| arg == "--setup") {
-        println!("🛠️ [Sovereign] Initializing Hardware Calibration...");
+        println!("🛠️ [Calibration] Initializing Hardware Calibration...");
         if let Err(e) = cluaiz_shared::HardwareGovernor::auto_calibrate() {
-            eprintln!("❌ [Sovereign] Calibration Failed: {}", e);
+            eprintln!("❌ [Calibration] Failed: {}", e);
             std::process::exit(1);
         }
-        println!("✅ [Sovereign] Hardware Fingerprint Sealed. system_control.bin updated.");
+        println!("✅ [Calibration] Hardware Fingerprint Sealed. system_control.bin updated.");
         std::process::exit(0);
     }
 

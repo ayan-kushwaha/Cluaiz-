@@ -243,7 +243,7 @@ impl DashboardEngine {
                     let _ = stdout.flush();
                 }
 
-                // 🏎️ TPS CALCULATION: Sovereign Moving Average
+                // 🏎️ TPS CALCULATION: Moving Average
                 let current_count = pulse_ref.tps_counter.load(Ordering::SeqCst);
                 let last_count = tokens_ref.load(Ordering::SeqCst);
                 let diff = current_count.saturating_sub(last_count);
@@ -278,6 +278,8 @@ impl DashboardEngine {
         }
         // 🖊️ INPUT FIX: Ensure cursor is on a fresh line before inquire renders
         println!();
+
+        let mut last_booster_modified = std::fs::metadata(dirs::home_dir().unwrap_or_default().join(".cluaiz").join("engine").join("system_booster.json")).and_then(|m| m.modified()).ok();
 
         loop {
             show_dashboard.store(false, std::sync::atomic::Ordering::SeqCst);
@@ -376,6 +378,37 @@ impl DashboardEngine {
                         let _pwr_cb = pwr_ref.clone();
                         let ttft_cb = ttft_ref.clone();
                         
+                        // ── 🔥 HOT RELOAD ENGINE SETTINGS ──
+                        let booster_path = dirs::home_dir().unwrap_or_default().join(".cluaiz").join("engine").join("system_booster.json");
+                        if let Ok(meta) = std::fs::metadata(&booster_path) {
+                            if let Ok(modified) = meta.modified() {
+                                let mut needs_reload = false;
+                                if let Some(last) = last_booster_modified {
+                                    if modified > last {
+                                        needs_reload = true;
+                                    }
+                                }
+                                last_booster_modified = Some(modified);
+
+                                if needs_reload {
+                                    if let Some(model_id) = state._active_model_id.clone() {
+                                        if let Some(model) = state.sorted_models.iter().find(|m| m.manifest.id == model_id) {
+                                            if let Some(local_path) = &model.manifest.local_path {
+                                                let path = std::path::PathBuf::from(local_path);
+                                                println!("\r\x1B[2K\x1B[0m{} Hot-Reloading Neural Engine based on new settings...", crossterm::style::Stylize::magenta("🚀"));
+                                                let rt = tokio::runtime::Handle::current();
+                                                tokio::task::block_in_place(|| {
+                                                    let _ = rt.block_on(state.Core_engine.load_model(path));
+                                                });
+                                                print!("\x1B[1A\x1B[2K\r"); // clear message
+                                                let _ = std::io::stdout().flush();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         let stream_result = tokio::task::block_in_place(|| {
                             let mut lock = state.Core_engine.router.blocking_lock();
                             
@@ -427,7 +460,7 @@ impl DashboardEngine {
                                     // 🛑 Stop if already past EOS
                                     if eos_cb.load(Ordering::SeqCst) { return; }
 
-                                    // 🛑 Sovereign Deep-Suffix Scan
+                                    // 🛑 Deep-Suffix Scan
                                     if let Ok(mut res) = full_clone.lock() {
                                         let clean_res = (res.clone() + &token).replace("\n", "").replace("\r", "").replace(" ", "");
                                         if stop_seqs.iter().any(|s| {
@@ -519,14 +552,21 @@ impl DashboardEngine {
                             response.to_string(),
                         ));
 
-                        // 🚀 REVEAL DASHBOARD: Manifest the Sovereign record after completion
+                        // 🚀 REVEAL DASHBOARD: Manifest the record after completion
                         show_dashboard.store(true, Ordering::SeqCst);
                         
-                        println!("\n  {} │ {} tokens │ {:.1} TPS │ {:.2}s", 
-                            colored::Colorize::magenta("⚡ Sovereign Benchmark"), 
+                        let ttft_secs = f64::from_bits(ttft_ref.load(Ordering::SeqCst));
+                        let registry = cluaiz_shared::hardware::governor::HardwareGovernor::load_process_registry();
+                        let my_pid = std::process::id().to_string();
+                        let vram_used_gb = registry.get(&my_pid).map(|i| i.vram_gb).unwrap_or(0.0);
+
+                        println!("\n  {} │ {} tokens │ {:.1} TPS │ {:.2}s │ TTFT: {:.2}s │ VRAM Used: {:.2} GB", 
+                            colored::Colorize::magenta("⚡ System Benchmark"), 
                             colored::Colorize::cyan(tokens_in_this_run.to_string().as_str()), 
                             avg_tps, 
-                            duration
+                            duration,
+                            ttft_secs,
+                            vram_used_gb
                         );
                         println!(); // ensure prompt starts on fresh line
                     }
@@ -588,7 +628,7 @@ impl DashboardEngine {
                 tokio::task::block_in_place(|| {
                     let rt = tokio::runtime::Handle::current();
                     match rt.block_on(manager.pull_model(model_id)) {
-                        Ok(_) => println!("  {} Sovereign Link Established.", "✅".green()),
+                        Ok(_) => println!("  {} Link Established.", "✅".green()),
                         Err(e) => println!("  {} Dispatch Failed: {}", "❌".red(), e),
                     }
                 });

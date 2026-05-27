@@ -288,10 +288,16 @@ Perform real-time RDTSC hardware clocking, SIMD profiling, and VRAM detection to
 $ cluaiz --calibrate
 ```
 
-#### **4. Run Hardware Performance Benchmark**
-Stress-test your local CPU/GPU and memory subsystems to measure neural operations per second:
+#### **4. Run Dynamic Hardware Benchmark Suite**
+Stress-test your local CPU/GPU subsystems to measure neural operations per second. 
+The system automatically limits complex prompts on smaller models (Aukat Filter) and saves hardware-aware reports to `test/benchmark/<hardware>/<model>/`.
+
 ```bash
-$ cluaiz --benchmark
+# Run full suite across all downloaded models
+$ cluaiz benchmark
+
+# Run benchmark on a specific model with 3 iterations (to average out thermal throttling)
+$ cluaiz benchmark bonsai1-8b --runs 3
 ```
 
 ---
@@ -300,8 +306,18 @@ $ cluaiz --benchmark
 
 Since the pre-compiled `cluaiz` executables are built dynamically on GitHub Actions and are not signed with a commercial Microsoft code-signing certificate (which requires corporate entity validation), Windows Defender may show a blue **"Windows protected your PC"** pop-up upon double-clicking the app:
 
+**Option 1 (Quick Bypass):**
 1. Click on **"More info"** on the pop-up.
 2. Click **"Run anyway"** to launch the native CLI dashboard instantly.
+
+**Option 2 (Self-Signing Trick):**
+If you want to permanently bypass the unverified prompt, you can use PowerShell to create a manual, hand-made Self-Signed Certificate and sign the `cluaiz.exe` binary yourself. This establishes a trusted signature on your local machine.
+
+```powershell
+# Run in PowerShell as Administrator
+$cert = New-SelfSignedCertificate -DnsName "cluaiz-local" -CertStoreLocation "cert:\LocalMachine\My" -Type CodeSigningCert
+Set-AuthenticodeSignature -FilePath ".\cluaiz.exe" -Certificate $cert
+```
 
 ---
 

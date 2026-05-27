@@ -38,7 +38,7 @@ impl CommandRegistry {
     pub fn generate_help(&self) {
         use colored::Colorize;
 
-        println!("\n  {} Cluaiz-OS Sovereign CLI v{}", "🚀".magenta(), self.version.bold());
+        println!("\n  {} Cluaiz-OS CLI v{}", "🚀".magenta(), self.version.bold());
         println!("  Source: {}\n", "commands.json".cyan());
 
         let categories = ["core", "models", "system"];

@@ -57,7 +57,14 @@ enum CliCommand {
     Calibrate,
 
     /// Run a full hardware performance benchmark.
-    Benchmark,
+    Benchmark {
+        /// Optional model ID to benchmark (runs all if omitted)
+        model_id: Option<String>,
+
+        /// Number of times to run each prompt.
+        #[arg(short, long, default_value_t = 1)]
+        runs: usize,
+    },
 
     /// Show the dynamic help screen.
     Help,
@@ -180,8 +187,8 @@ async fn main() -> Result<()> {
              engines::hardware::system_control_manager::detect_hardware();
              println!("  {} [Silicon] SiliconTruth profile synchronized.\n", "✅".green());
         }
-        Some(CliCommand::Benchmark) => {
-            if let Err(e) = crate::cli::benchmark::execute().await {
+        Some(CliCommand::Benchmark { model_id, runs }) => {
+            if let Err(e) = crate::cli::benchmark::execute(model_id, runs).await {
                 eprintln!("\n  {} [Cluaiz] Benchmark Error: {}\n", "❌".red(), e);
                 std::process::exit(1);
             }

@@ -38,7 +38,7 @@ impl Bootstrapper {
         let current_cli = env!("CARGO_PKG_VERSION");
         
         if latest_cli != current_cli && !latest_cli.is_empty() {
-            println!("  {} [Cluaiz] Sovereign Update Available: {} -> {}", "🚀".green(), current_cli, latest_cli);
+            println!("  {} [Cluaiz] Update Available: {} -> {}", "🚀".green(), current_cli, latest_cli);
         }
 
         // 🎯 3. Engine Sync (Driven by package.json)

@@ -84,7 +84,7 @@ impl StructuralDNA {
 
     /// 🧬 Neural Discovery: Learns model behavior and cross-references with Hardware Truth.
     pub fn discover_from_path(&mut self, model_dir: &std::path::Path) -> anyhow::Result<()> {
-        println!("🧬 [DNA] Sovereign Discovery Heartbeat: Investigating -> {:?}", model_dir);
+        println!("🧬 [DNA] Discovery Heartbeat: Investigating -> {:?}", model_dir);
         let mut arch_limit: Option<usize> = None;
         let mut sliding_window: Option<usize> = None;
 
@@ -229,7 +229,7 @@ impl StructuralDNA {
         self.max_context_length = final_truth;
         let final_ctx = HardwareGovernor::negotiate_vram_envelope(&self);
         
-        println!("⚖️ [DNA] Sovereign Negotiation Complete: Safely allocated {} tokens based on silicon truth.", final_ctx);
+        println!("⚖️ [DNA] Context Negotiation Complete: Safely allocated {} tokens based on silicon truth.", final_ctx);
 
         self.max_context_length = Some(final_ctx);
 

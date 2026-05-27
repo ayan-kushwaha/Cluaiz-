@@ -8,7 +8,7 @@ pub async fn execute(model_id: &str) -> Result<()> {
     let logo = crate::assets::logos::logo_gallery::LOGO_VARIANTS[9];
     println!("{}", logo.cyan());
 
-    println!("\n  {} [Cluaiz] Initializing Sovereign Kernel for '{}'...", "⚙️".yellow(), model_id.bold());
+    println!("\n  {} [Cluaiz] Initializing Kernel for '{}'...", "⚙️".yellow(), model_id.bold());
 
     // 1. Resolve Metadata
     let mut manifest: Option<engines::models::registry::ModelManifest> = None;
@@ -76,7 +76,7 @@ pub async fn execute(model_id: &str) -> Result<()> {
     let cluaiz_root = home_dir.join(".cluaiz").join("models");
     let manager = engines::models::manager::ModelManager::new(engines::models::registry::REGISTRY_URL.to_string(), cluaiz_root.clone());
     
-    println!("  {} Fetching Deep Sovereign Metadata (GGUF Binary Probe)...", "📡".cyan());
+    println!("  {} Fetching Deep Metadata (GGUF Binary Probe)...", "📡".cyan());
     
     if let Ok((metadata, _tensor_infos, tensor_count)) = engines::models::manager::hf_hub::HuggingFaceHub::fetch_partial_gguf_metadata(&manifest.download_url).await {
         let arch = metadata.get("general.architecture").unwrap_or(&"Unknown".to_string()).to_string();
@@ -187,7 +187,7 @@ pub async fn execute(model_id: &str) -> Result<()> {
     if status == engines::models::manager::auditor::HealthStatus::Disabled {
         return Err(color_eyre::eyre::eyre!("❌ DENIED: Insufficient hardware resources for this model."));
     } else {
-        let confirm = inquire::Confirm::new("Sovereign audit passed. All metadata exposed. Proceed with model initialization?").with_default(true).prompt()?;
+        let confirm = inquire::Confirm::new("Audit passed. All metadata exposed. Proceed with model initialization?").with_default(true).prompt()?;
         if !confirm {
             return Err(color_eyre::eyre::eyre!("Initialization aborted by user."));
         }
@@ -217,7 +217,7 @@ pub async fn execute(model_id: &str) -> Result<()> {
         context
     ).await.map_err(|e| color_eyre::eyre::eyre!(e))?;
 
-    println!("  {} Handshake Success. Entering Sovereign Dashboard...\n", "✅".green());
+    println!("  {} Handshake Success. Entering Dashboard...\n", "✅".green());
 
     // 4. Launch Dashboard in Sovereign Mode (Pre-loaded with the model)
     use crate::core::state::AppState;

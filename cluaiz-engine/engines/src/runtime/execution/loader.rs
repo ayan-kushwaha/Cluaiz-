@@ -39,17 +39,17 @@ impl GGUFLoader {
         if booster.speculative_decoding != FeatureState::Off {
             let has_native_mtp = GGUFProber::check_native_mtp(&tensor_infos);
             if has_native_mtp {
-                println!("🔥 [Sovereign Arbiter] Native MTP detected in binary headers. Engaging High-Fidelity MTP Loop.");
+                println!("🔥 [Arbiter] Native MTP detected in binary headers. Engaging High-Fidelity MTP Loop.");
                 architectural_dna.dynamic_attributes.insert("speculative_mode".to_string(), "native_mtp".to_string());
             } else {
-                println!("🛡️ [Sovereign Arbiter] No Native MTP. Sovereign Fallback Path Triggered.");
+                println!("🛡️ [Arbiter] No Native MTP. Fallback Path Triggered.");
                 // Stage 3: Eagle vs Lookahead based on VRAM (Simulation using available metadata)
                 // In an actual scenario, VRAM is measured in DNA discovery, but here we assume threshold
                 if architectural_dna.vram_headroom_gb <= 0.1 && architectural_dna.vram_headroom_gb > 0.0 {
-                    println!("⚡ [Sovereign Arbiter] VRAM Choked. Engaging Draftless Lookahead Decoding.");
+                    println!("⚡ [Arbiter] VRAM Choked. Engaging Draftless Lookahead Decoding.");
                     architectural_dna.dynamic_attributes.insert("speculative_mode".to_string(), "lookahead".to_string());
                 } else {
-                    println!("🦅 [Sovereign Arbiter] VRAM Space Available. Engaging Cluaiz Eagle Decoding (2.5x Boost).");
+                    println!("🦅 [Arbiter] VRAM Space Available. Engaging Cluaiz Eagle Decoding (2.5x Boost).");
                     architectural_dna.dynamic_attributes.insert("speculative_mode".to_string(), "eagle".to_string());
                 }
             }

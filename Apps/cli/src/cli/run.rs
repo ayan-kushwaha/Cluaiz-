@@ -8,7 +8,7 @@ pub async fn execute(model_id: &str, _interactive: bool) -> Result<()> {
     let logo = crate::assets::logos::logo_gallery::LOGO_VARIANTS[9];
     println!("{}", logo.cyan());
 
-    println!("\n  {} [Cluaiz] Initializing Sovereign Kernel for '{}'...", "⚙️".yellow(), model_id.bold());
+    println!("\n  {} [Cluaiz] Initializing Kernel for '{}'...", "⚙️".yellow(), model_id.bold());
 
     let mut manifest: Option<engines::models::registry::ModelManifest> = None;
     let mut is_local = false;
@@ -90,7 +90,7 @@ pub async fn execute(model_id: &str, _interactive: bool) -> Result<()> {
     let model_file = model_path.join(&manifest.huggingface_filename);
 
     if !is_local {
-        println!("  {} Fetching Deep Sovereign Metadata (GGUF Binary Probe)...", "📡".cyan());
+        println!("  {} Fetching Deep Metadata (GGUF Binary Probe)...", "📡".cyan());
     }
     
     let probe_result = if is_local && model_file.exists() {
@@ -212,7 +212,7 @@ pub async fn execute(model_id: &str, _interactive: bool) -> Result<()> {
     
     if !is_local {
         if is_hf {
-            let confirm = inquire::Confirm::new("Sovereign audit passed. Proceed with model download?").with_default(true).prompt()?;
+            let confirm = inquire::Confirm::new("Audit passed. Proceed with model download?").with_default(true).prompt()?;
             if !confirm {
                 return Err(color_eyre::eyre::eyre!("Initialization aborted by user."));
             }
@@ -220,7 +220,7 @@ pub async fn execute(model_id: &str, _interactive: bool) -> Result<()> {
             println!("\n  {} HuggingFace Model Downloaded! Launching dynamic chat session...", "✅".green());
             is_local = true;
         } else {
-            let confirm = inquire::Confirm::new("Sovereign audit passed. Proceed with model download and initialization?").with_default(true).prompt()?;
+            let confirm = inquire::Confirm::new("Audit passed. Proceed with model download and initialization?").with_default(true).prompt()?;
             if !confirm {
                 return Err(color_eyre::eyre::eyre!("Initialization aborted by user."));
             }
@@ -242,7 +242,7 @@ pub async fn execute(model_id: &str, _interactive: bool) -> Result<()> {
     ).await.map_err(|e| color_eyre::eyre::eyre!(e))?;
 
     if is_local {
-        println!("  {} Local Sovereign Audit Passed. Preparing Neural Matrix...", "✨".green());
+        println!("  {} Local Audit Passed. Preparing Neural Matrix...", "✨".green());
     }
 
     // Give a small pause for visual feedback before clearing screen for dashboard
