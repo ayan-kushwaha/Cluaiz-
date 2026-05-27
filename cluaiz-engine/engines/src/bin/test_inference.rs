@@ -1,7 +1,6 @@
 use anyhow::Result;
 use engines::runtime::execution::hub::HardwareOrchestrator;
 use cluaiz_shared::{StructuralDNA, CluaizContext, TemplateManager};
-use std::path::PathBuf;
 
 #[tokio::main]
 async fn main() -> Result<()> {

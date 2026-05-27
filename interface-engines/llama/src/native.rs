@@ -11,8 +11,8 @@ use cluaiz_shared::StructuralDNA;
 use tracing::{info, error, warn};
 
 pub struct NativeLlama {
-    model_ptr: *mut std::ffi::c_void,
-    ctx_ptr: *mut std::ffi::c_void,
+    pub model_ptr: *mut std::ffi::c_void,
+    pub ctx_ptr: *mut std::ffi::c_void,
     pub interrupt_signal: Arc<AtomicBool>,
     pub n_ctx: u32,
     pub kv_cache_quantization_mode: u8,
@@ -239,11 +239,28 @@ impl NativeLlama {
                 // Float models: Dynamic Sampling (DNA Truth)
                 let temp = dna.inference_params.get("temperature").and_then(|t| t.parse::<f32>().ok()).unwrap_or(0.7);
                 let top_p = dna.inference_params.get("top_p").and_then(|p| p.parse::<f32>().ok()).unwrap_or(0.95);
+                let repeat_last_n = dna.inference_params.get("repeat_last_n").and_then(|n| n.parse::<i32>().ok()).unwrap_or(64);
+                let repeat_penalty = dna.inference_params.get("repeat_penalty").and_then(|p| p.parse::<f32>().ok()).unwrap_or(1.1);
                 
+                llama_cpp::llama_sampler_chain_add(
+                    sampler_chain,
+                    llama_cpp::llama_sampler_init_penalties(
+                        n_vocab,
+                        -1, // LLAMA_TOKEN_NULL
+                        -1, // linefeed_id
+                        repeat_last_n,
+                        repeat_penalty,
+                        0.0, // frequency penalty
+                        0.0, // presence penalty
+                        false, // penalize_nl
+                        false, // ignore_eos
+                    )
+                );
+
                 llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_temp(temp));
                 llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_top_p(top_p, 1));
                 llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_dist(0)); // 0 = random seed
-                info!("🎲 [Native-Llama] Dynamic Sampler: temp={}, top_p={}", temp, top_p);
+                info!("🎲 [Native-Llama] Dynamic Sampler: temp={}, top_p={}, repeat_penalty={}", temp, top_p, repeat_penalty);
             } else {
                 llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_greedy());
                 info!("🎲 [Native-Llama] 1-Bit Model Detected: Forcing Greedy-Only Sampler.");

@@ -135,6 +135,17 @@ extern "C" {
     pub fn llama_sampler_init_top_p(p: f32, min_keep: usize) -> *mut std::ffi::c_void;
     pub fn llama_sampler_init_temp(t: f32) -> *mut std::ffi::c_void;
     pub fn llama_sampler_init_dist(seed: u32) -> *mut std::ffi::c_void;
+    pub fn llama_sampler_init_penalties(
+        n_vocab: i32,
+        special_eos_id: i32,
+        linefeed_id: i32,
+        penalty_last_n: i32,
+        penalty_repeat: f32,
+        penalty_freq: f32,
+        penalty_present: f32,
+        penalize_nl: bool,
+        ignore_eos: bool,
+    ) -> *mut std::ffi::c_void;
     pub fn llama_sampler_sample(sampler: *mut std::ffi::c_void, ctx: *mut std::ffi::c_void, idx: i32) -> i32;
     pub fn llama_sampler_free(sampler: *mut std::ffi::c_void);
 

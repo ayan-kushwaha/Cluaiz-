@@ -450,7 +450,14 @@ impl DashboardEngine {
                                         }
 
                                         // Normal token → Display
-                                        print!("{}", token);
+                                        let current_full = res.clone() + &token;
+                                        if current_full.contains("<think>") && !current_full.contains("</think>") {
+                                             print!("\x1B[90m{}\x1B[0m", token);
+                                        } else if token.contains("</think>") {
+                                             print!("\x1B[90m{}\x1B[0m", token);
+                                        } else {
+                                             print!("{}", token);
+                                        }
                                         let _ = std::io::stdout().flush();
                                         res.push_str(&token);
                                         pulse_clone.tps_counter.fetch_add(1, Ordering::SeqCst);
