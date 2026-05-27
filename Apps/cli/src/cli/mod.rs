@@ -5,3 +5,4 @@ pub mod rm;
 pub mod help;
 pub mod ps;
 pub mod booster;
+pub mod benchmark;

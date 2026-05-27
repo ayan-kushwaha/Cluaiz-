@@ -1,0 +1,72 @@
+
+=== Lookahead Session: 1779814406 ===
+🔍 Match found at ngram_size 3: [624, 12, 358] -> drafts [1079, 264, 220, 16]
+✅ Draft ACCEPTED: 1079
+✅ Draft ACCEPTED: 264
+✅ Draft ACCEPTED: 220
+✅ Draft ACCEPTED: 16
+🔍 Match found at ngram_size 5: [1079, 264, 220, 16, 15257] -> drafts [1614, 33340, 369, 3347]
+✅ Draft ACCEPTED: 1614
+✅ Draft ACCEPTED: 33340
+✅ Draft ACCEPTED: 369
+✅ Draft ACCEPTED: 3347
+🔍 Match found at ngram_size 5: [1614, 33340, 369, 3347, 39270] -> drafts [323, 3347, 4938, 10431]
+✅ Draft ACCEPTED: 323
+✅ Draft ACCEPTED: 3347
+✅ Draft ACCEPTED: 4938
+✅ Draft ACCEPTED: 10431
+🔍 Match found at ngram_size 5: [323, 3347, 4938, 10431, 624] -> drafts [12, 358, 1079, 264]
+✅ Draft ACCEPTED: 12
+✅ Draft ACCEPTED: 358
+✅ Draft ACCEPTED: 1079
+✅ Draft ACCEPTED: 264
+🔍 Match found at ngram_size 5: [12, 358, 1079, 264, 220] -> drafts [16, 15257, 1614, 33340]
+✅ Draft ACCEPTED: 16
+✅ Draft ACCEPTED: 15257
+✅ Draft ACCEPTED: 1614
+✅ Draft ACCEPTED: 33340
+🔍 Match found at ngram_size 5: [16, 15257, 1614, 33340, 369] -> drafts [3347, 39270, 323, 3347]
+✅ Draft ACCEPTED: 3347
+✅ Draft ACCEPTED: 39270
+✅ Draft ACCEPTED: 323
+✅ Draft ACCEPTED: 3347
+🔍 Match found at ngram_size 5: [3347, 39270, 323, 3347, 4938] -> drafts [10431, 624, 12, 358]
+✅ Draft ACCEPTED: 10431
+✅ Draft ACCEPTED: 624
+✅ Draft ACCEPTED: 12
+✅ Draft ACCEPTED: 358
+🔍 Match found at ngram_size 5: [10431, 624, 12, 358, 1079] -> drafts [264, 220, 16, 15257]
+❌ Draft REJECTED: expected 264, got 458
+🔍 Match found at ngram_size 3: [358, 1079, 458] -> drafts [15235, 17847, 7881, 553]
+✅ Draft ACCEPTED: 15235
+✅ Draft ACCEPTED: 17847
+✅ Draft ACCEPTED: 7881
+✅ Draft ACCEPTED: 553
+🔍 Match found at ngram_size 5: [15235, 17847, 7881, 553, 71931] -> drafts [2668, 624, 12, 358]
+✅ Draft ACCEPTED: 2668
+❌ Draft REJECTED: expected 624, got 382
+🔍 Match found at ngram_size 3: [1079, 264, 220] -> drafts [16, 15257, 1614, 33340]
+✅ Draft ACCEPTED: 16
+✅ Draft ACCEPTED: 15257
+✅ Draft ACCEPTED: 1614
+✅ Draft ACCEPTED: 33340
+🔍 Match found at ngram_size 5: [16, 15257, 1614, 33340, 369] -> drafts [3347, 39270, 323, 3347]
+✅ Draft ACCEPTED: 3347
+✅ Draft ACCEPTED: 39270
+✅ Draft ACCEPTED: 323
+✅ Draft ACCEPTED: 3347
+🔍 Match found at ngram_size 5: [3347, 39270, 323, 3347, 4938] -> drafts [10431, 624, 12, 358]
+✅ Draft ACCEPTED: 10431
+❌ Draft REJECTED: expected 624, got 13
+
+=== Lookahead Session: 1779821554 ===
+🔍 Match found at ngram_size 3: [4226, 4755, 11] -> drafts [3410, 1995, 11, 323]
+✅ Draft ACCEPTED: 3410
+✅ Draft ACCEPTED: 1995
+✅ Draft ACCEPTED: 11
+✅ Draft ACCEPTED: 323
+🔍 Match found at ngram_size 5: [3410, 1995, 11, 323, 7789] -> drafts [448, 9079, 198, 12]
+✅ Draft ACCEPTED: 448
+✅ Draft ACCEPTED: 9079
+✅ Draft ACCEPTED: 198
+✅ Draft ACCEPTED: 12

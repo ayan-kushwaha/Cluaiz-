@@ -1,3 +1,4 @@
+#![allow(warnings)]
 //! Sovereign Implementation B: Accelerated Feature-Based Runtime (Llama Engine).
 //! This kernel is loaded dynamically by the SiliconOrchestrator.
 
@@ -208,7 +209,6 @@ impl CluaizInference for RuntimeB {
         &mut self,
         prompt: &str,
         max_tokens: usize,
-        _tokenizer: &Tokenizer,
         callback: Box<dyn FnMut(String) + Send + 'static>,
     ) -> Result<()> {
         let mut callback = callback;
@@ -416,6 +416,18 @@ pub extern "C" fn cluaiz_kernel_instantiate(
         let context = CluaizContext::boot(dna, cluaiz_shared::TemplateManager::default());
         let mut engine = Box::new(RuntimeB::new(&path_str, context));
         
+        let mut is_null = true;
+        if let Some(ref native) = engine.native {
+            is_null = native.ctx_ptr.is_null();
+        }
+
+        if is_null {
+            eprintln!("❌ [Llama-Lib] Kernel rejected the weights. This usually happens on unsupported quantizations like Q2_0.");
+            // We can't easily return Err here since it's an AssertUnwindSafe block that is expected to return *mut RuntimeB.
+            // Returning null pointer will naturally fail gracefully back in hub.rs.
+            return std::ptr::null_mut();
+        }
+
         // Inject Booster Configuration from Caller
         if !booster_ptr.is_null() {
             let booster_ctx = unsafe { *booster_ptr };
@@ -498,11 +510,7 @@ pub extern "C" fn cluaiz_kernel_generate_stream(
             }
         });
 
-        // We use a minimal valid tokenizer JSON because the native path handles its own tokenization internally.
-        let minimal_json = r#"{"version":"1.0","truncation":null,"padding":null,"added_tokens":[],"normalizer":null,"pre_tokenizer":null,"post_processor":null,"decoder":null,"model":{"type":"BPE","dropout":null,"unk_token":null,"continuing_subword_prefix":null,"end_of_word_suffix":null,"fuse_unk":false,"byte_fallback":false,"vocab":{},"merges":[]}}"#;
-        let empty_tokenizer = tokenizers::Tokenizer::from_bytes(minimal_json.as_bytes()).expect("Critical: Failed to create dummy tokenizer");
-
-        match engine.generate_stream(&prompt, max_tokens, &empty_tokenizer, rust_callback) {
+        match engine.generate_stream(&prompt, max_tokens, rust_callback) {
             Ok(_) => 0,
             Err(e) => {
                 tracing::error!("❌ [Llama-Engine] Generation failed: {}", e);
@@ -519,3 +527,19 @@ pub extern "C" fn cluaiz_kernel_generate_stream(
         }
     }
 }
+
+#[no_mangle]
+pub extern "C" fn cluaiz_kernel_free(engine_ptr: *mut RuntimeB) {
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        if !engine_ptr.is_null() {
+            unsafe {
+                let _ = Box::from_raw(engine_ptr);
+                crate::ffi::llama_cpp::llama_backend_free();
+            }
+        }
+    }));
+    if result.is_err() {
+        tracing::error!("🚨 [FFI-Panic] Caught panic in cluaiz_kernel_free!");
+    }
+}
+

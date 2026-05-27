@@ -239,7 +239,42 @@ impl EngineManager {
         Ok(())
     }
 
+    /// 🏛️ Core Destruction: Invokes the kernel's destructor to free the active execution engine.
+    pub fn free_instance(&self, engine_ptr: *mut std::ffi::c_void) -> anyhow::Result<()> {
+        if engine_ptr.is_null() {
+            return Ok(());
+        }
+        let lib = self.active_lib.as_ref()
+            .ok_or_else(|| anyhow::anyhow!("Linker Error: No active kernel linked."))?;
+        
+        unsafe {
+            match lib.get::<unsafe extern "C" fn(*mut std::ffi::c_void)>(b"cluaiz_kernel_free") {
+                Ok(free_fn) => {
+                    free_fn(engine_ptr);
+                    tracing::info!("🗑️ [Linker] Core Kernel Instantiation freed.");
+                }
+                Err(_) => {
+                    tracing::warn!("⚠️ [Linker] 'cluaiz_kernel_free' symbol missing from active kernel. Memory might be leaked.");
+                }
+            }
+            Ok(())
+        }
+    }
+
     fn get_system_control_path(&self) -> PathBuf {
         HardwareGovernor::resolve_engine_path().join("system_control.json")
+    }
+}
+
+impl Drop for EngineManager {
+    fn drop(&mut self) {
+        // 🏛️ Sovereign FFI Safeguard: Prevent DLL unloading crashes
+        // Unloading llama.cpp/CUDA FFI libraries from process memory while global static CUDA
+        // or GGML threads are in flight can cause a STATUS_ACCESS_VIOLATION during process exit.
+        // We leak the Library handle using std::mem::forget to keep the DLL mapped until the OS
+        // cleans up the entire process address space cleanly on exit.
+        if let Some(lib) = self.active_lib.take() {
+            std::mem::forget(lib);
+        }
     }
 }

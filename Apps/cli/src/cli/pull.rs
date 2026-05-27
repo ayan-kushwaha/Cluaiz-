@@ -149,6 +149,14 @@ pub async fn execute(model_id: &str) -> Result<()> {
     let total_required = manifest.ram_required_gb;
     println!("    ├─ 📊 Target Allocation: {:.2} GB (Weights + Engine + 8K Context)", total_required);
 
+    // 🛑 Pre-flight Quantization Check
+    if manifest.bit_depth > 0.0 && manifest.bit_depth < 3.0 {
+        println!("\n  {} [Pre-flight Warning] Unsupported Quantization Detected!", "⚠️".yellow());
+        println!("     This model uses {:.2}-bit quantization (e.g., Q2_0 or BitNet).", manifest.bit_depth);
+        println!("     The current C++ backend may crash when attempting to load these weights.");
+        println!("     The download will proceed, but expect 'invalid ggml type' errors at runtime.");
+    }
+
     let mut projected_tps = 0.0;
     
     if user_vram > 0.0 {
@@ -215,20 +223,11 @@ pub async fn execute(model_id: &str) -> Result<()> {
     use crate::core::state::AppState;
     use tokio::sync::mpsc;
     
-    // 🧬 Load Real Tokenizer from the model folder
-    let tokenizer_path = model_path.join("tokenizer.json");
-    let tokenizer = if tokenizer_path.exists() {
-        tokenizers::Tokenizer::from_file(&tokenizer_path).ok()
-    } else {
-        None
-    };
-
     let mut state = AppState::new(None);
-    // Pre-load the engine and tokenizer into the state
+    // Pre-load the engine into the state
     {
         let mut lock = state.Core_engine.router.lock().await;
         lock.active_backend = engines::api::router::Backend::Cluaiz(engine);
-        lock.tokenizer = tokenizer;
     }
     state._active_model_id = Some(manifest.id.clone());
 

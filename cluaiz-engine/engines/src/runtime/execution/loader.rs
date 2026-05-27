@@ -1,7 +1,5 @@
 use std::path::Path;
 use anyhow::{Result, anyhow};
-use tokenizers::Tokenizer;
-use crate::models::registry::Provisioner;
 use crate::runtime::execution::hub::HardwareOrchestrator as CoreHub;
 use cluaiz_shared::{ModelWeightsWrapper, CluaizContext, StructuralDNA, TemplateManager};
 use cluaiz_shared::utils::GGUFProber;
@@ -11,7 +9,7 @@ use cluaiz_shared::hardware::schema::booster::FeatureState;
 pub struct GGUFLoader;
 
 impl GGUFLoader {
-    pub async fn load_model(path: &Path, hf_repo: &str) -> Result<(ModelWeightsWrapper, Tokenizer, Option<u32>)> {
+    pub async fn load_model(path: &Path, _hf_repo: &str) -> Result<(ModelWeightsWrapper, Option<u32>)> {
         // 1. Detect Architecture via Native Prober (Zero Framework Bloat)
         let (metadata, tensor_infos, _tensor_count) = GGUFProber::probe(path)
             .map_err(|e| anyhow!("Native Probe Failure: {}", e))?;
@@ -59,9 +57,7 @@ impl GGUFLoader {
              architectural_dna.dynamic_attributes.insert("speculative_mode".to_string(), "off".to_string());
         }
 
-        let tokenizer_path = Provisioner::ensure_assets(model_dir, hf_repo, None, "tokenizer.json").await?;
-        let tokenizer = Tokenizer::from_file(tokenizer_path)
-            .map_err(|e| anyhow!("Core Hardware Error: Failed to load tokenizer: {}", e))?;
+        // Tokenizer setup removed since GGUF natively extracts it.
 
         // 🧬 Cluaiz ACTIVATION: Dynamic Context Bootstrapping
         let Cluaiz_context = CluaizContext::boot(
@@ -72,6 +68,6 @@ impl GGUFLoader {
         // 4. Delegate Instantiation to the Core Hub (Universal DNA Dispatch)
         let model = CoreHub::instantiate(path.to_string_lossy().as_ref(), Cluaiz_context).await?;
   
-        Ok((model, tokenizer, bos_token_id))
+        Ok((model, bos_token_id))
     }
 }

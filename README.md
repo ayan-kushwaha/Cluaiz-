@@ -5,8 +5,8 @@
 <h1 align="center">Cluaiz Neural Ecosystem</h1>
 
 <p align="center">
-  <b>High-Performance Silicon-Native Inference Infrastructure</b><br>
-  <i>Shared-memory optimized signaling | CluaizDNA Modular Architecture | Native Silicon Interface</i>
+  <b>High-Performance Rust Runtime & Orchestrator for Local LLMs</b><br>
+  <i>Lightweight Rust runtime · Native FFI bindings to llama.cpp · Hardware-aware memory scheduling</i>
 </p>
 
 <p align="center">
@@ -31,7 +31,7 @@
 - ✅ **Cross-Platform Baseline**: Native MSVC/GNU support for Windows and Linux.
 
 ### **Research Directions (In Progress)**
-- 🧪 **AtmaSteer v2**: Fine-grained structured token masking for 100% schema adherence.
+- 🧪 **AtmaSteer v2** *(Constrained JSON/Schema Decoding Layer)*: Fine-grained structured token masking for reliable schema adherence.
 - 🧪 **Ternary Optimizations**: Specialized Addition-Subtraction kernels for BitNet b1.58.
 - 🧪 **P2P Universal Sync**: Local context synchronization without cloud dependencies.
 
@@ -39,7 +39,7 @@
 
 ## 🧭 **What is Cluaiz? (The Infrastructure Layer)**
 
-Cluaiz is a **Silicon-Native Neural Kernel** designed to orchestrate local inference with minimized abstraction overhead. It is **NOT** an AI model, but the orchestrator that speaks the native language of the silicon.
+Cluaiz is a **lightweight local inference runtime written in Rust** that manages model orchestration, memory scheduling, and native FFI bindings built on top of llama.cpp primitives. It is **NOT** an AI model — it is the orchestration layer that sits between your application and the llama.cpp inference kernel.
 
 | Component     | Role         | Implementation                   |
 | :------------ | :----------- | :------------------------------- |
@@ -52,7 +52,7 @@ Cluaiz is a **Silicon-Native Neural Kernel** designed to orchestrate local infer
 
 ## 🏗️ **Design Principles**
 
-- **Minimize Abstraction Overhead**: Bypassing heavy middleware (Docker, Python, Node) for direct silicon access.
+- **Minimize Abstraction Overhead**: Bypassing heavy middleware (Docker, Python, Node) to keep the runtime footprint small and predictable.
 - **Modular Runtime**: Decoupled engine and interface layers for heterogeneous hardware compatibility.
 - **Hardware-Aware Execution**: Dynamic kernel selection based on real-time silicon fingerprinting.
 - **Reproducible Binary Routing**: Ensuring consistent inference results across platforms via CluaizDNA.
@@ -124,8 +124,8 @@ graph TD
 ### **AtmaSteer: Token Masking Protocol**
 Enforces structural output (JSON/Schema) through **constrained decoding**. By applying token-level masking during the sampling phase, Cluaiz prevents structural hallucinations at the hardware layer.
 
-
-Automatically maps neural tasks to specialized kernels based on hardware efficiency profiles, ensuring optimal "Silicon-to-Task" performance.
+### **Dynamic Kernel Routing**
+Maps inference tasks to the appropriate kernel backend based on hardware availability and model type, ensuring consistent performance across CUDA, Metal, and CPU fallback paths.
 
 ---
 
@@ -140,13 +140,7 @@ Automatically maps neural tasks to specialized kernels based on hardware efficie
 | **Memory Footprint**  | **~25MB**           | ~800MB (Docker)     |
 | **Startup Time**      | **~150ms**          | ~2.5s - 5s          |
 
-### **Cluaiz vs. Legacy Wrappers**
-| Feature              | **Cluaiz**        | **Generic Wrappers** |
-| :------------------- | :---------------- | :------------------- |
-| **Runtime Routing**  | ✅ **Dynamic**     | ❌ Fixed              |
-| **Hardware Probing** | ✅ **Atomic**      | ⚠️ Limited            |
-| **Memory Policy**    | ✅ **LRU Arbiter** | ❌ None               |
-| **Abstraction**      | **Native FFI**    | HTTP/API Layer       |
+> **Real-world benchmarks are the only honest comparison.** See the Sovereign Benchmark table below for measured TPS, VRAM usage, and power draw on actual hardware.
 
 ---
 
@@ -203,17 +197,17 @@ Unlike cloud APIs, local inference speed is bound by physical **Memory Bandwidth
 ### 3. **The "PCIe Spill" Phenomenon (Shared Memory)**
 Cluaiz uses a dynamic VRAM Arbiter to negotiate memory. If the engine pushes too close to the physical 100% VRAM limit (e.g., allocating 3.9GB on a 4GB card), the Windows Desktop Window Manager (DWM) will forcefully evict part of the KV Cache into **Shared GPU Memory (System RAM)**.
 * **Impact:** System RAM is 30x slower than VRAM. Even a tiny 0.2GB spill will force the GPU to fetch cache over the PCIe cable, crashing TPS from 50 to 15.
-* **Fix:** The `UltraMaxBoost` mode includes a strict **7.5% Safety Margin** (~300MB) to give the OS breathing room and completely prevent PCIe spilling.
+* **Fix:** Cluaiz applies a strict **7.5% Safe VRAM Allocation Margin** (~300MB) to give the OS breathing room and completely prevent PCIe spilling.
 
 ---
 
 ## 🕹️ **Quick Start Manual**
 
-### 📊 The Sovereign Benchmark (Thinking Mode Active)
+### 📊 **Local Hardware Benchmark**
 
 All tests performed on an **RTX 3050 (Laptop)** using the prompt: *"What is Local AI and why is it important?"*
 
-| **Metric**         | **Bonsai1:8B** | **Gemma:4B** | **Gemma:2B** | **Qwen:4B** | **Qwen:2B** |
+| **Metric**         | **Bonsai1 8B** | **Gemma 4B** | **Gemma 2B** | **Qwen 4B** | **Qwen 2B** |
 | :----------------- | :------------- | :----------- | :----------- | :---------- | :---------- |
 | **Speed (TPS)**    | 48.6           | TBD          | 31.6         | TBD         | TBD         |
 | **Tokens Out**     | 1911           | TBD          | 1465         | TBD         | TBD         |
@@ -223,7 +217,7 @@ All tests performed on an **RTX 3050 (Laptop)** using the prompt: *"What is Loca
 | **Privacy**        | 100% Offline   | 100% Offline | 100% Offline | 100% Offline| 100% Offline|
 
 > [!NOTE]
-> Cluaiz-OS bypasses heavy middleware (Docker, Python, Node) to achieve direct silicon access, resulting in a **4x speedup** compared to standard local engines (Ollama/llama.cpp) for BitNet architectures.
+> Cluaiz bypasses heavy Python/Docker environments to provide a **lightweight Rust runtime for llama.cpp**, minimizing system RAM overhead and preventing OOM crashes on 4GB VRAM setups. Inference is handled by llama.cpp under the hood — Cluaiz's value is in smarter orchestration, not a different kernel.
 
 🚀 Remote Power-On Installation (Recommended)
 
@@ -270,10 +264,23 @@ $ cluaiz
 ```
 
 #### **2. Direct Headless Inference**
-Pull and run any model with zero-copy caching dynamically:
+
+Run any locally cached model by name:
 ```bash
 $ cluaiz run gemma2:2b
 ```
+
+Or pass a full **HuggingFace repo ID** — Cluaiz will automatically download the GGUF weights and run inference:
+```bash
+# Using the compiled binary
+$ cluaiz run Qwen/Qwen3-VL-2B-Instruct-GGUF
+
+# Or directly from source (dev mode)
+$ cargo run -p cli -- run Qwen/Qwen3-VL-2B-Instruct-GGUF
+```
+
+> [!NOTE]
+> HuggingFace downloads are handled natively without Python or `huggingface-cli`. Cluaiz fetches GGUF weights directly over HTTPS and caches them under `~/.cluaiz/models/`.
 
 #### **3. Re-Calibrate Hardware Profile**
 Perform real-time RDTSC hardware clocking, SIMD profiling, and VRAM detection to update your native hardware profile:

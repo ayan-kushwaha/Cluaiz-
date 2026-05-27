@@ -354,7 +354,7 @@ impl CoreRoster {
                                             "Text".to_string()
                                         };
 
-                                        let mut m = ModelManifest {
+                                        let m = ModelManifest {
                                             id: full_id,
                                             name: name.clone(),
                                             architecture: architecture.clone(),

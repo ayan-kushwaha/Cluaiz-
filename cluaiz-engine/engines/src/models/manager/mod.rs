@@ -70,7 +70,7 @@ impl ModelManager {
         let weight_file = model_path.join(&manifest.huggingface_filename);
         let dna_file = model_path.join("structural_dna.json");
 
-        let mut needs_repair = !weight_file.exists() || !dna_file.exists();
+        let needs_repair = !weight_file.exists() || !dna_file.exists();
         // Check if any asset is missing (Removed external JSON checks, only check weights and DNA)
         if !needs_repair {
             println!("  {} Model '{}' is healthy and ready.", "✅".green(), manifest.id);

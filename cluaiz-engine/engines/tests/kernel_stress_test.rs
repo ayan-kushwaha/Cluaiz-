@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use engines::neural_foundry::NeuralFoundry;
+    use engines::neural_foundry::CoreFoundry;
     use std::fs;
     use std::path::PathBuf;
 
@@ -40,7 +40,7 @@ mod tests {
             setup_mock_skill(&temp_dir, &format!("skill_{}", i));
         }
 
-        let mut foundry = NeuralFoundry::new();
+        let mut foundry = CoreFoundry::new();
         foundry.initialize(temp_dir.to_str().unwrap());
 
         // 2. Activate skills in sequence

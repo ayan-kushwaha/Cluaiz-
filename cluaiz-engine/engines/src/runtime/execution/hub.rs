@@ -54,6 +54,14 @@ pub struct SovereignEngine {
 unsafe impl Send for SovereignEngine {}
 unsafe impl Sync for SovereignEngine {}
 
+impl Drop for SovereignEngine {
+    fn drop(&mut self) {
+        if let Ok(manager) = self.manager.lock() {
+            let _ = manager.free_instance(self.engine_ptr);
+        }
+    }
+}
+
 impl UnifiedBackend for SovereignEngine {
     fn generate(&mut self, _prompt: &str, _max_tokens: usize) -> Result<String, String> {
         Err("SovereignEngine: Use generate_stream for native performance.".to_string())
@@ -73,7 +81,6 @@ impl CluaizInference for SovereignEngine {
         &mut self,
         prompt: &str,
         max_tokens: usize,
-        _tokenizer: &tokenizers::Tokenizer,
         callback: Box<dyn FnMut(String) + Send + 'static>,
     ) -> Result<()> {
         let manager = self.manager.lock().map_err(|e| anyhow!("Lock poisoned: {}", e))?;

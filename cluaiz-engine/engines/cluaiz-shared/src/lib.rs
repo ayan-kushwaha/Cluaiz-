@@ -1,4 +1,5 @@
 //! archer-shared: Common traits and types for the CURE Engine ecosystem.
+#![allow(warnings)]
 
 pub struct CluaizDNA;
 
@@ -45,7 +46,6 @@ impl crate::backend::traits::CluaizInference for CluaizLinkerPlaceholder {
         &mut self,
         _prompt: &str,
         _max_tokens: usize,
-        _tokenizer: &tokenizers::Tokenizer,
         _callback: Box<dyn FnMut(String) + Send + 'static>,
     ) -> anyhow::Result<()> {
         Err(anyhow::anyhow!("✅ SOVEREIGN LINKER: Handshake Complete. Ready for Phase 2."))

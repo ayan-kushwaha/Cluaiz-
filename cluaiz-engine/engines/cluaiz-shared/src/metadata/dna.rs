@@ -201,7 +201,7 @@ impl StructuralDNA {
 
         if final_truth.is_none() { return Err(anyhow::anyhow!("❌ [DNA] Fatal: Corrupted Model Metadata.")); }
 
-        let ctx = final_truth.unwrap();
+        let _ctx = final_truth.unwrap();
         
         // 🧬 SOVEREIGN WEIGHT DISCOVERY
         let mut model_size_gb = 0.0;

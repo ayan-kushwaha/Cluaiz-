@@ -1,6 +1,5 @@
 use reqwest::Client;
 use serde::Deserialize;
-use tracing::info;
 use crate::models::registry::ModelManifest;
 
 #[derive(Debug, Deserialize)]

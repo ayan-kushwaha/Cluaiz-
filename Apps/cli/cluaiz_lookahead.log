@@ -27539,3 +27539,120 @@
 ✅ Draft ACCEPTED: 30919
 ✅ Draft ACCEPTED: 1
 ✅ Draft ACCEPTED: 553
+
+=== Lookahead Session: 1779872645 ===
+🔍 Match found at ngram_size 3: [624, 12, 3070] -> drafts [4173, 95518, 15235, 646]
+❌ Draft REJECTED: expected 4173, got 28256
+🔍 Match found at ngram_size 3: [624, 12, 3070] -> drafts [28256, 8303, 95518, 7718]
+❌ Draft REJECTED: expected 28256, got 5405
+🔍 Match found at ngram_size 3: [95518, 15235, 374] -> drafts [1483, 304, 5257, 5043]
+❌ Draft REJECTED: expected 1483, got 10454
+
+=== Lookahead Session: 1779872694 ===
+🔍 Match found at ngram_size 3: [264, 9276, 323] -> drafts [38835, 3364]
+❌ Draft REJECTED: expected 38835, got 264
+🔍 Match found at ngram_size 3: [382, 40, 1265] -> drafts [1083, 1744, 911, 279]
+✅ Draft ACCEPTED: 1083
+✅ Draft ACCEPTED: 1744
+✅ Draft ACCEPTED: 911
+✅ Draft ACCEPTED: 279
+🔍 Match found at ngram_size 3: [13, 576, 3364] -> drafts [1410, 21058, 1105, 12880]
+❌ Draft REJECTED: expected 1410, got 1265
+🔍 Match found at ngram_size 3: [11, 358, 1184] -> drafts [311, 3291, 264, 3364]
+✅ Draft ACCEPTED: 311
+❌ Draft REJECTED: expected 3291, got 3270
+🔍 Match found at ngram_size 3: [279, 3364, 13] -> drafts [10696, 432, 594, 911]
+❌ Draft REJECTED: expected 10696, got 358
+🔍 Match found at ngram_size 3: [13, 358, 1265] -> drafts [1083, 2924, 1045, 12055]
+❌ Draft REJECTED: expected 1083, got 1191
+🔍 Match found at ngram_size 3: [279, 5766, 323] -> drafts [862, 24055, 13, 356]
+✅ Draft ACCEPTED: 862
+❌ Draft REJECTED: expected 24055, got 43808
+🔍 Match found at ngram_size 3: [279, 15659, 315] -> drafts [279, 3364, 13, 10696]
+✅ Draft ACCEPTED: 279
+✅ Draft ACCEPTED: 3364
+❌ Draft REJECTED: expected 13, got 382
+🔍 Match found at ngram_size 3: [382, 40, 1265] -> drafts [1083, 1744, 911, 279]
+✅ Draft ACCEPTED: 1083
+❌ Draft REJECTED: expected 1744, got 1281
+🔍 Match found at ngram_size 3: [1281, 2704, 279] -> drafts [3364, 702, 264, 2797]
+✅ Draft ACCEPTED: 3364
+❌ Draft REJECTED: expected 702, got 374
+🔍 Match found at ngram_size 3: [13, 358, 1265] -> drafts [1191, 553, 31918, 279]
+❌ Draft REJECTED: expected 1191, got 5648
+🔍 Match found at ngram_size 3: [279, 3364, 13] -> drafts [358, 1265, 1191, 553]
+✅ Draft ACCEPTED: 358
+❌ Draft REJECTED: expected 1265, got 1184
+🔍 Match found at ngram_size 3: [358, 1184, 311] -> drafts [3270, 279, 3364, 13]
+❌ Draft REJECTED: expected 3270, got 1281
+🔍 Match found at ngram_size 3: [1184, 311, 1281] -> drafts [2704, 279, 3364, 702]
+✅ Draft ACCEPTED: 2704
+✅ Draft ACCEPTED: 279
+❌ Draft REJECTED: expected 3364, got 5766
+🔍 Match found at ngram_size 3: [13, 358, 1265] -> drafts [5648, 894, 25165, 3565]
+❌ Draft REJECTED: expected 5648, got 1083
+🔍 Match found at ngram_size 4: [13, 358, 1265, 1083] -> drafts [2924, 1045, 12055, 311]
+❌ Draft REJECTED: expected 2924, got 1779
+🔍 Match found at ngram_size 3: [356, 672, 323] -> drafts [264, 274, 398, 38835]
+❌ Draft REJECTED: expected 264, got 434
+🔍 Match found at ngram_size 3: [323, 1053, 11] -> drafts [330, 1654, 1184, 311]
+✅ Draft ACCEPTED: 330
+❌ Draft REJECTED: expected 1654, got 2610
+🔍 Match found at ngram_size 3: [11, 356, 672] -> drafts [6966, 518, 434, 1206]
+❌ Draft REJECTED: expected 6966, got 13
+🔍 Match found at ngram_size 3: [358, 1414, 264] -> drafts [37115, 1526, 279, 270]
+❌ Draft REJECTED: expected 37115, got 2155
+🔍 Match found at ngram_size 3: [13, 358, 646] -> drafts [944, 728, 1526, 279]
+❌ Draft REJECTED: expected 944, got 16191
+🔍 Match found at ngram_size 3: [1526, 279, 270] -> drafts [5897, 11, 714, 432]
+✅ Draft ACCEPTED: 5897
+❌ Draft REJECTED: expected 11, got 2217
+🔍 Match found at ngram_size 3: [34, 672, 572] -> drafts [3881, 369, 806, 17232]
+❌ Draft REJECTED: expected 3881, got 43829
+🔍 Match found at ngram_size 3: [330, 2610, 2299] -> drafts [2677, 3330, 369, 54920]
+❌ Draft REJECTED: expected 2677, got 264
+🔍 Match found at ngram_size 3: [434, 1206, 13] -> drafts [2379, 1033, 18709, 11]
+❌ Draft REJECTED: expected 2379, got 1446
+🔍 Match found at ngram_size 3: [13, 1446, 2299] -> drafts [537, 1661, 518, 23380]
+❌ Draft REJECTED: expected 537, got 2664
+🔍 Match found at ngram_size 3: [2217, 37, 1206] -> drafts [85024, 291, 323, 1053]
+❌ Draft REJECTED: expected 85024, got 96611
+🔍 Match found at ngram_size 3: [11, 356, 672] -> drafts [13, 1988, 358, 1414]
+✅ Draft ACCEPTED: 13
+❌ Draft REJECTED: expected 1988, got 1446
+🔍 Match found at ngram_size 3: [13, 1446, 2299] -> drafts [2664, 518, 700, 39803]
+❌ Draft REJECTED: expected 2664, got 537
+🔍 Match found at ngram_size 4: [13, 1446, 2299, 537] -> drafts [1661, 518, 23380, 13]
+✅ Draft ACCEPTED: 1661
+✅ Draft ACCEPTED: 518
+✅ Draft ACCEPTED: 23380
+❌ Draft REJECTED: expected 13, got 2987
+🔍 Match found at ngram_size 3: [13, 1988, 358] -> drafts [1414, 264, 2155, 1616]
+❌ Draft REJECTED: expected 1414, got 646
+🔍 Match found at ngram_size 3: [2217, 34, 672] -> drafts [572, 43829, 13, 330]
+❌ Draft REJECTED: expected 572, got 3381
+🔍 Match found at ngram_size 3: [1053, 11, 330] -> drafts [2610, 2299, 2677, 3330]
+❌ Draft REJECTED: expected 2610, got 63716
+🔍 Match found at ngram_size 3: [2217, 37, 1206] -> drafts [96611, 13, 330, 3036]
+❌ Draft REJECTED: expected 96611, got 34965
+🔍 Match found at ngram_size 3: [11, 434, 1206] -> drafts [13, 1446, 2299, 537]
+❌ Draft REJECTED: expected 13, got 738
+🔍 Match found at ngram_size 3: [264, 1815, 1526] -> drafts [279, 270, 5897, 2217]
+✅ Draft ACCEPTED: 279
+✅ Draft ACCEPTED: 270
+✅ Draft ACCEPTED: 5897
+❌ Draft REJECTED: expected 2217, got 429
+🔍 Match found at ngram_size 3: [382, 34, 672] -> drafts [572, 3881, 369, 806]
+❌ Draft REJECTED: expected 572, got 8110
+🔍 Match found at ngram_size 3: [279, 13638, 11] -> drafts [49144, 1495, 12408, 323]
+❌ Draft REJECTED: expected 49144, got 1667
+🔍 Match found at ngram_size 3: [279, 13638, 11] -> drafts [1667, 862, 10856, 7361]
+❌ Draft REJECTED: expected 1667, got 807
+🔍 Match found at ngram_size 3: [11, 356, 672] -> drafts [13, 1446, 2299, 537]
+❌ Draft REJECTED: expected 13, got 323
+🔍 Match found at ngram_size 3: [356, 672, 323] -> drafts [434, 1206, 1730, 5577]
+✅ Draft ACCEPTED: 434
+✅ Draft ACCEPTED: 1206
+❌ Draft REJECTED: expected 1730, got 1033
+🔍 Match found at ngram_size 3: [13, 2379, 1033] -> drafts [18709, 11, 3498, 807]
+❌ Draft REJECTED: expected 18709, got 4780

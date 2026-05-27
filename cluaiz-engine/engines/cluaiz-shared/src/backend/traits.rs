@@ -1,6 +1,4 @@
-use tokenizers::Tokenizer;
 use anyhow::Result;
-
 /// UnifiedBackend: The foundational interface for all generation engines in the CURE system.
 pub trait UnifiedBackend {
     /// Sequential generation (Legacy/Compatibility)
@@ -22,7 +20,6 @@ pub trait CluaizInference: Send + Sync + UnifiedBackend {
         &mut self,
         prompt: &str,
         max_tokens: usize,
-        tokenizer: &Tokenizer,
         callback: Box<dyn FnMut(String) + Send + 'static>,
     ) -> Result<()>;
 

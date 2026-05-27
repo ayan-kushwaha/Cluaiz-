@@ -267,18 +267,11 @@ pub async fn execute(model_id: &str, _interactive: bool) -> Result<()> {
     };
     let _ = engines::utils::healer::AutoHealer::heal_missing_tokenizer(&repo_id, &model_path).await;
     let tokenizer_path = model_path.join("tokenizer.json");
-    let tokenizer = if tokenizer_path.exists() {
-        tokenizers::Tokenizer::from_file(&tokenizer_path).ok()
-    } else {
-        None
-    };
-
     let mut state = AppState::new(None);
-    // Pre-load the engine and tokenizer into the state
+    // Pre-load the engine into the state
     {
         let mut lock = state.Core_engine.router.lock().await;
         lock.active_backend = engines::api::router::Backend::Cluaiz(engine);
-        lock.tokenizer = tokenizer;
     }
     state._active_model_id = Some(manifest.id.clone());
 

@@ -5,7 +5,7 @@
 use anyhow::Result;
 use crate::runtime::execution::sampler::CoreSampler;
 use cluaiz_shared::ModelWeightsWrapper;
-use tokenizers::Tokenizer;
+
 
 
 #[derive(Debug, Clone)]
@@ -18,14 +18,14 @@ pub struct CluaizMetrics {
 
 pub struct CluaizRunner {
     pub model: ModelWeightsWrapper,
-    pub tokenizer: Tokenizer,
+
     pub sampler: CoreSampler,
     pub bos_token_id: Option<u32>,
 }
 
 impl CluaizRunner {
-    pub fn new(model: ModelWeightsWrapper, tokenizer: Tokenizer, sampler: CoreSampler, bos_token_id: Option<u32>) -> Self {
-        Self { model, tokenizer, sampler, bos_token_id }
+    pub fn new(model: ModelWeightsWrapper, sampler: CoreSampler, bos_token_id: Option<u32>) -> Self {
+        Self { model, sampler, bos_token_id }
     }
 
     /// 🔗 Instant Recall: Injects Core Cluaiz signals before generation.
@@ -57,7 +57,7 @@ impl CluaizRunner {
         self.model.generate_stream(
             prompt,
             max_tokens,
-            &self.tokenizer,
+
             Box::new(move |t| {
                 count_clone.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
                 callback(t);

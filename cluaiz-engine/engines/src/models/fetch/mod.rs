@@ -4,7 +4,7 @@ use tokio::sync::mpsc;
 use tokio::io::AsyncWriteExt;
 use futures_util::StreamExt;
 use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::AtomicBool;
 use crate::models::registry::ModelManifest;
 use indicatif::{ProgressBar, ProgressStyle};
 
@@ -75,7 +75,7 @@ impl ModelDownloader {
         repo_id: &str,
         download_url: &str,
         filename: &str,
-        assets: Vec<crate::models::registry::ModelAsset>,
+        _assets: Vec<crate::models::registry::ModelAsset>,
         manifest: Option<ModelManifest>,
         tx: mpsc::Sender<DownloadEvent>,
         abort: Arc<AtomicBool>
@@ -143,7 +143,7 @@ impl ModelDownloader {
         // 🔍 BINARY PROBE: Extracting truth directly from GGUF Hardware (Framework-Free)
         if weight_path.exists() {
             info!("🧬 [DNA] Probing weight binary: {:?}", weight_path);
-            if let Ok((metadata, tensor_infos, _tensor_count)) = cluaiz_shared::utils::gguf_prober::GGUFProber::probe(weight_path) {
+            if let Ok((metadata, _tensor_infos, _tensor_count)) = cluaiz_shared::utils::gguf_prober::GGUFProber::probe(weight_path) {
                 // If the engine has sync_with_metadata, call it. If not, we map values manually.
                 if let Some(ctx) = metadata.get("llama.context_length").or(metadata.get("qwen2.context_length")) {
                     dna.max_context_length = ctx.parse().ok();
@@ -168,16 +168,7 @@ impl ModelDownloader {
             std::fs::write(&dna_path, json).map_err(|e| e.to_string())?;
         }
         
-        // As requested by Founder, we also generate config.json locally from the DNA!
-        // This is a minimal wrapper.
-        let config_path = dest_dir.join("config.json");
-        let config_json = serde_json::json!({
-            "architectures": [manifest.architecture],
-            "model_type": manifest.architecture.to_lowercase(),
-            "max_position_embeddings": dna.max_context_length.unwrap_or(8192)
-        });
-        let _ = std::fs::write(&config_path, serde_json::to_string_pretty(&config_json).unwrap());
-        
+
         Ok(())
     }
 
@@ -233,7 +224,7 @@ impl ModelDownloader {
             .timeout(std::time::Duration::from_secs(5))
             .build()
             .map_err(|e| e.to_string())?;
-        let model_name = repo_id.split('/').next_back().unwrap_or(repo_id);
+        let _model_name = repo_id.split('/').next_back().unwrap_or(repo_id);
         
         // 🚀 SMART FALLBACK LIST: Try repo and stripped format dynamically without hardcoded mirror prefix creators
         let mut repo_ids_to_try = vec![repo_id.to_string()];

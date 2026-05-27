@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use minijinja::{Environment, context};
+use tracing::warn;
 
 /// 🎭 TemplateManager: Handles neural prompt formatting based on model DNA.
 #[derive(Debug, Clone)]
@@ -20,16 +22,33 @@ impl TemplateManager {
     pub fn format(&self, dna: &crate::metadata::dna::StructuralDNA, prompt: &str) -> String {
         // 1. Priority: Use discovered template from DNA (JSON driven)
         if let Some(ref template) = dna.chat_template {
-            // Normalize Jinja2-style templates to our internal format
-            // If it contains messages iteration, we'll try to simplify it for single prompt
+            let mut env = Environment::new();
+            
+            // Try to parse via MiniJinja natively
+            if let Ok(_) = env.add_template("chat", template) {
+                // Construct standard messages array for single-turn prompt
+                let messages = vec![
+                    context! { role => "user", content => prompt }
+                ];
+                let ctx = context! { messages => messages, add_generation_prompt => true };
+                
+                if let Ok(tmpl) = env.get_template("chat") {
+                    if let Ok(rendered) = tmpl.render(ctx) {
+                        return rendered;
+                    } else {
+                        warn!("⚠️ [Templater] MiniJinja failed to render template. Falling back to simple replacement.");
+                    }
+                }
+            } else {
+                warn!("⚠️ [Templater] MiniJinja failed to parse the template syntax. Using raw fallback.");
+            }
+
+            // Simple replace as emergency fallback for strict formats if minijinja fails
             if template.contains("<|im_start|>") {
                 return FALLBACK_CHATML.replace("{{prompt}}", prompt);
             }
             if template.contains("<|start_header_id|>") {
                 return FALLBACK_LLAMA3.replace("{{prompt}}", prompt);
-            }
-            if template.contains("<turn|>") {
-                return format!("<turn|>user\n{}<turn|>assistant\n", prompt);
             }
             if template.contains("<start_of_turn>") {
                 return format!("<start_of_turn>user\n{}<end_of_turn>\n<start_of_turn>model\n", prompt);

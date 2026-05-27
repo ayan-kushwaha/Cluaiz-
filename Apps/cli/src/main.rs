@@ -1,3 +1,5 @@
+#![allow(warnings)]
+
 use color_eyre::Result;
 use colored::Colorize;
 use clap::{Parser, Subcommand};
@@ -7,6 +9,7 @@ mod ui;
 mod assets;
 mod theme;
 mod app_enums;
+
 mod cli;
 
 use crate::core::bootstrapper::Bootstrapper;
@@ -178,8 +181,10 @@ async fn main() -> Result<()> {
              println!("  {} [Silicon] SiliconTruth profile synchronized.\n", "✅".green());
         }
         Some(CliCommand::Benchmark) => {
-            println!("\n  {} [Performance] Starting Full System Benchmark...", "🚀".magenta());
-            engines::telemetry::health_check::CluaizHealthChecker::run_full_benchmark();
+            if let Err(e) = crate::cli::benchmark::execute().await {
+                eprintln!("\n  {} [Cluaiz] Benchmark Error: {}\n", "❌".red(), e);
+                std::process::exit(1);
+            }
         }
         Some(CliCommand::Help) => {
             if let Ok(reg) = crate::core::commands::CommandRegistry::load() {

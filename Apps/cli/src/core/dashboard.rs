@@ -392,9 +392,7 @@ impl DashboardEngine {
 
                             // 🧬 DYNAMIC TOKEN ALLOCATION: Calculate space based on DNA Context Window
                             let ctx_window = lock.get_active_dna().and_then(|d| d.max_context_length).unwrap_or(2048);
-                            let prompt_tokens = if let Some(ref t) = lock.tokenizer {
-                                t.encode(formatted_prompt.clone(), true).map(|e| e.len()).unwrap_or(0)
-                            } else { 0 };
+                            let prompt_tokens = 0; // We no longer rely on external tokenizers for length prediction
                             
                             let max_t = lock.get_active_dna()
                                 .and_then(|d| d.inference_params.get("max_tokens"))

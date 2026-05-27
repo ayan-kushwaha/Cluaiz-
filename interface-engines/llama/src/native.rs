@@ -164,12 +164,15 @@ impl NativeLlama {
 
             // 🧬 DYNAMIC TEMPLATING: Resolve template from DNA/Context
             let templater = cluaiz_shared::prompting::templater::TemplateManager::default();
-            let formatted_prompt = templater.format(dna, prompt);
+            let mut formatted_prompt = templater.format(dna, prompt);
 
             // 🧠 THINKING MODE CONTROL: Read from dashboard/JSON settings
             let booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
             let suppress_thinking = booster.think_mode == cluaiz_shared::hardware::schema::booster::FeatureState::Off;
             let mut in_think_block = false;
+            let mut suppressed_count = 0;
+
+
 
             // ✅ FIX 1: Single vocab binding — no duplicate
             let vocab = llama_cpp::llama_model_get_vocab(self.model_ptr);
@@ -232,14 +235,19 @@ impl NativeLlama {
             // 🧬 Universal Sovereign Rule: Model Agnosticism
             // We use the official DNA KernelSignature instead of file-size hacks.
             // If the model's bit depth (analyzed upstream during DNA Skeleton Creation) is < 2.0, it's flagged as is_bitnet.
-            // Float models: Dynamic Sampling (DNA Truth)
-            let temp = dna.inference_params.get("temperature").and_then(|t| t.parse::<f32>().ok()).unwrap_or(0.7);
-            let top_p = dna.inference_params.get("top_p").and_then(|p| p.parse::<f32>().ok()).unwrap_or(0.95);
-            
-            llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_temp(temp));
-            llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_top_p(top_p, 1));
-            llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_dist(0)); // 0 = random seed
-            info!("🎲 [Native-Llama] Dynamic Sampler: temp={}, top_p={}", temp, top_p);
+            if !dna.signature.is_bitnet {
+                // Float models: Dynamic Sampling (DNA Truth)
+                let temp = dna.inference_params.get("temperature").and_then(|t| t.parse::<f32>().ok()).unwrap_or(0.7);
+                let top_p = dna.inference_params.get("top_p").and_then(|p| p.parse::<f32>().ok()).unwrap_or(0.95);
+                
+                llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_temp(temp));
+                llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_top_p(top_p, 1));
+                llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_dist(0)); // 0 = random seed
+                info!("🎲 [Native-Llama] Dynamic Sampler: temp={}, top_p={}", temp, top_p);
+            } else {
+                llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_greedy());
+                info!("🎲 [Native-Llama] 1-Bit Model Detected: Forcing Greedy-Only Sampler.");
+            }
 
             // 🧬 Arbiter Mode Sync
             let is_lookahead = self.speculative_decoding_mode == 1 || self.speculative_decoding_mode == 2;
@@ -339,6 +347,9 @@ impl NativeLlama {
 
                 // 🏁 Check for EOS
                 if llama_cpp::llama_vocab_is_eog(vocab, next_token_id) {
+                    if n_gen == 0 {
+                        println!("⚠️ [Native-Llama] WARNING: Model generated EOS on the very first token! This usually indicates a prompt template mismatch.");
+                    }
                     info!("🏁 [Native-Llama] EOS Detected.");
                     break;
                 }
@@ -419,6 +430,12 @@ impl NativeLlama {
                 n_cur += 1;
                 if !in_think_block {
                     n_gen += 1;
+                } else {
+                    suppressed_count += 1;
+                    if suppressed_count >= 4096 {
+                        warn!("⚠️ [Native-Llama] Safeguard: Suppressed thinking tokens exceeded limit (4096). Terminating generation to prevent context overflow.");
+                        break;
+                    }
                 }
                 cluaiz_shared::hardware::telemetry::get_pulse().tps_counter.fetch_add(1, Ordering::SeqCst);
 
@@ -467,11 +484,21 @@ impl NativeLlama {
                         n_cur += 1;
                         if !in_think_block {
                             n_gen += 1;
+                        } else {
+                            suppressed_count += 1;
+                            if suppressed_count >= 4096 {
+                                warn!("⚠️ [Native-Llama] Safeguard: Suppressed thinking tokens exceeded limit (4096) in accepted drafts. Terminating generation.");
+                                eos_detected = true;
+                                break;
+                            }
                         }
                         cluaiz_shared::hardware::telemetry::get_pulse().tps_counter.fetch_add(1, Ordering::SeqCst);
 
                         // Check for EOS within verification loop
                         if llama_cpp::llama_vocab_is_eog(vocab, next_token_id) {
+                            if n_gen == 0 {
+                                println!("⚠️ [Native-Llama] WARNING: Model generated EOS on the very first token! This usually indicates a prompt template mismatch.");
+                            }
                             lookahead_logs.push("🏁 [Native-Llama] EOS Detected in accepted drafts.".to_string());
                             eos_detected = true;
                             break;

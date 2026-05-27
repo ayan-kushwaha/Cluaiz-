@@ -45,11 +45,10 @@ impl cluaiz_shared::CluaizInference for Backend {
         &mut self,
         prompt: &str,
         max_tokens: usize,
-        tokenizer: &tokenizers::Tokenizer,
         callback: Box<dyn FnMut(String) + Send + 'static>,
     ) -> anyhow::Result<()> {
         match self {
-            Self::Cluaiz(b) => b.generate_stream(prompt, max_tokens, tokenizer, callback),
+            Self::Cluaiz(b) => b.generate_stream(prompt, max_tokens, callback),
             Self::Empty(_) => Err(anyhow::anyhow!("Empty backend")),
         }
     }
@@ -57,7 +56,7 @@ impl cluaiz_shared::CluaizInference for Backend {
 
 pub struct CoreRouter {
     pub active_backend: Backend,
-    pub tokenizer: Option<tokenizers::Tokenizer>,
+
     pub foundry: crate::neural_foundry::CoreFoundry,
     pub active_dna: Option<cluaiz_shared::StructuralDNA>,
 }
@@ -72,7 +71,7 @@ impl CoreRouter {
     pub fn new() -> Self {
         Self { 
             active_backend: Backend::Empty(DummyBackend),
-            tokenizer: None,
+
             foundry: crate::neural_foundry::CoreFoundry::new(),
             active_dna: None,
         }
@@ -130,25 +129,7 @@ impl CoreRouter {
             .await
             .map_err(|e| format!("Cluaiz Handshake Failure: {}", e))?;
 
-        let (tokenizer, t_error) = if let Some(p) = path.parent() {
-            let t_path = p.join("tokenizer.json");
-            if t_path.exists() {
-                match tokenizers::Tokenizer::from_file(&t_path) {
-                    Ok(t) => (Some(t), None),
-                    Err(e) => (None, Some(format!("Tokenizer found but failed to parse: {}", e))),
-                }
-            } else {
-                let minimal_json = r#"{"version":"1.0","truncation":null,"padding":null,"added_tokens":[],"normalizer":null,"pre_tokenizer":null,"post_processor":null,"decoder":null,"model":{"type":"BPE","dropout":null,"unk_token":null,"continuing_subword_prefix":null,"end_of_word_suffix":null,"fuse_unk":false,"byte_fallback":false,"vocab":{},"merges":[]}}"#;
-                let dummy = tokenizers::Tokenizer::from_bytes(minimal_json.as_bytes()).ok();
-                (dummy, None)
-            }
-        } else {
-            (None, Some("Invalid model path parent.".to_string()))
-        };
 
-        if let Some(err) = t_error {
-            println!("🗣️ [Router] Voice initialization fail: {}", err);
-        }
 
         let mut foundry = crate::neural_foundry::CoreFoundry::new();
         // Load skills from a standard location (this could be configurable)
@@ -156,7 +137,7 @@ impl CoreRouter {
 
         Ok(Self { 
             active_backend: Backend::Cluaiz(engine), 
-            tokenizer,
+
             foundry,
             active_dna: Some(dna),
         })
@@ -195,25 +176,16 @@ impl CoreRouter {
                     b.inject_signals(intent_result.signals).map_err(|e| format!("Signal Injection Failure: {}", e))?;
                 }
 
-                if self.tokenizer.is_none() {
-                    let minimal_json = r#"{"version":"1.0","truncation":null,"padding":null,"added_tokens":[],"normalizer":null,"pre_tokenizer":null,"post_processor":null,"decoder":null,"model":{"type":"BPE","dropout":null,"unk_token":null,"continuing_subword_prefix":null,"end_of_word_suffix":null,"fuse_unk":false,"byte_fallback":false,"vocab":{},"merges":[]}}"#;
-                    self.tokenizer = tokenizers::Tokenizer::from_bytes(minimal_json.as_bytes()).ok();
-                }
-
-                if let Some(ref tokenizer) = self.tokenizer {
-                    // 🎭 Orchestration: Format prompt based on model DNA
-                    let formatted_prompt = if let Some(ref dna) = self.active_dna {
-                        let tm = cluaiz_shared::TemplateManager::default();
-                        tm.format(dna, prompt)
-                    } else {
-                        prompt.to_string()
-                    };
-
-                    b.generate_stream(&formatted_prompt, max_tokens, tokenizer, callback)
-                        .map_err(|e| e.to_string())
+                // 🎭 Orchestration: Format prompt based on model DNA
+                let formatted_prompt = if let Some(ref dna) = self.active_dna {
+                    let tm = cluaiz_shared::TemplateManager::default();
+                    tm.format(dna, prompt)
                 } else {
-                    Err("Tokenizer not loaded.".to_string())
-                }
+                    prompt.to_string()
+                };
+
+                b.generate_stream(&formatted_prompt, max_tokens, callback)
+                    .map_err(|e| e.to_string())
             },
             Backend::Empty(_) => Err("Core weights not loaded. Please select a model with @ or wait for the Auto-Pilot handshake to complete.".to_string()),
         }
@@ -237,7 +209,6 @@ impl cluaiz_shared::CluaizInference for DummyBackend {
         &mut self,
         _prompt: &str,
         _max_tokens: usize,
-        _tokenizer: &tokenizers::Tokenizer,
         _callback: Box<dyn FnMut(String) + Send + 'static>,
     ) -> anyhow::Result<()> {
         Err(anyhow::anyhow!("Dummy backend"))

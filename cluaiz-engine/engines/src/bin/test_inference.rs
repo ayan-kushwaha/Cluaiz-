@@ -8,7 +8,7 @@ async fn main() -> Result<()> {
     println!("🧪 [Test] Starting Raw Inference Test...");
 
     let home_dir = dirs::home_dir().expect("Could not resolve Home Directory");
-    let model_path = home_dir.join(".cluaiz").join("models").join("chat").join("bonsai1-8b").join("Bonsai-8B.gguf");
+    let model_path = home_dir.join(".cluaiz").join("models").join("chat").join("qwen3.5-2b-gguf-q4_k_m").join("Qwen3.5-2B-Q4_K_M.gguf");
     
     if !model_path.exists() {
         println!("❌ Model not found at: {:?}", model_path);
@@ -29,7 +29,6 @@ async fn main() -> Result<()> {
     engine.generate_stream(
         "hi",
         100,
-        &tokenizers::Tokenizer::from_file(home_dir.join(".cluaiz").join("models").join("chat").join("bonsai1-8b").join("tokenizer.json")).unwrap(),
         Box::new(|token| {
             print!("{}", token);
             std::io::Write::flush(&mut std::io::stdout()).unwrap();
