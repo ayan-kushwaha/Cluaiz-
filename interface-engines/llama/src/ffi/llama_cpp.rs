@@ -80,6 +80,12 @@ extern "C" {
     /// 🛑 Free the global llama + ggml backend.
     pub fn llama_backend_free();
 
+    /// 🔥 Sovereign Injection: Manually register a backend (bypass CMake CMake auto-detection).
+    pub fn ggml_backend_register(reg: *mut std::ffi::c_void);
+
+    /// 🔥 Sovereign Injection: Get CUDA backend registry
+    pub fn ggml_backend_cuda_reg() -> *mut std::ffi::c_void;
+
     /// 🛠️ Get default model parameters.
     pub fn llama_model_default_params() -> LlamaModelParams;
 
@@ -136,17 +142,13 @@ extern "C" {
     pub fn llama_sampler_init_temp(t: f32) -> *mut std::ffi::c_void;
     pub fn llama_sampler_init_dist(seed: u32) -> *mut std::ffi::c_void;
     pub fn llama_sampler_init_penalties(
-        n_vocab: i32,
-        special_eos_id: i32,
-        linefeed_id: i32,
         penalty_last_n: i32,
         penalty_repeat: f32,
         penalty_freq: f32,
         penalty_present: f32,
-        penalize_nl: bool,
-        ignore_eos: bool,
     ) -> *mut std::ffi::c_void;
     pub fn llama_sampler_sample(sampler: *mut std::ffi::c_void, ctx: *mut std::ffi::c_void, idx: i32) -> i32;
+    pub fn llama_sampler_accept(sampler: *mut std::ffi::c_void, token: i32);
     pub fn llama_sampler_free(sampler: *mut std::ffi::c_void);
 
     /// 🧵 Memory Sequence Management (Signal Stitching)
@@ -154,7 +156,7 @@ extern "C" {
     pub fn llama_memory_seq_add(mem: *mut std::ffi::c_void, seq_id: i32, p0: i32, p1: i32, delta: i32);
     pub fn llama_memory_seq_cp(mem: *mut std::ffi::c_void, seq_id_src: i32, seq_id_dst: i32, p0: i32, p1: i32);
     pub fn llama_memory_seq_rm(mem: *mut std::ffi::c_void, seq_id: i32, p0: i32, p1: i32) -> bool;
-    pub fn llama_get_kv_cache_token_count(ctx: *const std::ffi::c_void) -> i32;
+    pub fn llama_memory_seq_pos_max(mem: *mut std::ffi::c_void, seq_id: i32) -> i32;
 
     /// 🔤 Convert token to piece (string).
     pub fn llama_token_to_piece(
@@ -169,6 +171,7 @@ extern "C" {
     /// 🏁 EOS/EOG Detection
     pub fn llama_vocab_is_eog(vocab: *const std::ffi::c_void, token: i32) -> bool;
     pub fn llama_vocab_eos(vocab: *const std::ffi::c_void) -> i32;
+    pub fn llama_vocab_nl(vocab: *const std::ffi::c_void) -> i32;
 
     /// 🧬 Metadata Extraction
     pub fn llama_model_meta_count(model: *const std::ffi::c_void) -> i32;

@@ -45,7 +45,7 @@ impl cluaiz_shared::CluaizInference for Backend {
         &mut self,
         prompt: &str,
         max_tokens: usize,
-        callback: Box<dyn FnMut(String) + Send + 'static>,
+        callback: Box<dyn FnMut(String) -> bool + Send + 'static>,
     ) -> anyhow::Result<()> {
         match self {
             Self::Cluaiz(b) => b.generate_stream(prompt, max_tokens, callback),
@@ -148,12 +148,7 @@ impl CoreRouter {
     }
 
     pub fn generate(&mut self, prompt: &str, max_tokens: usize) -> Result<String, String> {
-        let formatted_prompt = if let Some(ref dna) = self.active_dna {
-            let tm = cluaiz_shared::TemplateManager::default();
-            tm.format(dna, prompt)
-        } else {
-            prompt.to_string()
-        };
+        let formatted_prompt = prompt.to_string(); // Let native engines handle formatting
         self.active_backend.generate(&formatted_prompt, max_tokens)
     }
 
@@ -161,7 +156,7 @@ impl CoreRouter {
         &mut self,
         prompt: &str,
         max_tokens: usize,
-        callback: Box<dyn FnMut(String) + Send + 'static>,
+        callback: Box<dyn FnMut(String) -> bool + Send + 'static>,
     ) -> Result<(), String> {
         // 🧪 Cluaiz HANDSHAKE: Check for skills before generation
         let rt = tokio::runtime::Handle::current();
@@ -176,13 +171,8 @@ impl CoreRouter {
                     b.inject_signals(intent_result.signals).map_err(|e| format!("Signal Injection Failure: {}", e))?;
                 }
 
-                // 🎭 Orchestration: Format prompt based on model DNA
-                let formatted_prompt = if let Some(ref dna) = self.active_dna {
-                    let tm = cluaiz_shared::TemplateManager::default();
-                    tm.format(dna, prompt)
-                } else {
-                    prompt.to_string()
-                };
+                // 🎭 Orchestration: Let native backend handle templating to support pivot tags
+                let formatted_prompt = prompt.to_string();
 
                 b.generate_stream(&formatted_prompt, max_tokens, callback)
                     .map_err(|e| e.to_string())
@@ -209,7 +199,7 @@ impl cluaiz_shared::CluaizInference for DummyBackend {
         &mut self,
         _prompt: &str,
         _max_tokens: usize,
-        _callback: Box<dyn FnMut(String) + Send + 'static>,
+        _callback: Box<dyn FnMut(String) -> bool + Send + 'static>,
     ) -> anyhow::Result<()> {
         Err(anyhow::anyhow!("Dummy backend"))
     }

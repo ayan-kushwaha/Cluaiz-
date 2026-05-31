@@ -43,6 +43,7 @@ libc = "0.2"
 
 # ── Sovereign Security ──
 dirs = "5"
+ctrlc = "3.5.2"
 
 [build-dependencies]
 winres = "0.1"

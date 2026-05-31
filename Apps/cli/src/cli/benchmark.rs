@@ -262,7 +262,7 @@ async fn run_single_model_isolated(model_name: &str, runs: usize) {
     let warmup_prompts = vec!["Hello", "Test"];
 
     for prompt in warmup_prompts {
-        let _ = engine.generate_stream(prompt, 5, Box::new(|_| {}));
+        let _ = engine.generate_stream(prompt, 5, Box::new(|_| { true }));
     }
 
     println!("⚡ Warmup complete. Running main benchmark...");
@@ -359,6 +359,7 @@ async fn run_single_model_isolated(model_name: &str, runs: usize) {
                         }
                         token_count_clone.fetch_add(1, Ordering::Relaxed);
                         let _ = tx.send(token);
+                        true
                     }),
                 );
 

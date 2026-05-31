@@ -42,7 +42,21 @@ impl NativeLlama {
         unsafe { llama_cpp::llama_log_set(None, std::ptr::null_mut()) };
         
         // 🚀 Initialize all native backends (CRITICAL for CUDA/GPU discovery)
-        unsafe { llama_cpp::llama_backend_init() };
+        unsafe { 
+            #[cfg(feature = "cuda")]
+            {
+                eprintln!("🔥 [Sovereign-Llama] Manually injecting CUDA backend...");
+                let reg = llama_cpp::ggml_backend_cuda_reg();
+                eprintln!("🔥 [Sovereign-Llama] CUDA reg pointer: {:?}", reg);
+                if !reg.is_null() {
+                    llama_cpp::ggml_backend_register(reg);
+                    eprintln!("🔥 [Sovereign-Llama] CUDA backend registered successfully!");
+                } else {
+                    eprintln!("❌ [Sovereign-Llama] CUDA reg pointer is NULL!");
+                }
+            }
+            llama_cpp::llama_backend_init() 
+        };
         
         // 🛡️ Sovereign Context Check: Capping is now handled by the Governor's fitting loop.
         // We no longer hard-cap at 4096 here.
@@ -73,6 +87,12 @@ impl NativeLlama {
         if let Some(ctx) = dna.max_context_length {
             info!("🎯 [Native-Llama] SOVEREIGN HANDSHAKE: Setting n_ctx = {} (DNA Truth)", ctx);
             ctx_params.n_ctx = ctx as u32;
+        }
+
+        let mut speculative_decoding_mode = speculative_decoding_mode;
+        if dna.model_identity.to_lowercase().contains("gemma") {
+            info!("🛡️ [Native-Llama] Gemma model detected: Disabling speculative decoding to prevent logit soft-capping corruption.");
+            speculative_decoding_mode = 0;
         }
 
         // ⚡ CUDA GRAPH SOVEREIGN RULE:
@@ -155,24 +175,46 @@ impl NativeLlama {
         prompt: &str, 
         max_tokens: usize, 
         dna: &StructuralDNA, // Pass DNA for deep truth templating
-        mut callback: Box<dyn FnMut(String) + Send + 'static>
+        mut callback: Box<dyn FnMut(String) -> bool + Send + 'static>
     ) -> anyhow::Result<()> {
         unsafe {
-            // 🧹 Sovereign Flush: Ensure KV cache is clear before starting new generation
+            let is_pivot = prompt.starts_with("[PIVOT_CONTINUE]");
+            let actual_prompt = if is_pivot {
+                prompt.trim_start_matches("[PIVOT_CONTINUE]").trim_start().to_string()
+            } else {
+                prompt.to_string()
+            };
+            println!("🔍 [DEBUG-NATIVE] Received prompt: {:?}", prompt);
+            println!("🔍 [DEBUG-NATIVE] is_pivot: {}", is_pivot);
+            println!("🔍 [DEBUG-NATIVE] actual_prompt: {:?}", actual_prompt);
+
+            // 🧹 Sovereign Flush: Ensure KV cache is clear ONLY IF NOT PIVOTING
             let mem = llama_cpp::llama_get_memory(self.ctx_ptr);
-            llama_cpp::llama_memory_seq_rm(mem, 0, -1, -1);
+            if !is_pivot {
+                llama_cpp::llama_memory_seq_rm(mem, 0, -1, -1);
+            }
 
             // 🧬 DYNAMIC TEMPLATING: Resolve template from DNA/Context
             let templater = cluaiz_shared::prompting::templater::TemplateManager::default();
-            let mut formatted_prompt = templater.format(dna, prompt);
+            let mut formatted_prompt = if is_pivot {
+                templater.format_turn(dna, &actual_prompt)
+            } else {
+                templater.format(dna, &actual_prompt)
+            };
+            println!("🔍 [DEBUG-NATIVE] formatted_prompt: {:?}", formatted_prompt);
 
             // 🧠 THINKING MODE CONTROL: Read from dashboard/JSON settings
             let booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
             let suppress_thinking = booster.think_mode == cluaiz_shared::hardware::schema::booster::FeatureState::Off;
+            
+            // Root-level tracking for suppression (we no longer force-inject tags, preserving model purity)
+            // UPDATE: The user specifically requested Think Mode for Gemma, so we WILL force-inject it if enabled!
+            if !suppress_thinking && !formatted_prompt.contains("<think>") {
+                formatted_prompt.push_str("<think>\n");
+            }
+            
             let mut in_think_block = false;
             let mut suppressed_count = 0;
-
-
 
             // ✅ FIX 1: Single vocab binding — no duplicate
             let vocab = llama_cpp::llama_model_get_vocab(self.model_ptr);
@@ -187,14 +229,16 @@ impl NativeLlama {
 
             // 1. Tokenize
             let mut tokens = vec![0i32; formatted_prompt.len() + 8];
+            let add_special = !is_pivot;
+            let parse_special = true; // MUST parse special tokens like <|im_end|> explicitly added in pivot template
             let n_tokens = llama_cpp::llama_tokenize(
                 vocab, 
                 c_prompt.as_ptr(), 
                 formatted_prompt.len() as i32, 
                 tokens.as_mut_ptr(), 
                 tokens.len() as i32, 
-                true, 
-                true
+                add_special, 
+                parse_special
             );
             
             if n_tokens < 0 {
@@ -207,9 +251,15 @@ impl NativeLlama {
             let batch_size = (tokens.len() as i32).max(512);
             let mut batch = llama_cpp::llama_batch_init(batch_size, 0, 1);
 
+            let start_pos = if is_pivot {
+                llama_cpp::llama_memory_seq_pos_max(llama_cpp::llama_get_memory(self.ctx_ptr), 0) + 1
+            } else {
+                0
+            };
+
             for (i, token) in tokens.iter().enumerate() {
                 *batch.token.add(i) = *token;
-                *batch.pos.add(i) = i as i32;
+                *batch.pos.add(i) = start_pos + i as i32;
                 *batch.n_seq_id.add(i) = 1;
                 *(*batch.seq_id.add(i)).add(0) = 0;
                 *batch.logits.add(i) = if i == tokens.len() - 1 { 1 } else { 0 };
@@ -245,25 +295,46 @@ impl NativeLlama {
                 llama_cpp::llama_sampler_chain_add(
                     sampler_chain,
                     llama_cpp::llama_sampler_init_penalties(
-                        n_vocab,
-                        -1, // LLAMA_TOKEN_NULL
-                        -1, // linefeed_id
                         repeat_last_n,
                         repeat_penalty,
                         0.0, // frequency penalty
                         0.0, // presence penalty
-                        false, // penalize_nl
-                        false, // ignore_eos
                     )
                 );
 
-                llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_temp(temp));
-                llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_top_p(top_p, 1));
-                llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_dist(0)); // 0 = random seed
-                info!("🎲 [Native-Llama] Dynamic Sampler: temp={}, top_p={}, repeat_penalty={}", temp, top_p, repeat_penalty);
+                if temp <= 0.0 {
+                    llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_greedy());
+                    info!("🎲 [Native-Llama] Temperature is zero: Forcing Greedy Sampler.");
+                } else {
+                    llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_top_p(top_p, 1));
+                    llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_temp(temp));
+                    // 🎲 Use distribution sampler for creative temperature sampling, seeded with system time to ensure randomness
+                    let seed = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs() as u32).unwrap_or(1234);
+                    llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_dist(seed));
+                    info!("🎲 [Native-Llama] Dynamic Sampler (Top-P -> Temp -> Dist): temp={}, top_p={}, repeat_penalty={}, seed={}", temp, top_p, repeat_penalty, seed);
+                }
             } else {
+                // 🛑 ROOT FIX: Always apply repetition penalties even for 1-bit/greedy models to prevent infinite loops
+                let repeat_last_n = dna.inference_params.get("repeat_last_n").and_then(|n| n.parse::<i32>().ok()).unwrap_or(64);
+                let repeat_penalty = dna.inference_params.get("repeat_penalty").and_then(|p| p.parse::<f32>().ok()).unwrap_or(1.1);
+                
+                llama_cpp::llama_sampler_chain_add(
+                    sampler_chain,
+                    llama_cpp::llama_sampler_init_penalties(
+                        repeat_last_n,
+                        repeat_penalty,
+                        0.0, // frequency penalty
+                        0.0, // presence penalty
+                    )
+                );
+
                 llama_cpp::llama_sampler_chain_add(sampler_chain, llama_cpp::llama_sampler_init_greedy());
-                info!("🎲 [Native-Llama] 1-Bit Model Detected: Forcing Greedy-Only Sampler.");
+                info!("🎲 [Native-Llama] 1-Bit Model Detected: Forcing Greedy-Only Sampler with Repetition Penalty.");
+            }
+
+            // 🛑 ROOT FIX: Accept all initial prompt tokens into the sampler so repetition penalty works!
+            for &token in &tokens {
+                llama_cpp::llama_sampler_accept(sampler_chain, token);
             }
 
             // 🧬 Arbiter Mode Sync
@@ -272,17 +343,18 @@ impl NativeLlama {
             
             let mut history: Vec<i32> = tokens.clone();
             let mut lookahead_logs = Vec::new();
+            let mut utf8_buffer = Vec::new();
 
-            let mut n_cur = tokens.len() as i32;
+            let mut n_cur = start_pos + tokens.len() as i32;
             let mut n_gen = 0;
 
             // First token sampling is done outside the speculative loop
             let mut next_token_id = llama_cpp::llama_sampler_sample(sampler_chain, self.ctx_ptr, -1);
-            
+
             // 🚀 [Native-Llama] Entering generation loop...
             while n_gen < max_tokens as i32 {
-                // 🛑 Check for Real-time Interrupt
-                if self.interrupt_signal.load(Ordering::SeqCst) {
+                // 🛑 Check for Real-time Interrupt (Direct check for zero-latency pause)
+                if self.interrupt_signal.load(Ordering::SeqCst) || cluaiz_shared::GLOBAL_CANCEL_SIGNAL.load(Ordering::SeqCst) {
                     break;
                 }
 
@@ -332,33 +404,58 @@ impl NativeLlama {
                 );
                 
                 if n_bytes > 0 {
-                    let mut piece = String::from_utf8_lossy(&buf[..n_bytes as usize]).to_string();
+                    utf8_buffer.extend_from_slice(&buf[..n_bytes as usize]);
+                    let mut piece = String::new();
+                    match std::str::from_utf8(&utf8_buffer) {
+                        Ok(s) => {
+                            piece = s.to_string();
+                            utf8_buffer.clear();
+                        }
+                        Err(e) => {
+                            let valid_len = e.valid_up_to();
+                            if valid_len > 0 {
+                                piece = String::from_utf8_lossy(&utf8_buffer[..valid_len]).to_string();
+                                utf8_buffer.drain(..valid_len);
+                            }
+                            if let Some(error_len) = e.error_len() {
+                                utf8_buffer.drain(..error_len);
+                            }
+                        }
+                    }
                     
-                    if suppress_thinking {
-                        if piece.contains("<think>") {
-                            in_think_block = true;
-                            if let Some(idx) = piece.find("<think>") {
-                                piece = piece[..idx].to_string();
+                    if !piece.is_empty() {
+                        if suppress_thinking {
+                            for tag in &["<think>", "<thought>", "<|thought_start|>"] {
+                                if piece.contains(tag) {
+                                    in_think_block = true;
+                                    piece = piece.replace(tag, "");
+                                }
+                            }
+                            for tag in &["</think>", "</thought>", "<|thought_end|>", "<channel|>"] {
+                                if piece.contains(tag) {
+                                    in_think_block = false;
+                                    piece = piece.replace(tag, "");
+                                }
+                            }
+                            for tag in &["<turn|>", "<|im_end|>", "<end_of_turn>", "<|im_start|>", "<start_of_turn>"] {
+                                piece = piece.replace(tag, "");
+                            }
+
+                            if in_think_block {
+                                // Suppress the thinking block entirely
+                            } else if !piece.is_empty() {
+                                if !callback(piece) { break; }
+                                let _ = std::io::Write::flush(&mut std::io::stdout());
+                            }
+                        } else {
+                            for tag in &["<turn|>", "<|im_end|>", "<end_of_turn>", "<|im_start|>", "<start_of_turn>"] {
+                                piece = piece.replace(tag, "");
+                            }
+                            if !piece.is_empty() {
+                                if !callback(piece) { break; }
+                                let _ = std::io::Write::flush(&mut std::io::stdout());
                             }
                         }
-                        
-                        let has_end_think = piece.contains("</think>");
-                        if has_end_think {
-                            in_think_block = false;
-                            if let Some(idx) = piece.find("</think>") {
-                                piece = piece[idx + "</think>".len()..].to_string();
-                            }
-                        }
-                        
-                        if in_think_block {
-                            // Suppress the thinking block entirely
-                        } else if !piece.is_empty() {
-                            callback(piece);
-                            let _ = std::io::Write::flush(&mut std::io::stdout());
-                        }
-                    } else {
-                        callback(piece);
-                        let _ = std::io::Write::flush(&mut std::io::stdout());
                     }
                 }
 
@@ -473,28 +570,56 @@ impl NativeLlama {
                             vocab, next_token_id, buf.as_mut_ptr() as *mut c_char, buf.len() as i32, 0, true
                         );
                         if n_b > 0 {
-                            let mut piece = String::from_utf8_lossy(&buf[..n_b as usize]).to_string();
-                            if suppress_thinking {
-                                if piece.contains("<think>") {
-                                    in_think_block = true;
-                                    if let Some(idx) = piece.find("<think>") {
-                                        piece = piece[..idx].to_string();
+                            utf8_buffer.extend_from_slice(&buf[..n_b as usize]);
+                            let mut piece = String::new();
+                            match std::str::from_utf8(&utf8_buffer) {
+                                Ok(s) => {
+                                    piece = s.to_string();
+                                    utf8_buffer.clear();
+                                }
+                                Err(e) => {
+                                    let valid_len = e.valid_up_to();
+                                    if valid_len > 0 {
+                                        piece = String::from_utf8_lossy(&utf8_buffer[..valid_len]).to_string();
+                                        utf8_buffer.drain(..valid_len);
+                                    }
+                                    if let Some(error_len) = e.error_len() {
+                                        utf8_buffer.drain(..error_len);
                                     }
                                 }
-                                let has_end_think = piece.contains("</think>");
-                                if has_end_think {
-                                    in_think_block = false;
-                                    if let Some(idx) = piece.find("</think>") {
-                                        piece = piece[idx + "</think>".len()..].to_string();
+                            }
+
+                            if !piece.is_empty() {
+                                if suppress_thinking {
+                                    for tag in &["<think>", "<thought>", "<|thought_start|>"] {
+                                        if piece.contains(tag) {
+                                            in_think_block = true;
+                                            piece = piece.replace(tag, "");
+                                        }
+                                    }
+                                    for tag in &["</think>", "</thought>", "<|thought_end|>", "<channel|>"] {
+                                        if piece.contains(tag) {
+                                            in_think_block = false;
+                                            piece = piece.replace(tag, "");
+                                        }
+                                    }
+                                    for tag in &["<turn|>", "<|im_end|>", "<end_of_turn>", "<|im_start|>", "<start_of_turn>"] {
+                                        piece = piece.replace(tag, "");
+                                    }
+
+                                    if !in_think_block && !piece.is_empty() {
+                                        callback(piece);
+                                        let _ = std::io::Write::flush(&mut std::io::stdout());
+                                    }
+                                } else {
+                                    for tag in &["<turn|>", "<|im_end|>", "<end_of_turn>", "<|im_start|>", "<start_of_turn>"] {
+                                        piece = piece.replace(tag, "");
+                                    }
+                                    if !piece.is_empty() {
+                                        if !callback(piece) { break; }
+                                        let _ = std::io::Write::flush(&mut std::io::stdout());
                                     }
                                 }
-                                if !in_think_block && !piece.is_empty() {
-                                    callback(piece);
-                                    let _ = std::io::Write::flush(&mut std::io::stdout());
-                                }
-                            } else {
-                                callback(piece);
-                                let _ = std::io::Write::flush(&mut std::io::stdout());
                             }
                         }
 
@@ -524,9 +649,10 @@ impl NativeLlama {
                         // Sample next token using the logits of the accepted draft
                         next_token_id = llama_cpp::llama_sampler_sample(sampler_chain, self.ctx_ptr, (i + 1) as i32);
                     } else {
-                         // ❌ Draft REJECTED – rollback & continue normal decoding
-                         lookahead_logs.push(format!("❌ Draft REJECTED: expected {}, got {}", draft_token, next_token_id));
-                         break;
+                        // Mismatch occurred, sample is already next_token_id from the point of mismatch
+                        let msg = format!("❌ Draft REJECTED at {}. New token sampled: {}", drafts[n_match], next_token_id);
+                        lookahead_logs.push(msg);
+                        break;
                     }
                 }
 

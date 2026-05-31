@@ -3,6 +3,11 @@
 
 pub struct CluaizDNA;
 
+use std::sync::atomic::{AtomicBool, Ordering};
+
+/// 🛑 Global Cancellation Signal for Graceful Interrupts
+pub static GLOBAL_CANCEL_SIGNAL: AtomicBool = AtomicBool::new(false);
+
 pub mod hardware;
 pub mod metadata;
 pub mod neural;
@@ -46,7 +51,7 @@ impl crate::backend::traits::CluaizInference for CluaizLinkerPlaceholder {
         &mut self,
         _prompt: &str,
         _max_tokens: usize,
-        _callback: Box<dyn FnMut(String) + Send + 'static>,
+        _callback: Box<dyn FnMut(String) -> bool + Send + 'static>,
     ) -> anyhow::Result<()> {
         Err(anyhow::anyhow!("✅ SOVEREIGN LINKER: Handshake Complete. Ready for Phase 2."))
     }

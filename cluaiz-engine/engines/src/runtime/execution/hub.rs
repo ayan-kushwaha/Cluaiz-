@@ -81,7 +81,7 @@ impl CluaizInference for SovereignEngine {
         &mut self,
         prompt: &str,
         max_tokens: usize,
-        callback: Box<dyn FnMut(String) + Send + 'static>,
+        callback: Box<dyn FnMut(String) -> bool + Send + 'static>,
     ) -> Result<()> {
         let manager = self.manager.lock().map_err(|e| anyhow!("Lock poisoned: {}", e))?;
         manager.generate_stream_ffi(self.engine_ptr, prompt, max_tokens, callback)

@@ -6,8 +6,11 @@ fn main() {
         res.set("FileDescription", "Cluaiz AI Engine");
         res.set("ProductName", "Cluaiz");
         res.set("OriginalFilename", "cluaiz.exe");
-        res.set("LegalCopyright", "Copyright © 2026 Cluaiz.");
-        res.set("CompanyName", "Cluaiz");
+        res.set("LegalCopyright", "Copyright © 2026 Cluaiz Technologies");
+        res.set("CompanyName", "Cluaiz Technologies");
+        // Alpha Version Alignment Lock
+        res.set("FileVersion", "0.0.1.0");
+        res.set("ProductVersion", "0.0.1.0");
         
         res.set_manifest(r#"
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">

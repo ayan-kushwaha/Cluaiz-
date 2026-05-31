@@ -207,14 +207,14 @@ Cluaiz uses a dynamic VRAM Arbiter to negotiate memory. If the engine pushes too
 
 All tests performed on an **RTX 3050 (Laptop)** using the prompt: *"What is Local AI and why is it important?"*
 
-| **Metric**         | **Bonsai1 8B** | **Gemma 4B** | **Gemma 2B** | **Qwen 4B** | **Qwen 2B** |
-| :----------------- | :------------- | :----------- | :----------- | :---------- | :---------- |
-| **Speed (TPS)**    | 48.6           | TBD          | 31.6         | TBD         | TBD         |
-| **Tokens Out**     | 1911           | TBD          | 1465         | TBD         | TBD         |
-| **Reasoning Mode** | Deep Thinking  | Standard     | Deep Thinking| Standard    | Standard    |
-| **Memory (VRAM)**  | 2.82 GB        | TBD          | 1.90 GB      | TBD         | TBD         |
-| **Power Used**     | ~52W           | TBD          | ~31W         | TBD         | TBD         |
-| **Privacy**        | 100% Offline   | 100% Offline | 100% Offline | 100% Offline| 100% Offline|
+| **Metric**         | **Bonsai1 8B** | **Gemma 4B** | **Gemma 2B**  | **Qwen 4B**  | **Qwen 2B**  |
+| :----------------- | :------------- | :----------- | :------------ | :----------- | :----------- |
+| **Speed (TPS)**    | 48.6           | TBD          | 31.6          | TBD          | TBD          |
+| **Tokens Out**     | 1911           | TBD          | 1465          | TBD          | TBD          |
+| **Reasoning Mode** | Deep Thinking  | Standard     | Deep Thinking | Standard     | Standard     |
+| **Memory (VRAM)**  | 2.82 GB        | TBD          | 1.90 GB       | TBD          | TBD          |
+| **Power Used**     | ~52W           | TBD          | ~31W          | TBD          | TBD          |
+| **Privacy**        | 100% Offline   | 100% Offline | 100% Offline  | 100% Offline | 100% Offline |
 
 > [!NOTE]
 > Cluaiz bypasses heavy Python/Docker environments to provide a **lightweight Rust runtime for llama.cpp**, minimizing system RAM overhead and preventing OOM crashes on 4GB VRAM setups. Inference is handled by llama.cpp under the hood — Cluaiz's value is in smarter orchestration, not a different kernel.
@@ -329,5 +329,5 @@ See the [LICENSE](LICENSE) file for more details.
 ---
 
 <p align="center">
-  <b>© 2026 Cluaiz. Open-Sourced under Apache 2.0.</b><br>
+  <b>© 2026 Cluaiz Technologies. Open-Sourced under Apache 2.0.</b><br>
  </p>

@@ -20,7 +20,7 @@ pub trait CluaizInference: Send + Sync + UnifiedBackend {
         &mut self,
         prompt: &str,
         max_tokens: usize,
-        callback: Box<dyn FnMut(String) + Send + 'static>,
+        callback: Box<dyn FnMut(String) -> bool + Send + 'static>,
     ) -> Result<()>;
 
     /// 🔗 Signal Injection Hook: Injects multiple pre-encoded neural states directly into hardware cache.

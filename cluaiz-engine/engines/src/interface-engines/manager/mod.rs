@@ -94,8 +94,15 @@ impl EngineManager {
         // 🎯 [Core Provisioning]: Ensure the specialized kernel binary exists
         let registry_engines_url = registry["components"]["kernel"]["manifest_url"].as_str().unwrap_or_default();
         
+        let mut using_base_fallback = false;
+        
         let binary_path = if self.loader.exists(&target_binary_id) {
+            // 🚀 Try specific kernel first (e.g., cluaiz-llama-cuda.dll from DevSync)
             self.loader.resolve_path(&target_binary_id)
+        } else if self.loader.exists(engine_type) {
+            // 🚀 Fallback to base bootstrapper kernel (e.g., cluaiz-llama.dll)
+            using_base_fallback = true;
+            self.loader.resolve_path(engine_type)
         } else {
             // 🚀 ATOMIC PROVISIONING: Attempt to download specialized kernel from registry
             if target_suffix != "cpu" {
@@ -200,24 +207,24 @@ impl EngineManager {
         engine_ptr: *mut std::ffi::c_void,
         prompt: &str,
         max_tokens: usize,
-        callback: Box<dyn FnMut(String) + Send + 'static>,
+        callback: Box<dyn FnMut(String) -> bool + Send + 'static>,
     ) -> anyhow::Result<()> {
         let lib = self.active_lib.as_ref()
             .ok_or_else(|| anyhow::anyhow!("Linker Error: No active kernel linked."))?;
         
         unsafe {
-            let generate_fn: Symbol<unsafe extern "C" fn(*mut std::ffi::c_void, *const std::os::raw::c_char, usize, extern "C" fn(*const std::os::raw::c_char, *mut std::ffi::c_void), *mut std::ffi::c_void) -> i32> = 
+            let generate_fn: Symbol<unsafe extern "C" fn(*mut std::ffi::c_void, *const std::os::raw::c_char, usize, extern "C" fn(*const std::os::raw::c_char, *mut std::ffi::c_void) -> bool, *mut std::ffi::c_void) -> i32> = 
                 lib.get(b"cluaiz_kernel_generate_stream")
                 .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaiz_kernel_generate_stream' symbol missing."))?;
             
             let c_prompt = std::ffi::CString::new(prompt)?;
             
             // 🛰️ Static Gateway: Convert the C callback back to our Rust closure
-            extern "C" fn c_callback_bridge(token_ptr: *const std::os::raw::c_char, user_data: *mut std::ffi::c_void) {
+            extern "C" fn c_callback_bridge(token_ptr: *const std::os::raw::c_char, user_data: *mut std::ffi::c_void) -> bool {
                 unsafe {
-                    let cb = &mut *(user_data as *mut Box<dyn FnMut(String) + Send + 'static>);
+                    let cb = &mut *(user_data as *mut Box<dyn FnMut(String) -> bool + Send + 'static>);
                     let token = std::ffi::CStr::from_ptr(token_ptr).to_string_lossy().into_owned();
-                    cb(token);
+                    cb(token)
                 }
             }
 

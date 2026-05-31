@@ -138,11 +138,9 @@ impl StructuralDNA {
                 self.intermediate_size = target.get("intermediate_size").and_then(|v| v.as_u64()).map(|v| v as usize);
                 self.model_identity = json.get("model_type").and_then(|v| v.as_str()).unwrap_or("unknown").to_string();
 
-                // 🧬 SOVEREIGN ARCHITECTURE REGISTRY: Inject missing tokens and inference stability parameters
                 match self.model_identity.to_lowercase().as_str() {
                     "gemma2" | "gemma" => {
                         self.stop_sequences.push("<end_of_turn>".to_string());
-                        self.stop_sequences.push("<turn>".to_string());
                         self.inference_params.insert("repetition_penalty".to_string(), "1.1".to_string());
                     },
                     "llama" => {
@@ -150,7 +148,6 @@ impl StructuralDNA {
                         self.inference_params.insert("repetition_penalty".to_string(), "1.1".to_string());
                     },
                     _ => {
-                        self.stop_sequences.push("<turn>".to_string());
                         self.stop_sequences.push("<eos>".to_string());
                         // 1-bit / Low-bit Stability Guard
                         self.inference_params.insert("repetition_penalty".to_string(), "1.1".to_string());

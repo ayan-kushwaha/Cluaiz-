@@ -58,9 +58,10 @@ impl CluaizRunner {
             prompt,
             max_tokens,
 
-            Box::new(move |t| {
+            Box::new(move |t| -> bool {
                 count_clone.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-                callback(t);
+                let _ = callback(t);
+                true
             }),
         )?;
 

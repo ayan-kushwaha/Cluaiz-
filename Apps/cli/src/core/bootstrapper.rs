@@ -208,6 +208,8 @@ impl Bootstrapper {
                 } else { false }
             } else { false };
 
+            // In dev mode, we mimic the target kernel ID based on hardware.
+            // (Assumes the user ran cargo build with the correct feature flag, e.g. --features cuda)
             let kernel_name = if has_nvidia { "cluaiz-llama-cuda" } else { "cluaiz-llama" };
             let kernel_dest = hub_path.join("interface-engines").join(format!("{}.{}", kernel_name, ext));
             let kernel_dest_subdir = hub_path.join("interface-engines").join("kernels").join(format!("{}.{}", kernel_name, ext));

@@ -14,7 +14,7 @@ impl RuntimeBPipeline {
         context: &CluaizContext,
         prompt: &str,
         _max_tokens: usize,
-        mut callback: Box<dyn FnMut(String) + Send + 'static>,
+        mut callback: Box<dyn FnMut(String) -> bool + Send + 'static>,
     ) -> anyhow::Result<()> {
         info!("🚀 [Llama] Engaging Bare-Metal Binary Driver for: {}", model_path);
 
@@ -95,7 +95,10 @@ impl RuntimeBPipeline {
         
         while let Ok(token) = rx.recv() {
             if !token.is_empty() {
-                callback(token);
+                let should_continue = callback(token);
+                if !should_continue {
+                    break;
+                }
             }
         }
         
@@ -119,7 +122,7 @@ impl RuntimeBPipeline {
         _context: &CluaizContext,
         _prompt: &str,
         _max_tokens: usize,
-        _callback: Box<dyn FnMut(String) + Send + 'static>,
+        _callback: Box<dyn FnMut(String) -> bool + Send + 'static>,
     ) -> anyhow::Result<()> {
         Err(anyhow::anyhow!("FFI Driver deprecated. Use Binary Driver."))
     }

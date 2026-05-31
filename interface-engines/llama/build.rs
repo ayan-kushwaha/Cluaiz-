@@ -176,7 +176,8 @@ fn main() {
     config.define("GGML_CUDA",     if feature_cuda     { "ON" } else { "OFF" });
     if feature_cuda {
         config.define("GGML_CUDA_FA_ALL_QUANTS", "ON");
-        println!("cargo:warning=🔥 Cluaiz Sovereign: Forcing FlashAttention across ALL Quantizations!");
+        config.cxxflag("-DGGML_USE_CUDA");
+        println!("cargo:warning=🔥 Cluaiz Sovereign: Forcing FlashAttention across ALL Quantizations and defining GGML_USE_CUDA explicitly!");
     }
     config.define("GGML_METAL",    if feature_metal    { "ON" } else { "OFF" });
     config.define("GGML_VULKAN",   if feature_vulkan   { "ON" } else { "OFF" });
@@ -237,7 +238,10 @@ fn main() {
     // live in their own libs. Without explicit linking → LNK2019.
     // On Linux/macOS, the dynamic linker resolves these at runtime.
     if target_os == "windows" {
-        if feature_cuda   { println!("cargo:rustc-link-lib=static=ggml-cuda"); }
+        if feature_cuda   {
+            println!("cargo:rustc-link-lib=static=ggml-cuda");
+            println!("cargo:rustc-link-arg=/WHOLEARCHIVE:ggml-cuda.lib");
+        }
         if feature_vulkan { 
             println!("cargo:rustc-link-lib=static=ggml-vulkan"); 
             if let Ok(vulkan_sdk) = env::var("VULKAN_SDK") {

@@ -25,7 +25,7 @@ use crate::native::NativeLlama;
 
 #[repr(C)]
 struct CallbackWrapper {
-    callback: extern "C" fn(*const std::os::raw::c_char, *mut std::ffi::c_void),
+    callback: extern "C" fn(*const std::os::raw::c_char, *mut std::ffi::c_void) -> bool,
     user_data: *mut std::ffi::c_void,
 }
 
@@ -209,7 +209,7 @@ impl CluaizInference for RuntimeB {
         &mut self,
         prompt: &str,
         max_tokens: usize,
-        callback: Box<dyn FnMut(String) + Send + 'static>,
+        callback: Box<dyn FnMut(String) -> bool + Send + 'static>,
     ) -> Result<()> {
         let mut callback = callback;
         
@@ -416,18 +416,6 @@ pub extern "C" fn cluaiz_kernel_instantiate(
         let context = CluaizContext::boot(dna, cluaiz_shared::TemplateManager::default());
         let mut engine = Box::new(RuntimeB::new(&path_str, context));
         
-        let mut is_null = true;
-        if let Some(ref native) = engine.native {
-            is_null = native.ctx_ptr.is_null();
-        }
-
-        if is_null {
-            eprintln!("❌ [Llama-Lib] Kernel rejected the weights. This usually happens on unsupported quantizations like Q2_0.");
-            // We can't easily return Err here since it's an AssertUnwindSafe block that is expected to return *mut RuntimeB.
-            // Returning null pointer will naturally fail gracefully back in hub.rs.
-            return std::ptr::null_mut();
-        }
-
         // Inject Booster Configuration from Caller
         if !booster_ptr.is_null() {
             let booster_ctx = unsafe { *booster_ptr };
@@ -487,7 +475,7 @@ pub extern "C" fn cluaiz_kernel_generate_stream(
     engine_ptr: *mut RuntimeB,
     prompt_ptr: *const std::os::raw::c_char,
     max_tokens: usize,
-    callback: extern "C" fn(*const std::os::raw::c_char, *mut std::ffi::c_void),
+    callback: extern "C" fn(*const std::os::raw::c_char, *mut std::ffi::c_void) -> bool,
     user_data: *mut std::ffi::c_void,
 ) -> i32 {
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
@@ -501,12 +489,12 @@ pub extern "C" fn cluaiz_kernel_generate_stream(
         let user_data_ptr = user_data as usize;
         let callback_ptr = callback as usize;
 
-        let rust_callback = Box::new(move |token: String| {
+        let rust_callback = Box::new(move |token: String| -> bool {
             let c_str = std::ffi::CString::new(token).unwrap_or_default();
-            let cb = unsafe { std::mem::transmute::<usize, extern "C" fn(*const std::os::raw::c_char, *mut std::ffi::c_void)>(callback_ptr) };
+            let cb = unsafe { std::mem::transmute::<usize, extern "C" fn(*const std::os::raw::c_char, *mut std::ffi::c_void) -> bool>(callback_ptr) };
             let ud = user_data_ptr as *mut std::ffi::c_void;
             unsafe {
-                (cb)(c_str.as_ptr(), ud);
+                (cb)(c_str.as_ptr(), ud)
             }
         });
 

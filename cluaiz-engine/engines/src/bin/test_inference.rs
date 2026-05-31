@@ -31,6 +31,7 @@ async fn main() -> Result<()> {
         Box::new(|token| {
             print!("{}", token);
             std::io::Write::flush(&mut std::io::stdout()).unwrap();
+            true
         }),
     )?;
 

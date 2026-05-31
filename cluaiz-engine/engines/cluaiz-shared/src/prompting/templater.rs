@@ -67,4 +67,18 @@ impl TemplateManager {
 
         final_template.replace("{{prompt}}", prompt)
     }
+
+    /// Forms a strict mid-conversation turn for Pivot/Interrupt scenarios.
+    /// This ensures we close the current assistant turn and start a proper user turn.
+    pub fn format_turn(&self, dna: &crate::metadata::dna::StructuralDNA, prompt: &str) -> String {
+        let arch = dna.model_identity.to_lowercase();
+        if arch.contains("llama") {
+            format!("<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n", prompt)
+        } else if arch.contains("gemma") {
+            format!("<end_of_turn>\n<start_of_turn>user\n{}<end_of_turn>\n<start_of_turn>model\n", prompt)
+        } else {
+            // Qwen / ChatML default
+            format!("<|im_end|>\n<|im_start|>user\n{}<|im_end|>\n<|im_start|>assistant\n", prompt)
+        }
+    }
 }

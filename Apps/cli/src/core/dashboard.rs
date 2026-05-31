@@ -28,6 +28,11 @@ impl DashboardEngine {
         // ══ 🔒 Cluaiz RENDER CONFIG ══
         let config = RenderConfig::default();
 
+        // 🛑 GRACEFUL INTERRUPT HANDLER (Sovereign Pivot Control)
+        let _ = ctrlc::set_handler(move || {
+            cluaiz_shared::GLOBAL_CANCEL_SIGNAL.store(true, Ordering::SeqCst);
+        });
+
         // ── 🧬 ATOMIC Core DISCOVERY (Cluaiz Startup Scan) ──
         if state.sorted_models.is_empty() {
             state.sorted_models = engines::CoreRoster::get_recommendations(
@@ -38,235 +43,16 @@ impl DashboardEngine {
 
         // ── 📡 Cluaiz TELEMETRY IGNITION (Ghost Observer Singleton) ──
         let state_pulse = cluaiz_shared::hardware::telemetry::get_pulse();
-        let _pulse_ref = state_pulse.clone();
         let app_start_time = std::time::Instant::now();
         let last_inference_duration = Arc::new(std::sync::atomic::AtomicU64::new(0));
         let last_ttft = Arc::new(std::sync::atomic::AtomicU64::new(0));
         let peak_power = Arc::new(std::sync::atomic::AtomicU64::new(0));
         
-        let duration_ref = last_inference_duration.clone();
         let ttft_ref = last_ttft.clone();
         let pwr_ref = peak_power.clone();
-
-        // 📡 Cluaiz PULSE CONTROL: Visibility gate to prevent chat history bleeding
-        let show_dashboard = Arc::new(AtomicBool::new(false));
-        let _show_ref = show_dashboard.clone();
  
         let engine_ref = state.Core_engine.clone();
  
-        let tokens_generated = Arc::new(std::sync::atomic::AtomicUsize::new(0));
-        let tps_ref = Arc::new(std::sync::atomic::AtomicU64::new(0)); 
-        
-        let pulse_worker_ref = state_pulse.clone();
-        let show_worker_ref = show_dashboard.clone();
-        let tokens_worker_ref = tokens_generated.clone();
-        let tps_worker_ref = tps_ref.clone();
-        let duration_worker_ref = last_inference_duration.clone();
-        let ttft_worker_ref = last_ttft.clone();
-        let pwr_worker_ref = peak_power.clone();
-
-        std::thread::spawn(move || {
-            let engine = engine_ref; 
-            use crossterm::{
-                cursor, execute,
-                style::{self, Stylize},
-                terminal,
-            };
-            
-            let pulse_ref = pulse_worker_ref;
-            let show_ref = show_worker_ref;
-            let tokens_ref = tokens_worker_ref;
-            let tps_ref = tps_worker_ref;
-            let mut stdout = std::io::stdout();
-            // Guard variables to avoid redundant redraws
-            let mut prev_tokens: usize = 0;
-            let mut prev_tps_bits: u64 = 0;
-            let mut prev_peak_bits: u64 = 0;
-            loop {
-                // 🛑 ATOMIC GATE: Skip rendering during bot inference phases
-                if !show_ref.load(std::sync::atomic::Ordering::SeqCst) {
-                    // Reset guard state so next activation forces a render
-                    prev_tokens = 0;
-                    prev_tps_bits = 0;
-                    prev_peak_bits = 0;
-                    std::thread::sleep(std::time::Duration::from_millis(50));
-                    continue;
-                }
-                // 🧪 MICRO-LOCKING: Copy data and drop lock immediately to unblock background updates
-                let (
-                    cpu,
-                    cpu_temp,
-                    _cpu_ghz,
-                    ram_used,
-                    ram_pct,
-                    _vram_used,
-                    _vram_total,
-                    vram_pct,
-                    gpu_temp,
-                    _tps,
-                ) = {
-                    let pulse_lock = pulse_ref.pulse.read().unwrap();
-                    let primary_gpu_temp = pulse_lock.gpus.get(0).map(|g| g.temperature_c).unwrap_or(0.0);
-                    let current_pwr = pulse_lock.gpus.get(0).map(|g| g.power_draw_watts).unwrap_or(0.0);
-                    
-                    // 🔋 Peak Power Tracking
-                    let old_peak_bits = pwr_worker_ref.load(Ordering::SeqCst);
-                    let old_peak = f64::from_bits(old_peak_bits);
-                    if (current_pwr as f64) > old_peak {
-                        pwr_worker_ref.store((current_pwr as f64).to_bits(), Ordering::SeqCst);
-                    }
-
-                    (
-                        pulse_lock.cpu.utilization_pct,
-                        pulse_lock.cpu.temperature_c,
-                        pulse_lock.cpu.clock_ghz,
-                        pulse_lock.ram.used_gb,
-                        pulse_lock.ram.utilization_pct,
-                        pulse_lock.vram_used_gb,
-                        pulse_lock.vram_total_gb,
-                        pulse_lock.vram_pressure_pct,
-                        primary_gpu_temp,
-                        {
-                            let current_count = pulse_ref.tps_counter.load(Ordering::SeqCst);
-                            let last_count = tokens_ref.swap(current_count, Ordering::SeqCst);
-                            let diff = current_count.saturating_sub(last_count);
-                            diff as f64 * 6.66 // Adjusted for 150ms interval
-                        },
-                    )
-                };
-
-                let uptime = app_start_time.elapsed().as_millis() / 500;
-                let inf_duration_bits = duration_worker_ref.load(Ordering::SeqCst);
-                let inf_duration = f64::from_bits(inf_duration_bits);
-                
-                let ttft_bits = ttft_worker_ref.load(Ordering::SeqCst);
-                let ttft = f64::from_bits(ttft_bits);
-
-                let peak_pwr_bits = pwr_worker_ref.load(Ordering::SeqCst);
-                let peak_pwr = f64::from_bits(peak_pwr_bits);
-                let is_blink_on = uptime % 2 == 0;
-
-                                // If nothing changed since last draw, skip rendering to avoid flicker
-                let cur_tokens = pulse_ref.tps_counter.load(Ordering::SeqCst);
-                let cur_tps_bits = tps_ref.load(Ordering::SeqCst);
-                let cur_peak_bits = pwr_worker_ref.load(Ordering::SeqCst);
-                if cur_tokens == prev_tokens && cur_tps_bits == prev_tps_bits && cur_peak_bits == prev_peak_bits {
-                    // No metric update – sleep and continue
-                    std::thread::sleep(std::time::Duration::from_millis(150));
-                    continue;
-                }
-                // Update guard state
-                prev_tokens = cur_tokens;
-                prev_tps_bits = cur_tps_bits;
-                prev_peak_bits = cur_peak_bits;
-                
-                // 🧠 Neural State Handshake
-                let is_loaded = engine.is_loaded.load(std::sync::atomic::Ordering::SeqCst);
-                let loading_err = engine.loading_error.blocking_lock();
-                let (neural_label, neural_color): (&str, style::Color) = if is_loaded {
-                    ("LIVE", style::Color::Green)
-                } else if loading_err.is_some() {
-                    ("LINK FAIL", style::Color::Red)
-                } else {
-                    ("", style::Color::Black) // 🧼 SILENCE: Remove LOADING... text
-                };
-
-                let status_dot = if is_blink_on { "●" } else { " " };
-                let _cpu_color = if cpu < 50.0 { style::Color::Green } else if cpu < 80.0 { style::Color::Yellow } else { style::Color::Red };
-                let _gpu_color = if (vram_pct as f32) < 50.0 { style::Color::Green } else if (vram_pct as f32) < 80.0 { style::Color::Yellow } else { style::Color::Red };
-                let _ram_color = if ram_pct < 50.0 { style::Color::Green } else if ram_pct < 80.0 { style::Color::Yellow } else { style::Color::Red };
-                let status_color = if cpu < 50.0 && (vram_pct as f32) < 50.0 { style::Color::Green } else if cpu < 80.0 || (vram_pct as f32) < 80.0 { style::Color::Yellow } else { style::Color::Red };
-
-                // Surgical Overwrite: Force-inject metrics into the ABSOLUTE BOTTOM (rows-1)
-                if show_ref.load(Ordering::SeqCst) {
-                    if let Ok((_cur_x, mut cur_y)) = cursor::position() {
-                        let (cols, rows) = terminal::size().unwrap_or((80, 24));
-                        
-                        // 🚀 PROACTIVE SCROLL: If prompt is at the very bottom, push it up to make room for footer
-                        if cur_y >= rows - 1 {
-                            let _ = execute!(stdout, terminal::ScrollUp(1), cursor::MoveUp(1));
-                            cur_y -= 1; 
-                        }
-
-                        // ── 🎨 RESPONSIVE TELEMETRY ENGINE ──
-                        let is_compact = cols < 120;
-                        let is_minimal = cols < 85;
-
-                        let total_tokens = pulse_ref.tps_counter.load(Ordering::SeqCst);
-                        let old_tps_bits = tps_ref.load(Ordering::SeqCst);
-                        let last_tps = f64::from_bits(old_tps_bits);
-
-                        let _ = execute!(
-                            stdout,
-                            cursor::SavePosition,
-                            cursor::MoveTo(0, rows - 1),
-                            terminal::Clear(terminal::ClearType::CurrentLine),
-                            style::Print(Stylize::bold(Stylize::dim("[ "))),
-                            style::Print(Stylize::bold(status_dot.with(status_color))),
-                        );
-
-                        if !neural_label.is_empty() && !is_minimal {
-                            let _ = execute!(stdout, style::Print(format!(" {} │ ", neural_label).with(neural_color).bold()));
-                        }
-
-                        if is_compact {
-                            // Shortened version but STILL has all data to prevent terminal wrap loop!
-                            let _ = execute!(stdout, style::Print(format!(" CPU:{:.0}% │ GPU:{:.0}% │ RAM:{:.0}%", cpu, vram_pct, ram_pct).dim()));
-                            if total_tokens > 0 {
-                                let _ = execute!(stdout, style::Print(format!(" │ TPS:{:.1} │ TKN:{} │ TIM:{:.0}s │ PWR:{:.0}W", last_tps, total_tokens, inf_duration, peak_pwr).dim().bold()));
-                            }
-                        } else {
-                            // Full expanded version
-                            let _ = execute!(stdout, style::Print(format!(" CPU: {:.0}°C ({:.0}%) │ GPU: {:.0}°C ({:.0}%) │ RAM: {:.1}GB ({:.0}%)", cpu_temp, cpu, gpu_temp, vram_pct, ram_used, ram_pct).dim()));
-                            if total_tokens > 0 {
-                                let _ = execute!(stdout, style::Print(format!(" │ TPS: {:.1} │ TKN: {} │ TTFT: {:.2}s │ TIM: {:.1}s │ PWR: {:.0}W", last_tps, total_tokens, ttft, inf_duration, peak_pwr).dim().bold()));
-                            }
-                        }
-
-                        let _ = execute!(
-                            stdout,
-                            style::Print(Stylize::bold(Stylize::dim(" ]"))),
-                            cursor::RestorePosition
-                        );
-                        let _ = stdout.flush();
-                    }
-                } else {
-                    // 🛑 SILENCE: Clear the absolute bottom when deactivated
-                    let (_cols, rows) = terminal::size().unwrap_or((80, 24));
-                    let _ = execute!(
-                        stdout,
-                        cursor::SavePosition,
-                        cursor::MoveTo(0, rows - 1),
-                        terminal::Clear(terminal::ClearType::CurrentLine),
-                        cursor::RestorePosition
-                    );
-                    let _ = stdout.flush();
-                }
-
-                // 🏎️ TPS CALCULATION: Moving Average
-                let current_count = pulse_ref.tps_counter.load(Ordering::SeqCst);
-                let last_count = tokens_ref.load(Ordering::SeqCst);
-                let diff = current_count.saturating_sub(last_count);
-                tokens_ref.store(current_count, Ordering::SeqCst);
-
-                let current_tps = diff as f64 / 0.150;
-                let old_tps_bits = tps_ref.load(Ordering::SeqCst);
-                let old_tps = f64::from_bits(old_tps_bits);
-                
-                // 🛑 PERSISTENCE GUARD: If main loop has frozen the TPS (avg_tps), don't decay it to 0.0
-                let smoothed_tps = if current_tps > 0.0 {
-                    (old_tps * 0.7) + (current_tps * 0.3)
-                } else if current_count > 0 && old_tps > 0.0 {
-                    old_tps // Hold the frozen record
-                } else {
-                    0.0
-                };
-
-                tps_ref.store(smoothed_tps.to_bits(), Ordering::SeqCst);
-
-                std::thread::sleep(std::time::Duration::from_millis(150));
-            }
-        });
         // 🚀 CLUAIZ AUTO-BOOT: Activate the latest engine silently only if no model is loaded
         let is_engine_loaded = state.Core_engine.is_loaded.load(std::sync::atomic::Ordering::SeqCst);
         if state._active_model_id.is_none() && !is_engine_loaded {
@@ -281,26 +67,42 @@ impl DashboardEngine {
 
         let mut last_booster_modified = std::fs::metadata(dirs::home_dir().unwrap_or_default().join(".cluaiz").join("engine").join("system_booster.json")).and_then(|m| m.modified()).ok();
 
+        // Track global think state across pivots
+        let global_think_state = Arc::new(AtomicBool::new(false));
+
         loop {
-            show_dashboard.store(false, std::sync::atomic::Ordering::SeqCst);
             
-            let input = Text::new(">")
-                .with_placeholder("Type your message or @ & / for menu")
-                .with_render_config(config.clone())
-                .prompt();
-
-            // 🛑 DEACTIVATE: Hide telemetry immediately after input to keep the log clean
-            show_dashboard.store(false, std::sync::atomic::Ordering::SeqCst);
-            
-            let (_cols, rows) = crossterm::terminal::size().unwrap_or((80, 24));
-            let mut stdout = std::io::stdout();
-            let _ = execute!(stdout, cursor::SavePosition, cursor::MoveTo(0, rows - 1), crossterm::terminal::Clear(crossterm::terminal::ClearType::CurrentLine), cursor::RestorePosition);
-            let _ = stdout.flush();
-
-            if input.is_ok() {
-                print!("\x1B[1A\x1B[2K");
-                stdout.flush()?;
+            let mut auto_input = None;
+            if let Some(first) = state.chat_paste_buffer.first() {
+                if first.starts_with("[PIVOT_CONTINUE]") {
+                    auto_input = Some(state.chat_paste_buffer.remove(0));
+                }
             }
+
+            let input = if let Some(val) = auto_input {
+                Ok(val)
+            } else {
+                // 🧹 Flush stdin buffer to clear any queued terminal input or echoed characters
+                while let Ok(true) = crossterm::event::poll(std::time::Duration::from_millis(0)) {
+                    let _ = crossterm::event::read();
+                }
+
+                let res = Text::new(">")
+                    .with_placeholder("Type your message or @ & / for menu")
+                    .with_render_config(config.clone())
+                    .prompt();
+                
+                let (_cols, rows) = crossterm::terminal::size().unwrap_or((80, 24));
+                let mut stdout = std::io::stdout();
+                let _ = execute!(stdout, cursor::SavePosition, cursor::MoveTo(0, rows - 1), crossterm::terminal::Clear(crossterm::terminal::ClearType::CurrentLine), cursor::RestorePosition);
+                let _ = stdout.flush();
+
+                if res.is_ok() {
+                    print!("\x1B[1A\x1B[2K");
+                    let _ = stdout.flush();
+                }
+                res
+            };
 
             let now = std::time::Instant::now();
             let delta = now.duration_since(state.last_input_time).as_millis();
@@ -330,7 +132,7 @@ impl DashboardEngine {
                     };
 
                     print!("\x1B[1A\x1B[2K");
-                    stdout.flush()?;
+                    std::io::stdout().flush()?;
 
                     if final_message.starts_with('/') {
                         Self::handle_command(state, tx, mode, &final_message[1..])?;
@@ -362,7 +164,7 @@ impl DashboardEngine {
                         let _first_token = true;
                         // 🧠 Think-mode state machine
                         let in_think = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
-                        let _in_think_cb = in_think.clone();
+                        let in_think_cb = in_think.clone();
                         // 🛑 EOS detection: stops display when model generates stop token
                         let reached_eos = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
                         let eos_cb = reached_eos.clone();
@@ -409,19 +211,18 @@ impl DashboardEngine {
                             }
                         }
 
+                        // Reset cancellation signal before starting
+                        cluaiz_shared::GLOBAL_CANCEL_SIGNAL.store(false, Ordering::SeqCst);
+
                         let stream_result = tokio::task::block_in_place(|| {
                             let mut lock = state.Core_engine.router.blocking_lock();
                             
                             // 🧬 Dynamic Config Fetch: Zero Hardcoding
                             let stop_seqs = lock.get_active_dna().map(|d| d.stop_sequences.clone()).unwrap_or_default();
                             
-                            // 🎭 Orchestration: Format prompt based on model DNA
-                            let formatted_prompt = if let Some(ref dna) = lock.active_dna {
-                                let tm = cluaiz_shared::TemplateManager::default();
-                                tm.format(dna, &final_message)
-                            } else {
-                                final_message.clone()
-                            };
+                            // 🎭 Orchestration: native.rs handles the templating now.
+                            // We just pass the final message directly.
+                            let formatted_prompt = final_message.clone();
 
                             // 🧬 DYNAMIC TOKEN ALLOCATION: Calculate space based on DNA Context Window
                             let ctx_window = lock.get_active_dna().and_then(|d| d.max_context_length).unwrap_or(2048);
@@ -451,14 +252,24 @@ impl DashboardEngine {
                                 );
                             }
                             
+                            let prompt_starts_in_think = formatted_prompt.contains("<think>") && !formatted_prompt.contains("</think>");
+                            let is_pivot = formatted_prompt.starts_with("[PIVOT_CONTINUE]");
+                            
+                            let booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+                            let suppress_thinking = booster.think_mode == cluaiz_shared::hardware::schema::booster::FeatureState::Off;
+                            
                             let mut first_token = true;
                             let pulse_clone = state_pulse.clone(); // 🧬 Clone for closure move
+                            let global_think_cb = global_think_state.clone();
+                            
                             let result = lock.generate_stream(
                                 &formatted_prompt, // 🚀 Use formatted_prompt here!
                                 max_t,
-                                Box::new(move |token: String| {
-                                    // 🛑 Stop if already past EOS
-                                    if eos_cb.load(Ordering::SeqCst) { return; }
+                                Box::new(move |token: String| -> bool {
+                                    // 🛑 Stop if already past EOS or interrupted
+                                    if eos_cb.load(Ordering::SeqCst) || cluaiz_shared::GLOBAL_CANCEL_SIGNAL.load(Ordering::SeqCst) { 
+                                        return false; 
+                                    }
 
                                     // 🛑 Deep-Suffix Scan
                                     if let Ok(mut res) = full_clone.lock() {
@@ -468,7 +279,7 @@ impl DashboardEngine {
                                             !clean_s.is_empty() && clean_res.ends_with(&clean_s)
                                         }) {
                                             eos_cb.store(true, Ordering::SeqCst);
-                                            return;
+                                            return false;
                                         }
 
                                         // 🤖 First-Token Handshake
@@ -478,23 +289,72 @@ impl DashboardEngine {
 
                                             let mut out = std::io::stdout();
                                             let _ = out.write_all(format!("\r\x1B[2K\x1B[0m{} ", crossterm::style::Stylize::magenta("🤖")).as_bytes());
+                                            
+                                            // DYNAMIC THINK INJECTION
+                                            let should_start_in_think = if is_pivot {
+                                                global_think_cb.load(Ordering::SeqCst) || prompt_starts_in_think
+                                            } else {
+                                                true // Default to true for new prompts (forced think mode)
+                                            };
+
+                                            if !suppress_thinking && should_start_in_think { 
+                                                in_think_cb.store(true, Ordering::SeqCst);
+                                                global_think_cb.store(true, Ordering::SeqCst);
+                                                let mut out = std::io::stdout();
+                                                let _ = out.write_all(b"\n\x1B[90m> \x1B[3m"); // Gray italics
+                                                let _ = out.flush();
+                                            }
+                                            
                                             let _ = out.flush();
                                             first_token = false;
                                         }
 
-                                        // Normal token → Display
-                                        let current_full = res.clone() + &token;
-                                        if current_full.contains("<think>") && !current_full.contains("</think>") {
-                                             print!("\x1B[90m{}\x1B[0m", token);
-                                        } else if token.contains("</think>") {
-                                             print!("\x1B[90m{}\x1B[0m", token);
-                                        } else {
-                                             print!("{}", token);
+                                        // Filter tags and update state
+                                        let mut display_token = token.clone();
+                                        
+                                        for tag in &["<turn|>", "<|im_end|>", "<end_of_turn>", "<|im_start|>", "<start_of_turn>"] {
+                                            display_token = display_token.replace(tag, "");
                                         }
+
+                                        for tag in &["<think>", "<thought>", "<|thought_start|>"] {
+                                            if display_token.contains(tag) {
+                                                in_think_cb.store(true, Ordering::SeqCst);
+                                                global_think_cb.store(true, Ordering::SeqCst);
+                                                display_token = display_token.replace(tag, "");
+                                            }
+                                        }
+                                        
+                                        let mut just_finished_thinking = false;
+                                        for tag in &["</think>", "</thought>", "<|thought_end|>", "<channel|>"] {
+                                            if display_token.contains(tag) {
+                                                in_think_cb.store(false, Ordering::SeqCst);
+                                                global_think_cb.store(false, Ordering::SeqCst);
+                                                display_token = display_token.replace(tag, "");
+                                                just_finished_thinking = true;
+                                            }
+                                        }
+
+                                        if just_finished_thinking {
+                                            print!("\x1B[0m\n\n");
+                                        }
+
+                                        let currently_thinking = in_think_cb.load(Ordering::SeqCst);
+                                        
+                                        if !display_token.is_empty() {
+                                            if currently_thinking && !suppress_thinking {
+                                                 print!("\x1B[90m{}\x1B[0m", display_token);
+                                            } else {
+                                                 print!("{}", display_token);
+                                            }
+                                        } else if just_finished_thinking {
+                                            print!("\x1B[0m"); // Even if display token is empty, we must reset
+                                        }
+
                                         let _ = std::io::stdout().flush();
-                                        res.push_str(&token);
+                                        res.push_str(&token); // Keep original token with tags in internal state
                                         pulse_clone.tps_counter.fetch_add(1, Ordering::SeqCst);
                                     }
+                                    true
                                 }),
                             );
                             
@@ -525,9 +385,7 @@ impl DashboardEngine {
                         let tokens_in_this_run = final_tokens.saturating_sub(initial_tokens);
                         let avg_tps = if duration > 0.0 { tokens_in_this_run as f64 / duration } else { 0.0 };
 
-                        // 📈 FREEZE FINAL RECORD IN DASHBOARD BAR
-                        tps_ref.store(avg_tps.to_bits(), Ordering::SeqCst);
-                        duration_ref.store(duration.to_bits(), Ordering::SeqCst);
+
 
                         let response = if let Err(e) = stream_result {
                             use crossterm::style::Stylize;
@@ -535,7 +393,11 @@ impl DashboardEngine {
                             println!("{}", err_msg);
                             err_msg
                         } else {
-                            let res = full_response.lock().unwrap().clone();
+                            let res = if let Ok(lock) = full_response.lock() {
+                                lock.clone()
+                            } else {
+                                String::new()
+                            };
                             if res.is_empty() {
                                 use crossterm::style::Stylize;
                                 let empty_msg =
@@ -552,8 +414,23 @@ impl DashboardEngine {
                             response.to_string(),
                         ));
 
-                        // 🚀 REVEAL DASHBOARD: Manifest the record after completion
-                        show_dashboard.store(true, Ordering::SeqCst);
+                        if cluaiz_shared::GLOBAL_CANCEL_SIGNAL.load(Ordering::SeqCst) {
+                            println!();
+                            use crossterm::style::Stylize;
+                            println!("{} {}", "⏸️  Paused:".with(crossterm::style::Color::Yellow).bold(), "Engine stopped mid-generation. Context preserved in VRAM.".with(crossterm::style::Color::DarkGrey));
+                            let pivot_input = Text::new("Enter mid-way instruction (or press Enter to return):")
+                                .with_render_config(config.clone())
+                                .prompt();
+                            
+                            if let Ok(instruction) = pivot_input {
+                                if !instruction.trim().is_empty() {
+                                    // Inject pivot into state to be processed in the next loop
+                                    state.chat_paste_buffer.push(format!("[PIVOT_CONTINUE] {}", instruction.trim()));
+                                }
+                            }
+                        }
+
+
                         
                         let ttft_secs = f64::from_bits(ttft_ref.load(Ordering::SeqCst));
                         let registry = cluaiz_shared::hardware::governor::HardwareGovernor::load_process_registry();
@@ -1044,6 +921,14 @@ impl DashboardEngine {
 
                 let result = tokio::task::block_in_place(|| {
                     let handle = tokio::runtime::Handle::current();
+                    
+                    // 🛑 SURGICAL FIX: Destroy old router to free VRAM BEFORE loading new model!
+                    {
+                        let mut lock = state.Core_engine.router.blocking_lock();
+                        *lock = engines::CoreRouter::new();
+                    }
+                    state.Core_engine.is_loaded.store(false, std::sync::atomic::Ordering::SeqCst);
+                    
                     match handle.block_on(engines::CoreRouter::load_model(
                         path,
                         runtime.clone(),
@@ -1051,6 +936,7 @@ impl DashboardEngine {
                         Ok(router) => {
                             let mut lock = state.Core_engine.router.blocking_lock();
                             *lock = router;
+                            state.Core_engine.is_loaded.store(true, std::sync::atomic::Ordering::SeqCst);
                             Ok(())
                         }
                         Err(e) => {
@@ -1068,6 +954,7 @@ impl DashboardEngine {
                                     .map(|router| {
                                         let mut lock = state.Core_engine.router.blocking_lock();
                                         *lock = router;
+                                        state.Core_engine.is_loaded.store(true, std::sync::atomic::Ordering::SeqCst);
                                     })
                             } else {
                                 Err(e)
