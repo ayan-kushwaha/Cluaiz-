@@ -2,7 +2,7 @@
   <img src="assets/logo.png" width="300" alt="Cluaiz Logo">
 </p>
 
-<h1 align="center">Cluaiz Neural Ecosystem</h1>
+<h1 align="center">Cluaiz: Rust Orchestrator for Local LLMs</h1>
 
 <p align="center">
   <b>High-Performance Rust Runtime & Orchestrator for Local LLMs</b><br>
@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Status-Industrial_Alpha-orange?style=for-the-badge" alt="Status">
+  <img src="https://img.shields.io/badge/Status-Alpha-orange?style=for-the-badge" alt="Status">
   <img src="https://img.shields.io/badge/Logic-Native_FFI-green?style=for-the-badge" alt="Logic">
   <img src="https://img.shields.io/badge/Architecture-Modular-blue?style=for-the-badge" alt="Architecture">
   <img src="https://img.shields.io/badge/Security-Sandboxed-red?style=for-the-badge" alt="Security">
@@ -22,7 +22,7 @@
 
 > [!IMPORTANT]
 > **Current Phase**: **Industrial Alpha (Research Phase)**.
-> Cluaiz is an experimental neural infrastructure. While the core architecture is build-stable, hardware-constrained guarantees and specialized ternary kernels are undergoing rigorous validation.
+> Cluaiz is an experimental Rust infrastructure for LLM orchestration. While the core architecture is build-stable, hardware-constrained guarantees and specialized ternary kernels are undergoing rigorous validation.
 
 ### **Current Capabilities**
 - ✅ **Shared-Memory Signaling**: Sub-microsecond path for IPC between application and engine.
@@ -37,9 +37,19 @@
 
 ---
 
-## 🧭 **What is Cluaiz? (The Infrastructure Layer)**
+## 📖 **About Cluaiz**
 
-Cluaiz is a **lightweight local inference runtime written in Rust** that manages model orchestration, memory scheduling, and native FFI bindings built on top of llama.cpp primitives. It is **NOT** an AI model — it is the orchestration layer that sits between your application and the llama.cpp inference kernel.
+**An open-source, high-performance local AI inference engine.**
+
+Cluaiz is a lightweight orchestration layer written in Rust, built on top of the robust `llama.cpp` kernel. It is designed to bridge the gap between high-level applications and low-level hardware execution, providing developers with a streamlined, memory-efficient way to run Large Language Models (LLMs) locally.
+
+### **Our Motive & Objective**
+The primary goal of Cluaiz is to democratize local AI by making it accessible and stable on everyday hardware. We aim to:
+- **Maximize Hardware Efficiency**: Squeeze the best possible performance out of constrained environments (like 4GB VRAM GPUs) using smart, real-time memory arbiters.
+- **Provide Seamless Integration**: Offer a simple, modular architecture so developers can easily integrate local AI into their existing applications via our C-API or Rust SDK.
+- **Support Modern Architectures**: Ensure out-of-the-box compatibility with the latest AI advancements, such as BitNet (1.58-bit ternary models) and standard GGUF formats.
+
+Cluaiz is **NOT** a new AI model, nor a new low-level math kernel—it is a specialized, lightweight engine that sits on top of existing industry-standard inference tools to manage resources intelligently and efficiently.
 
 | Component     | Role         | Implementation                   |
 | :------------ | :----------- | :------------------------------- |
@@ -52,7 +62,7 @@ Cluaiz is a **lightweight local inference runtime written in Rust** that manages
 
 ## 🏗️ **Design Principles**
 
-- **Minimize Abstraction Overhead**: Bypassing heavy middleware (Docker, Python, Node) to keep the runtime footprint small and predictable.
+- **Minimize Abstraction Overhead**: Built directly in Rust to keep the runtime footprint small and predictable.
 - **Modular Runtime**: Decoupled engine and interface layers for heterogeneous hardware compatibility.
 - **Hardware-Aware Execution**: Dynamic kernel selection based on real-time silicon fingerprinting.
 - **Reproducible Binary Routing**: Ensuring consistent inference results across platforms via CluaizDNA.
@@ -121,6 +131,16 @@ graph TD
 
 ## 🛰️ **Routing & Steering**
 
+### ⚙️ **The Control Center: `system_booster.json`**
+Cluaiz relies on `~/.cluaiz/engine/system_booster.json` as its primary configuration gateway, acting as the bridge between user intent and the native VRAM Arbiter. 
+This is not just a UI preference file—it dynamically adjusts Rust-level execution logic:
+
+- **`mode_run`**: Defines the active VRAM allocation strategy. For example, `UltraMaxBoost` drops the safe VRAM allocation margin down to `1%` (or an absolute 250MB floor) to maximize context length, while `Balance` mode retains larger margins (~15%) for multitasking stability.
+- **`force_vram_reclaim`**: A critical override that enforces an ultra-tight `0.5%` VRAM safety margin. When enabled, the VRAM Arbiter performs live silicon probes (`live_vram_probe`) instead of theoretical math, ensuring absolute maximum KV-cache allocation without hitting OS memory spill limits.
+- **`flash_attention` & `dflash`**: Directs the engine to pass native FlashAttention kernel flags into the FFI bindings during model load.
+- **`think_mode`**: Intercepts output at the Rust orchestration layer. When `"On"`, the engine dynamically watches the token stream for `<think>` boundaries and applies native formatting before stdout.
+- **`kv_cache_quantization`**: Modifies the per-element byte allocation in the Arbiter's `SOVEREIGN MATH` formula, allowing the engine to calculate and fit significantly larger context windows on memory-constrained GPUs (like 4GB).
+
 ### **AtmaSteer: Token Masking Protocol**
 Enforces structural output (JSON/Schema) through **constrained decoding**. By applying token-level masking during the sampling phase, Cluaiz prevents structural hallucinations at the hardware layer.
 
@@ -134,13 +154,13 @@ Maps inference tasks to the appropriate kernel backend based on hardware availab
 ### **Performance Snapshot**
 *Measured on AMD Ryzen 7 7435HS + NVIDIA RTX 3050.*
 
-| Metric                | Cluaiz (Alpha)      | Standard Middleware |
-| :-------------------- | :------------------ | :------------------ |
-| **Signaling Latency** | **Sub-microsecond** | ~20ms - 50ms        |
-| **Memory Footprint**  | **~25MB**           | ~800MB (Docker)     |
-| **Startup Time**      | **~150ms**          | ~2.5s - 5s          |
+| Metric                | Cluaiz (Alpha)      |
+| :-------------------- | :------------------ |
+| **Signaling Latency** | **Sub-microsecond** |
+| **Memory Footprint**  | **~25MB**           |
+| **Startup Time**      | **~150ms**          |
 
-> **Real-world benchmarks are the only honest comparison.** See the Sovereign Benchmark table below for measured TPS, VRAM usage, and power draw on actual hardware.
+> **Real-world benchmarks are the only honest comparison.** See the Hardware Benchmark table below for measured TPS, VRAM usage, and power draw on actual hardware.
 
 ---
 
@@ -156,7 +176,7 @@ Maps inference tasks to the appropriate kernel backend based on hardware availab
 
 ```text
 /Apps
-  /cli            # Industrial CLI (User Interface)
+  /cli            # CLI (User Interface)
 /cluaiz-engine
   /api            # Low-latency C-API Handshake
   /engines        # Core Orchestration Runtime (CURE)
@@ -172,7 +192,7 @@ Maps inference tasks to the appropriate kernel backend based on hardware availab
 
 ## 🚀 **Roadmap & Versioning**
 
-- **v0.1-dev-release (Alpha)** (Current): Core shared-memory signaling, **Dynamic DNA Negotiation**, Hardware-Aware Arbiter, and **Thinking Mode** optimized runtime.
+- **v0.1-dev-release (Alpha)** (Current): Core shared-memory signaling, **Dynamic Model Mapping**, Hardware-Aware Arbiter, and **Thinking Mode** optimized runtime.
 - **v0.2 Runtime Probe**: AtmaSteer v2 integration and automated kernel provisioning.
 - **v0.3 Distributed Scheduler**: Distributed inference across local nodes (P2P).
 
@@ -202,26 +222,30 @@ Cluaiz uses a dynamic VRAM Arbiter to negotiate memory. If the engine pushes too
 ---
 
 ## 🕹️ **Quick Start Manual**
-
+48.6	
 ### 📊 **Local Hardware Benchmark**
 
-All tests performed on an **RTX 3050 (Laptop)** using the prompt: *"What is Local AI and why is it important?"*
+For a fully exhaustive, automated hardware-wise benchmark across all models (where BitNet architectures achieve up to ~50 TPS with 0.05s TTFT), see the [Detailed Hardware Benchmark Report](test/benchmark/README.mdx).
+
+*Quick manual snapshot measured on an **RTX 3050 (Laptop)**:*
 
 | **Metric**         | **Bonsai1 8B** | **Gemma 4B** | **Gemma 2B**  | **Qwen 4B**  | **Qwen 2B**  |
 | :----------------- | :------------- | :----------- | :------------ | :----------- | :----------- |
-| **Speed (TPS)**    | 48.6           | TBD          | 31.6          | TBD          | TBD          |
-| **Tokens Out**     | 1911           | TBD          | 1465          | TBD          | TBD          |
-| **Reasoning Mode** | Deep Thinking  | Standard     | Deep Thinking | Standard     | Standard     |
-| **Memory (VRAM)**  | 2.82 GB        | TBD          | 1.90 GB       | TBD          | TBD          |
-| **Power Used**     | ~52W           | TBD          | ~31W          | TBD          | TBD          |
+| **Speed (TPS)**    | 48.6           | 19.4         | 31.6          | 21.2         | 32.7         |
+| **TTFT (s)**       | 0.05s          | 0.08s        | 0.06s         | 0.08s        | 0.05s        |
+| **Total Time (s)** | ~39.3s         | ~53.5s       | ~46.4s        | ~90.2s       | ~62.6s       |
+| **Tokens Out**     | 1911           | 1038         | 1465          | 1913         | 2048         |
+| **Reasoning Mode** | Deep Thinking  | Deep Thinking| Deep Thinking | Deep Thinking| Deep Thinking|
+| **Memory (VRAM)**  | 2.82 GB        | ~2.5 GB      | 1.90 GB       | ~2.6 GB      | ~1.8 GB      |
+| **Power Used**     | ~52W           | ~45W         | ~31W          | ~45W         | ~35W         |
 | **Privacy**        | 100% Offline   | 100% Offline | 100% Offline  | 100% Offline | 100% Offline |
 
 > [!NOTE]
-> Cluaiz bypasses heavy Python/Docker environments to provide a **lightweight Rust runtime for llama.cpp**, minimizing system RAM overhead and preventing OOM crashes on 4GB VRAM setups. Inference is handled by llama.cpp under the hood — Cluaiz's value is in smarter orchestration, not a different kernel.
+> Cluaiz provides a **lightweight Rust runtime for llama.cpp**, designed to minimize system RAM overhead and prevent OOM crashes on 4GB VRAM setups. Inference is handled by llama.cpp under the hood — Cluaiz's value is in smarter orchestration.
 
 🚀 Remote Power-On Installation (Recommended)
 
-Get the entire sovereign neural runtime compiled, linked, and calibrated natively with a single command:
+Get the entire Cluaiz runtime compiled, linked, and calibrated natively with a single command:
 
 #### **Windows (PowerShell)**:
 ```powershell
@@ -244,7 +268,7 @@ If you prefer to compile from source, you can build the entire workspace nativel
 $ git clone https://github.com/cluaiz/cluaiz.git
 $ cd cluaiz
 
-# 2. Build the entire Cluaiz Neural Ecosystem
+# 2. Build the entire Cluaiz: Rust Orchestrator for Local LLMs
 $ cargo build --release --workspace
 
 # 3. Run the CLI binary directly from Cargo
@@ -257,7 +281,7 @@ $ cargo run -p cli
 
 Cluaiz provides an ultra-low-overhead CLI command suite:
 
-#### **1. Launch the Sovereign Interactive TUI Dashboard**
+#### **1. Launch the Interactive TUI Dashboard**
 Run the naked `cluaiz` command to launch our full-terminal interactive control panel (replaces heavy UI web interfaces):
 ```bash
 $ cluaiz
@@ -280,7 +304,7 @@ $ cargo run -p cli -- run Qwen/Qwen3-VL-2B-Instruct-GGUF
 ```
 
 > [!NOTE]
-> HuggingFace downloads are handled natively without Python or `huggingface-cli`. Cluaiz fetches GGUF weights directly over HTTPS and caches them under `~/.cluaiz/models/`.
+> HuggingFace downloads are handled natively. Cluaiz fetches GGUF weights directly over HTTPS and caches them under `~/.cluaiz/models/`.
 
 #### **3. Re-Calibrate Hardware Profile**
 Perform real-time RDTSC hardware clocking, SIMD profiling, and VRAM detection to update your native hardware profile:
@@ -299,6 +323,17 @@ $ cluaiz benchmark
 # Run benchmark on a specific model with 3 iterations (to average out thermal throttling)
 $ cluaiz benchmark bonsai1-8b --runs 3
 ```
+
+#### **5. In-Chat Interactive Control Menu (`@`)**
+While running the interactive TUI dashboard (`$ cluaiz`), simply type **`@`** (and press Enter) to open the **Live Action Menu**. 
+This gives you instant, zero-restart control over the core engine:
+- **🧠 Switch Model**: Hot-swap your active LLM directly from VRAM without restarting the terminal.
+- **⚡ Engine Modes**: Quickly toggle macro presets (e.g., Flash Mode for speed, Think Mode for CoT reasoning).
+- **🚀 System Booster**: Access the granular `system_booster.json` configuration natively. Change hardware compute targets (GPU/CPU layers), adjust KV Cache Quantization, toggle Flash Attention, and tweak Context Shifting behavior **live**—the engine will automatically hot-reload the changes.
+
+#### **6. Mid-Generation Pivot (Hot-Steering)**
+If the AI is generating a long response (or is deep in `Think Mode`), you can interrupt it at any time by pressing **`Ctrl+C`**. 
+Instead of killing the process and losing your VRAM context, Cluaiz instantly **Pauses** the engine. You will be prompted to enter a **mid-way instruction** (e.g., *"Make it shorter"* or *"Skip the reasoning, just write the code"*). The engine processes this pivot and continues the exact same generation seamlessly from where it left off without starting over, saving massive amounts of compute and time.
 
 ---
 
