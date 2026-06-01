@@ -131,6 +131,10 @@ pub struct BoosterControl {
     pub n_gpu_layers: i32,
     #[serde(default)]
     pub think_mode: FeatureState,
+    #[serde(default)]
+    pub force_memory_lock: FeatureState, // OS VirtualLock / mlock
+    #[serde(default)]
+    pub moe_vram_routing: FeatureState, // MoE Expert Offload Dynamic Splitting
 }
 
 fn default_n_gpu_layers() -> i32 {
@@ -169,6 +173,19 @@ impl BoosterControl {
                 self.flash_attention = FeatureState::On;
             }
         }
+
+        // 3. Universal MoE & Memory Lock Trigger (CTO Hack)
+        if signature.has_experts {
+            if self.moe_vram_routing == FeatureState::Auto {
+                self.moe_vram_routing = FeatureState::On;
+                println!("🧠 [Arbiter] MoE Architecture detected. Auto-enabling Expert VRAM Routing.");
+            }
+        }
+
+        if vram_available <= 6.0 && self.force_memory_lock == FeatureState::Auto {
+            self.force_memory_lock = FeatureState::On;
+            println!("🔒 [Arbiter] Low VRAM ({:.1}GB). Auto-enabling OS Memory Lock (mlock) to prevent page-file swap.", vram_available);
+        }
     }
 }
 
@@ -186,6 +203,8 @@ impl Default for BoosterControl {
             force_vram_reclaim: FeatureState::Off,
             n_gpu_layers: -1,
             think_mode: FeatureState::Auto,
+            force_memory_lock: FeatureState::Off,
+            moe_vram_routing: FeatureState::Off,
         }
     }
 }
@@ -201,6 +220,7 @@ pub struct CluaizBoosterContext {
     pub kv_cache_quantization_mode: u8, // 0 = Auto/Kv16, 1 = Kv8, 2 = Kv4
     pub context_shifting_mode: u8, // 0 = Off, 1 = Small, 2 = Balanced, 3 = Boost, 4 = Ultra
     pub n_gpu_layers: i32,
+    pub force_memory_lock: bool,
 }
 
 impl From<&BoosterControl> for CluaizBoosterContext {
@@ -232,6 +252,7 @@ impl From<&BoosterControl> for CluaizBoosterContext {
             kv_cache_quantization_mode: kv_mode,
             context_shifting_mode: shift_mode,
             n_gpu_layers: config.n_gpu_layers,
+            force_memory_lock: config.force_memory_lock == FeatureState::On,
         }
     }
 }

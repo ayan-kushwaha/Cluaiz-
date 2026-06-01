@@ -70,3 +70,34 @@
 ✅ Draft ACCEPTED: 9079
 ✅ Draft ACCEPTED: 198
 ✅ Draft ACCEPTED: 12
+
+=== Lookahead Session: 1779918301 ===
+🔍 Match found at ngram_size 3: [8815, 33705, 374] -> drafts [264, 1849, 315, 19819]
+❌ Draft REJECTED: expected 264, got 279
+🔍 Match found at ngram_size 3: [2219, 44364, 14374] -> drafts [95069, 235, 8429, 2160]
+❌ Draft REJECTED: expected 95069, got 11162
+🔍 Match found at ngram_size 3: [44364, 14374, 11162] -> drafts [100, 106, 3555, 2160]
+❌ Draft REJECTED: expected 100, got 241
+🔍 Match found at ngram_size 3: [91, 25521, 227] -> drafts [92984, 760, 14625, 7525]
+❌ Draft REJECTED: expected 92984, got 76443
+🔍 Match found at ngram_size 3: [9248, 91, 25521] -> drafts [227, 76443, 760, 22150]
+✅ Draft ACCEPTED: 227
+❌ Draft REJECTED: expected 76443, got 38918
+🔍 Match found at ngram_size 3: [9248, 91, 25521] -> drafts [227, 38918, 760, 61531]
+✅ Draft ACCEPTED: 227
+❌ Draft REJECTED: expected 38918, got 31359
+🔍 Match found at ngram_size 3: [518, 892, 2513] -> drafts [2297, 1959, 419, 11508]
+✅ Draft ACCEPTED: 2297
+❌ Draft REJECTED: expected 1959, got 1365
+🔍 Match found at ngram_size 3: [0, 9248, 91] -> drafts [25521, 227, 31359, 355]
+✅ Draft ACCEPTED: 25521
+✅ Draft ACCEPTED: 227
+❌ Draft REJECTED: expected 31359, got 24624
+🔍 Match found at ngram_size 3: [5267, 29, 481] -> drafts [2980, 498, 2968, 458]
+❌ Draft REJECTED: expected 2980, got 3555
+
+=== Lookahead Session: 1779918367 ===
+🔍 Match found at ngram_size 3: [5335, 323, 6803] -> drafts [13, 6771, 752, 1191]
+❌ Draft REJECTED: expected 13, got 304
+🔍 Match found at ngram_size 3: [1493, 3687, 4494] -> drafts [5577, 4751, 1091, 1101]
+❌ Draft REJECTED: expected 5577, got 2293

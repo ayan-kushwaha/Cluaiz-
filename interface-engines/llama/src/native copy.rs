@@ -65,8 +65,16 @@ impl NativeLlama {
         
         println!("📊 [Native-Llama] FFI Parameters: n_gpu_layers = {}, use_mmap = {}, n_threads = {}, n_threads_batch = {}", model_params.n_gpu_layers, model_params.use_mmap, ctx_params.n_threads, ctx_params.n_threads_batch);
         info!("🧬 [Native-Llama] Loading model: {} | ctx: {} tokens", model_path, ctx_params.n_ctx);
-        let model_ptr = unsafe { llama_cpp::llama_model_load_from_file(c_path.as_ptr(), model_params) };
+        let mut model_ptr = unsafe { llama_cpp::llama_model_load_from_file(c_path.as_ptr(), model_params) };
         
+        // 🔒 Mlock Graceful Fallback (CTO Directives)
+        if model_ptr.is_null() && model_params.use_mlock {
+            tracing::warn!("🔒 [Arbiter] mlock (VirtualLock) failed (OS Access Denied or Working Set Size limit). Falling back to high-speed mmap...");
+            let mut fallback_params = model_params;
+            fallback_params.use_mlock = false;
+            model_ptr = unsafe { llama_cpp::llama_model_load_from_file(c_path.as_ptr(), fallback_params) };
+        }
+
         if model_ptr.is_null() {
             return Err(anyhow::anyhow!("Model Load Failure: {}", model_path));
         }
@@ -348,14 +356,82 @@ impl NativeLlama {
             let mut n_cur = start_pos + tokens.len() as i32;
             let mut n_gen = 0;
 
+            // ⚡ In-Flight Logit Clamping: Pre-calculate end of thought token (Model Agnostic)
+            let possible_eots = ["</think>", "</thought>", "<|thought_end|>", "<channel|>"];
+            let mut end_of_thought_token_id = -1;
+            
+            for &eot_str in &possible_eots {
+                let c_eot = CString::new(eot_str).unwrap_or_default();
+                let mut eot_token_arr = [0i32; 8];
+                let n_eot = llama_cpp::llama_tokenize(
+                    vocab,
+                    c_eot.as_ptr(),
+                    eot_str.len() as i32,
+                    eot_token_arr.as_mut_ptr(),
+                    eot_token_arr.len() as i32,
+                    false, // add_special
+                    true  // parse_special
+                );
+                
+                // If it tokenizes to exactly 1 token (special token), we found it!
+                if n_eot == 1 {
+                    end_of_thought_token_id = eot_token_arr[0];
+                    break;
+                } else if n_eot == 2 {
+                    // Sometimes it adds a prefix or BOS even with add_special=false, take the second token
+                    end_of_thought_token_id = eot_token_arr[1];
+                    break;
+                }
+            }
+
+            println!("\r\n🚀 [Native-Llama] Discovered EOT Token ID: {}", end_of_thought_token_id);
+
             // First token sampling is done outside the speculative loop
             let mut next_token_id = llama_cpp::llama_sampler_sample(sampler_chain, self.ctx_ptr, -1);
+            let mut injected_tokens_queue: std::collections::VecDeque<i32> = std::collections::VecDeque::new();
 
             // 🚀 [Native-Llama] Entering generation loop...
             while n_gen < max_tokens as i32 {
                 // 🛑 Check for Real-time Interrupt (Direct check for zero-latency pause)
                 if self.interrupt_signal.load(Ordering::SeqCst) || cluaiz_shared::GLOBAL_CANCEL_SIGNAL.load(Ordering::SeqCst) {
                     break;
+                }
+
+                // ⚡ In-Flight Logit Clamping Bypass
+                if cluaiz_shared::GLOBAL_SKIP_THINKING_SIGNAL.load(Ordering::SeqCst) {
+                    cluaiz_shared::GLOBAL_SKIP_THINKING_SIGNAL.store(false, Ordering::SeqCst);
+                    
+                    // 🚀 UNIVERSAL FLUSH & BREAK (Model-Agnostic)
+                    // We inject a strong semantic breaker. By adding \n before </think>, we break the current sentence.
+                    // By adding \nAnswer:\n, we force the model into standard response mode.
+                    // Tokenizing with parse_special=false guarantees we get raw text subwords,
+                    // which is 100% compatible with ANY model (Qwen, Gemma, Llama).
+                    let force_str = "\n</think>\n\nAnswer:\n";
+                    let c_force = CString::new(force_str).unwrap_or_default();
+                    let mut force_token_arr = [0i32; 64];
+                    let n_force = llama_cpp::llama_tokenize(
+                        vocab, c_force.as_ptr(), force_str.len() as i32,
+                        force_token_arr.as_mut_ptr(), force_token_arr.len() as i32,
+                        false, false
+                    );
+                    
+                    if n_force > 0 {
+                        for i in 0..n_force {
+                            injected_tokens_queue.push_back(force_token_arr[i as usize]);
+                        }
+                    } else {
+                        if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open("cluaiz_lookahead.log") {
+                            use std::io::Write;
+                            let _ = writeln!(f, "❌ [Native-Llama] Tokenization failed for strong semantic breaker");
+                        }
+                    }
+                }
+
+                // Force injection if queue has tokens
+                let mut is_injecting = false;
+                if let Some(injected_id) = injected_tokens_queue.pop_front() {
+                    next_token_id = injected_id;
+                    is_injecting = true;
                 }
 
                 // 🛡️ Sliding Window / Context Shifting
@@ -470,7 +546,7 @@ impl NativeLlama {
 
                 // 2. 🦅 Generate Speculative Drafts (Multi-scale Fallback Prompt Lookup)
                 let mut drafts = Vec::new();
-                if is_lookahead && history.len() >= 4 {
+                if is_lookahead && history.len() >= 4 && !is_injecting && injected_tokens_queue.is_empty() {
                     let len = history.len();
                     'ngram_loop: for ngram_size in (3..=5).rev() {
                         if len < ngram_size + 1 {

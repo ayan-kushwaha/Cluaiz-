@@ -531,3 +531,10 @@ pub extern "C" fn cluaiz_kernel_free(engine_ptr: *mut RuntimeB) {
     }
 }
 
+#[no_mangle]
+pub extern "C" fn cluaiz_kernel_set_skip_ptr(ptr: *const std::sync::atomic::AtomicBool) {
+    unsafe {
+        crate::native::stream::SKIP_PTR = ptr;
+    }
+}
+

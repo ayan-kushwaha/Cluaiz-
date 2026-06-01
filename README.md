@@ -222,7 +222,6 @@ Cluaiz uses a dynamic VRAM Arbiter to negotiate memory. If the engine pushes too
 ---
 
 ## 🕹️ **Quick Start Manual**
-48.6	
 ### 📊 **Local Hardware Benchmark**
 
 For a fully exhaustive, automated hardware-wise benchmark across all models (where BitNet architectures achieve up to ~50 TPS with 0.05s TTFT), see the [Detailed Hardware Benchmark Report](test/benchmark/README.mdx).

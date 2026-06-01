@@ -7,6 +7,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 /// 🛑 Global Cancellation Signal for Graceful Interrupts
 pub static GLOBAL_CANCEL_SIGNAL: AtomicBool = AtomicBool::new(false);
+/// ⚡ Global Signal for Native In-Flight Logit Clamping (Skip Thinking)
+pub static GLOBAL_SKIP_THINKING_SIGNAL: AtomicBool = AtomicBool::new(false);
 
 pub mod hardware;
 pub mod metadata;

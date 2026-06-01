@@ -22,7 +22,8 @@ pub async fn root() -> Json<Value> {
             "GET  /status/sidecars":  "Database sidecar status",
             "GET  /hardware":         "Detect system RAM/CPU to suggest models",
             "POST /models/download":  "Download .gguf from Hugging Face",
-            "POST /models/load":      "Load a downloaded .gguf file"
+            "POST /models/load":      "Load a downloaded .gguf file",
+            "POST /engine/skip_think":"Skip thinking during generation"
         },
         "philosophy": "Nothing Need. Just CURE."
     }))
@@ -52,5 +53,14 @@ pub async fn system_info() -> Json<Value> {
         },
         "philosophy": "Nothing Need. Just CURE.",
         "banned": ["Python", "Docker", "Ollama", "npm", "pip"]
+    }))
+}
+
+// ─── Skip Thinking ───────────────────────────────────────────────────
+pub async fn skip_think() -> Json<Value> {
+    cluaiz_shared::GLOBAL_SKIP_THINKING_SIGNAL.store(true, std::sync::atomic::Ordering::SeqCst);
+    Json(json!({
+        "status": "success",
+        "message": "⚡ In-Flight Logit Clamping Triggered: Skip Thinking Active."
     }))
 }

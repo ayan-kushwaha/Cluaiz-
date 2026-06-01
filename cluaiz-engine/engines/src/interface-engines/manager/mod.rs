@@ -171,6 +171,12 @@ impl EngineManager {
             let _init: Symbol<unsafe extern "C" fn() -> *const std::os::raw::c_char> = lib.get(b"cluaiz_kernel_init")
                 .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaiz_kernel_init' symbol missing."))?;
 
+            // 🎯 Phase 1.5: Pass the GLOBAL_SKIP_THINKING_SIGNAL pointer if the kernel supports it
+            if let Ok(set_skip_ptr_fn) = lib.get::<unsafe extern "C" fn(*const std::sync::atomic::AtomicBool)>(b"cluaiz_kernel_set_skip_ptr") {
+                set_skip_ptr_fn(&cluaiz_shared::GLOBAL_SKIP_THINKING_SIGNAL as *const _);
+                tracing::info!("🔗 [Linker] Synchronized Sovereign Skip-Thinking Pointer across FFI.");
+            }
+
             tracing::info!("✅ [Linker] 7ns Handshake Complete. Kernel Linked.");
             self.active_lib = Some(lib);
         }

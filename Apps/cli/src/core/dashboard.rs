@@ -252,23 +252,48 @@ impl DashboardEngine {
                                 );
                             }
                             
-                            let prompt_starts_in_think = formatted_prompt.contains("<think>") && !formatted_prompt.contains("</think>");
-                            let is_pivot = formatted_prompt.starts_with("[PIVOT_CONTINUE]");
-                            
                             let booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
                             let suppress_thinking = booster.think_mode == cluaiz_shared::hardware::schema::booster::FeatureState::Off;
                             
+                            let active_model = state._active_model_id.clone().unwrap_or_default().to_lowercase();
+                            let is_reasoning_model = active_model.contains("deepseek") || active_model.contains("r1") || active_model.contains("reason") || active_model.contains("bonsai") || active_model.contains("think");
+
+                            let prompt_starts_in_think = formatted_prompt.contains("<think>") && !formatted_prompt.contains("</think>");
+                            let is_pivot = formatted_prompt.starts_with("[PIVOT_CONTINUE]");
+
                             let mut first_token = true;
                             let pulse_clone = state_pulse.clone(); // 🧬 Clone for closure move
                             let global_think_cb = global_think_state.clone();
                             
+                            // ⚡ Enable raw mode to intercept keystrokes asynchronously (like Ctrl+T)
+                            let _ = crossterm::terminal::enable_raw_mode();
+
                             let result = lock.generate_stream(
-                                &formatted_prompt, // 🚀 Use formatted_prompt here!
+                                &formatted_prompt, // 🚀 Pure, unadulterated prompt
                                 max_t,
                                 Box::new(move |token: String| -> bool {
                                     // 🛑 Stop if already past EOS or interrupted
                                     if eos_cb.load(Ordering::SeqCst) || cluaiz_shared::GLOBAL_CANCEL_SIGNAL.load(Ordering::SeqCst) { 
                                         return false; 
+                                    }
+
+                                    // ⚡ CLI Shortcut: Poll for Ctrl+T to skip thinking
+                                    if let Ok(true) = crossterm::event::poll(std::time::Duration::from_millis(0)) {
+                                        if let Ok(crossterm::event::Event::Key(key)) = crossterm::event::read() {
+                                            if key.code == crossterm::event::KeyCode::Char('t') && key.modifiers.contains(crossterm::event::KeyModifiers::CONTROL) {
+                                                // Only skip if we are currently IN thinking mode — prevents double-fire from key-repeat
+                                                if in_think_cb.load(Ordering::SeqCst) {
+                                                    cluaiz_shared::GLOBAL_SKIP_THINKING_SIGNAL.store(true, Ordering::SeqCst);
+                                                    // ✅ Immediately reset UI think state — don't wait for </think> text
+                                                    in_think_cb.store(false, Ordering::SeqCst);
+                                                    global_think_cb.store(false, Ordering::SeqCst);
+                                                    print!("\x1B[0m\r\n⚡ Skipping thinking...\r\n");
+                                                }
+                                            }
+                                            if key.code == crossterm::event::KeyCode::Char('c') && key.modifiers.contains(crossterm::event::KeyModifiers::CONTROL) {
+                                                cluaiz_shared::GLOBAL_CANCEL_SIGNAL.store(true, Ordering::SeqCst);
+                                            }
+                                        }
                                     }
 
                                     // 🛑 Deep-Suffix Scan
@@ -291,17 +316,13 @@ impl DashboardEngine {
                                             let _ = out.write_all(format!("\r\x1B[2K\x1B[0m{} ", crossterm::style::Stylize::magenta("🤖")).as_bytes());
                                             
                                             // DYNAMIC THINK INJECTION
-                                            let should_start_in_think = if is_pivot {
-                                                global_think_cb.load(Ordering::SeqCst) || prompt_starts_in_think
-                                            } else {
-                                                true // Default to true for new prompts (forced think mode)
-                                            };
+                                            let should_start_in_think = prompt_starts_in_think || is_reasoning_model;
 
                                             if !suppress_thinking && should_start_in_think { 
                                                 in_think_cb.store(true, Ordering::SeqCst);
                                                 global_think_cb.store(true, Ordering::SeqCst);
                                                 let mut out = std::io::stdout();
-                                                let _ = out.write_all(b"\n\x1B[90m> \x1B[3m"); // Gray italics
+                                                let _ = out.write_all(b"\r\n\x1B[90m> \x1B[3m"); // Gray italics with carriage return
                                                 let _ = out.flush();
                                             }
                                             
@@ -316,17 +337,12 @@ impl DashboardEngine {
                                             display_token = display_token.replace(tag, "");
                                         }
 
-                                        for tag in &["<think>", "<thought>", "<|thought_start|>"] {
-                                            if display_token.contains(tag) {
-                                                in_think_cb.store(true, Ordering::SeqCst);
-                                                global_think_cb.store(true, Ordering::SeqCst);
-                                                display_token = display_token.replace(tag, "");
-                                            }
-                                        }
-                                        
+                                        let accumulated = res.clone() + &token;
                                         let mut just_finished_thinking = false;
+
+                                        // ALWAYS check for </think> to hide it and cleanly exit think mode
                                         for tag in &["</think>", "</thought>", "<|thought_end|>", "<channel|>"] {
-                                            if display_token.contains(tag) {
+                                            if accumulated.ends_with(tag) || token.contains(tag) {
                                                 in_think_cb.store(false, Ordering::SeqCst);
                                                 global_think_cb.store(false, Ordering::SeqCst);
                                                 display_token = display_token.replace(tag, "");
@@ -334,17 +350,30 @@ impl DashboardEngine {
                                             }
                                         }
 
+                                        // ALWAYS check for <think> to turn ON think mode dynamically
+                                        for tag in &["<think>", "<thought>", "<|thought_start|>"] {
+                                            if accumulated.ends_with(tag) || token.contains(tag) {
+                                                if !in_think_cb.load(Ordering::SeqCst) {
+                                                    in_think_cb.store(true, Ordering::SeqCst);
+                                                    global_think_cb.store(true, Ordering::SeqCst);
+                                                    print!("\r\n\x1B[90m> \x1B[3m");
+                                                }
+                                                display_token = display_token.replace(tag, "");
+                                            }
+                                        }
+
                                         if just_finished_thinking {
-                                            print!("\x1B[0m\n\n");
+                                            print!("\x1B[0m\r\n\r\n");
                                         }
 
                                         let currently_thinking = in_think_cb.load(Ordering::SeqCst);
                                         
                                         if !display_token.is_empty() {
+                                            let display_token_raw = display_token.replace("\n", "\r\n");
                                             if currently_thinking && !suppress_thinking {
-                                                 print!("\x1B[90m{}\x1B[0m", display_token);
+                                                 print!("\x1B[90m{}\x1B[0m", display_token_raw);
                                             } else {
-                                                 print!("{}", display_token);
+                                                 print!("{}", display_token_raw);
                                             }
                                         } else if just_finished_thinking {
                                             print!("\x1B[0m"); // Even if display token is empty, we must reset
@@ -357,6 +386,9 @@ impl DashboardEngine {
                                     true
                                 }),
                             );
+                            
+                            // ⚡ Disable raw mode safely after stream ends
+                            let _ = crossterm::terminal::disable_raw_mode();
                             
                             // 🔊 RESTORE stderr → CONOUT$ (always the active Windows console)
                             #[cfg(windows)]

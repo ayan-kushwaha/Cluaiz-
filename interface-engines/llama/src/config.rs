@@ -26,6 +26,8 @@ pub struct BoosterConfig {
     pub kv_cache_quantization: String,
     pub context_shifting: String,
     pub think_mode: String,
+    pub force_memory_lock: String,
+    pub moe_vram_routing: String,
 }
 
 impl Default for BoosterConfig {
@@ -45,6 +47,8 @@ impl Default for BoosterConfig {
             kv_cache_quantization: "Auto".to_string(),
             context_shifting: "Auto".to_string(),
             think_mode: "Auto".to_string(),
+            force_memory_lock: "Auto".to_string(),
+            moe_vram_routing: "Auto".to_string(),
         }
     }
 }
@@ -68,6 +72,8 @@ impl BoosterConfig {
             kv_cache_quantization: "Auto".to_string(),
             context_shifting: "Auto".to_string(),
             think_mode: "Auto".to_string(),
+            force_memory_lock: "Auto".to_string(),
+            moe_vram_routing: "Auto".to_string(),
         };
         
         // 🛡️ Sovereign Dynamic Pathing: Use cluaiz-shared to resolve the engine path universally.
@@ -107,6 +113,12 @@ impl BoosterConfig {
                 if let Some(tm) = json.get("think_mode") {
                     config.think_mode = tm.as_str().unwrap_or("Auto").to_string();
                 }
+                if let Some(fml) = json.get("force_memory_lock") {
+                    config.force_memory_lock = fml.as_str().unwrap_or("Off").to_string();
+                }
+                if let Some(mvr) = json.get("moe_vram_routing") {
+                    config.moe_vram_routing = mvr.as_str().unwrap_or("Off").to_string();
+                }
             }
         }
         config
@@ -116,6 +128,7 @@ impl BoosterConfig {
         let mut params = unsafe { llama_model_default_params() };
         params.n_gpu_layers = self.n_gpu_layers;
         params.use_mmap = self.use_mmap;
+        params.use_mlock = self.force_memory_lock == "On";
         params
     }
 
@@ -203,6 +216,8 @@ impl BoosterConfig {
             force_vram_reclaim: if self.force_vram_reclaim == "On" { FeatureState::On } else { FeatureState::Off },
             n_gpu_layers: self.n_gpu_layers,
             think_mode: if self.think_mode == "On" { FeatureState::On } else if self.think_mode == "Off" { FeatureState::Off } else { FeatureState::Auto },
+            force_memory_lock: if self.force_memory_lock == "On" { FeatureState::On } else { FeatureState::Off },
+            moe_vram_routing: if self.moe_vram_routing == "On" { FeatureState::On } else if self.moe_vram_routing == "Off" { FeatureState::Off } else { FeatureState::Auto },
         }
     }
 }

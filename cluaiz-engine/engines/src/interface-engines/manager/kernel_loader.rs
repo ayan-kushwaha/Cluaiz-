@@ -97,12 +97,26 @@ impl KernelLoader {
         // 4. FALLBACK: Local development build output
         let mut dev_path = self.base_dir.clone();
         dev_path.push("target");
-        dev_path.push("release");
-        let fallback_file = format!("archer_{}.{}", kernel_name, ext);
-        dev_path.push(&fallback_file);
+
+        // Try debug profile first if in debug mode, otherwise release
+        #[cfg(debug_assertions)]
+        let profiles = ["debug", "release"];
+        #[cfg(not(debug_assertions))]
+        let profiles = ["release", "debug"];
+
+        for profile in &profiles {
+            let profile_path = dev_path.join(profile);
+            for file_name in &candidates {
+                let path = profile_path.join(file_name);
+                if path.exists() {
+                    tracing::info!("🎯 [KernelLoader] Cluaiz path resolved (fallback {}): {:?}", profile, path);
+                    return path;
+                }
+            }
+        }
         
-        tracing::warn!("⚠️ [KernelLoader] Cluaiz path not found for {}. Falling back to dev path: {:?}", kernel_name, dev_path);
-        dev_path
+        tracing::warn!("⚠️ [KernelLoader] Cluaiz path not found for {}. Checked dev paths.", kernel_name);
+        dev_path.join("release").join(format!("cluaiz_{}.{}", kernel_name, ext))
     }
 }
 
