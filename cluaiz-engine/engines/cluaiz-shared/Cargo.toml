@@ -32,3 +32,5 @@ chrono = { version = "0.4", features = ["serde"] }
 dirs = "5"
 raw-cpuid = "11.6.0"
 nvml-wrapper = "0.12.1"
+wasmtime = { version = "29.0", default-features = false, features = ["cranelift", "runtime"] }
+color-eyre = "0.6"

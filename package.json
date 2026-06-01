@@ -43,6 +43,10 @@
     "docs": {
       "version": "main",
       "manifest_url": "https://github.com/cluaiz/cluaiz/blob/main/docs/registry.json"
+    },
+    "skills": {
+      "version": "main",
+      "manifest_url": "https://raw.githubusercontent.com/cluaiz/skills/main/registry.json"
     }
   }
 }

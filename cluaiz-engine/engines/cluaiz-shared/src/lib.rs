@@ -17,6 +17,7 @@ pub mod prompting;
 pub mod backend;
 pub mod neural_core;
 pub mod utils;
+pub mod skills;
 
 // ── Business Logic (Unified from shared) ──
 pub mod profile;

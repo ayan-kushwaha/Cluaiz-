@@ -25,6 +25,11 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum CliCommand {
+    /// Manage Sovereign AI Skills
+    Skill {
+        #[command(subcommand)]
+        command: SkillCommand,
+    },
     /// Pull & run a model. Downloads if not cached.
     Run {
         /// Model ID (e.g. gemma2:2b, bonsai:8b)
@@ -90,6 +95,17 @@ enum CliCommand {
         #[arg(long)]
         spec_decode: Option<String>,
     },
+}
+
+#[derive(Subcommand)]
+enum SkillCommand {
+    /// Install a skill from the cluaiz-skills registry
+    Install {
+        /// Name of the skill to install (e.g., 'web-search-github')
+        skill_name: String,
+    },
+    /// List all locally installed skills
+    List,
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -209,6 +225,12 @@ async fn main() -> Result<()> {
         Some(CliCommand::Booster { kv_quant, context_shift, mode, spec_decode }) => {
             if let Err(e) = crate::cli::booster::execute(kv_quant, context_shift, mode, spec_decode).await {
                 eprintln!("\n  {} [Cluaiz] Booster Config Error: {}\n", "❌".red(), e);
+                std::process::exit(1);
+            }
+        }
+        Some(CliCommand::Skill { command }) => {
+            if let Err(e) = crate::cli::skill::execute(command).await {
+                eprintln!("\n  {} [Cluaiz] Skill Manager Error: {}\n", "❌".red(), e);
                 std::process::exit(1);
             }
         }
