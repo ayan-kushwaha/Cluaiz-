@@ -16,6 +16,7 @@ pub mod hybrid;
 pub mod loader;
 pub mod native;
 pub mod pipeline;
+pub mod sampling;
 pub mod router;
 
 use crate::config::BoosterConfig;

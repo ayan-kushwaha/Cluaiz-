@@ -41,3 +41,30 @@ impl NeuralDispatcher {
         }
     }
 }
+
+/// 🚥 EmbeddingDispatcher
+/// Routes embedding requests to ONNX (default) or Llama depending on the configuration.
+pub struct EmbeddingDispatcher {
+    pub onnx_engine: cluaiz_onnx::OnnxEngine,
+    // Future: pub llama_engine: Option<llama::LlamaEngine>,
+}
+
+impl EmbeddingDispatcher {
+    pub fn new() -> Result<Self> {
+        let onnx_engine = cluaiz_onnx::OnnxEngine::new()?;
+        Ok(Self { onnx_engine })
+    }
+
+    /// Primary entry point for vector generation.
+    pub fn dispatch_embedding(&self, text: &str) -> Result<Vec<f32>> {
+        use neural_core::interfaces::router_contract::EmbeddingDriver;
+        tracing::info!("🚥 [Dispatcher] Routing embedding request to ONNX...");
+        self.onnx_engine.gen_embedding(text).map_err(|e| anyhow::anyhow!("Embedding Error: {}", e))
+    }
+
+    pub fn dispatch_multimodal(&self, bytes: &[u8], modality: neural_core::interfaces::router_contract::Modality) -> Result<Vec<f32>> {
+        use neural_core::interfaces::router_contract::EmbeddingDriver;
+        tracing::info!("🚥 [Dispatcher] Routing multimodal request to ONNX...");
+        self.onnx_engine.gen_multimodal_embedding(bytes, modality).map_err(|e| anyhow::anyhow!("Multimodal Error: {}", e))
+    }
+}

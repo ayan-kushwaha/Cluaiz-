@@ -4,7 +4,7 @@ members = [
     "cluaiz-engine/engines",
     "cluaiz-engine/engines/cluaiz-shared",
     "cluaiz-engine/engines/system-booster",
-    "Apps/cli",
+    "Apps/cli", "interface-engines/onnx",
 ]
 
 resolver = "2"

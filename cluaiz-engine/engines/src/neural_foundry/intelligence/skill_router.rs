@@ -48,4 +48,19 @@ impl SkillRouter {
 
         matches
     }
+
+    /// Parses the JSON output from AtmaSteer and forwards it to the WASM Sandbox.
+    pub fn route_llm_action(&self, json_output: &str) -> anyhow::Result<()> {
+        tracing::info!("🔄 [Skill-Router] Parsing AtmaSteer output: {}", json_output);
+        
+        // In production, this decodes the JSON using Serde
+        // e.g., { "skill": "git-commit", "args": { "msg": "Fix bug" } }
+        
+        // 1. Identify which skill binary (.wasm) to load.
+        // 2. Load `.prompt-cache` for KV-Cache Injection (Zero-Copy).
+        // 3. Instantiate the WASM sandbox and pass the arguments.
+        
+        tracing::warn!("🚀 [Skill-Router] Dispatching to sandboxed WASM skill logic (Mock).");
+        Ok(())
+    }
 }

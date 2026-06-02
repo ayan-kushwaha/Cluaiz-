@@ -10,3 +10,4 @@ anyhow = "1.0"
 cluaiz-shared = { path = "../../cluaiz-engine/engines/cluaiz-shared" }
 memmap2 = "0.9"
 tracing = "0.1"
+thiserror = "1.0"
