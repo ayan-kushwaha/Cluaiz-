@@ -1,5 +1,35 @@
-2026-06-02T10:21:06.515719Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Engine Linked: "C:\\Users\\Aryan\\.cluaiz\\engine\\cluaiz-engine.dll"
-2026-06-02T10:21:06.526590Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Kernel Linked (root): "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
-2026-06-02T10:21:06.534744Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Kernel Linked (subdir): "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\kernels\\cluaiz-llama-cuda.dll"
-2026-06-02T10:21:06.535618Z  INFO cluaiz::core::bootstrapper: 🛰️ [Cluaiz] Synchronizing Neural Registry...
-2026-06-02T10:21:07.862463Z  INFO system_booster::os_tuning: 🚀 [Bare Metal] Attempting to elevate process priority to high (Value: 128) for PID 38140
+2026-06-02T15:27:00.863790Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Engine Linked: "C:\\Users\\Aryan\\.cluaiz\\engine\\cluaiz-engine.dll"
+2026-06-02T15:27:00.888539Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Kernel Linked (root): "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
+2026-06-02T15:27:00.897865Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Kernel Linked (subdir): "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\kernels\\cluaiz-llama-cuda.dll"
+2026-06-02T15:27:00.901030Z  INFO cluaiz::core::bootstrapper: 🛰️ [Cluaiz] Synchronizing Neural Registry...
+2026-06-02T15:27:03.951814Z  INFO system_booster::os_tuning: 🚀 [Bare Metal] Attempting to elevate process priority to high (Value: 128) for PID 34068
+2026-06-02T15:27:03.960507Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: ../../models
+2026-06-02T15:27:03.964544Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-06-02T15:27:03.990093Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
+2026-06-02T15:27:03.992141Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
+2026-06-02T15:27:04.024121Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-06-02T15:27:04.024334Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
+2026-06-02T15:27:04.049732Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
+2026-06-02T15:27:04.049925Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
+2026-06-02T15:27:04.076774Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
+2026-06-02T15:27:04.077110Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
+2026-06-02T15:27:04.103328Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
+2026-06-02T15:27:04.103547Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-02T15:27:04.140537Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
+2026-06-02T15:27:04.140830Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-02T15:27:04.169849Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
+2026-06-02T15:27:04.170098Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-02T15:27:04.197564Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
+2026-06-02T15:27:04.197868Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-02T15:27:04.225789Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
+2026-06-02T15:27:04.225997Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
+2026-06-02T15:27:04.226146Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
+2026-06-02T15:27:04.226471Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-06-02T15:27:04.226578Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
+2026-06-02T15:27:04.226601Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
+2026-06-02T15:27:04.226616Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
+2026-06-02T15:27:04.226623Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
+2026-06-02T15:27:04.226629Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
+2026-06-02T15:27:04.226635Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
+2026-06-02T15:27:04.226646Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
+2026-06-02T15:27:04.227262Z  INFO engines::models::registry: 📚 [Roster] Library source found at: ../../models/library

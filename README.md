@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" width="300" alt="Cluaiz Logo">
+  <img src="assets/cluaiz-banner.png" width="100%" alt="Cluaiz Logo">
 </p>
 
 <h1 align="center">Cluaiz: Rust Orchestrator for Local LLMs</h1>
