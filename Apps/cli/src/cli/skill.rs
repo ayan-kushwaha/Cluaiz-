@@ -36,85 +36,67 @@ async fn install_skill(skill_name: &str) -> Result<()> {
     let client = reqwest::Client::new();
     let registry_resp = client.get(registry_url).send().await;
     
-    let mut skill_path = skill_name.to_string();
+    let mut download_url = String::new();
     
     if let Ok(resp) = registry_resp {
         if resp.status().is_success() {
             if let Ok(registry_json) = resp.json::<serde_json::Value>().await {
                 if let Some(skills_obj) = registry_json.get("skills").and_then(|s| s.as_object()) {
-                    let mut found = false;
-                    
-                    // First try direct ID match
                     if let Some(skill_data) = skills_obj.get(skill_name) {
-                        if let Some(path) = skill_data.get("path").and_then(|p| p.as_str()) {
-                            skill_path = path.to_string();
-                            found = true;
-                        }
-                    } 
-                    
-                    // If not found by ID, search by name or folder
-                    if !found {
-                        for (id, skill_data) in skills_obj {
-                            let name = skill_data.get("name").and_then(|n| n.as_str()).unwrap_or("");
-                            let path = skill_data.get("path").and_then(|p| p.as_str()).unwrap_or("");
-                            let folder_name = path.split('/').last().unwrap_or("");
-                            
-                            if name == skill_name || folder_name == skill_name || id == skill_name {
-                                skill_path = path.to_string();
-                                found = true;
-                                break;
+                        if let Some(latest) = skill_data.get("latest").and_then(|v| v.as_str()) {
+                            if let Some(versions) = skill_data.get("versions").and_then(|v| v.as_object()) {
+                                if let Some(url) = versions.get(latest).and_then(|u| u.as_str()) {
+                                    download_url = url.to_string();
+                                    println!("  {} [Registry] Found skill release: v{}", "✅".green(), latest.bold());
+                                }
                             }
                         }
                     }
-                    
-                    if found {
-                        println!("  {} [Registry] Found skill at path: {}", "✅".green(), skill_path.bold());
-                    } else {
-                        println!("  {} [Registry] Skill '{}' not found in official registry. Attempting direct fallback...", "⚠️".yellow(), skill_name.bold());
-                    }
                 }
             }
         }
     }
 
-    // 2. Fetch the files from the resolved path
-    let base_url = format!("https://raw.githubusercontent.com/cluaiz/skills/main/{}", skill_path);
-    let files_to_try = vec![
-        "manifest.json",
-        "SKILL.md",
-        "README.md",
-        "state.prompt-cache",
-        "logic.wasm",
-        "connector.mcp",
-    ];
-
-    let mut downloaded = 0;
-    let client = reqwest::Client::new();
-
-    for file in files_to_try {
-        let url = format!("{}/{}", base_url, file);
-        let resp = client.get(&url).send().await;
-        
-        if let Ok(response) = resp {
-            if response.status().is_success() {
-                if let Ok(bytes) = response.bytes().await {
-                    let file_path = skills_dir.join(file);
-                    let mut out = fs::File::create(&file_path)?;
-                    out.write_all(&bytes)?;
-                    println!("    {} Downloaded: {}", "⬇️".blue(), file);
-                    downloaded += 1;
-                }
-            }
-        }
-    }
-
-    if downloaded > 0 {
-        println!("\n  {} [Cluaiz] Skill '{}' successfully installed and registered!\n", "✅".green(), skill_name.bold());
-    } else {
-        println!("\n  {} [Cluaiz] Failed to find skill '{}' in the official registry.\n", "❌".red(), skill_name.bold());
-        // Clean up empty dir
+    if download_url.is_empty() {
+        println!("  {} [Registry] Skill '{}' not found or has no valid release in the registry.", "❌".red(), skill_name.bold());
         let _ = fs::remove_dir(&skills_dir);
+        return Err(color_eyre::eyre::eyre!("Skill not found in registry"));
     }
+
+    // 2. Download the ZIP release
+    println!("  {} [Cluaiz] Downloading release package...", "⬇️".cyan());
+    let zip_resp = client.get(&download_url).send().await?;
+    
+    if !zip_resp.status().is_success() {
+        let _ = fs::remove_dir(&skills_dir);
+        return Err(color_eyre::eyre::eyre!("Failed to download skill package"));
+    }
+    
+    let zip_bytes = zip_resp.bytes().await?;
+    let temp_zip_path = skills_dir.join(format!("{}.zip", skill_name));
+    
+    let mut file = fs::File::create(&temp_zip_path)?;
+    file.write_all(&zip_bytes)?;
+    
+    // 3. Extract the ZIP using native OS tar (Windows 10+ / Linux / macOS)
+    println!("  {} [Cluaiz] Extracting package...", "📦".cyan());
+    let status = std::process::Command::new("tar")
+        .arg("-xf")
+        .arg(&temp_zip_path)
+        .arg("-C")
+        .arg(&skills_dir)
+        .status()?;
+        
+    if !status.success() {
+        let _ = fs::remove_file(&temp_zip_path);
+        let _ = fs::remove_dir(&skills_dir);
+        return Err(color_eyre::eyre::eyre!("Extraction failed"));
+    }
+    
+    // Cleanup the ZIP file
+    let _ = fs::remove_file(&temp_zip_path);
+
+    println!("\n  {} [Cluaiz] Skill '{}' successfully installed and registered!\n", "✅".green(), skill_name.bold());
 
     Ok(())
 }

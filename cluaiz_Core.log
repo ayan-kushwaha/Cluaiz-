@@ -1,5 +1,5 @@
-2026-06-01T19:28:31.461445Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Engine Linked: "C:\\Users\\Aryan\\.cluaiz\\engine\\cluaiz-engine.dll"
-2026-06-01T19:28:31.480932Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Kernel Linked (root): "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
-2026-06-01T19:28:31.487823Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Kernel Linked (subdir): "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\kernels\\cluaiz-llama-cuda.dll"
-2026-06-01T19:28:31.488441Z  INFO cluaiz::core::bootstrapper: 🛰️ [Cluaiz] Synchronizing Neural Registry...
-2026-06-01T19:28:33.262454Z  INFO system_booster::os_tuning: 🚀 [Bare Metal] Attempting to elevate process priority to high (Value: 128) for PID 23948
+2026-06-02T10:21:06.515719Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Engine Linked: "C:\\Users\\Aryan\\.cluaiz\\engine\\cluaiz-engine.dll"
+2026-06-02T10:21:06.526590Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Kernel Linked (root): "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
+2026-06-02T10:21:06.534744Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Kernel Linked (subdir): "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\kernels\\cluaiz-llama-cuda.dll"
+2026-06-02T10:21:06.535618Z  INFO cluaiz::core::bootstrapper: 🛰️ [Cluaiz] Synchronizing Neural Registry...
+2026-06-02T10:21:07.862463Z  INFO system_booster::os_tuning: 🚀 [Bare Metal] Attempting to elevate process priority to high (Value: 128) for PID 38140
