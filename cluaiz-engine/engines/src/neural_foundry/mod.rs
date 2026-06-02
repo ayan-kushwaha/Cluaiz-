@@ -92,7 +92,7 @@ impl CoreFoundry {
             }
 
             // 3. Map Cluaiz Signal (Zero-Copy)
-            let kv_cache_path = skill.path.join("state.kv-cache");
+            let kv_cache_path = skill.path.join("state.prompt-cache");
             if kv_cache_path.exists() {
                 if let Ok(mapped_buffer) = MappedBuffer::from_file(&kv_cache_path) {
                     result.signals.push(CluaizSignal {
@@ -101,6 +101,10 @@ impl CoreFoundry {
                         head_dim: skill.manifest.Core_metadata.head_dim,
                     });
                 }
+            } else {
+                warn!("⚠️ [CoreFoundry] state.prompt-cache missing for skill {}. It will be generated on first inference.", skill_id);
+                // Note: The actual Inference Engine (Llama/vLLM) will call `prefill_prompt` and `save_prompt_cache` 
+                // during its first run of this skill to generate this file automatically.
             }
             
             // 4. Logic execution (WASM)

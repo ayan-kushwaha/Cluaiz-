@@ -140,6 +140,104 @@ impl NativeLlama {
         Ok(())
     }
 
+    /// 💾 Save Prompt Cache to disk
+    pub fn save_prompt_cache(&self, path: &str, tokens: &[i32]) -> anyhow::Result<()> {
+        info!("💾 [Native-Llama] Saving prompt cache to: {}", path);
+        let c_path = std::ffi::CString::new(path)?;
+        unsafe {
+            let success = llama_cpp::llama_state_save_file(
+                self.ctx_ptr, 
+                c_path.as_ptr(), 
+                tokens.as_ptr(), 
+                tokens.len()
+            );
+            if !success {
+                return Err(anyhow::anyhow!("Failed to save prompt cache to {}", path));
+            }
+        }
+        Ok(())
+    }
+
+    /// 💾 Load Prompt Cache from disk
+    pub fn load_prompt_cache(&self, path: &str) -> anyhow::Result<Vec<i32>> {
+        info!("💾 [Native-Llama] Loading prompt cache from: {}", path);
+        let c_path = std::ffi::CString::new(path)?;
+        let mut tokens = vec![0i32; 8192];
+        let mut n_tokens_out: usize = 0;
+        
+        unsafe {
+            let success = llama_cpp::llama_state_load_file(
+                self.ctx_ptr, 
+                c_path.as_ptr(), 
+                tokens.as_mut_ptr(), 
+                tokens.len(), 
+                &mut n_tokens_out as *mut usize
+            );
+            if !success {
+                return Err(anyhow::anyhow!("Failed to load prompt cache from {}", path));
+            }
+        }
+        tokens.truncate(n_tokens_out);
+        Ok(tokens)
+    }
+
+    /// 🧠 Prefill a prompt into the KV cache (Context State) without generating tokens.
+    pub fn prefill_prompt(&self, prompt: &str) -> anyhow::Result<Vec<i32>> {
+        unsafe {
+            // 🧹 Sovereign Flush: Ensure KV cache is clear before starting new prefill
+            let mem = llama_cpp::llama_get_memory(self.ctx_ptr);
+            llama_cpp::llama_memory_seq_rm(mem, 0, -1, -1);
+
+            let vocab = llama_cpp::llama_model_get_vocab(self.model_ptr);
+            let n_vocab = llama_cpp::llama_vocab_n_tokens(vocab);
+
+            if n_vocab <= 0 {
+                return Err(anyhow::anyhow!("💀 Invalid model vocabulary"));
+            }
+
+            let c_prompt = std::ffi::CString::new(prompt.to_string())?;
+
+            // 1. Tokenize
+            let mut tokens = vec![0i32; prompt.len() + 8];
+            let n_tokens = llama_cpp::llama_tokenize(
+                vocab, 
+                c_prompt.as_ptr(), 
+                prompt.len() as i32, 
+                tokens.as_mut_ptr(), 
+                tokens.len() as i32, 
+                true, 
+                true
+            );
+            
+            if n_tokens < 0 {
+                return Err(anyhow::anyhow!("Tokenization failed"));
+            }
+            tokens.truncate(n_tokens as usize);
+
+            // 2. Initial Batch Decode (Prefill)
+            let batch_size = (tokens.len() as i32).max(512);
+            let mut batch = llama_cpp::llama_batch_init(batch_size, 0, 1);
+
+            for (i, token) in tokens.iter().enumerate() {
+                *batch.token.add(i) = *token;
+                *batch.pos.add(i) = i as i32;
+                *batch.n_seq_id.add(i) = 1;
+                *(*batch.seq_id.add(i)).add(0) = 0;
+                *batch.logits.add(i) = if i == tokens.len() - 1 { 1 } else { 0 };
+            }
+            batch.n_tokens = tokens.len() as i32;
+
+            info!("🧠 [Native-Llama] Prefilling batch of {} tokens...", tokens.len());
+            if llama_cpp::llama_decode(self.ctx_ptr, batch) != 0 {
+                llama_cpp::llama_batch_free(batch);
+                return Err(anyhow::anyhow!("Prefill decode failed"));
+            }
+            llama_cpp::llama_batch_free(batch);
+            
+            Ok(tokens)
+        }
+    }
+
     pub fn stream_tokens(
         &self, 
         prompt: &str, 

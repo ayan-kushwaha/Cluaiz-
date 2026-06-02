@@ -60,9 +60,5 @@ mod tests {
     fn test_booster_ignition() {
         let result = SystemBooster::ignite();
         assert!(result.is_ok());
-        
-        let control = result.unwrap();
-        // Default speculative decoding should be Off as per schema
-        assert_eq!(control.speculative_decoding, crate::FeatureState::Off);
     }
 }

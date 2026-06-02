@@ -12,6 +12,7 @@ mod tests {
             "id": "{}",
             "name": "Skill {}",
             "version": "1.0.0",
+            "author": "Aryan",
             "description": "Stress Test Skill",
             "triggers": {{
                 "semantic": ["{}"],
@@ -22,11 +23,16 @@ mod tests {
                 "network": false,
                 "filesystem": false
             }},
-            "soul_type": "KV_CACHE"
+            "soul_type": "PROMPT_CACHE",
+            "Core_metadata": {{
+                "token_count": 1024,
+                "head_dim": 128
+            }}
         }}"#, id, id, id);
         
         fs::write(skill_path.join("manifest.json"), manifest).unwrap();
-        fs::write(skill_path.join("state.kv-cache"), vec![0u8; 1024]).unwrap();
+        // 2. Create a mock prompt-cache file (1KB of zeros)
+        fs::write(skill_path.join("state.prompt-cache"), vec![0u8; 1024]).unwrap();
     }
 
     #[tokio::test]

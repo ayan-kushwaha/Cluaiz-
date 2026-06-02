@@ -28,7 +28,7 @@ Cluaiz is designed to eliminate the "Abstraction Bloat" found in traditional inf
 
 ## 🧵 3. The AtmaSteer Protocol
 AtmaSteer is our proprietary method for **Physical State Injection**. 
-- Instead of using prompt context, we inject behavioral rules directly into the **16-token KV-cache buckets**.
+- Instead of using prompt context, we inject behavioral rules directly into the **16-token prompt-cache buckets**.
 - This ensures 100% adherence to instructions without context drift or "Hallucination of Identity."
 
 ---

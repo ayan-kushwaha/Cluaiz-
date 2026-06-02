@@ -188,8 +188,13 @@ impl UnifiedBackend for RuntimeB {
         ))
     }
 
-    fn prefill(&mut self, _prompt: &str) -> Result<()> {
-        Ok(())
+    fn prefill(&mut self, prompt: &str) -> Result<()> {
+        if let Some(ref native) = self.native {
+            native.prefill_prompt(prompt)?;
+            Ok(())
+        } else {
+            Err(anyhow::anyhow!("Prefill not supported without native backend"))
+        }
     }
 
     fn evaluate_tps(&self) -> f64 {

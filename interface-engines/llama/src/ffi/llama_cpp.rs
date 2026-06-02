@@ -180,6 +180,23 @@ extern "C" {
 
     /// 🛑 Logging: Redirect native library logs to avoid TUI noise.
     pub fn llama_log_set(log_callback: Option<LlamaLogCallback>, user_data: *mut std::ffi::c_void);
+
+    /// 💾 State Save
+    pub fn llama_state_save_file(
+        ctx: *mut std::ffi::c_void,
+        path_session: *const c_char,
+        tokens: *const i32,
+        n_token_count: usize,
+    ) -> bool;
+
+    /// 💾 State Load
+    pub fn llama_state_load_file(
+        ctx: *mut std::ffi::c_void,
+        path_session: *const c_char,
+        tokens_out: *mut i32,
+        n_token_capacity: usize,
+        n_token_count_out: *mut usize,
+    ) -> bool;
 }
 
 pub type LlamaLogCallback = extern "C" fn(level: i32, text: *const c_char, user_data: *mut std::ffi::c_void);
