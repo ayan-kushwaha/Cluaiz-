@@ -142,9 +142,11 @@ fn main() {
         .define("LLAMA_BUILD_APP",      "OFF")
         .define("LLAMA_STATIC",         "ON")
         .define("BUILD_SHARED_LIBS",    "OFF")
-        // Use MultiThreaded (/MT) to match Rust's default static CRT on Windows MSVC.
-        // SYCL backend (icx) requires MultiThreadedDLL (/MD).
-        .define("CMAKE_MSVC_RUNTIME_LIBRARY", if env::var("CARGO_FEATURE_SYCL").is_ok() { "MultiThreadedDLL" } else { "MultiThreaded" })
+        // Use MultiThreadedDLL (/MD) to match Rust's default dynamic CRT on Windows MSVC,
+        // and to avoid LNK2038 mismatch with other C++ libraries like ONNX Runtime (ort) which use /MD.
+        // CMAKE_POLICY_DEFAULT_CMP0091=NEW is required for CMake 3.14 to respect CMAKE_MSVC_RUNTIME_LIBRARY
+        .define("CMAKE_POLICY_DEFAULT_CMP0091", "NEW")
+        .define("CMAKE_MSVC_RUNTIME_LIBRARY", "MultiThreadedDLL")
         .profile("Release");
 
     // ── Apple Platform Alignment ──────────────────────────────────────

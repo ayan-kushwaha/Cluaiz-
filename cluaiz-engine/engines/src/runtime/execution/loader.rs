@@ -66,7 +66,7 @@ impl GGUFLoader {
         );
  
         // 4. Delegate Instantiation to the Core Hub (Universal DNA Dispatch)
-        let model = CoreHub::instantiate(path.to_string_lossy().as_ref(), Cluaiz_context).await?;
+        let model = CoreHub::instantiate(path.to_string_lossy().as_ref(), "gguf", Cluaiz_context).await?;
   
         Ok((model, bos_token_id))
     }

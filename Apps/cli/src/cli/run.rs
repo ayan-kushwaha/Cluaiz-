@@ -32,11 +32,11 @@ pub async fn execute(model_id: &str, _interactive: bool) -> Result<()> {
         
         println!("  {} Scanning HuggingFace Hub for '{}'...", "🔍".cyan(), repo_id);
         
-        let variants = engines::models::manager::hf_hub::HuggingFaceHub::list_gguf_variants(&repo_id).await
+        let variants = engines::models::manager::hf_hub::HuggingFaceHub::list_variants(&repo_id).await
             .map_err(|e| color_eyre::eyre::eyre!(e))?;
             
         let options: Vec<String> = variants.iter().map(|v| format!("{} ({:.2} GB)", v.filename, v.size_gb)).collect();
-        let selection = inquire::Select::new("Select GGUF variant to download:", options).prompt()
+        let selection = inquire::Select::new("Select model variant to download:", options).prompt()
             .map_err(|e| color_eyre::eyre::eyre!("Selection cancelled: {}", e))?;
             
         let selected_filename = selection.split(" (").next().unwrap().to_string();
@@ -90,62 +90,75 @@ pub async fn execute(model_id: &str, _interactive: bool) -> Result<()> {
     let model_file = model_path.join(&manifest.huggingface_filename);
 
     if !is_local {
-        println!("  {} Fetching Deep Metadata (GGUF Binary Probe)...", "📡".cyan());
+        println!("  {} Fetching Deep Metadata (Binary Probe)...", "📡".cyan());
     }
     
-    let probe_result = if is_local && model_file.exists() {
-        cluaiz_shared::utils::gguf_prober::GGUFProber::probe(&model_file).map_err(|e| e.to_string())
+    let is_onnx = manifest.architecture_type == "onnx";
+    
+    if is_onnx {
+        // ONNX specific metadata display
+        if !is_local {
+            println!("    ├─ 🧠 Architecture: {}", manifest.architecture.yellow());
+            println!("    ├─ 🧩 Type: ONNX Optimized Execution Graph");
+            println!("    ├─ 📦 Quantization: fp32");
+            println!("    ├─ 💾 Download Size: {:.2} GB", manifest.download_size_gb);
+            println!("    ├─ ⚙️ RAM Requirement: {:.2} GB", manifest.ram_required_gb);
+        }
     } else {
-        engines::models::manager::hf_hub::HuggingFaceHub::fetch_partial_gguf_metadata(&manifest.download_url).await
-    };
-
-    if let Ok((metadata, _tensor_infos, tensor_count)) = probe_result {
-        let arch = metadata.get("general.architecture").unwrap_or(&"Unknown".to_string()).to_string();
-        let ctx = metadata.get(&format!("{}.context_length", arch)).or(metadata.get("llama.context_length")).unwrap_or(&"Unknown".to_string()).to_string();
-        
-        let ctx_display = if let Ok(ctx_val) = ctx.parse::<u32>() {
-            if ctx_val >= 1024 {
-                format!("{} ({}K)", ctx_val, ctx_val / 1024)
-            } else {
-                ctx.clone()
-            }
+        let probe_result = if is_local && model_file.exists() {
+            cluaiz_shared::utils::gguf_prober::GGUFProber::probe(&model_file).map_err(|e| e.to_string())
         } else {
-            ctx.clone()
+            engines::models::manager::hf_hub::HuggingFaceHub::fetch_partial_gguf_metadata(&manifest.download_url).await
         };
 
-        let params = metadata.get("general.parameter_count").unwrap_or(&"Unknown".to_string()).to_string();
-        let file_type = metadata.get("general.file_type").unwrap_or(&"Unknown".to_string()).to_string();
-        let blocks = metadata.get(&format!("{}.block_count", arch)).unwrap_or(&"Unknown".to_string()).to_string();
-        
-        let num_layers = blocks.parse::<u64>().unwrap_or(32);
-        let num_heads = metadata.get(&format!("{}.attention.head_count", arch)).and_then(|s| s.parse::<u64>().ok()).unwrap_or(32);
-        let num_kv_heads = metadata.get(&format!("{}.attention.head_count_kv", arch)).and_then(|s| s.parse::<u64>().ok()).unwrap_or(num_heads);
-        let hidden_size = metadata.get(&format!("{}.embedding_length", arch)).and_then(|s| s.parse::<u64>().ok()).unwrap_or(4096);
-        
-        let head_dim = hidden_size / num_heads.max(1);
-        let standard_context_tokens = 8192;
-        let kv_cache_bytes = 2 * 2 * num_layers * num_kv_heads * head_dim * standard_context_tokens;
-        let kv_cache_gb = kv_cache_bytes as f64 / (1024.0 * 1024.0 * 1024.0);
-        let base_engine_overhead_gb = 0.30;
-        
-        // Dynamically override manifest RAM based on exact architectural math
-        manifest.ram_required_gb = manifest.download_size_gb + base_engine_overhead_gb + kv_cache_gb;
+        if let Ok((metadata, _tensor_infos, tensor_count)) = probe_result {
+            let arch = metadata.get("general.architecture").unwrap_or(&"Unknown".to_string()).to_string();
+            let ctx = metadata.get(&format!("{}.context_length", arch)).or(metadata.get("llama.context_length")).unwrap_or(&"Unknown".to_string()).to_string();
+            
+            let ctx_display = if let Ok(ctx_val) = ctx.parse::<u32>() {
+                if ctx_val >= 1024 {
+                    format!("{} ({}K)", ctx_val, ctx_val / 1024)
+                } else {
+                    ctx.clone()
+                }
+            } else {
+                ctx.clone()
+            };
 
-        if !is_local {
-            println!("    ├─ 🧠 Architecture: {}", arch.yellow());
-            println!("    ├─ 📏 Context Window: {} tokens", ctx_display.green());
-            println!("    ├─ 🧩 Parameters: {} B", params.green());
-            println!("    ├─ 📦 Quantization / File Type: {}", file_type.cyan());
-            println!("    ├─ 📚 Network Layers (Blocks): {}", blocks.magenta());
-            println!("    ├─ ⚡ Tensor Count: {}", tensor_count.to_string().cyan());
-            println!("    ├─ 💾 Download Size: {:.2} GB", manifest.download_size_gb);
-            println!("    ├─ 🧮 KV Cache (8K tokens): {:.2} GB", kv_cache_gb);
-            println!("    ├─ ⚙️ Base Engine Overhead: {:.2} GB", base_engine_overhead_gb);
-        }
-    } else if let Err(e) = probe_result {
-        if !is_local {
-            println!("    ├─ ⚠️ Could not probe remote GGUF header: {}", e);
-            println!("    ├─ 💾 Download Size: {:.2} GB", manifest.download_size_gb);
+            let params = metadata.get("general.parameter_count").unwrap_or(&"Unknown".to_string()).to_string();
+            let file_type = metadata.get("general.file_type").unwrap_or(&"Unknown".to_string()).to_string();
+            let blocks = metadata.get(&format!("{}.block_count", arch)).unwrap_or(&"Unknown".to_string()).to_string();
+            
+            let num_layers = blocks.parse::<u64>().unwrap_or(32);
+            let num_heads = metadata.get(&format!("{}.attention.head_count", arch)).and_then(|s| s.parse::<u64>().ok()).unwrap_or(32);
+            let num_kv_heads = metadata.get(&format!("{}.attention.head_count_kv", arch)).and_then(|s| s.parse::<u64>().ok()).unwrap_or(num_heads);
+            let hidden_size = metadata.get(&format!("{}.embedding_length", arch)).and_then(|s| s.parse::<u64>().ok()).unwrap_or(4096);
+            
+            let head_dim = hidden_size / num_heads.max(1);
+            let standard_context_tokens = 8192;
+            let kv_cache_bytes = 2 * 2 * num_layers * num_kv_heads * head_dim * standard_context_tokens;
+            let kv_cache_gb = kv_cache_bytes as f64 / (1024.0 * 1024.0 * 1024.0);
+            let base_engine_overhead_gb = 0.30;
+            
+            // Dynamically override manifest RAM based on exact architectural math
+            manifest.ram_required_gb = manifest.download_size_gb + base_engine_overhead_gb + kv_cache_gb;
+
+            if !is_local {
+                println!("    ├─ 🧠 Architecture: {}", arch.yellow());
+                println!("    ├─ 📏 Context Window: {} tokens", ctx_display.green());
+                println!("    ├─ 🧩 Parameters: {} B", params.green());
+                println!("    ├─ 📦 Quantization / File Type: {}", file_type.cyan());
+                println!("    ├─ 📚 Network Layers (Blocks): {}", blocks.magenta());
+                println!("    ├─ ⚡ Tensor Count: {}", tensor_count.to_string().cyan());
+                println!("    ├─ 💾 Download Size: {:.2} GB", manifest.download_size_gb);
+                println!("    ├─ 🧮 KV Cache (8K tokens): {:.2} GB", kv_cache_gb);
+                println!("    ├─ ⚙️ Base Engine Overhead: {:.2} GB", base_engine_overhead_gb);
+            }
+        } else if let Err(e) = probe_result {
+            if !is_local {
+                println!("    ├─ ⚠️ Could not probe remote GGUF header: {}", e);
+                println!("    ├─ 💾 Download Size: {:.2} GB", manifest.download_size_gb);
+            }
         }
     }
     
@@ -217,7 +230,8 @@ pub async fn execute(model_id: &str, _interactive: bool) -> Result<()> {
                 return Err(color_eyre::eyre::eyre!("Initialization aborted by user."));
             }
             manager.pull_model_with_manifest(&manifest).await.map_err(|e| color_eyre::eyre::eyre!(e))?;
-            println!("\n  {} HuggingFace Model Downloaded! Launching dynamic chat session...", "✅".green());
+            
+            println!("\n  {} HuggingFace Model Downloaded! Launching dynamic session...", "✅".green());
             is_local = true;
         } else {
             let confirm = inquire::Confirm::new("Audit passed. Proceed with model download and initialization?").with_default(true).prompt()?;
@@ -236,8 +250,11 @@ pub async fn execute(model_id: &str, _interactive: bool) -> Result<()> {
     let dna = cluaiz_shared::StructuralDNA::default();
     let context = cluaiz_shared::CluaizContext::boot(dna, cluaiz_shared::TemplateManager::default());
 
+    let engine_mode = if manifest.architecture_type == "onnx" { "onnx" } else { "llama" };
+
     let engine = engines::runtime::execution::hub::HardwareOrchestrator::instantiate(
         model_file.to_str().unwrap(),
+        engine_mode,
         context
     ).await.map_err(|e| color_eyre::eyre::eyre!(e))?;
 

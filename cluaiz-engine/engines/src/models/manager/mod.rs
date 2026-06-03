@@ -84,6 +84,59 @@ impl ModelManager {
             println!("  {} Weights verified.", "✅".green());
         }
 
+        let tokenizer_file = model_path.join("tokenizer.json");
+        if !tokenizer_file.exists() && manifest.download_url.contains("huggingface.co") {
+            // Attempt to fetch tokenizer.json, ignore failure if not present.
+            let repo = manifest.download_url.split("/resolve").next().unwrap_or("");
+            if !repo.is_empty() {
+                let tokenizer_url = format!("{}/resolve/main/tokenizer.json", repo);
+                println!("  {} Synchronizing native tokenizer...", "🔍".cyan());
+                let _ = installer.download_weights(&tokenizer_url, "tokenizer.json").await;
+            }
+        }
+
+        // 10. Universal Multi-Part Downloader (ONNX Data & GGUF Splits)
+        if manifest.download_url.contains("huggingface.co") {
+            let repo = manifest.download_url.split("/resolve").next().unwrap_or("");
+            if !repo.is_empty() {
+                let api_url = format!("{}/tree/main?recursive=true", repo.replace("huggingface.co/", "huggingface.co/api/models/"));
+                let client = reqwest::Client::new();
+                if let Ok(res) = client.get(&api_url).send().await {
+                    if let Ok(items) = res.json::<Vec<serde_json::Value>>().await {
+                        let base_name = std::path::Path::new(&manifest.huggingface_filename)
+                            .file_name().and_then(|n| n.to_str()).unwrap_or(&manifest.huggingface_filename);
+                        
+                        let base_prefix = if base_name.ends_with(".gguf") && base_name.contains("-of-") {
+                            base_name.split("-0").next().unwrap_or(base_name)
+                        } else {
+                            base_name
+                        };
+
+                        for item in items {
+                            if let Some(path) = item.get("path").and_then(|p| p.as_str()) {
+                                let is_related = if manifest.huggingface_filename.ends_with(".onnx") {
+                                    path.starts_with(&format!("{}_data", base_name))
+                                } else if manifest.huggingface_filename.ends_with(".gguf") {
+                                    path.starts_with(base_prefix) && path.ends_with(".gguf") && path != base_name
+                                } else {
+                                    false
+                                };
+
+                                if is_related {
+                                    let part_file = model_path.join(path);
+                                    if !part_file.exists() {
+                                        let part_url = format!("{}/resolve/main/{}", repo, path);
+                                        println!("  {} Resolving Multi-Part Split: Fetching {}...", "🧠".cyan(), path);
+                                        let _ = installer.download_weights(&part_url, path).await;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // 8. Save/Refresh local manifest
         let local_manifest_path = model_path.join("model_manifest.json");
         let manifest_json = serde_json::to_string_pretty(&manifest)

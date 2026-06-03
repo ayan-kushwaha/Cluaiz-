@@ -25,7 +25,7 @@ pub async fn execute(model_id: &str) -> Result<()> {
         
         println!("  {} Scanning HuggingFace Hub for '{}'...", "🔍".cyan(), repo_id);
         
-        let variants = engines::models::manager::hf_hub::HuggingFaceHub::list_gguf_variants(&repo_id).await
+        let variants = engines::models::manager::hf_hub::HuggingFaceHub::list_variants(&repo_id).await
             .map_err(|e| color_eyre::eyre::eyre!(e))?;
             
         let options: Vec<String> = variants.iter().map(|v| format!("{} ({:.2} GB)", v.filename, v.size_gb)).collect();
@@ -214,6 +214,7 @@ pub async fn execute(model_id: &str) -> Result<()> {
 
     let engine = engines::runtime::execution::hub::HardwareOrchestrator::instantiate(
         model_file.to_str().unwrap(),
+        "gguf",
         context
     ).await.map_err(|e| color_eyre::eyre::eyre!(e))?;
 

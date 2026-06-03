@@ -8,6 +8,11 @@ pub trait UnifiedBackend {
     fn prefill(&mut self, prompt: &str) -> Result<()>;
     
     fn evaluate_tps(&self) -> f64;
+    
+    /// Generate an embedding vector from text or file path (primarily for Vision/ONNX)
+    fn embed(&mut self, _input: &str) -> Result<Vec<f32>> {
+        Err(anyhow::anyhow!("Embedding generation not supported by this backend."))
+    }
 }
 
 /// CluaizInference: The advanced streaming iteration interface.

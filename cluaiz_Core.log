@@ -1,35 +1,561 @@
-2026-06-02T15:27:00.863790Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Engine Linked: "C:\\Users\\Aryan\\.cluaiz\\engine\\cluaiz-engine.dll"
-2026-06-02T15:27:00.888539Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Kernel Linked (root): "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
-2026-06-02T15:27:00.897865Z  INFO cluaiz::core::bootstrapper: 🧬 [DevSync] Kernel Linked (subdir): "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\kernels\\cluaiz-llama-cuda.dll"
-2026-06-02T15:27:00.901030Z  INFO cluaiz::core::bootstrapper: 🛰️ [Cluaiz] Synchronizing Neural Registry...
-2026-06-02T15:27:03.951814Z  INFO system_booster::os_tuning: 🚀 [Bare Metal] Attempting to elevate process priority to high (Value: 128) for PID 34068
-2026-06-02T15:27:03.960507Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: ../../models
-2026-06-02T15:27:03.964544Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
-2026-06-02T15:27:03.990093Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
-2026-06-02T15:27:03.992141Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
-2026-06-02T15:27:04.024121Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
-2026-06-02T15:27:04.024334Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
-2026-06-02T15:27:04.049732Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
-2026-06-02T15:27:04.049925Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
-2026-06-02T15:27:04.076774Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
-2026-06-02T15:27:04.077110Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
-2026-06-02T15:27:04.103328Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
-2026-06-02T15:27:04.103547Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-02T15:27:04.140537Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
-2026-06-02T15:27:04.140830Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-02T15:27:04.169849Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
-2026-06-02T15:27:04.170098Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-02T15:27:04.197564Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
-2026-06-02T15:27:04.197868Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-02T15:27:04.225789Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
-2026-06-02T15:27:04.225997Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
-2026-06-02T15:27:04.226146Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
-2026-06-02T15:27:04.226471Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
-2026-06-02T15:27:04.226578Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
-2026-06-02T15:27:04.226601Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
-2026-06-02T15:27:04.226616Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
-2026-06-02T15:27:04.226623Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
-2026-06-02T15:27:04.226629Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
-2026-06-02T15:27:04.226635Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
-2026-06-02T15:27:04.226646Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
-2026-06-02T15:27:04.227262Z  INFO engines::models::registry: 📚 [Roster] Library source found at: ../../models/library
+2026-06-03T18:01:40.916335Z  WARN cluaiz::core::bootstrapper: ⚠️ [DevSync] Kernel source not found at: "C:\\Users\\Aryan\\my\\Cluaiz-workspace\\cluaiz\\target\\debug\\cluaiz_llama.dll"
+2026-06-03T18:01:40.916988Z  INFO cluaiz::core::bootstrapper: 🛰️ [Cluaiz] Synchronizing Neural Registry...
+2026-06-03T18:01:41.614761Z  INFO system_booster::os_tuning: 🚀 [Bare Metal] Attempting to elevate process priority to high (Value: 128) for PID 30204
+2026-06-03T18:01:41.619390Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: ../../models
+2026-06-03T18:01:41.622661Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-06-03T18:01:41.623160Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
+2026-06-03T18:01:41.623314Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
+2026-06-03T18:01:41.623641Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-06-03T18:01:41.623725Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
+2026-06-03T18:01:41.624029Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
+2026-06-03T18:01:41.624120Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
+2026-06-03T18:01:41.624431Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
+2026-06-03T18:01:41.624514Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
+2026-06-03T18:01:41.624823Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
+2026-06-03T18:01:41.624905Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-03T18:01:41.625625Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
+2026-06-03T18:01:41.625725Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-03T18:01:41.626102Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
+2026-06-03T18:01:41.626194Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-03T18:01:41.626506Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
+2026-06-03T18:01:41.626603Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-03T18:01:41.626908Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
+2026-06-03T18:01:41.626998Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
+2026-06-03T18:01:41.627397Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
+2026-06-03T18:01:41.627865Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
+2026-06-03T18:01:41.628012Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
+2026-06-03T18:01:41.628051Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-06-03T18:01:41.628100Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
+2026-06-03T18:01:41.628119Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
+2026-06-03T18:01:41.628129Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
+2026-06-03T18:01:41.628135Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
+2026-06-03T18:01:41.628142Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
+2026-06-03T18:01:41.628149Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
+2026-06-03T18:01:41.628158Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
+2026-06-03T18:01:41.628165Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
+2026-06-03T18:01:41.628171Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
+2026-06-03T18:01:41.628329Z  INFO engines::models::registry: 📚 [Roster] Library source found at: ../../models/library
+2026-06-03T18:01:41.636676Z  INFO engines::runtime::execution::hub: 🔩 [Orchestrator] Initiating Dynamic Hardware Handshake for Engine: onnx
+2026-06-03T18:01:41.636711Z  INFO engines::runtime::execution::hub: 🔮 [Orchestrator] Bypassing FFI Linker. Instantiating Native Rust ONNX Gatekeeper.
+2026-06-03T18:01:41.636784Z  INFO cluaiz_onnx::engine: 🧿 [ONNX] Runtime initialized. Ready to load models via API.
+2026-06-03T18:01:41.636929Z  INFO engines::runtime::execution::hub: 🔍 [Orchestrator] Tokenizer found for Vision Model. Loading as Multimodal Engine.
+2026-06-03T18:01:41.636950Z  INFO cluaiz_onnx::engine: 📦 [ONNX] Loading model from: C:\Users\Aryan\.cluaiz\models\vision\fashion_clip-unknown-onnx-fp32\model.onnx
+2026-06-03T18:01:43.436220Z  WARN cluaiz_onnx::engine: 📡 [Telemetry] High VRAM pressure (Free: 0.0GB). Auto-falling back ONNX to CPU AVX.
+2026-06-03T18:01:43.474318Z  INFO ort::logging: Discovered OrtHardwareDevice {vendor_id:0x1022, device_id:0x7, vendor:AMD, type:0, metadata: [Description=AMD Ryzen 7 7435HS                             , ]}
+2026-06-03T18:01:43.474361Z  INFO ort::logging: Discovered OrtHardwareDevice {vendor_id:0x10de, device_id:0x28e3, vendor:NVIDIA, type:1, metadata: [Description=NVIDIA GeForce RTX 3050 A Laptop GPU, Discrete=1, DxgiAdapterNumber=0, DxgiHighPerformanceIndex=0, DxgiVideoMemory=3892 MB, LUID=61796, ]}
+2026-06-03T18:01:43.474836Z  INFO ort::logging: Session Options {  execution_mode:0 execution_order:DEFAULT enable_profiling:0 optimized_model_filepath: enable_mem_pattern:1 enable_mem_reuse:1 enable_cpu_mem_arena:1 profile_file_prefix:onnxruntime_profile_ session_logid: session_log_severity_level:-1 session_log_verbosity_level:0 max_num_graph_transformation_steps:10 graph_optimization_level:4 intra_op_param:OrtThreadPoolParams { thread_pool_size: 4 auto_set_affinity: 0 allow_spinning: 0 dynamic_block_base_: 0 stack_size: 0 affinity_str:  set_denormal_as_zero: 0 } inter_op_param:OrtThreadPoolParams { thread_pool_size: 0 auto_set_affinity: 0 allow_spinning: 0 dynamic_block_base_: 0 stack_size: 0 affinity_str:  set_denormal_as_zero: 0 } use_per_session_threads:1 thread_pool_allow_spinning:1 use_deterministic_compute:0 ep_selection_policy:5 config_options: {  } }
+2026-06-03T18:01:43.474882Z  INFO ort::logging: Flush-to-zero and denormal-as-zero are off
+2026-06-03T18:01:43.474893Z  INFO ort::logging: Creating and using per session threadpools since use_per_session_threads_ is true
+2026-06-03T18:01:43.474923Z  INFO ort::logging: Dynamic block base set to 0
+2026-06-03T18:01:44.038041Z  INFO ort::logging: Initializing session.
+2026-06-03T18:01:44.038160Z  INFO ort::logging: Creating BFCArena for Cpu with following configs: initial_chunk_size_bytes: 1048576 max_dead_bytes_per_chunk: 134217728 initial_growth_chunk_size_bytes: 2097152 max_power_of_two_extend_bytes: 1073741824 memory limit: 18446744073709551615 arena_extend_strategy: 0
+2026-06-03T18:01:44.041741Z  INFO ort::logging: This model does not have any local functions defined. AOT Inlining is not performed
+2026-06-03T18:01:44.146713Z  INFO ort::logging: GraphTransformer EnsureUniqueDQForNodeUnit modified: 0 with status: OK
+2026-06-03T18:01:44.148499Z  INFO ort::logging: GraphTransformer Level1_RuleBasedTransformer modified: 1 with status: OK
+2026-06-03T18:01:44.174945Z  INFO ort::logging: GraphTransformer DoubleQDQPairsRemover modified: 0 with status: OK
+2026-06-03T18:01:44.183460Z  INFO ort::logging: Total shared scalar initializer count: 1144
+2026-06-03T18:01:44.183535Z  INFO ort::logging: GraphTransformer ConstantSharing modified: 1 with status: OK
+2026-06-03T18:01:44.208906Z  INFO ort::logging: GraphTransformer CommonSubexpressionElimination modified: 1 with status: OK
+2026-06-03T18:01:44.233122Z  INFO ort::logging: GraphTransformer ConstantFolding modified: 1 with status: OK
+2026-06-03T18:01:44.249231Z  INFO ort::logging: Removing initializer 'logit_scale'. It is no longer used by any node.
+2026-06-03T18:01:44.249286Z  INFO ort::logging: Removing initializer '/vision_model/embeddings/position_embedding/Constant_output_0'. It is no longer used by any node.
+2026-06-03T18:01:44.249347Z  INFO ort::logging: Removing initializer 'vision_model.embeddings.position_embedding.weight'. It is no longer used by any node.
+2026-06-03T18:01:44.249378Z  INFO ort::logging: Removing initializer '/text_model/Constant_23_output_0'. It is no longer used by any node.
+2026-06-03T18:01:44.249420Z  INFO ort::logging: Removing initializer '/vision_model/embeddings/Shape_2_output_0'. It is no longer used by any node.
+2026-06-03T18:01:44.249431Z  INFO ort::logging: Removing initializer '/text_model/Shape_4_output_0'. It is no longer used by any node.
+2026-06-03T18:01:44.249440Z  INFO ort::logging: Removing initializer '/text_model/Shape_7_output_0'. It is no longer used by any node.
+2026-06-03T18:01:44.250880Z  INFO ort::logging: GraphTransformer MatMulAddFusion modified: 0 with status: OK
+2026-06-03T18:01:44.251648Z  INFO ort::logging: Fused reshape node: /text_model/Reshape_output_0
+2026-06-03T18:01:44.251691Z  INFO ort::logging: Fused reshape node: /text_model/Reshape_1_output_0
+2026-06-03T18:01:44.252002Z  INFO ort::logging: Total fused reshape node count: 2
+2026-06-03T18:01:44.252013Z  INFO ort::logging: GraphTransformer ReshapeFusion modified: 1 with status: OK
+2026-06-03T18:01:44.268256Z  INFO ort::logging: GraphTransformer FreeDimensionOverrideTransformer modified: 0 with status: OK
+2026-06-03T18:01:44.268344Z  INFO ort::logging: GraphTransformer GeluFusionL1 modified: 0 with status: OK
+2026-06-03T18:01:44.268378Z  INFO ort::logging: GraphTransformer LayerNormFusionL1 modified: 0 with status: OK
+2026-06-03T18:01:44.269259Z  INFO ort::logging: GraphTransformer QDQPropagationTransformer modified: 0 with status: OK
+2026-06-03T18:01:44.269752Z  INFO ort::logging: GraphTransformer WeightBiasQuantization modified: 0 with status: OK
+2026-06-03T18:01:44.270202Z  INFO ort::logging: GraphTransformer EnsureUniqueDQForNodeUnit modified: 0 with status: OK
+2026-06-03T18:01:44.270649Z  INFO ort::logging: GraphTransformer WhereDummyDq modified: 0 with status: OK
+2026-06-03T18:01:44.274271Z  INFO ort::logging: GraphTransformer TransposeOptimizer modified: 0 with status: OK
+2026-06-03T18:01:44.275420Z  INFO ort::logging: GraphTransformer Level1_RuleBasedTransformer modified: 0 with status: OK
+2026-06-03T18:01:44.275877Z  INFO ort::logging: GraphTransformer DoubleQDQPairsRemover modified: 0 with status: OK
+2026-06-03T18:01:44.278059Z  INFO ort::logging: GraphTransformer CommonSubexpressionElimination modified: 0 with status: OK
+2026-06-03T18:01:44.278901Z  INFO ort::logging: GraphTransformer ConstantFolding modified: 0 with status: OK
+2026-06-03T18:01:44.279464Z  INFO ort::logging: GraphTransformer MatMulAddFusion modified: 0 with status: OK
+2026-06-03T18:01:44.280434Z  INFO ort::logging: GraphTransformer ReshapeFusion modified: 0 with status: OK
+2026-06-03T18:01:44.280459Z  INFO ort::logging: GraphTransformer FreeDimensionOverrideTransformer modified: 0 with status: OK
+2026-06-03T18:01:44.280471Z  INFO ort::logging: GraphTransformer GeluFusionL1 modified: 0 with status: OK
+2026-06-03T18:01:44.280480Z  INFO ort::logging: GraphTransformer LayerNormFusionL1 modified: 0 with status: OK
+2026-06-03T18:01:44.280936Z  INFO ort::logging: GraphTransformer QDQPropagationTransformer modified: 0 with status: OK
+2026-06-03T18:01:44.281486Z  INFO ort::logging: GraphTransformer WeightBiasQuantization modified: 0 with status: OK
+2026-06-03T18:01:44.282029Z  INFO ort::logging: GraphTransformer EnsureUniqueDQForNodeUnit modified: 0 with status: OK
+2026-06-03T18:01:44.282437Z  INFO ort::logging: GraphTransformer WhereDummyDq modified: 0 with status: OK
+2026-06-03T18:01:44.298356Z  INFO ort::logging: Running graph optimizations in loop 1 time/s (Graph Optimizations Loop Level : 1)
+2026-06-03T18:01:44.299271Z  INFO ort::logging: GraphTransformer Level2_RuleBasedTransformer modified: 0 with status: OK
+2026-06-03T18:01:44.303667Z  INFO ort::logging: GraphTransformer TransposeOptimizer_CPUExecutionProvider modified: 0 with status: OK
+2026-06-03T18:01:44.304245Z  INFO ort::logging: GraphTransformer QDQS8ToU8Transformer modified: 0 with status: OK
+2026-06-03T18:01:44.305492Z  INFO ort::logging: GraphTransformer QDQSelectorActionTransformer modified: 0 with status: OK
+2026-06-03T18:01:44.305929Z  INFO ort::logging: GraphTransformer GemmActivationFusion modified: 0 with status: OK
+2026-06-03T18:01:44.306391Z  INFO ort::logging: GraphTransformer MatMulIntegerToFloatFusion modified: 0 with status: OK
+2026-06-03T18:01:44.306824Z  INFO ort::logging: GraphTransformer DynamicQuantizeMatMulFusion modified: 0 with status: OK
+2026-06-03T18:01:44.307380Z  INFO ort::logging: GraphTransformer ConvActivationFusion modified: 0 with status: OK
+2026-06-03T18:01:44.307811Z  INFO ort::logging: GraphTransformer GeluFusionL2 modified: 0 with status: OK
+2026-06-03T18:01:44.309286Z  INFO ort::logging: GraphTransformer LayerNormFusionL2 modified: 1 with status: OK
+2026-06-03T18:01:44.322287Z  INFO ort::logging: Removing initializer '/vision_model/encoder/layers.2/layer_norm1/Constant_1_output_0'. It is no longer used by any node.
+2026-06-03T18:01:44.323445Z  INFO ort::logging: GraphTransformer SimplifiedLayerNormFusion modified: 0 with status: OK
+2026-06-03T18:01:44.323781Z  INFO ort::logging: GraphTransformer AttentionFusion modified: 0 with status: OK
+2026-06-03T18:01:44.324040Z  INFO ort::logging: GraphTransformer EmbedLayerNormFusion modified: 0 with status: OK
+2026-06-03T18:01:44.324866Z  INFO ort::logging: GraphTransformer GatherSliceToSplitFusion modified: 0 with status: OK
+2026-06-03T18:01:44.325206Z  INFO ort::logging: GraphTransformer GatherToSliceFusion modified: 0 with status: OK
+2026-06-03T18:01:44.325966Z  INFO ort::logging: GraphTransformer MatmulTransposeFusion modified: 1 with status: OK
+2026-06-03T18:01:44.338656Z  INFO ort::logging: GraphTransformer BiasGeluFusion modified: 0 with status: OK
+2026-06-03T18:01:44.338985Z  INFO ort::logging: GraphTransformer GroupQueryAttentionFusion modified: 0 with status: OK
+2026-06-03T18:01:44.339339Z  INFO ort::logging: GraphTransformer MatMulAddFusion modified: 0 with status: OK
+2026-06-03T18:01:44.339642Z  INFO ort::logging: GraphTransformer SkipLayerNormFusion modified: 0 with status: OK
+2026-06-03T18:01:44.340009Z  INFO ort::logging: GraphTransformer FastGeluFusion modified: 0 with status: OK
+2026-06-03T18:01:44.340576Z  INFO ort::logging: GraphTransformer QuickGeluFusion modified: 1 with status: OK
+2026-06-03T18:01:44.351973Z  INFO ort::logging: Removing initializer '/text_model/encoder/layers.9/mlp/activation_fn/Constant_output_0'. It is no longer used by any node.
+2026-06-03T18:01:44.353080Z  INFO ort::logging: GraphTransformer BiasSoftmaxFusion modified: 0 with status: OK
+2026-06-03T18:01:44.353370Z  INFO ort::logging: GraphTransformer BiasDropoutFusion modified: 0 with status: OK
+2026-06-03T18:01:44.353899Z  INFO ort::logging: GraphTransformer MatMulScaleFusion modified: 1 with status: OK
+2026-06-03T18:01:44.365781Z  INFO ort::logging: Removing initializer '/Exp_output_0'. It is no longer used by any node.
+2026-06-03T18:01:44.366804Z  INFO ort::logging: GraphTransformer MatMulActivationFusion modified: 0 with status: OK
+2026-06-03T18:01:44.367222Z  INFO ort::logging: GraphTransformer MatMulNBitsFusion modified: 0 with status: OK
+2026-06-03T18:01:44.367503Z  INFO ort::logging: GraphTransformer QDQFinalCleanupTransformer modified: 0 with status: OK
+2026-06-03T18:01:44.367768Z  INFO ort::logging: GraphTransformer Level2_RuleBasedTransformer modified: 0 with status: OK
+2026-06-03T18:01:44.368035Z  INFO ort::logging: GraphTransformer QDQS8ToU8Transformer modified: 0 with status: OK
+2026-06-03T18:01:44.368787Z  INFO ort::logging: GraphTransformer QDQSelectorActionTransformer modified: 0 with status: OK
+2026-06-03T18:01:44.369044Z  INFO ort::logging: GraphTransformer GemmActivationFusion modified: 0 with status: OK
+2026-06-03T18:01:44.369291Z  INFO ort::logging: GraphTransformer MatMulIntegerToFloatFusion modified: 0 with status: OK
+2026-06-03T18:01:44.369519Z  INFO ort::logging: GraphTransformer DynamicQuantizeMatMulFusion modified: 0 with status: OK
+2026-06-03T18:01:44.369859Z  INFO ort::logging: GraphTransformer ConvActivationFusion modified: 0 with status: OK
+2026-06-03T18:01:44.370097Z  INFO ort::logging: GraphTransformer GeluFusionL2 modified: 0 with status: OK
+2026-06-03T18:01:44.370315Z  INFO ort::logging: GraphTransformer LayerNormFusionL2 modified: 0 with status: OK
+2026-06-03T18:01:44.370569Z  INFO ort::logging: GraphTransformer SimplifiedLayerNormFusion modified: 0 with status: OK
+2026-06-03T18:01:44.370823Z  INFO ort::logging: GraphTransformer AttentionFusion modified: 0 with status: OK
+2026-06-03T18:01:44.371063Z  INFO ort::logging: GraphTransformer EmbedLayerNormFusion modified: 0 with status: OK
+2026-06-03T18:01:44.371858Z  INFO ort::logging: GraphTransformer GatherSliceToSplitFusion modified: 0 with status: OK
+2026-06-03T18:01:44.372224Z  INFO ort::logging: GraphTransformer GatherToSliceFusion modified: 0 with status: OK
+2026-06-03T18:01:44.372717Z  INFO ort::logging: GraphTransformer MatmulTransposeFusion modified: 0 with status: OK
+2026-06-03T18:01:44.373099Z  INFO ort::logging: GraphTransformer BiasGeluFusion modified: 0 with status: OK
+2026-06-03T18:01:44.373374Z  INFO ort::logging: GraphTransformer GroupQueryAttentionFusion modified: 0 with status: OK
+2026-06-03T18:01:44.373739Z  INFO ort::logging: GraphTransformer MatMulAddFusion modified: 0 with status: OK
+2026-06-03T18:01:44.374031Z  INFO ort::logging: GraphTransformer SkipLayerNormFusion modified: 0 with status: OK
+2026-06-03T18:01:44.374327Z  INFO ort::logging: GraphTransformer FastGeluFusion modified: 0 with status: OK
+2026-06-03T18:01:44.374620Z  INFO ort::logging: GraphTransformer QuickGeluFusion modified: 0 with status: OK
+2026-06-03T18:01:44.374868Z  INFO ort::logging: GraphTransformer BiasSoftmaxFusion modified: 0 with status: OK
+2026-06-03T18:01:44.375090Z  INFO ort::logging: GraphTransformer BiasDropoutFusion modified: 0 with status: OK
+2026-06-03T18:01:44.375428Z  INFO ort::logging: GraphTransformer MatMulScaleFusion modified: 0 with status: OK
+2026-06-03T18:01:44.375821Z  INFO ort::logging: GraphTransformer MatMulActivationFusion modified: 0 with status: OK
+2026-06-03T18:01:44.376240Z  INFO ort::logging: GraphTransformer MatMulNBitsFusion modified: 0 with status: OK
+2026-06-03T18:01:44.376557Z  INFO ort::logging: GraphTransformer QDQFinalCleanupTransformer modified: 0 with status: OK
+2026-06-03T18:01:44.386223Z  INFO ort::logging: GraphTransformer NchwcTransformer modified: 1 with status: OK
+2026-06-03T18:01:44.398768Z  INFO ort::logging: Removing initializer 'vision_model.embeddings.patch_embedding.weight'. It is no longer used by any node.
+2026-06-03T18:01:44.401643Z  INFO ort::logging: GraphTransformer NhwcTransformer modified: 0 with status: OK
+2026-06-03T18:01:44.402160Z  INFO ort::logging: GraphTransformer ConvAddActivationFusion modified: 0 with status: OK
+2026-06-03T18:01:44.402527Z  INFO ort::logging: GraphTransformer NchwcTransformer modified: 0 with status: OK
+2026-06-03T18:01:44.403857Z  INFO ort::logging: GraphTransformer NhwcTransformer modified: 0 with status: OK
+2026-06-03T18:01:44.404351Z  INFO ort::logging: GraphTransformer ConvAddActivationFusion modified: 0 with status: OK
+2026-06-03T18:01:44.405527Z  INFO ort::logging: GraphTransformer RemoveDuplicateCastTransformer modified: 0 with status: OK
+2026-06-03T18:01:44.405546Z  INFO ort::logging: GraphTransformer CastFloat16Transformer modified: 0 with status: OK
+2026-06-03T18:01:44.405794Z  INFO ort::logging: GraphTransformer FuseFp16InitializerToFp32NodeTransformer modified: 0 with status: OK
+2026-06-03T18:01:44.405836Z  INFO ort::logging: GraphTransformer MemcpyTransformer modified: 0 with status: OK
+2026-06-03T18:01:44.417937Z  INFO ort::logging: Use DeviceBasedPartition as default
+2026-06-03T18:01:44.591488Z  INFO ort::logging: Saving initialized tensors.
+2026-06-03T18:01:44.591815Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 8
+2026-06-03T18:01:44.591902Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 24
+2026-06-03T18:01:44.591921Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 24
+2026-06-03T18:01:44.591945Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4
+2026-06-03T18:01:44.591957Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 32
+2026-06-03T18:01:44.592015Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 8
+2026-06-03T18:01:44.592033Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 32
+2026-06-03T18:01:44.592045Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 16
+2026-06-03T18:01:44.592059Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 8
+2026-06-03T18:01:44.592080Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 8
+2026-06-03T18:01:44.592170Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4
+2026-06-03T18:01:44.592276Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4
+2026-06-03T18:01:44.592310Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4
+2026-06-03T18:01:44.592327Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 8
+2026-06-03T18:01:44.592368Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 32
+2026-06-03T18:01:44.592405Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 8
+2026-06-03T18:01:44.592442Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 16
+2026-06-03T18:01:44.592455Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 8
+2026-06-03T18:01:44.592476Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 32
+2026-06-03T18:01:44.592508Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 8
+2026-06-03T18:01:44.592521Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 8
+2026-06-03T18:01:44.592541Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 8
+2026-06-03T18:01:44.592584Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 8
+2026-06-03T18:01:44.592661Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4
+2026-06-03T18:01:44.592702Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 8
+2026-06-03T18:01:44.592722Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4
+2026-06-03T18:01:44.592735Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 8
+2026-06-03T18:01:44.592790Z  INFO ort::logging: Done saving initialized tensors
+2026-06-03T18:01:44.594942Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.596063Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.597294Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.598493Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.599546Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.605535Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.610597Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.611703Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.612954Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.614149Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.615221Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.621340Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.626271Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.627331Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.628378Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.629636Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.630743Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.636684Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.641759Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.642829Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.644312Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.645463Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.646580Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.652522Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.657511Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.658602Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.659698Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.661323Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.662444Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.668467Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.673627Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.674711Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.675737Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.676827Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.677980Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.683883Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.689048Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.690138Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.691216Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.692517Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.693728Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.699697Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.704692Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.705780Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.707463Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.709075Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.710177Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.716195Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.720779Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.722132Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.723793Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.724981Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.726022Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.731882Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.737072Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.738186Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.739340Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.740671Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.741751Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.747637Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.752123Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.753201Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.754420Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.755657Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.756786Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.762713Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.767839Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.768970Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.770029Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.771357Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 2359296
+2026-06-03T18:01:44.772538Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.778363Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 9437184
+2026-06-03T18:01:44.783556Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.784116Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.784602Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.785093Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.785618Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.788335Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.790390Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.790912Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.791468Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.791978Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.792475Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.794994Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.797403Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.797902Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.798421Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.798918Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.799386Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.801665Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.804160Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.804785Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.805307Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.805890Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.806476Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.808739Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.810756Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.811286Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.811819Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.812385Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.812993Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.815548Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.818363Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.818937Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.819624Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.820480Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.821090Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.823431Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.825867Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.826383Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.826903Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.827399Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.827863Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.829941Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.832297Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.833195Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.834017Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.834619Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.835101Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.837345Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.839349Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.839853Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.840439Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.841018Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.841523Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.844102Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.846260Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.846773Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.847294Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.847774Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.848345Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.850898Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.853328Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.853938Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.854452Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.854936Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.855416Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.857658Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.859976Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.860533Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.861137Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.861731Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.862241Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.864637Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 4194304
+2026-06-03T18:01:44.866820Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1572864
+2026-06-03T18:01:44.867716Z  INFO ort::logging: Reserving memory in BFCArena for Cpu size: 1048576
+2026-06-03T18:01:44.869844Z  INFO ort::logging: Session successfully initialized.
+2026-06-03T18:01:45.098489Z  INFO engines::runtime::execution::hub: 🧬 [Orchestrator] ONNX Native Pipeline Established.
+2026-06-03T18:01:47.239947Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: ../../models
+2026-06-03T18:01:47.243403Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-06-03T18:01:47.243997Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
+2026-06-03T18:01:47.244130Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
+2026-06-03T18:01:47.244470Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-06-03T18:01:47.244554Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
+2026-06-03T18:01:47.244965Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
+2026-06-03T18:01:47.245058Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
+2026-06-03T18:01:47.245394Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
+2026-06-03T18:01:47.245481Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
+2026-06-03T18:01:47.245803Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
+2026-06-03T18:01:47.245889Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-03T18:01:47.246637Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
+2026-06-03T18:01:47.246724Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-03T18:01:47.247039Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
+2026-06-03T18:01:47.247126Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-03T18:01:47.247439Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
+2026-06-03T18:01:47.247524Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-03T18:01:47.247827Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
+2026-06-03T18:01:47.247911Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
+2026-06-03T18:01:47.248314Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
+2026-06-03T18:01:47.248777Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
+2026-06-03T18:01:47.248937Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
+2026-06-03T18:01:47.248960Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-06-03T18:01:47.248967Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
+2026-06-03T18:01:47.248975Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
+2026-06-03T18:01:47.248984Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
+2026-06-03T18:01:47.248990Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
+2026-06-03T18:01:47.248997Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
+2026-06-03T18:01:47.249003Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
+2026-06-03T18:01:47.249014Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
+2026-06-03T18:01:47.249020Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
+2026-06-03T18:01:47.249028Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
+2026-06-03T18:01:47.249156Z  INFO engines::models::registry: 📚 [Roster] Library source found at: ../../models/library
+2026-06-03T18:01:47.255511Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:1.7b:gguf:binary Status: Optimal, Cached: false
+2026-06-03T18:01:47.255613Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:1.7b Status: Optimal, Cached: false
+2026-06-03T18:01:47.255702Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:8b Status: Optimal, Cached: false
+2026-06-03T18:01:47.255788Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:8b:gguf:binary Status: Optimal, Cached: false
+2026-06-03T18:01:47.255874Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:1.7b Status: Optimal, Cached: false
+2026-06-03T18:01:47.255962Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:1.7b:gguf:ternary Status: Optimal, Cached: false
+2026-06-03T18:01:47.256049Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:4b:gguf:ternary Status: Optimal, Cached: false
+2026-06-03T18:01:47.256135Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:4b Status: Optimal, Cached: false
+2026-06-03T18:01:47.256220Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:8b Status: Optimal, Cached: false
+2026-06-03T18:01:47.256307Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:8b:gguf:ternary Status: Optimal, Cached: false
+2026-06-03T18:01:47.256435Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:8b Status: Optimal, Cached: true
+2026-06-03T18:01:47.256537Z  INFO engines::models::registry: 🧬 [Roster] Model clip:vit-base:onnx:fp32 Status: Optimal, Cached: false
+2026-06-03T18:01:47.256631Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-03T18:01:47.256746Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-03T18:01:47.256831Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b Status: Impossible, Cached: false
+2026-06-03T18:01:47.256922Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.257006Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:awq:8bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.257095Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.257181Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.257266Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b Status: Optimal, Cached: false
+2026-06-03T18:01:47.257362Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.257455Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.257541Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b Status: Optimal, Cached: false
+2026-06-03T18:01:47.257624Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:awq:8bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.257706Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.257787Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.257873Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b:gguf:q8_0 Status: Average, Cached: false
+2026-06-03T18:01:47.257957Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.258041Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b Status: Optimal, Cached: false
+2026-06-03T18:01:47.258126Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b Status: Optimal, Cached: false
+2026-06-03T18:01:47.258209Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.258294Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.258378Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b Status: Heavy, Cached: false
+2026-06-03T18:01:47.258466Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-03T18:01:47.258550Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b:gguf:q4_k_m Status: Heavy, Cached: false
+2026-06-03T18:01:47.258638Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.258724Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.258808Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.258891Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b Status: Optimal, Cached: false
+2026-06-03T18:01:47.258985Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe Status: Heavy, Cached: false
+2026-06-03T18:01:47.259067Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:awq:8bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.259153Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-03T18:01:47.259236Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.259345Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:gguf:q4_k_m Status: Heavy, Cached: false
+2026-06-03T18:01:47.259462Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:gguf:q4_k_m Status: Heavy, Cached: false
+2026-06-03T18:01:47.259547Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-03T18:01:47.259631Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b Status: Heavy, Cached: false
+2026-06-03T18:01:47.259712Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:awq:8bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.259794Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.259878Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.259962Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.260083Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b Status: Optimal, Cached: true
+2026-06-03T18:01:47.260173Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.260257Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b Status: Optimal, Cached: false
+2026-06-03T18:01:47.260427Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b:gguf:q4_k_m Status: Optimal, Cached: true
+2026-06-03T18:01:47.260517Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.260603Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.260688Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.260773Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b Status: Optimal, Cached: false
+2026-06-03T18:01:47.260857Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:70b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-03T18:01:47.260949Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:70b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.261034Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:70b Status: Impossible, Cached: false
+2026-06-03T18:01:47.261118Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.261202Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b Status: Optimal, Cached: false
+2026-06-03T18:01:47.261283Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.261372Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.261477Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b Status: Impossible, Cached: false
+2026-06-03T18:01:47.261559Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b:awq:8bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.261643Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-03T18:01:47.261725Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.261809Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b Status: Optimal, Cached: false
+2026-06-03T18:01:47.261892Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.261988Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:awq:8bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.262074Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.262161Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.262244Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:405b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.262325Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:70b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.262440Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:70b Status: Impossible, Cached: false
+2026-06-03T18:01:47.262579Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:70b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-03T18:01:47.262721Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.262905Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.263106Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b Status: Optimal, Cached: false
+2026-06-03T18:01:47.263272Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.263439Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:1b Status: Optimal, Cached: false
+2026-06-03T18:01:47.263568Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:1b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.263671Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:1b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.263758Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.263847Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b Status: Optimal, Cached: false
+2026-06-03T18:01:47.263935Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.264018Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.264103Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.3:70b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.264188Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.3:70b Status: Impossible, Cached: false
+2026-06-03T18:01:47.264273Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.3:70b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-03T18:01:47.264355Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-03T18:01:47.264438Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-03T18:01:47.264534Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.264617Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b Status: Impossible, Cached: false
+2026-06-03T18:01:47.264699Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.264780Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-03T18:01:47.264862Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-03T18:01:47.264954Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b Status: Impossible, Cached: false
+2026-06-03T18:01:47.265041Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:0.5b Status: Optimal, Cached: false
+2026-06-03T18:01:47.265166Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:0.5b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.265253Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:0.5b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.265349Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:1.5b Status: Optimal, Cached: false
+2026-06-03T18:01:47.265451Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:1.5b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.265566Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:1.5b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.265655Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.265739Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.265825Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gptq:int4 Status: Incompatible, Cached: false
+2026-06-03T18:01:47.265951Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gguf:q8_0 Status: Heavy, Cached: false
+2026-06-03T18:01:47.266035Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gptq:int8 Status: Incompatible, Cached: false
+2026-06-03T18:01:47.266119Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b Status: Optimal, Cached: false
+2026-06-03T18:01:47.266203Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-03T18:01:47.266286Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b Status: Impossible, Cached: false
+2026-06-03T18:01:47.266371Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gptq:int8 Status: Incompatible, Cached: false
+2026-06-03T18:01:47.266455Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-03T18:01:47.266567Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.266651Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gptq:int4 Status: Incompatible, Cached: false
+2026-06-03T18:01:47.266734Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:3b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.266817Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:3b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.266901Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:3b Status: Optimal, Cached: false
+2026-06-03T18:01:47.267001Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-03T18:01:47.267094Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.267179Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b Status: Impossible, Cached: false
+2026-06-03T18:01:47.267263Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gptq:int8 Status: Incompatible, Cached: false
+2026-06-03T18:01:47.267347Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-03T18:01:47.267432Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gptq:int4 Status: Incompatible, Cached: false
+2026-06-03T18:01:47.267516Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b Status: Optimal, Cached: false
+2026-06-03T18:01:47.267614Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.267698Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gptq:int8 Status: Incompatible, Cached: false
+2026-06-03T18:01:47.267784Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.267869Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gptq:int4 Status: Incompatible, Cached: false
+2026-06-03T18:01:47.267980Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.268073Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:0.6b Status: Optimal, Cached: false
+2026-06-03T18:01:47.268160Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:0.6b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.268246Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:0.6b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.268330Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:1.7b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.268415Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:1.7b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.268506Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:1.7b Status: Optimal, Cached: false
+2026-06-03T18:01:47.268591Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gptq:int8 Status: Incompatible, Cached: false
+2026-06-03T18:01:47.268675Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-03T18:01:47.268759Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.268843Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b Status: Optimal, Cached: false
+2026-06-03T18:01:47.268928Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gptq:int4 Status: Incompatible, Cached: false
+2026-06-03T18:01:47.269100Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.269197Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:gptq:int4 Status: Incompatible, Cached: false
+2026-06-03T18:01:47.269284Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-03T18:01:47.269368Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.269453Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b Status: Impossible, Cached: false
+2026-06-03T18:01:47.269537Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:gptq:int8 Status: Incompatible, Cached: false
+2026-06-03T18:01:47.269623Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-03T18:01:47.269707Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-03T18:01:47.269793Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:gptq:int4 Status: Incompatible, Cached: false
+2026-06-03T18:01:47.269877Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.269962Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe Status: Impossible, Cached: false
+2026-06-03T18:01:47.270047Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.270133Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:gptq:int4 Status: Incompatible, Cached: false
+2026-06-03T18:01:47.270219Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.270303Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b Status: Optimal, Cached: false
+2026-06-03T18:01:47.270387Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:awq:4bit Status: Incompatible, Cached: false
+2026-06-03T18:01:47.270471Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:0.5b Status: Optimal, Cached: false
+2026-06-03T18:01:47.270555Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:0.5b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-03T18:01:47.270639Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:0.5b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.270722Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b:gguf:q4_k_m Status: Heavy, Cached: false
+2026-06-03T18:01:47.270856Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-03T18:01:47.270969Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b:gptq:int4 Status: Incompatible, Cached: false
+2026-06-03T18:01:47.271056Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b Status: Heavy, Cached: false
+2026-06-03T18:01:47.271139Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:2b Status: Optimal, Cached: false
+2026-06-03T18:01:47.271223Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:2b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-03T18:01:47.271307Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:35b-a3b Status: Average, Cached: false
+2026-06-03T18:01:47.271392Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:35b-a3b:gguf:q4_k_m Status: Average, Cached: false
+2026-06-03T18:01:47.271475Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:27b Status: Heavy, Cached: false
+2026-06-03T18:01:47.271556Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:27b:gguf:q4_k_m Status: Heavy, Cached: false
+2026-06-03T18:01:47.271648Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:27b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-03T18:01:47.271731Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:35b-a3b:gguf:q4_k_m Status: Average, Cached: false
+2026-06-03T18:01:47.271842Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:35b-a3b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-03T18:01:47.272080Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:35b-a3b Status: Average, Cached: false
+2026-06-03T18:01:47.272399Z  INFO engines::models::registry: 🧬 [Roster] Model bge_m3:unknown:onnx:fp32 Status: Optimal, Cached: true
+2026-06-03T18:01:47.272814Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai:4b:gguf:q1_0 Status: Optimal, Cached: true
+2026-06-03T18:01:47.273258Z  INFO engines::models::registry: 🧬 [Roster] Model deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m Status: Optimal, Cached: true
+2026-06-03T18:01:47.273536Z  INFO engines::models::registry: 🧬 [Roster] Model fashion_clip:unknown:onnx:fp32 Status: Optimal, Cached: true
+2026-06-03T18:01:47.273880Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:2b:gguf:q4_k_m Status: Optimal, Cached: true
+2026-06-03T18:01:47.274249Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:4b:gguf:q4_k_m Status: Optimal, Cached: true
+2026-06-03T18:01:47.274676Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3vl_instruct:2b:gguf:q4_k_m Status: Optimal, Cached: true
+2026-06-03T18:01:47.275049Z  INFO engines::models::registry: 🧬 [Roster] Model ternary_bonsai:1.7b:gguf:q2_0 Status: Optimal, Cached: true
+2026-06-03T18:01:47.275381Z  INFO engines::models::registry: 📊 [Roster] Generated 186 model recommendations for UI.

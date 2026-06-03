@@ -127,6 +127,8 @@ pub struct ModelManifest {
     pub id: String,
     pub name: String,
     pub architecture: String,
+    #[serde(default)]
+    pub architecture_type: String,
     pub parameters: String,
     pub training_tokens: String,
     #[serde(default = "default_bit_depth", deserialize_with = "deserialize_bit_depth")]
@@ -263,22 +265,37 @@ impl CoreRoster {
                     if !family_path.is_dir() { continue; }
                     let family_name = family_path.file_name().and_then(|n| n.to_str()).unwrap_or("Unknown").to_string();
 
+                    // Read family.json to get architecture_type
+                    let mut arch_type = "gguf".to_string();
+                    let family_json_path = family_path.join("family.json");
+                    if family_json_path.exists() {
+                        if let Ok(content) = fs::read_to_string(&family_json_path) {
+                            if let Ok(json_val) = serde_json::from_str::<serde_json::Value>(&content) {
+                                if let Some(a_type) = json_val.get("architecture_type").and_then(|v| v.as_str()) {
+                                    arch_type = a_type.to_string();
+                                }
+                            }
+                        }
+                    }
+
                     if let Ok(versions) = fs::read_dir(&family_path) {
                         for version_entry in versions.flatten() {
                             let version_path = version_entry.path();
+                            if version_path.file_name() == Some(std::ffi::OsStr::new("family.json")) { continue; }
+                            
                             if version_path.is_dir() {
                                 if let Ok(files) = fs::read_dir(&version_path) {
                                     for file_entry in files.flatten() {
                                         let json_path = file_entry.path();
                                         if json_path.extension().and_then(|e| e.to_str()) == Some("json") {
-                                            if let Ok(batch) = Self::load_installation_file(&json_path, &family_name) {
+                                            if let Ok(batch) = Self::load_installation_file(&json_path, &family_name, &arch_type) {
                                                 templates.extend(batch);
                                             }
                                         }
                                     }
                                 }
                             } else if version_path.extension().and_then(|e| e.to_str()) == Some("json") {
-                                if let Ok(batch) = Self::load_installation_file(&version_path, &family_name) {
+                                if let Ok(batch) = Self::load_installation_file(&version_path, &family_name, &arch_type) {
                                     templates.extend(batch);
                                 }
                             }
@@ -301,7 +318,7 @@ impl CoreRoster {
         final_roster
     }
 
-    fn load_installation_file(path: &Path, family_name: &str) -> Result<Vec<ModelManifest>, String> {
+    fn load_installation_file(path: &Path, family_name: &str, arch_type: &str) -> Result<Vec<ModelManifest>, String> {
         let content = fs::read_to_string(path).map_err(|e| e.to_string())?;
         let json_val: serde_json::Value = serde_json::from_str(&content).map_err(|e| {
             // println!("❌ [Roster] Failed to parse {}: {}", path.display(), e);
@@ -358,6 +375,7 @@ impl CoreRoster {
                                             id: full_id,
                                             name: name.clone(),
                                             architecture: architecture.clone(),
+                                            architecture_type: arch_type.to_string(),
                                             parameters: "".to_string(), // can be deduced if needed
                                             training_tokens: "".to_string(),
                                             bit_depth: 4.0, // default approximation
@@ -377,7 +395,7 @@ impl CoreRoster {
                                             assets: Vec::new(),
                                             local_path: None,
                                             dna_path: None,
-                                            has_vision: category == "multimodal" || architecture.contains("VL"),
+                                            has_vision: category == "multimodal" || architecture.contains("VL") || category == "embedding",
                                             has_audio: category == "audio",
                                             expert_count: None,
                                             experts_per_token: None,

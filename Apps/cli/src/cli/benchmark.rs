@@ -247,7 +247,7 @@ async fn run_single_model_isolated(model_name: &str, runs: usize) {
 
     println!("🔥 Booting Engine in Process Isolation...");
     let mut engine =
-        match HardwareOrchestrator::instantiate(gguf_file.to_str().unwrap(), context).await {
+        match HardwareOrchestrator::instantiate(gguf_file.to_str().unwrap(), "gguf", context).await {
             Ok(engine) => engine,
             Err(e) => {
                 println!(

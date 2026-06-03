@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Result};
+use neural_core::interfaces::router_contract::{EmbeddingDriver, EngineError};
 use cluaiz_shared::{ModelWeightsWrapper, CluaizContext, UnifiedBackend, CluaizInference};
 use crate::interface_engines::EngineManager;
 use std::sync::{Arc, Mutex};
@@ -9,16 +10,42 @@ impl HardwareOrchestrator {
     /// Dispatches and instantiates the correct model kernel via the Dynamic Cluaiz Linker.
     pub async fn instantiate(
         model_load_path: &str,
+        engine_type: &str,
         _cluaiz_context: CluaizContext,
     ) -> Result<ModelWeightsWrapper> {
-        tracing::info!("🔩 [Orchestrator] Initiating Dynamic Hardware Handshake...");
+        tracing::info!("🔩 [Orchestrator] Initiating Dynamic Hardware Handshake for Engine: {}", engine_type);
+
+        if engine_type == "onnx" {
+            tracing::info!("🔮 [Orchestrator] Bypassing FFI Linker. Instantiating Native Rust ONNX Gatekeeper.");
+            let mut onnx_engine = cluaiz_onnx::engine::OnnxEngine::new()
+                .map_err(|e| anyhow!("Failed to init ONNX: {}", e))?;
+            
+            let model_path = std::path::Path::new(model_load_path);
+            let tokenizer_path = if model_path.is_dir() {
+                model_path.join("tokenizer.json")
+            } else {
+                model_path.parent().unwrap_or(model_path).join("tokenizer.json")
+            };
+
+            if tokenizer_path.exists() {
+                tracing::info!("🔍 [Orchestrator] Tokenizer found for Vision Model. Loading as Multimodal Engine.");
+                onnx_engine.load_text_model(model_load_path, tokenizer_path.to_str().unwrap())
+                    .map_err(|e| anyhow!("Failed to load ONNX Multimodal weights: {}", e))?;
+            } else {
+                onnx_engine.load_vision_model(model_load_path)
+                    .map_err(|e| anyhow!("Failed to load ONNX Vision weights: {}", e))?;
+            }
+                
+            tracing::info!("🧬 [Orchestrator] ONNX Native Pipeline Established.");
+            return Ok(Box::new(NativeOnnxWrapper { engine: onnx_engine }));
+        }
 
         // 1. Initialize the Engine Manager (The Cluaiz Linker)
         let base_path = cluaiz_shared::hardware::governor::HardwareGovernor::resolve_hub_path();
         let mut manager = EngineManager::new(base_path);
 
-        // 2. Identify Engine Type based on DNA Signature
-        let engine_type = "llama"; // Standard Sovereign Kernel (Supports GGUF, BitNet, etc.)
+        // 2. Engine Type provided by Unified Router (e.g., "llama" or "onnx")
+
 
         // 3. Prepare Engine: Hardware Probe + Binary Linkage
         let binary_path = manager.prepare_engine(engine_type)
@@ -102,4 +129,100 @@ impl CluaizInference for SovereignEngine {
     fn set_liquid_mode(&mut self, _enabled: bool) -> Result<()> {
         Ok(())
     }
+}
+
+pub struct NativeOnnxWrapper {
+    pub engine: cluaiz_onnx::engine::OnnxEngine,
+}
+
+impl UnifiedBackend for NativeOnnxWrapper {
+    fn generate(&mut self, _prompt: &str, _max_tokens: usize) -> Result<String, String> {
+        Ok("[ONNX Vision/Embedding Output] (Placeholder for Gatekeeper)".to_string())
+    }
+
+    fn prefill(&mut self, _prompt: &str) -> Result<()> { Ok(()) }
+
+    fn evaluate_tps(&self) -> f64 { 5000.0 }
+    
+    fn embed(&mut self, input: &str) -> Result<Vec<f32>> {
+        self.engine.gen_embedding(input).map_err(|e| anyhow!("ONNX Embedding Error: {}", e))
+    }
+}
+
+impl CluaizInference for NativeOnnxWrapper {
+    fn generate_stream(
+        &mut self,
+        prompt: &str,
+        _max_tokens: usize,
+        mut callback: Box<dyn FnMut(String) -> bool + Send + 'static>,
+    ) -> Result<()> {
+        let clean_path = prompt.trim().trim_matches('"');
+        
+        if std::path::Path::new(clean_path).is_file() {
+            let ingestor = crate::neural_foundry::ingestion::DocumentIngestor::new();
+            match ingestor.ingest_and_vectorize(clean_path, &self.engine) {
+                Ok(chunks) => {
+                    for (chunk_text, vector) in chunks {
+                        let mut out = String::new();
+                        out.push_str(&format!("\n  🔮 Generated Sovereign Embedding Vector (Dim: {})\n", vector.len()));
+                        out.push_str("  [ ");
+                        for (i, val) in vector.iter().take(8).enumerate() {
+                            out.push_str(&format!("{:.4}", val));
+                            if i < 7 && i < vector.len() - 1 {
+                                out.push_str(", ");
+                            }
+                        }
+                        if vector.len() > 8 {
+                            out.push_str(" ... ");
+                        }
+                        out.push_str("]\n");
+                        let preview: String = chunk_text.chars().take(60).collect();
+                        out.push_str(&format!("  📝 Chunk Preview: {}...\n", preview.replace('\n', " ")));
+                        
+                        for line in out.lines() {
+                            if !callback(format!("{}\n", line)) { break; }
+                        }
+                    }
+                },
+                Err(e) => {
+                    let _ = callback(format!("ONNX Document Error: {}", e));
+                }
+            }
+        } else {
+            let vector_result = self.embed(prompt);
+            match vector_result {
+                Ok(vector) => {
+                    let mut out = String::new();
+                    out.push_str(&format!("\n  🔮 Generated Sovereign Embedding Vector (Dim: {})\n", vector.len()));
+                    out.push_str("  [ ");
+                    for (i, val) in vector.iter().take(8).enumerate() {
+                        out.push_str(&format!("{:.4}", val));
+                        if i < 7 && i < vector.len() - 1 {
+                            out.push_str(", ");
+                        }
+                    }
+                    if vector.len() > 8 {
+                        out.push_str(" ... ");
+                    }
+                    out.push_str("]\n");
+                    
+                    for line in out.lines() {
+                        if !callback(format!("{}\n", line)) { break; }
+                    }
+                }
+                Err(e) => {
+                    let _ = callback(format!("ONNX Error: {}", e));
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn forward_raw(&mut self, _input_ids: &[u32], _pos: usize) -> Result<Vec<f32>> {
+        Err(anyhow!("ONNX Native does not support forward_raw for text tokens yet."))
+    }
+
+    fn inject_signals(&mut self, _signals: Vec<cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Result<()> { Ok(()) }
+    fn apply_booster(&mut self, _control: &cluaiz_shared::hardware::schema::booster::BoosterControl) -> Result<()> { Ok(()) }
+    fn set_liquid_mode(&mut self, _enabled: bool) -> Result<()> { Ok(()) }
 }

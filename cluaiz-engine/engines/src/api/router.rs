@@ -31,6 +31,13 @@ impl UnifiedBackend for Backend {
             Self::Cluaiz(b) => b.evaluate_tps(),
         }
     }
+    
+    fn embed(&mut self, input: &str) -> anyhow::Result<Vec<f32>> {
+        match self {
+            Self::Empty(b) => b.embed(input),
+            Self::Cluaiz(b) => b.embed(input),
+        }
+    }
 }
 
 impl cluaiz_shared::CluaizInference for Backend {
@@ -125,7 +132,7 @@ impl CoreRouter {
 
         // 🚀 THE Cluaiz HANDSHAKE: Dispatching to the Dynamic Linker
         println!("🧬 [Router] Dispatching to HardwareOrchestrator for dynamic linkage...");
-        let engine = HardwareOrchestrator::instantiate(&path.to_string_lossy(), context)
+        let engine = HardwareOrchestrator::instantiate(&path.to_string_lossy(), "llama", context)
             .await
             .map_err(|e| format!("Cluaiz Handshake Failure: {}", e))?;
 
@@ -179,6 +186,10 @@ impl CoreRouter {
             },
             Backend::Empty(_) => Err("Core weights not loaded. Please select a model with @ or wait for the Auto-Pilot handshake to complete.".to_string()),
         }
+    }
+    
+    pub fn embed(&mut self, input: &str) -> Result<Vec<f32>, String> {
+        self.active_backend.embed(input).map_err(|e| e.to_string())
     }
 }
 

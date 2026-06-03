@@ -18,6 +18,10 @@ impl ModelInstaller {
         let mut dest_path = self.target_dir.clone();
         dest_path.push(filename);
 
+        if let Some(parent) = dest_path.parent() {
+            tokio::fs::create_dir_all(parent).await.map_err(|e| format!("Failed to create parent dir: {}", e))?;
+        }
+
         if dest_path.exists() {
             println!("  {} Weights already present: {}", "✅".green(), filename);
             return Ok(());
@@ -84,7 +88,11 @@ impl ModelInstaller {
 
             let response = client.get(&url).send().await.map_err(|e| e.to_string())?;
             if response.status().is_success() {
-                let mut file = tokio::fs::File::create(self.target_dir.join(&name)).await.map_err(|e| e.to_string())?;
+                let asset_path = self.target_dir.join(&name);
+                if let Some(parent) = asset_path.parent() {
+                    let _ = tokio::fs::create_dir_all(parent).await;
+                }
+                let mut file = tokio::fs::File::create(&asset_path).await.map_err(|e| e.to_string())?;
                 let mut stream = response.bytes_stream();
                 while let Some(item) = stream.next().await {
                     let chunk = item.map_err(|e| e.to_string())?;

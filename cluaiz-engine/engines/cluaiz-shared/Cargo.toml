@@ -6,7 +6,7 @@ authors.workspace = true
 
 [dependencies]
 # ── Core Neural Types (Universal) ──
-tokenizers = { version = "0.22.2", features = ["onig"] }
+tokenizers = { version = "0.22.2", default-features = false, features = ["onig"] }
 
 
 

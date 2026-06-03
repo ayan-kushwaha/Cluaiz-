@@ -6,6 +6,7 @@
     "gemma": "Gemma/family.json",
     "qwen": "Qwen/family.json",
     "llama": "Llama/family.json",
+    "clip": "CLIP/family.json",
     "bitnet-personalized-llm": "Persona.json"
   }
 }

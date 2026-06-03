@@ -95,6 +95,12 @@ enum CliCommand {
         #[arg(long)]
         spec_decode: Option<String>,
     },
+
+    /// Ingest a document natively for semantic chunking and RAG.
+    Ingest {
+        /// The file path to ingest
+        file_path: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -231,6 +237,12 @@ async fn main() -> Result<()> {
         Some(CliCommand::Skill { command }) => {
             if let Err(e) = crate::cli::skill::execute(command).await {
                 eprintln!("\n  {} [Cluaiz] Skill Manager Error: {}\n", "❌".red(), e);
+                std::process::exit(1);
+            }
+        }
+        Some(CliCommand::Ingest { file_path }) => {
+            if let Err(e) = crate::cli::ingest::execute(&file_path).await {
+                eprintln!("\n  {} [Cluaiz] Ingestion Error: {}\n", "❌".red(), e);
                 std::process::exit(1);
             }
         }

@@ -7,3 +7,4 @@ pub mod ps;
 pub mod booster;
 pub mod benchmark;
 pub mod skill;
+pub mod ingest;

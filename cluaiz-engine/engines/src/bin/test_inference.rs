@@ -20,6 +20,7 @@ async fn main() -> Result<()> {
     println!("⚙️ [Test] Orchestrating Hardware...");
     let mut engine = HardwareOrchestrator::instantiate(
         model_path.to_str().unwrap(),
+        "llama",
         context
     ).await?;
 

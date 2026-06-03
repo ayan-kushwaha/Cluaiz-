@@ -53,8 +53,13 @@ impl ModelDownloader {
         let models_dir = Self::get_models_dir();
         let repo_path = models_dir.join(category).join(model_name);
         
+        let file_basename = std::path::Path::new(filename)
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or(filename);
+        
         // 1. Check for main weight file
-        let weight_path = repo_path.join(filename);
+        let weight_path = repo_path.join(file_basename);
         if weight_path.exists() { return Some(weight_path); }
         
         // 2. Fallback: Search for any GGUF in the directory
@@ -84,6 +89,11 @@ impl ModelDownloader {
         let dest_dir = Self::get_models_dir().join(category).join(model_name);
         std::fs::create_dir_all(&dest_dir).map_err(|e| e.to_string())?;
 
+        let file_basename = std::path::Path::new(filename)
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or(filename);
+
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(3600))
             .user_agent("Cluaiz/1.0")
@@ -97,10 +107,10 @@ impl ModelDownloader {
             .map_err(|e| e.to_string())?;
 
         // 1. Download the main weights (The ONLY file downloaded)
-        Self::download_single_file(&client, download_url, &dest_dir.join(filename), tx.clone(), abort.clone()).await?;
+        Self::download_single_file(&client, download_url, &dest_dir.join(file_basename), tx.clone(), abort.clone()).await?;
 
         // 2. ✅ Save model_manifest.json — makes the folder fully self-contained & portable
-        let weight_path = dest_dir.join(filename);
+        let weight_path = dest_dir.join(file_basename);
         if let Some(m) = manifest {
             let manifest_path = dest_dir.join("model_manifest.json");
             if let Ok(json) = serde_json::to_string_pretty(&m) {
