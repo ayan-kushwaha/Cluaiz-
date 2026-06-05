@@ -281,12 +281,9 @@ impl DashboardEngine {
                                     }
                                 }
 
-                                let prompt_words = final_message.trim().split_whitespace().count();
-                                if prompt_words >= 3 {
-                                    if let Ok(vector) = engine.gen_embedding(&final_message) {
-                                        if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
-                                            matched_skill_path = router.check_semantic_trigger(&vector, 0.33); // 33% threshold for stable matching
-                                        }
+                                if let Ok(vector) = engine.gen_embedding(&final_message) {
+                                    if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
+                                        matched_skill_path = router.check_semantic_trigger(&vector, 0.33); // 33% threshold — fires on ANY length prompt
                                     }
                                 }
                             }
