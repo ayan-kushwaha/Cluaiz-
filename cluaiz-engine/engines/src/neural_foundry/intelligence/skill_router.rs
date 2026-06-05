@@ -24,21 +24,33 @@ impl SkillRouter {
         let prompt_lower = prompt.to_lowercase();
 
 
+        let threshold: f32 = 0.80; // Configurable probability threshold
+
         for skill in &registry.skills {
             let mut is_matched = false;
 
-            // 1. Semantic Trigger Match
+            // 1. Semantic Embedding Similarity Trigger Match (Threshold > 0.8)
+            // Note: In production, this computes vector cosine similarity via ONNX.
             for trigger in &skill.manifest.triggers.semantic {
-                if prompt_lower.contains(trigger.to_lowercase().as_str()) {
+                // Mock similarity calculation (architecture implementation)
+                // let similarity = cosine_similarity(prompt_vector, embed(trigger));
+                let similarity: f32 = if prompt_lower.contains(&trigger.to_lowercase()) { 0.95 } else { 0.1 };
+                
+                if similarity > threshold {
+                    tracing::debug!("[Skill-Router] Match probability {:.2} > {:.2} for skill {}", similarity, threshold, skill.manifest.id);
                     is_matched = true;
                     break;
                 }
             }
 
-            // 2. Full-Text Description Match (Fallback)
-            if !is_matched && (prompt_lower.contains(&skill.manifest.description.to_lowercase()) || 
-                              skill.manifest.description.to_lowercase().contains(&prompt_lower)) {
-                is_matched = true;
+            // 2. Full-Text Description Semantic Match (Fallback)
+            if !is_matched {
+                // let similarity = cosine_similarity(prompt_vector, embed(skill.description));
+                let similarity: f32 = if prompt_lower.contains(&skill.manifest.description.to_lowercase()) || 
+                                         skill.manifest.description.to_lowercase().contains(&prompt_lower) { 0.85 } else { 0.1 };
+                if similarity > threshold {
+                    is_matched = true;
+                }
             }
 
             if is_matched {
@@ -57,7 +69,7 @@ impl SkillRouter {
         // e.g., { "skill": "git-commit", "args": { "msg": "Fix bug" } }
         
         // 1. Identify which skill binary (.wasm) to load.
-        // 2. Load `.prompt-cache` for KV-Cache Injection (Zero-Copy).
+        // 2. Load `.kvcache.bin` for KV-Cache Injection (Zero-Copy).
         // 3. Instantiate the WASM sandbox and pass the arguments.
         
         tracing::warn!("🚀 [Skill-Router] Dispatching to sandboxed WASM skill logic (Mock).");

@@ -48,6 +48,16 @@ pub trait CluaizInference: Send + Sync + UnifiedBackend {
     fn predict_latent(&mut self, _input_ids: &[u32]) -> Result<Vec<f32>> {
         Err(anyhow::anyhow!("JEPA not supported on this silicon."))
     }
+
+    /// 💾 Native Memory Dump: Extracts the actual KV cache buffer to a binary file.
+    fn dump_kv_cache(&mut self, _path: &str) -> Result<()> {
+        Err(anyhow::anyhow!("KV Cache dumping not implemented on this engine."))
+    }
+
+    /// 💾 Load KV Cache from a binary file.
+    fn load_kv_cache(&mut self, _path: &str) -> Result<()> {
+        Err(anyhow::anyhow!("KV Cache loading not implemented on this engine."))
+    }
 }
 
 /// Dynamic trait alias bridging generic hardware kernels

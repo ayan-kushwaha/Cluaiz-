@@ -17,7 +17,9 @@ use cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal;
 use neural_core::interfaces::memory_contract::MappedBuffer;
 use std::sync::{Mutex, Arc};
 
-const MAX_ACTIVE_SKILLS: usize = 3;
+// Removed fixed MAX_ACTIVE_SKILLS limit. Bounding is now purely dynamic based on hardware capacity.
+// Constant threshold for the ONNX semantic similarity match.
+const SIMILARITY_THRESHOLD: f32 = 0.8;
 
 pub struct IntentResult {
     pub responses: Vec<String>,
@@ -69,10 +71,8 @@ impl CoreFoundry {
         info!("🧬 [CoreFoundry] Multi-Skill Fusion Active: {} skills detected.", skill_ids.len());
 
         for (i, skill_id) in skill_ids.iter().enumerate() {
-            if i >= MAX_ACTIVE_SKILLS {
-                warn!("⚠️ [CoreFoundry] Max active skills reached. Skipping remaining skills.");
-                break;
-            }
+            // Note: Bounding is no longer hardcoded by active skills count limit, 
+            // but is bounded below strictly by the dynamic RAM capacity pulse lock.
 
             // 1. Fetch skill from registry
             let skill = match self.registry.skills.iter().find(|s| &s.manifest.id == skill_id) {
@@ -80,32 +80,59 @@ impl CoreFoundry {
                 None => continue,
             };
             
-            // 2. LRU Management
+            // 2. Dynamic Memory Management (RAM/VRAM Bounding)
             {
+                // Fetch real-time hardware telemetry to ensure we don't cause OOM.
+                let pulse = cluaiz_shared::hardware::telemetry::get_pulse();
+                let pulse_lock = pulse.pulse.read().unwrap();
+                let used_mb = pulse_lock.ram.used_gb * 1024.0;
+                let util = pulse_lock.ram.utilization_pct as f64;
+                let available_ram_mb = if util > 0.1 {
+                    (used_mb / (util / 100.0)) - used_mb
+                } else {
+                    8192.0 // Fallback to 8GB free if telemetry is spinning up
+                };
+                
+                // Estimate skill size (mock 50MB per skill KV cache for architecture demonstration)
+                let skill_est_size_mb = 50.0; 
+
                 let mut active_ids = self.active_skill_ids.lock().unwrap();
+                
+                // If adding this skill exceeds safe bounds, perform LRU eviction dynamically
+                while (active_ids.len() as f32 + 1.0) * skill_est_size_mb >= available_ram_mb as f32 * 0.8 {
+                    if !active_ids.is_empty() {
+                        let evicted_id = active_ids.remove(0);
+                        println!("[CLUAIZ] [VRAM] Bounding limit hit. Evicting LRU skill: {}", evicted_id);
+                    } else {
+                        break;
+                    }
+                }
+
                 active_ids.retain(|id| id != skill_id);
                 active_ids.push(skill_id.to_string());
-
-                if active_ids.len() > MAX_ACTIVE_SKILLS {
-                    let evicted_id = active_ids.remove(0);
-                    println!("[CLUAIZ] [VRAM] Evicting LRU skill: {}", evicted_id);
-                }
             }
 
-            // 3. Map Cluaiz Signal (Zero-Copy)
-            let kv_cache_path = skill.path.join("state.prompt-cache");
-            if kv_cache_path.exists() {
-                if let Ok(mapped_buffer) = MappedBuffer::from_file(&kv_cache_path) {
-                    result.signals.push(CluaizSignal {
-                        raw_data: Arc::new(mapped_buffer),
-                        token_count: skill.manifest.Core_metadata.token_count,
-                        head_dim: skill.manifest.Core_metadata.head_dim,
-                    });
+            // 3. Map Cluaiz Signal (Zero-Copy Dual-Cache)
+            let permissions = crate::neural_foundry::security::permission_schema::PermissionSchema::load();
+            
+            if let Some(gen_model) = permissions.get_active_chat_model() {
+                let gen_model_safe = gen_model.replace(":", "-");
+                let cache_dir = skill.path.join(".cache");
+                let kv_cache_path = cache_dir.join(format!("{}.kvcache.bin", gen_model_safe));
+                
+                if kv_cache_path.exists() {
+                    if let Ok(mapped_buffer) = MappedBuffer::from_file(&kv_cache_path) {
+                        result.signals.push(CluaizSignal {
+                            raw_data: Arc::new(mapped_buffer),
+                            token_count: skill.manifest.Core_metadata.as_ref().map_or(0, |m| m.token_count),
+                            head_dim: skill.manifest.Core_metadata.as_ref().map_or(0, |m| m.head_dim),
+                        });
+                    }
+                } else {
+                    warn!("⚠️ [CoreFoundry] {} missing for skill {}. Sovereign Compiler Daemon should generate this in the background.", kv_cache_path.display(), skill_id);
                 }
             } else {
-                warn!("⚠️ [CoreFoundry] state.prompt-cache missing for skill {}. It will be generated on first inference.", skill_id);
-                // Note: The actual Inference Engine (Llama/vLLM) will call `prefill_prompt` and `save_prompt_cache` 
-                // during its first run of this skill to generate this file automatically.
+                warn!("⚠️ [CoreFoundry] No text model assigned in Permission.json. Skipping Zero-Copy injection for skill {}.", skill_id);
             }
             
             // 4. Logic execution (WASM)

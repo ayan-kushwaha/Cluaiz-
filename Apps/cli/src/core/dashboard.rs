@@ -12,7 +12,7 @@ use std::io::{stdout, Write};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use tokio::sync::mpsc;
-
+use neural_core::interfaces::router_contract::EmbeddingDriver;
 // ── 📦 MODULAR APPS ──
 use crate::ui::apps::registry::RegistryApp;
 
@@ -69,6 +69,26 @@ impl DashboardEngine {
 
         // Track global think state across pivots
         let global_think_state = Arc::new(AtomicBool::new(false));
+
+        let mut prompt_embedding_engine: Option<cluaiz_onnx::engine::OnnxEngine> = None;
+        let schema = engines::neural_foundry::security::permission_schema::PermissionSchema::load();
+        if let Some(text_model_id) = schema.vector_models.text {
+                let roster = engines::models::registry::CoreRoster::load_roster();
+                if let Some(manifest) = roster.iter().find(|m| m.id == text_model_id) {
+                    if let Some(local_path) = &manifest.local_path {
+                        let model_dir = std::path::Path::new(local_path);
+                        let model_file = model_dir.join("model.onnx");
+                        let tokenizer_file = model_dir.join("tokenizer.json");
+                        if model_file.exists() && tokenizer_file.exists() {
+                            if let Ok(mut engine) = cluaiz_onnx::engine::OnnxEngine::new() {
+                                if engine.load_text_model(&model_file.to_string_lossy(), &tokenizer_file.to_string_lossy()).is_ok() {
+                                    prompt_embedding_engine = Some(engine);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
         loop {
             
@@ -221,8 +241,87 @@ impl DashboardEngine {
                             let stop_seqs = lock.get_active_dna().map(|d| d.stop_sequences.clone()).unwrap_or_default();
                             
                             // 🎭 Orchestration: native.rs handles the templating now.
-                            // We just pass the final message directly.
-                            let formatted_prompt = final_message.clone();
+                            // 🔮 SEMANTIC VECTOR ROUTING ──
+                            let mut matched_skill_path = None;
+
+                            if let Some(engine) = prompt_embedding_engine.as_mut() {
+                                // Dynamic compilation of missing or mismatched semantic vectors
+                                if let Ok(mut router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.write() {
+                                    let _ = router.boot_index();
+                                    let schema = engines::neural_foundry::security::permission_schema::PermissionSchema::load();
+                                    if let Some(active_model_id) = schema.get_active_embedding_model() {
+                                        let safe_filename = active_model_id.replace(":", "-");
+                                        let mut new_vectors = Vec::new();
+                                        for (id, manifest) in &router.loaded_manifests {
+                                            let home_dir = dirs::home_dir().unwrap_or_default();
+                                            let skill_path = home_dir.join(".cluaiz").join("skills").join(&manifest.name);
+                                            let cache_dir = skill_path.join(".cache");
+                                            let emb_path = cache_dir.join(format!("{}.emb.bin", safe_filename));
+                                            let has_vector = router.skill_vectors.contains_key(&skill_path);
+
+                                            if !has_vector || !emb_path.exists() {
+                                                println!("\r\n⏳ [Sovereign-Ops] Mismatch detected. Generating semantic vector for skill: {}", manifest.name);
+                                                let semantic_triggers = manifest.triggers.semantic.join(", ");
+                                                let skill_content = format!(
+                                                    "Skill Name: {}\nDescription: {}\nTriggers: {}",
+                                                    manifest.name, manifest.description, semantic_triggers
+                                                );
+                                                if let Ok(vec) = engine.gen_embedding(&skill_content) {
+                                                    let _ = std::fs::create_dir_all(&cache_dir);
+                                                    let data_bytes = unsafe { std::slice::from_raw_parts(vec.as_ptr() as *const f32 as *const u8, vec.len() * 4) };
+                                                    if let Ok(_) = std::fs::write(&emb_path, data_bytes) {
+                                                        new_vectors.push((skill_path.clone(), vec));
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        for (p, v) in new_vectors {
+                                            router.skill_vectors.insert(p, v);
+                                        }
+                                    }
+                                }
+
+                                if let Ok(vector) = engine.gen_embedding(&final_message) {
+                                    if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
+                                        matched_skill_path = router.check_semantic_trigger(&vector, 0.60); // 60% threshold for stable matching
+                                    }
+                                }
+                            }
+
+                            if matched_skill_path.is_none() {
+                                if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
+                                    matched_skill_path = router.check_trigger(&final_message);
+                                }
+                            }
+
+                            // Restore KV Cache if it exists, do NOT compile synchronously to prevent blocking the user
+                            if let Some(ref skill_path) = matched_skill_path {
+                                let schema = engines::neural_foundry::security::permission_schema::PermissionSchema::load();
+                                if let Some(active_chat_model) = schema.get_active_chat_model() {
+                                    let gen_model_safe = active_chat_model.replace(":", "-");
+                                    let cache_dir = skill_path.join(".cache");
+                                    let kv_cache_path = cache_dir.join(format!("{}.kvcache.bin", gen_model_safe));
+                                    if kv_cache_path.exists() {
+                                        let path_str = kv_cache_path.to_string_lossy().to_string();
+                                        println!("\r\n🧠 [Sovereign-Ops] Restoring KV Cache for skill: {}", skill_path.file_name().unwrap_or_default().to_string_lossy());
+                                        use cluaiz_shared::CluaizInference;
+                                        if let Err(e) = lock.active_backend.load_kv_cache(&path_str) {
+                                            println!("❌ [Sovereign-Ops] Failed to load KV cache: {}", e);
+                                        }
+                                    }
+                                }
+                            }
+
+                            let mut formatted_prompt = final_message.clone();
+                            if let Some(skill_path) = &matched_skill_path {
+                                let skill_name = skill_path.file_name().unwrap_or_default().to_string_lossy();
+                                println!("\r\n🔥 {} {}", colored::Colorize::magenta("[SOVEREIGN OPS] Semantic Skill Triggered:").bold(), colored::Colorize::yellow(&*skill_name));
+                                if let Some(frontmatter) = extract_frontmatter(skill_path) {
+                                    formatted_prompt = format!("[System Memory Injection (Frontmatter): {}]\n{}", frontmatter, final_message);
+                                } else {
+                                    formatted_prompt = format!("[System Memory Injection (Skill): {}]\n{}", skill_name, final_message);
+                                }
+                            }
 
                             // 🧬 DYNAMIC TOKEN ALLOCATION: Calculate space based on DNA Context Window
                             let ctx_window = lock.get_active_dna().and_then(|d| d.max_context_length).unwrap_or(2048);
@@ -1011,4 +1110,32 @@ impl DashboardEngine {
 
         Ok(())
     }
+}
+
+fn extract_frontmatter(skill_dir: &std::path::Path) -> Option<String> {
+    let skill_md_path = skill_dir.join("SKILL.md");
+    if skill_md_path.exists() {
+        if let Ok(content) = std::fs::read_to_string(&skill_md_path) {
+            let lines: Vec<&str> = content.lines().collect();
+            let mut start_idx = None;
+            let mut end_idx = None;
+            for (i, line) in lines.iter().enumerate() {
+                if line.trim() == "---" {
+                    if start_idx.is_none() {
+                        start_idx = Some(i);
+                    } else {
+                        end_idx = Some(i);
+                        break;
+                    }
+                }
+            }
+            if let (Some(start), Some(end)) = (start_idx, end_idx) {
+                if end > start + 1 {
+                    let frontmatter_lines = &lines[start + 1..end];
+                    return Some(frontmatter_lines.join("\n"));
+                }
+            }
+        }
+    }
+    None
 }

@@ -59,6 +59,20 @@ impl cluaiz_shared::CluaizInference for Backend {
             Self::Empty(_) => Err(anyhow::anyhow!("Empty backend")),
         }
     }
+
+    fn dump_kv_cache(&mut self, path: &str) -> anyhow::Result<()> {
+        match self {
+            Self::Cluaiz(b) => b.dump_kv_cache(path),
+            Self::Empty(_) => Err(anyhow::anyhow!("Empty backend")),
+        }
+    }
+
+    fn load_kv_cache(&mut self, path: &str) -> anyhow::Result<()> {
+        match self {
+            Self::Cluaiz(b) => b.load_kv_cache(path),
+            Self::Empty(_) => Err(anyhow::anyhow!("Empty backend")),
+        }
+    }
 }
 
 pub struct CoreRouter {
@@ -139,8 +153,9 @@ impl CoreRouter {
 
 
         let mut foundry = crate::neural_foundry::CoreFoundry::new();
-        // Load skills from a standard location (this could be configurable)
-        foundry.initialize("skills");
+        // Load skills from the global ~/.cluaiz/skills directory
+        let skills_dir = dirs::home_dir().unwrap_or_default().join(".cluaiz").join("skills");
+        foundry.initialize(&skills_dir.to_string_lossy());
 
         Ok(Self { 
             active_backend: Backend::Cluaiz(engine), 
@@ -165,6 +180,82 @@ impl CoreRouter {
         max_tokens: usize,
         callback: Box<dyn FnMut(String) -> bool + Send + 'static>,
     ) -> Result<(), String> {
+        let mut prompt_embedding_engine = None;
+        let schema = crate::neural_foundry::security::permission_schema::PermissionSchema::load();
+        if let Some(text_model_id) = &schema.vector_models.text {
+            let roster = crate::models::registry::CoreRoster::load_roster();
+            if let Some(manifest) = roster.iter().find(|m| &m.id == text_model_id) {
+                if let Some(local_path) = &manifest.local_path {
+                    let model_dir = std::path::Path::new(local_path);
+                    let model_file = model_dir.join("model.onnx");
+                    let tokenizer_file = model_dir.join("tokenizer.json");
+                    if model_file.exists() && tokenizer_file.exists() {
+                        if let Ok(mut engine) = cluaiz_onnx::engine::OnnxEngine::new() {
+                            if engine.load_text_model(&model_file.to_string_lossy(), &tokenizer_file.to_string_lossy()).is_ok() {
+                                prompt_embedding_engine = Some(engine);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        let mut matched_skill_path = None;
+        if let Some(mut engine) = prompt_embedding_engine {
+            // Dynamic compilation of missing or mismatched semantic vectors
+            if let Ok(mut router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.write() {
+                let _ = router.boot_index();
+                if let Some(active_model_id) = schema.get_active_embedding_model() {
+                    let safe_filename = active_model_id.replace(":", "-");
+                    let mut new_vectors = Vec::new();
+                    for (id, manifest) in &router.loaded_manifests {
+                        let home_dir = dirs::home_dir().unwrap_or_default();
+                        let skill_path = home_dir.join(".cluaiz").join("skills").join(&manifest.name);
+                        let cache_dir = skill_path.join(".cache");
+                        let emb_path = cache_dir.join(format!("{}.emb.bin", safe_filename));
+                        let has_vector = router.skill_vectors.contains_key(&skill_path);
+
+                        if !has_vector || !emb_path.exists() {
+                            println!("⏳ [Sovereign-Ops] Mismatch detected. Generating semantic vector for skill: {}", manifest.name);
+                            let skill_content = if let Some(fm) = extract_frontmatter(&skill_path) {
+                                fm
+                            } else {
+                                let semantic_triggers = manifest.triggers.semantic.join(", ");
+                                format!(
+                                    "Skill Name: {}\nDescription: {}\nTriggers: {}",
+                                    manifest.name, manifest.description, semantic_triggers
+                                )
+                            };
+                            use neural_core::interfaces::router_contract::EmbeddingDriver;
+                            if let Ok(vec) = engine.gen_embedding(&skill_content) {
+                                let _ = std::fs::create_dir_all(&cache_dir);
+                                let data_bytes = unsafe { std::slice::from_raw_parts(vec.as_ptr() as *const f32 as *const u8, vec.len() * 4) };
+                                if let Ok(_) = std::fs::write(&emb_path, data_bytes) {
+                                    new_vectors.push((skill_path.clone(), vec));
+                                }
+                            }
+                        }
+                    }
+                    for (p, v) in new_vectors {
+                        router.skill_vectors.insert(p, v);
+                    }
+                }
+            }
+
+            use neural_core::interfaces::router_contract::EmbeddingDriver;
+            if let Ok(vector) = engine.gen_embedding(prompt) {
+                if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
+                    matched_skill_path = router.check_semantic_trigger(&vector, 0.60); // 60% threshold for structured frontmatter
+                }
+            }
+        }
+
+        if matched_skill_path.is_none() {
+            if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
+                matched_skill_path = router.check_trigger(prompt);
+            }
+        }
+
         // 🧪 Cluaiz HANDSHAKE: Check for skills before generation
         let rt = tokio::runtime::Handle::current();
         let intent_result = rt.block_on(self.foundry.process_intent(prompt))
@@ -172,6 +263,34 @@ impl CoreRouter {
 
         match &mut self.active_backend {
             Backend::Cluaiz(b) => {
+                // Dynamic compilation of missing or mismatched KV Cache for the matched skill
+                if let Some(ref skill_path) = matched_skill_path {
+                    let schema = crate::neural_foundry::security::permission_schema::PermissionSchema::load();
+                    if let Some(active_chat_model) = schema.get_active_chat_model() {
+                        let gen_model_safe = active_chat_model.replace(":", "-");
+                        let cache_dir = skill_path.join(".cache");
+                        let kv_cache_path = cache_dir.join(format!("{}.kvcache.bin", gen_model_safe));
+                        if !kv_cache_path.exists() {
+                            // Non-blocking compilation via background daemon
+                            if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
+                                if let Some(shared_manifest) = router.loaded_manifests.get(&skill_path.file_name().unwrap_or_default().to_string_lossy().to_string()) {
+                                    if let Ok(manifest_json) = serde_json::to_string(shared_manifest) {
+                                        if let Ok(local_manifest) = serde_json::from_str::<crate::neural_foundry::registry::SkillManifest>(&manifest_json) {
+                                            crate::neural_foundry::registry::compiler_daemon::CompilerDaemon::new().compile_skill(skill_path, &local_manifest);
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            let path_str = kv_cache_path.to_string_lossy().to_string();
+                            println!("🧠 [Sovereign-Ops] Restoring KV Cache for skill: {}", skill_path.file_name().unwrap_or_default().to_string_lossy());
+                            if let Err(e) = b.load_kv_cache(&path_str) {
+                                println!("❌ [Sovereign-Ops] Failed to load KV cache: {}", e);
+                            }
+                        }
+                    }
+                }
+
                 // If Core signals (skill souls) were identified, inject them into the kernel
                 if !intent_result.signals.is_empty() {
                     println!("💉 [Router] Injecting {} Core signals into active backend...", intent_result.signals.len());
@@ -179,7 +298,19 @@ impl CoreRouter {
                 }
 
                 // 🎭 Orchestration: Let native backend handle templating to support pivot tags
-                let formatted_prompt = prompt.to_string();
+                let mut formatted_prompt = prompt.to_string();
+                
+                // 🧠 INJECT SKILL SYSTEM PROMPT: If the foundry provided textual skill descriptions,
+                // we must append them to the system prompt so the LLM is aware of its tools.
+                if !intent_result.responses.is_empty() {
+                    let tool_context = intent_result.responses.join("\n\n");
+                    formatted_prompt = format!(
+                        "<system>\nYou have access to the following skills/tools. Read their documentation carefully and use them if needed to fulfill the user's request. Output valid JSON to use a tool if instructed by the skill documentation:\n\n{}\n</system>\n\n{}", 
+                        tool_context, 
+                        formatted_prompt
+                    );
+                    println!("🧠 [Router] Injected skill descriptions into LLM context.");
+                }
 
                 b.generate_stream(&formatted_prompt, max_tokens, callback)
                     .map_err(|e| e.to_string())
@@ -214,4 +345,36 @@ impl cluaiz_shared::CluaizInference for DummyBackend {
     ) -> anyhow::Result<()> {
         Err(anyhow::anyhow!("Dummy backend"))
     }
+
+    fn load_kv_cache(&mut self, _path: &str) -> anyhow::Result<()> {
+        Err(anyhow::anyhow!("Dummy backend"))
+    }
+}
+
+fn extract_frontmatter(skill_dir: &std::path::Path) -> Option<String> {
+    let skill_md_path = skill_dir.join("SKILL.md");
+    if skill_md_path.exists() {
+        if let Ok(content) = std::fs::read_to_string(&skill_md_path) {
+            let lines: Vec<&str> = content.lines().collect();
+            let mut start_idx = None;
+            let mut end_idx = None;
+            for (i, line) in lines.iter().enumerate() {
+                if line.trim() == "---" {
+                    if start_idx.is_none() {
+                        start_idx = Some(i);
+                    } else {
+                        end_idx = Some(i);
+                        break;
+                    }
+                }
+            }
+            if let (Some(start), Some(end)) = (start_idx, end_idx) {
+                if end > start + 1 {
+                    let frontmatter_lines = &lines[start + 1..end];
+                    return Some(frontmatter_lines.join("\n"));
+                }
+            }
+        }
+    }
+    None
 }

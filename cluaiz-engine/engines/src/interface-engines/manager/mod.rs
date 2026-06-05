@@ -252,6 +252,69 @@ impl EngineManager {
         Ok(())
     }
 
+    /// 💾 [FFI Bridge] Dump the active KV Cache memory state to a safetensors/bin file.
+    pub fn dump_kv_cache_ffi(
+        &self,
+        engine_ptr: *mut std::ffi::c_void,
+        path: &str,
+    ) -> anyhow::Result<()> {
+        let lib = self.active_lib.as_ref()
+            .ok_or_else(|| anyhow::anyhow!("Linker Error: No active kernel linked."))?;
+        
+        unsafe {
+            let dump_fn: Symbol<unsafe extern "C" fn(*mut std::ffi::c_void, *const std::os::raw::c_char) -> i32> = 
+                lib.get(b"cluaiz_kernel_dump_kv_cache")
+                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaiz_kernel_dump_kv_cache' symbol missing."))?;
+            
+            let c_path = std::ffi::CString::new(path)?;
+            
+            let status = dump_fn(
+                engine_ptr, 
+                c_path.as_ptr() as *const std::os::raw::c_char
+            );
+            
+            if status != 0 {
+                return Err(anyhow::anyhow!("FFI KV Cache Dump Error (Code: {})", status));
+            }
+        }
+        
+        Ok(())
+    }
+
+    /// 💉 [FFI Bridge] Injects pre-computed KV Cache chunks dynamically into the active context prefix.
+    pub fn inject_signals_ffi(
+        &self,
+        engine_ptr: *mut std::ffi::c_void,
+        signals: Vec<cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal>,
+    ) -> anyhow::Result<()> {
+        let lib = self.active_lib.as_ref()
+            .ok_or_else(|| anyhow::anyhow!("Linker Error: No active kernel linked."))?;
+        
+        unsafe {
+            // Check if kernel supports dynamic signal injection
+            match lib.get::<unsafe extern "C" fn(*mut std::ffi::c_void, *const u8, usize, usize) -> i32>(b"cluaiz_kernel_inject_signals") {
+                Ok(inject_fn) => {
+                    for signal in signals {
+                        // Assuming raw_data maps to underlying MappedBuffer bytes
+                        // and passing length of tokens and head dimensions
+                        let raw_bytes_ptr = signal.raw_data.as_ptr();
+                        let total_bytes = signal.raw_data.len();
+                        
+                        let status = inject_fn(engine_ptr, raw_bytes_ptr, total_bytes, signal.token_count);
+                        if status != 0 {
+                            tracing::warn!("⚠️ [FFI] Kernel failed to inject signal chunk (Code: {})", status);
+                        }
+                    }
+                }
+                Err(_) => {
+                    tracing::warn!("⚠️ [Linker] 'cluaiz_kernel_inject_signals' symbol missing. Hardware does not support dynamic KV prefixing yet.");
+                }
+            }
+        }
+        
+        Ok(())
+    }
+
     /// 🏛️ Core Destruction: Invokes the kernel's destructor to free the active execution engine.
     pub fn free_instance(&self, engine_ptr: *mut std::ffi::c_void) -> anyhow::Result<()> {
         if engine_ptr.is_null() {

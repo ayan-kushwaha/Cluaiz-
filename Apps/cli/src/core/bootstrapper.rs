@@ -12,6 +12,18 @@ impl Bootstrapper {
     pub async fn ignite() -> Result<()> {
         #[cfg(debug_assertions)]
         let _ = Self::sync_dev_artifacts();
+        
+        // 🚀 0. Neural Foundry Genesis (Create Permission.json and Trigger Compiler Daemons)
+        tracing::info!("🧠 [Cluaiz] Igniting Neural Foundry (Permissions & Skills)...");
+        let mut permissions = engines::neural_foundry::security::permission_schema::PermissionSchema::load();
+        permissions.auto_assign_defaults();
+        
+        let home_dir = dirs::home_dir().unwrap_or_else(|| std::path::PathBuf::from("."));
+        let skills_dir = home_dir.join(".cluaiz").join("skills");
+        if skills_dir.exists() {
+            let mut registry = engines::neural_foundry::registry::SkillRegistry::new();
+            registry.load_from_directory(&skills_dir.to_string_lossy());
+        }
 
         #[cfg(windows)]
         let _ = colored::control::set_virtual_terminal(true);

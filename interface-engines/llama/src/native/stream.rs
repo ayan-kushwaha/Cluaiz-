@@ -75,8 +75,8 @@ pub fn stream_tokens(
         }
         tokens.truncate(n_tokens as usize);
 
-        let batch_size = (tokens.len() as i32).max(512);
-        let mut batch = llama_cpp::llama_batch_init(batch_size, 0, 1);
+        let chunk_size = 512; // Safe batch size
+        let mut batch = llama_cpp::llama_batch_init(chunk_size, 0, 1);
 
         let start_pos = if is_pivot {
             llama_cpp::llama_memory_seq_pos_max(llama_cpp::llama_get_memory(llama.ctx_ptr), 0) + 1
@@ -84,18 +84,22 @@ pub fn stream_tokens(
             0
         };
 
-        for (i, token) in tokens.iter().enumerate() {
-            *batch.token.add(i) = *token;
-            *batch.pos.add(i) = start_pos + i as i32;
-            *batch.n_seq_id.add(i) = 1;
-            *(*batch.seq_id.add(i)).add(0) = 0;
-            *batch.logits.add(i) = if i == tokens.len() - 1 { 1 } else { 0 };
-        }
-        batch.n_tokens = tokens.len() as i32;
+        for (chunk_idx, chunk) in tokens.chunks(chunk_size as usize).enumerate() {
+            for (i, token) in chunk.iter().enumerate() {
+                *batch.token.add(i) = *token;
+                *batch.pos.add(i) = start_pos + (chunk_idx * chunk_size as usize + i) as i32;
+                *batch.n_seq_id.add(i) = 1;
+                *(*batch.seq_id.add(i)).add(0) = 0;
+                // Only request logits for the VERY LAST token of the ENTIRE prompt
+                let is_last_token = (chunk_idx * chunk_size as usize + i) == (tokens.len() - 1);
+                *batch.logits.add(i) = if is_last_token { 1 } else { 0 };
+            }
+            batch.n_tokens = chunk.len() as i32;
 
-        if llama_cpp::llama_decode(llama.ctx_ptr, batch) != 0 {
-            llama_cpp::llama_batch_free(batch);
-            return Err(anyhow::anyhow!("Initial decode failed"));
+            if llama_cpp::llama_decode(llama.ctx_ptr, batch) != 0 {
+                llama_cpp::llama_batch_free(batch);
+                return Err(anyhow::anyhow!("Initial decode failed at chunk {}", chunk_idx));
+            }
         }
 
         let sampler_chain = crate::native::sampler::build_sampler_chain(dna, &tokens)?;
@@ -205,45 +209,39 @@ pub fn stream_tokens(
                                 piece = piece.replace(tag, "");
                             }
                         }
-                        for tag in &["<turn|>", "<|im_end|>", "<end_of_turn>", "<|im_start|>", "<start_of_turn>"] {
+                        
+                        let mut stop_generation = false;
+                        for tag in &["<turn|>", "<|im_end|>", "<end_of_turn>", "<|eot_id|>"] {
+                            if piece.contains(tag) {
+                                stop_generation = true;
+                                piece = piece.replace(tag, "");
+                            }
+                        }
+                        for tag in &["<|im_start|>", "<start_of_turn>"] {
                             piece = piece.replace(tag, "");
                         }
 
                         if !in_think_block && !piece.is_empty() {
                             if !callback(piece) { break; }
                         }
+                        if stop_generation { break; }
                     } else {
-                        for tag in &["<turn|>", "<|im_end|>", "<end_of_turn>", "<|im_start|>", "<start_of_turn>"] {
+                        let mut stop_generation = false;
+                        for tag in &["<turn|>", "<|im_end|>", "<end_of_turn>", "<|eot_id|>"] {
+                            if piece.contains(tag) {
+                                stop_generation = true;
+                                piece = piece.replace(tag, "");
+                            }
+                        }
+                        for tag in &["<|im_start|>", "<start_of_turn>"] {
                             piece = piece.replace(tag, "");
                         }
                         if !piece.is_empty() {
-                            // 🚀 MID-GENERATION SKILL INJECTION (PAUSE & PIVOT)
-                            if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
-                                if let Some(skill_path) = router.check_trigger(&piece) {
-                                    eprintln!("\n🔥 [SOVEREIGN OPS] Skill Triggered In-Flight: {:?}", skill_path.file_name().unwrap_or_default());
-                                    let md_path = skill_path.join("SKILL.md");
-                                    if let Ok(content) = std::fs::read_to_string(&md_path) {
-                                        let inject_str = format!("\n[System Memory Injection: {}]\n", content);
-                                        if let Ok(c_force) = CString::new(inject_str.clone()) {
-                                            let mut force_token_arr = vec![0i32; inject_str.len() + 256];
-                                            let n_force = llama_cpp::llama_tokenize(
-                                                vocab, c_force.as_ptr(), inject_str.len() as i32,
-                                                force_token_arr.as_mut_ptr(), force_token_arr.len() as i32,
-                                                false, false
-                                            );
-                                            if n_force > 0 {
-                                                for i in 0..n_force {
-                                                    injected_tokens_queue.push_back(force_token_arr[i as usize]);
-                                                }
-                                                eprintln!("🧠 [SOVEREIGN OPS] Injected {} raw subwords directly into KV-Cache at n_cur={}.", n_force, n_cur);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+
 
                             if !callback(piece) { break; }
                         }
+                        if stop_generation { break; }
                     }
                 }
             }
@@ -342,43 +340,41 @@ pub fn stream_tokens(
                                         piece = piece.replace(tag, "");
                                     }
                                 }
-                                for tag in &["<turn|>", "<|im_end|>", "<end_of_turn>", "<|im_start|>", "<start_of_turn>"] {
+                                
+                                let mut stop_generation = false;
+                                for tag in &["<turn|>", "<|im_end|>", "<end_of_turn>", "<|eot_id|>"] {
+                                    if piece.contains(tag) {
+                                        stop_generation = true;
+                                        piece = piece.replace(tag, "");
+                                    }
+                                }
+                                for tag in &["<|im_start|>", "<start_of_turn>"] {
                                     piece = piece.replace(tag, "");
                                 }
-
                                 if !in_think_block && !piece.is_empty() {
-                                    // 🚀 MID-GENERATION SKILL INJECTION (PAUSE & PIVOT - Think Block)
-                                    if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
-                                        if let Some(skill_path) = router.check_trigger(&piece) {
-                                            eprintln!("\n🔥 [SOVEREIGN OPS] Skill Triggered In-Flight (Thinking): {:?}", skill_path.file_name().unwrap_or_default());
-                                            let md_path = skill_path.join("SKILL.md");
-                                            if let Ok(content) = std::fs::read_to_string(&md_path) {
-                                                let inject_str = format!("\n[System Memory Injection: {}]\n", content);
-                                                if let Ok(c_force) = CString::new(inject_str.clone()) {
-                                                    let mut force_token_arr = vec![0i32; inject_str.len() + 256];
-                                                    let n_force = llama_cpp::llama_tokenize(
-                                                        vocab, c_force.as_ptr(), inject_str.len() as i32,
-                                                        force_token_arr.as_mut_ptr(), force_token_arr.len() as i32,
-                                                        false, false
-                                                    );
-                                                    if n_force > 0 {
-                                                        for i in 0..n_force {
-                                                            injected_tokens_queue.push_back(force_token_arr[i as usize]);
-                                                        }
-                                                        eprintln!("🧠 [SOVEREIGN OPS] Injected {} raw subwords directly into KV-Cache at n_cur={}.", n_force, n_cur);
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
                                     callback(piece);
                                 }
+                                if stop_generation { 
+                                    eos_detected = true;
+                                    break; 
+                                }
                             } else {
-                                for tag in &["<turn|>", "<|im_end|>", "<end_of_turn>", "<|im_start|>", "<start_of_turn>"] {
+                                let mut stop_generation = false;
+                                for tag in &["<turn|>", "<|im_end|>", "<end_of_turn>", "<|eot_id|>"] {
+                                    if piece.contains(tag) {
+                                        stop_generation = true;
+                                        piece = piece.replace(tag, "");
+                                    }
+                                }
+                                for tag in &["<|im_start|>", "<start_of_turn>"] {
                                     piece = piece.replace(tag, "");
                                 }
                                 if !piece.is_empty() {
                                     if !callback(piece) { break; }
+                                }
+                                if stop_generation { 
+                                    eos_detected = true;
+                                    break; 
                                 }
                             }
                         }

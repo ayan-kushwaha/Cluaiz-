@@ -31,8 +31,8 @@ mod tests {
         }}"#, id, id, id);
         
         fs::write(skill_path.join("manifest.json"), manifest).unwrap();
-        // 2. Create a mock prompt-cache file (1KB of zeros)
-        fs::write(skill_path.join("state.prompt-cache"), vec![0u8; 1024]).unwrap();
+        // 2. Create a mock kvcache.bin file (1KB of zeros)
+        fs::write(skill_path.join("state.kvcache.bin"), vec![0u8; 1024]).unwrap();
     }
 
     #[tokio::test]

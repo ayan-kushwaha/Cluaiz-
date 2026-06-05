@@ -198,6 +198,7 @@ impl NativeLlama {
             let c_prompt = std::ffi::CString::new(prompt.to_string())?;
 
             // 1. Tokenize
+            println!("🧠 [Native-Llama] Starting tokenization of prompt (len: {})...", prompt.len());
             let mut tokens = vec![0i32; prompt.len() + 8];
             let n_tokens = llama_cpp::llama_tokenize(
                 vocab, 
@@ -210,28 +211,44 @@ impl NativeLlama {
             );
             
             if n_tokens < 0 {
+                println!("❌ [Native-Llama] Tokenization failed!");
                 return Err(anyhow::anyhow!("Tokenization failed"));
             }
             tokens.truncate(n_tokens as usize);
+            println!("🧠 [Native-Llama] Tokenization successful: {} tokens", tokens.len());
 
-            // 2. Initial Batch Decode (Prefill)
-            let batch_size = (tokens.len() as i32).max(512);
-            let mut batch = llama_cpp::llama_batch_init(batch_size, 0, 1);
+            // 2. Initial Batch Decode (Prefill) with Chunking
+            let chunk_size = 512;
+            println!("🧠 [Native-Llama] Initializing llama batch of size {}...", chunk_size);
+            let mut batch = llama_cpp::llama_batch_init(chunk_size, 0, 1);
+            
+            let mut tokens_processed = 0;
+            
+            while tokens_processed < tokens.len() {
+                let current_chunk = std::cmp::min(chunk_size as usize, tokens.len() - tokens_processed);
+                
+                for i in 0..current_chunk {
+                    let global_i = tokens_processed + i;
+                    *batch.token.add(i) = tokens[global_i];
+                    *batch.pos.add(i) = global_i as i32;
+                    *batch.n_seq_id.add(i) = 1;
+                    *(*batch.seq_id.add(i)).add(0) = 0;
+                    *batch.logits.add(i) = if global_i == tokens.len() - 1 { 1 } else { 0 };
+                }
+                batch.n_tokens = current_chunk as i32;
 
-            for (i, token) in tokens.iter().enumerate() {
-                *batch.token.add(i) = *token;
-                *batch.pos.add(i) = i as i32;
-                *batch.n_seq_id.add(i) = 1;
-                *(*batch.seq_id.add(i)).add(0) = 0;
-                *batch.logits.add(i) = if i == tokens.len() - 1 { 1 } else { 0 };
+                println!("🧠 [Native-Llama] Prefilling chunk of {} tokens ({} / {})...", current_chunk, tokens_processed + current_chunk, tokens.len());
+                if llama_cpp::llama_decode(self.ctx_ptr, batch) != 0 {
+                    println!("❌ [Native-Llama] llama_decode failed!");
+                    llama_cpp::llama_batch_free(batch);
+                    return Err(anyhow::anyhow!("Prefill decode failed at chunk starting at {}", tokens_processed));
+                }
+                println!("🧠 [Native-Llama] Decoded chunk successfully");
+                
+                tokens_processed += current_chunk;
             }
-            batch.n_tokens = tokens.len() as i32;
-
-            info!("🧠 [Native-Llama] Prefilling batch of {} tokens...", tokens.len());
-            if llama_cpp::llama_decode(self.ctx_ptr, batch) != 0 {
-                llama_cpp::llama_batch_free(batch);
-                return Err(anyhow::anyhow!("Prefill decode failed"));
-            }
+            
+            println!("🧠 [Native-Llama] Prefill complete, freeing batch...");
             llama_cpp::llama_batch_free(batch);
             
             Ok(tokens)

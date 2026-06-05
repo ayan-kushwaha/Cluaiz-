@@ -19,9 +19,9 @@ impl KvInjector {
     }
 
     /// Injects a saved KV-Cache state directly into the LLaMA context.
-    /// This uses `memmap2` to map the `.prompt-cache` file directly to memory.
+    /// This uses `memmap2` to map the `.kvcache.bin` file directly to memory.
     pub fn inject_cache(&self, session_id: &str) -> Result<memmap2::Mmap> {
-        let path_str = format!("{}/{}.prompt-cache", self.cache_dir, session_id);
+        let path_str = format!("{}/{}.kvcache.bin", self.cache_dir, session_id);
         let path = Path::new(&path_str);
         
         if !path.exists() {
@@ -39,7 +39,7 @@ impl KvInjector {
 
     /// Snapshots the current VRAM KV-Cache to disk asynchronously.
     pub fn snapshot_cache(&self, session_id: &str, _raw_bytes: &[u8]) -> Result<()> {
-        warn!("💾 [KV-Injector] Snapshotting VRAM context to: {}.prompt-cache", session_id);
+        warn!("💾 [KV-Injector] Snapshotting VRAM context to: {}.kvcache.bin", session_id);
         // Implementation for dumping raw bytes to disk
         Ok(())
     }

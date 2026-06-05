@@ -95,7 +95,7 @@ graph TD
     B -- "Native FFI" --> D[Kernel Drivers]
     
     subgraph "Hardware Realignment"
-        NF -->|Memory Map| S["🧠 prompt-cache State"]
+        NF -->|Memory Map| S["🧠 kvcache.bin State"]
         D --> D2[Metal / MPS]
         D --> D3[Vulkan / OpenVINO]
     end
@@ -136,7 +136,7 @@ Cluaiz relies on `~/.cluaiz/engine/system_booster.json` as its primary configura
 This is not just a UI preference file—it dynamically adjusts Rust-level execution logic:
 
 - **`mode_run`**: Defines the active VRAM allocation strategy. For example, `UltraMaxBoost` drops the safe VRAM allocation margin down to `1%` (or an absolute 250MB floor) to maximize context length, while `Balance` mode retains larger margins (~15%) for multitasking stability.
-- **`force_vram_reclaim`**: A critical override that enforces an ultra-tight `0.5%` VRAM safety margin. When enabled, the VRAM Arbiter performs live silicon probes (`live_vram_probe`) instead of theoretical math, ensuring absolute maximum prompt-cache allocation without hitting OS memory spill limits.
+- **`force_vram_reclaim`**: A critical override that enforces an ultra-tight `0.5%` VRAM safety margin. When enabled, the VRAM Arbiter performs live silicon probes (`live_vram_probe`) instead of theoretical math, ensuring absolute maximum kvcache.bin allocation without hitting OS memory spill limits.
 - **`flash_attention` & `dflash`**: Directs the engine to pass native FlashAttention kernel flags into the FFI bindings during model load.
 - **`think_mode`**: Intercepts output at the Rust orchestration layer. When `"On"`, the engine dynamically watches the token stream for `<think>` boundaries and applies native formatting before stdout.
 - **`kv_cache_quantization`**: Modifies the per-element byte allocation in the Arbiter's `SOVEREIGN MATH` formula, allowing the engine to calculate and fit significantly larger context windows on memory-constrained GPUs (like 4GB).

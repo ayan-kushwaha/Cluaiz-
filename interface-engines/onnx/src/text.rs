@@ -59,7 +59,7 @@ impl OnnxEngine {
         let shape = &embeddings_tuple.0;
         let slice = embeddings_tuple.1;
         
-        let mut vec = if shape.len() == 2 {
+        let vec = if shape.len() == 2 {
             // Already pooled: [batch_size, hidden_dim]
             slice.to_vec()
         } else if shape.len() == 3 {

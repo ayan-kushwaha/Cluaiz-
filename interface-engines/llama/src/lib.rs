@@ -190,12 +190,7 @@ impl UnifiedBackend for RuntimeB {
     }
 
     fn prefill(&mut self, prompt: &str) -> Result<()> {
-        if let Some(ref native) = self.native {
-            native.prefill_prompt(prompt)?;
-            Ok(())
-        } else {
-            Err(anyhow::anyhow!("Prefill not supported without native backend"))
-        }
+        self.generate_stream(prompt, 1, Box::new(|_| false))
     }
 
     fn evaluate_tps(&self) -> f64 {
@@ -348,6 +343,56 @@ impl CluaizInference for RuntimeB {
     fn set_liquid_mode(&mut self, enabled: bool) -> Result<()> {
         tracing::info!("🌊 [Llama-Engine] Liquid Mode set to: {}", enabled);
         Ok(())
+    }
+
+    /// 💾 Native Memory Dump: Extracts the actual KV cache buffer to a binary file.
+    fn dump_kv_cache(&mut self, path: &str) -> Result<()> {
+        if let Some(ref native) = self.native {
+            if !native.ctx_ptr.is_null() {
+                let c_path = std::ffi::CString::new(path)?;
+                let success = unsafe {
+                    crate::ffi::llama_cpp::llama_state_save_file(native.ctx_ptr, c_path.as_ptr(), std::ptr::null(), 0)
+                };
+                if success {
+                    Ok(())
+                } else {
+                    Err(anyhow::anyhow!("llama_state_save_file failed"))
+                }
+            } else {
+                Err(anyhow::anyhow!("Context pointer is null"))
+            }
+        } else {
+            Err(anyhow::anyhow!("Native backend not initialized"))
+        }
+    }
+
+    /// 💾 Load KV Cache from a binary file.
+    fn load_kv_cache(&mut self, path: &str) -> Result<()> {
+        if let Some(ref native) = self.native {
+            if !native.ctx_ptr.is_null() {
+                let c_path = std::ffi::CString::new(path)?;
+                let mut tokens = vec![0i32; 16384]; // Temp tokens vector
+                let mut n_tokens_out: usize = 0;
+                let success = unsafe {
+                    crate::ffi::llama_cpp::llama_state_load_file(
+                        native.ctx_ptr,
+                        c_path.as_ptr(),
+                        tokens.as_mut_ptr(),
+                        tokens.len(),
+                        &mut n_tokens_out as *mut usize
+                    )
+                };
+                if success {
+                    Ok(())
+                } else {
+                    Err(anyhow::anyhow!("llama_state_load_file failed"))
+                }
+            } else {
+                Err(anyhow::anyhow!("Context pointer is null"))
+            }
+        } else {
+            Err(anyhow::anyhow!("Native backend not initialized"))
+        }
     }
 }
 
@@ -528,7 +573,10 @@ pub extern "C" fn cluaiz_kernel_free(engine_ptr: *mut RuntimeB) {
         if !engine_ptr.is_null() {
             unsafe {
                 let _ = Box::from_raw(engine_ptr);
-                crate::ffi::llama_cpp::llama_backend_free();
+                // 🛑 CRITICAL FIX: DO NOT call llama_backend_free() here!
+                // llama_backend_free() destroys the global llama.cpp state.
+                // If a background thread (CompilerDaemon) instantiates and drops an engine,
+                // calling this will kill the active Chat Engine in the main thread!
             }
         }
     }));
@@ -544,3 +592,38 @@ pub extern "C" fn cluaiz_kernel_set_skip_ptr(ptr: *const std::sync::atomic::Atom
     }
 }
 
+#[no_mangle]
+pub extern "C" fn cluaiz_kernel_dump_kv_cache(
+    engine_ptr: *mut RuntimeB,
+    path_ptr: *const std::os::raw::c_char,
+) -> i32 {
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        if engine_ptr.is_null() || path_ptr.is_null() { return -1; }
+        
+        let path = unsafe { std::ffi::CStr::from_ptr(path_ptr) }
+            .to_string_lossy()
+            .into_owned();
+
+        let engine = unsafe { &mut *engine_ptr };
+        if let Some(ref native) = engine.native {
+            // Using the FFI bindings to save KV cache state
+            if !native.ctx_ptr.is_null() {
+                let c_path = std::ffi::CString::new(path).unwrap_or_default();
+                let success = unsafe {
+                    // llama_state_save_file signature: ctx, path_session, tokens, n_token_count
+                    crate::ffi::llama_cpp::llama_state_save_file(native.ctx_ptr, c_path.as_ptr(), std::ptr::null(), 0)
+                };
+                if success { 0 } else { -2 }
+            } else {
+                -3
+            }
+        } else {
+            -4
+        }
+    }));
+    
+    match result {
+        Ok(res) => res,
+        Err(_) => -5,
+    }
+}

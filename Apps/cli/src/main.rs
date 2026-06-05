@@ -112,6 +112,30 @@ enum SkillCommand {
     },
     /// List all locally installed skills
     List,
+    /// Manage Global Dual-Cache Artifacts
+    Cache {
+        #[command(subcommand)]
+        command: SkillCacheCommand,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum SkillCacheCommand {
+    /// List all active and orphaned dual-caches
+    Ls,
+    /// Clear orphaned caches (or target a specific model cache)
+    Clear {
+        /// The model cache ID to target (optional)
+        model_id: Option<String>,
+        
+        /// Clear all orphaned caches globally
+        #[arg(long)]
+        all: bool,
+        
+        /// Force deletion even if model is active
+        #[arg(short = 'f', long)]
+        force: bool,
+    },
 }
 
 // ──────────────────────────────────────────────────────────────────────────

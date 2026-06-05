@@ -2,21 +2,26 @@
 // Manages the lifecycle of Cluaiz skills.
 
 pub mod scanner;
+pub mod compiler_daemon;
 
 use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SkillManifest {
+    #[serde(default)]
     pub id: String,
     pub name: String,
     pub version: String,
+    #[serde(default)]
     pub author: String,
     pub description: String,
     pub triggers: Triggers,
     pub permissions: Permissions,
+    #[serde(default)]
     pub soul_type: String,
-    pub Core_metadata: CoreMetadata,
+    #[serde(default)]
+    pub Core_metadata: Option<CoreMetadata>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -81,7 +86,24 @@ impl SkillRegistry {
 
         for manifest_path in manifest_paths {
             if let Ok(content) = std::fs::read_to_string(&manifest_path) {
-                if let Ok(manifest) = serde_json::from_str::<SkillManifest>(&content) {
+                // If it's a SKILL.md, extract the YAML frontmatter
+                let parsed_manifest = if manifest_path.file_name().map(|n| n == "SKILL.md").unwrap_or(false) {
+                    if let Some(start) = content.find("---\n") {
+                        if let Some(end) = content[start + 4..].find("\n---") {
+                            let yaml_content = &content[start + 4..start + 4 + end];
+                            serde_yaml::from_str::<SkillManifest>(yaml_content).ok()
+                        } else { None }
+                    } else { None }
+                } else {
+                    serde_json::from_str::<SkillManifest>(&content).ok()
+                };
+
+                if let Some(mut manifest) = parsed_manifest {
+                    // Fallback ID to name if not provided (common for YAML skills)
+                    if manifest.id.is_empty() {
+                        manifest.id = manifest.name.clone();
+                    }
+
                     let skill_dir = manifest_path.parent().unwrap();
                     
                     // 🧠 Detect Core Soul (.atma)
@@ -92,12 +114,18 @@ impl SkillRegistry {
                     let logic_path = skill_dir.join("logic.wasm");
                     let logic = if logic_path.exists() { Some(logic_path) } else { None };
 
-                    self.skills.push(Skill {
-                        manifest,
+                    let skill = Skill {
+                        manifest: manifest.clone(),
                         path: skill_dir.to_path_buf(),
                         soul_path: soul,
                         logic_path: logic,
-                    });
+                    };
+                    
+                    // ⚙️ Trigger Sovereign Watcher & Dual-Cache Compilation
+                    let daemon = compiler_daemon::CompilerDaemon::new();
+                    daemon.compile_skill(&skill.path, &manifest);
+
+                    self.skills.push(skill);
                 }
             }
         }

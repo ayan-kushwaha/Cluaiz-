@@ -38,7 +38,7 @@ uuid = { version = "1", features = ["v4"] }
 cluaiz-shared = { path = "cluaiz-shared" }
 # Engines (Llama, Candle, BitNet) are now loaded dynamically via libloading from interface-engines
 system-booster = { path = "system-booster", optional = true }
-neural-core = { path = "../../interface-engines/neural_core" }
+neural_core = { package = "neural-core", path = "../../interface-engines/neural_core" }
 
 # ── Dynamic Neural Bridge (The Soul Linker) ──
 libloading = "0.8"
@@ -60,6 +60,8 @@ async-trait         = "0.1"
 indicatif = "0.18.4"
 colored = "3.1"
 pdf-extract = "0.7"
+serde_yaml = "0.9.34"
+lazy_static = "1.5.0"
 
 
 [build-dependencies]

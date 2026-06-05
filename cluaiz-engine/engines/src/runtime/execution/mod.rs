@@ -1,6 +1,7 @@
 pub mod runner;
 pub mod sampler;
 pub mod hub;
+pub mod logit_processor;
 pub mod drivers;
 pub mod loader;
 pub mod provisioner;

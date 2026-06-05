@@ -1,41 +1,64 @@
 use anyhow::Result;
 use engines::runtime::execution::hub::HardwareOrchestrator;
 use cluaiz_shared::{StructuralDNA, CluaizContext, TemplateManager};
+use std::path::PathBuf;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    println!("🧪 [Test] Starting Raw Inference Test...");
+    println!("🧪 [Test] Starting Dynamic Pipeline Diagnostic...");
 
     let home_dir = dirs::home_dir().expect("Could not resolve Home Directory");
-    let model_path = home_dir.join(".cluaiz").join("models").join("chat").join("qwen3.5-2b-gguf-q4_k_m").join("Qwen3.5-2B-Q4_K_M.gguf");
+    let model_path = home_dir.join(".cluaiz").join("models").join("chat").join("bonsai1-8b").join("Bonsai-8B.gguf");
     
     if !model_path.exists() {
         println!("❌ Model not found at: {:?}", model_path);
         return Ok(());
     }
 
+    // Set Permission.json text chat model to bonsai1:8b
+    engines::neural_foundry::security::permission_schema::PermissionSchema::set_active_chat_model("bonsai1:8b".to_string());
+
     let dna = StructuralDNA::default();
     let context = CluaizContext::boot(dna, TemplateManager::default());
 
-    println!("⚙️ [Test] Orchestrating Hardware...");
+    println!("⚙️ [Test] Instantiating Chat Engine...");
     let mut engine = HardwareOrchestrator::instantiate(
         model_path.to_str().unwrap(),
         "llama",
         context
     ).await?;
 
-    println!("🚀 [Test] Starting Stream...");
+    // Load active router
+    let mut router = engines::api::router::CoreRouter::new();
+    router.active_backend = engines::api::router::Backend::Cluaiz(engine);
+
+    let prompt = "Make a sad piano instrumental track with slow tempo and emotional vibe";
+    println!("🚀 [Test] Triggering stream with prompt: '{}'", prompt);
     
-    engine.generate_stream(
-        "hi",
-        100,
+    let res = router.generate_stream(
+        prompt,
+        10,
         Box::new(|token| {
             print!("{}", token);
             std::io::Write::flush(&mut std::io::stdout()).unwrap();
             true
         }),
-    )?;
+    );
 
-    println!("\n✅ [Test] Inference Finished.");
+    if res.is_ok() {
+        println!("\n✅ [Test] Generation successful!");
+        
+        // Let's verify that the kvcache.bin was created for the matched skill
+        let cache_file = home_dir.join(".cluaiz").join("skills").join("minimax-music-gen").join(".cache").join("bonsai1-8b.kvcache.bin");
+        if cache_file.exists() {
+            println!("✅ [Test] VERIFIED: kvcache.bin was compiled successfully for minimax-music-gen!");
+            println!("📁 Cache file location: {:?}", cache_file);
+        } else {
+            println!("❌ [Test] FAILED: kvcache.bin was not found!");
+        }
+    } else {
+        println!("❌ [Test] Stream generation failed: {:?}", res.err());
+    }
+
     Ok(())
 }

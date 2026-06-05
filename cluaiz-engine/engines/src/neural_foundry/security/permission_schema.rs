@@ -1,0 +1,152 @@
+use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
+use std::fs;
+use tracing::{info, warn};
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ModelSelection {
+    pub text: Option<String>,
+    pub vision: Option<String>,
+    pub audio: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PermissionSchema {
+    #[serde(default)]
+    pub vector_models: ModelSelection,
+    #[serde(default)]
+    pub chat_models: ModelSelection,
+    #[serde(default = "default_wasm_firewall")]
+    pub wasm_firewall: String,
+}
+
+impl Default for ModelSelection {
+    fn default() -> Self {
+        Self {
+            text: None,
+            vision: None,
+            audio: None,
+        }
+    }
+}
+
+impl Default for PermissionSchema {
+    fn default() -> Self {
+        Self {
+            vector_models: ModelSelection::default(),
+            chat_models: ModelSelection::default(),
+            wasm_firewall: default_wasm_firewall(),
+        }
+    }
+}
+
+fn default_wasm_firewall() -> String {
+    "auto".to_string()
+}
+
+impl PermissionSchema {
+    /// Loads the Permission.json from ~/.cluaiz/engine/Permission.json
+    /// If it doesn't exist, it creates a default one and returns it.
+    pub fn load() -> Self {
+        let home_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
+        let engine_dir = home_dir.join(".cluaiz").join("engine");
+        let permission_path = engine_dir.join("Permission.json");
+
+        if !permission_path.exists() {
+            warn!("⚠️ Permission.json not found at {:?}. Creating default.", permission_path);
+            let default_schema = Self::default();
+            if let Err(e) = fs::create_dir_all(&engine_dir) {
+                warn!("Failed to create engine directory: {}", e);
+                return default_schema;
+            }
+            if let Ok(json) = serde_json::to_string_pretty(&default_schema) {
+                if let Err(e) = fs::write(&permission_path, json) {
+                    warn!("Failed to write default Permission.json: {}", e);
+                } else {
+                    info!("✅ Created default Permission.json");
+                }
+            }
+            return default_schema;
+        }
+
+        match fs::read_to_string(&permission_path) {
+            Ok(content) => {
+                match serde_json::from_str(&content) {
+                    Ok(schema) => schema,
+                    Err(e) => {
+                        warn!("❌ Failed to parse Permission.json: {}. Using default.", e);
+                        Self::default()
+                    }
+                }
+            }
+            Err(e) => {
+                warn!("❌ Failed to read Permission.json: {}. Using default.", e);
+                Self::default()
+            }
+        }
+    }
+
+    /// Automatically scans installed models and assigns defaults if null
+    pub fn auto_assign_defaults(&mut self) {
+        let mut changed = false;
+        
+        if self.vector_models.text.is_none() || self.chat_models.text.is_none() {
+            let roster = crate::models::registry::CoreRoster::load_roster();
+            for model in roster {
+                // If it's ONNX or an embedding model, assign to vector_models
+                if self.vector_models.text.is_none() && (model.architecture_type == "onnx" || model.category == "embedding") {
+                    self.vector_models.text = Some(model.id.clone());
+                    changed = true;
+                }
+                // If it's a chat/generative model, assign to chat_models
+                else if self.chat_models.text.is_none() && (model.architecture_type != "onnx" && model.category != "embedding") {
+                    self.chat_models.text = Some(model.id.clone());
+                    changed = true;
+                }
+            }
+        }
+
+        if changed {
+            self.save();
+        }
+    }
+    
+    pub fn get_active_chat_model(&self) -> Option<String> {
+        self.chat_models.text.clone()
+    }
+    
+    pub fn get_active_embedding_model(&self) -> Option<String> {
+        self.vector_models.text.clone()
+    }
+
+    pub fn set_active_chat_model(model_id: String) {
+        let mut schema = Self::load();
+        schema.chat_models.text = Some(model_id);
+        schema.save();
+    }
+
+    pub fn set_active_embedding_model(model_id: String) {
+        let mut schema = Self::load();
+        schema.vector_models.text = Some(model_id);
+        schema.save();
+    }
+
+    pub fn save(&self) {
+        let home_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
+        let engine_dir = home_dir.join(".cluaiz").join("engine");
+        let permission_path = engine_dir.join("Permission.json");
+
+        if let Err(e) = fs::create_dir_all(&engine_dir) {
+            warn!("Failed to create engine directory for saving Permission.json: {}", e);
+            return;
+        }
+
+        if let Ok(json) = serde_json::to_string_pretty(self) {
+            if let Err(e) = fs::write(&permission_path, json) {
+                warn!("Failed to save Permission.json: {}", e);
+            } else {
+                info!("✅ Updated Permission.json with active models.");
+            }
+        }
+    }
+}

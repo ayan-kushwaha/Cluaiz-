@@ -23,7 +23,15 @@ impl CoreSampler {
     }
 
     /// Dispatch sampling based on InferenceMode.
-    pub fn sample(&self, logits: &[f32], mode: &InferenceMode) -> Result<u32> {
+    /// In production, `valid_tokens` is provided dynamically by the active `GrammarMasker` FSM state.
+    pub fn sample(&self, logits: &mut [f32], mode: &InferenceMode, masker: Option<&crate::runtime::execution::logit_processor::GrammarMasker>, valid_tokens: Option<&[u32]>) -> Result<u32> {
+        // 🛡️ LogitProcessor Phase: Pre-sampling constraint injection
+        if let Some(m) = masker {
+            if let Some(vt) = valid_tokens {
+                m.mask_logits(logits, vt)?;
+            }
+        }
+
         match mode {
             InferenceMode::Turbo => self.sample_greedy(logits),
             InferenceMode::Classic => self.sample_creative(logits),

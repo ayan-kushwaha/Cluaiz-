@@ -94,8 +94,10 @@ impl UnifiedBackend for SovereignEngine {
         Err("SovereignEngine: Use generate_stream for native performance.".to_string())
     }
 
-    fn prefill(&mut self, _prompt: &str) -> Result<()> {
-        Ok(())
+    fn prefill(&mut self, prompt: &str) -> Result<()> {
+        let manager = self.manager.lock().map_err(|e| anyhow!("Lock poisoned: {}", e))?;
+        // Pre-fill the KV cache by running generation with 0 max_tokens
+        manager.generate_stream_ffi(self.engine_ptr, prompt, 0, Box::new(|_| true))
     }
 
     fn evaluate_tps(&self) -> f64 {
@@ -118,7 +120,27 @@ impl CluaizInference for SovereignEngine {
         Err(anyhow!("forward_raw is optimized via FFI inside the kernel."))
     }
 
-    fn inject_signals(&mut self, _signals: Vec<cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Result<()> {
+    fn dump_kv_cache(&mut self, path: &str) -> Result<()> {
+        let manager = self.manager.lock().map_err(|e| anyhow!("Lock poisoned: {}", e))?;
+        manager.dump_kv_cache_ffi(self.engine_ptr, path)
+    }
+
+    fn inject_signals(&mut self, signals: Vec<cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Result<()> {
+        if signals.is_empty() {
+            return Ok(());
+        }
+        
+        let manager = self.manager.lock().map_err(|e| anyhow!("Lock poisoned: {}", e))?;
+        tracing::info!("⏸️ [Agentic Pause] Halting autoregressive loop for dynamic KV cache injection...");
+        
+        // Dynamic sizing info logic (no 25% fixed limit)
+        let total_tokens: usize = signals.iter().map(|s| s.token_count).sum();
+        tracing::info!("💉 [VRAM Injector] Stitching {} total dynamic tokens to active Context Window prefix.", total_tokens);
+        
+        // Pass to FFI
+        manager.inject_signals_ffi(self.engine_ptr, signals)?;
+        
+        tracing::info!("▶️ [Agentic Pause] Injection complete. Inference loop resumed.");
         Ok(())
     }
 

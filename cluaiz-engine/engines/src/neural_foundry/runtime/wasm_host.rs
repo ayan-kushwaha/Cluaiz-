@@ -38,6 +38,8 @@ impl WasmHost {
     pub fn new() -> Self {
         let mut config = Config::new();
         config.async_support(true);
+        // 🛡️ Enable CPU Instruction limits (Fuel) to prevent infinite loops
+        config.consume_fuel(true);
         Self {
             engine: Engine::new(&config).expect("Failed to create Wasmtime engine"),
             result_pool: Mutex::new(vec![0u8; 4096]), // Pre-allocated 4KB pool
@@ -86,6 +88,12 @@ impl WasmHost {
         let wasi = wasi_builder.build_p1();
         
         let mut store = Store::new(&self.engine, CluaizWasmState { wasi });
+        // ⛽ Inject exactly 10 Million CPU instructions as Fuel
+        // If the skill hits an infinite loop or tries mining crypto, it traps and dies.
+        if let Err(e) = store.set_fuel(10_000_000) {
+            tracing::warn!("⚠️ [Sandbox] Could not inject fuel: {}", e);
+        }
+
         let mut linker = Linker::new(&self.engine);
         preview1::add_to_linker_async(&mut linker, |s: &mut CluaizWasmState| &mut s.wasi)?;
 

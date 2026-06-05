@@ -3,6 +3,7 @@ name = "cli"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
+default-run = "cluaiz"
 
 [[bin]]
 name = "cluaiz"
@@ -41,6 +42,7 @@ tracing = "0.1.44"
 rand = "0.8"
 unicode-width = "0.1"
 tokenizers = { version = "0.22.2", default-features = false, features = ["onig"] }
+serde_yaml = "0.9"
 libc = "0.2"
 
 # ── Sovereign Security ──

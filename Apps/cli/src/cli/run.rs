@@ -82,6 +82,21 @@ pub async fn execute(model_id: &str, _interactive: bool) -> Result<()> {
 
     let mut manifest = manifest.ok_or_else(|| color_eyre::eyre::eyre!("ID '{}' not found in any registry.", model_id))?;
 
+    // 🚀 Update the Engine Permission.json with the actively running model so CompilerDaemon knows what to compile
+    if manifest.architecture_type == "onnx" {
+        engines::neural_foundry::security::permission_schema::PermissionSchema::set_active_embedding_model(manifest.id.clone());
+    } else {
+        engines::neural_foundry::security::permission_schema::PermissionSchema::set_active_chat_model(manifest.id.clone());
+    }
+
+    // 🚀 Trigger Skill Registry (which triggers CompilerDaemon) to provision the caches for this active model
+    let home_dir = dirs::home_dir().unwrap_or_else(|| std::path::PathBuf::from("."));
+    let skills_dir = home_dir.join(".cluaiz").join("skills");
+    if skills_dir.exists() {
+        let mut registry = engines::neural_foundry::registry::SkillRegistry::new();
+        registry.load_from_directory(&skills_dir.to_string_lossy());
+    }
+
     // 2. Silicon Audit (Local Probe or HF Metadata)
     let manager = engines::models::manager::ModelManager::new(engines::models::registry::REGISTRY_URL.to_string(), cluaiz_root.clone());
     
