@@ -261,11 +261,11 @@ impl DashboardEngine {
 
                                             if !has_vector || !emb_path.exists() {
                                                 println!("\r\n⏳ [Sovereign-Ops] Mismatch detected. Generating semantic vector for skill: {}", manifest.name);
-                                                let semantic_triggers = manifest.triggers.semantic.join(", ");
-                                                let skill_content = format!(
-                                                    "Skill Name: {}\nDescription: {}\nTriggers: {}",
-                                                    manifest.name, manifest.description, semantic_triggers
-                                                );
+                                                let skill_content = if manifest.triggers.semantic.is_empty() {
+                                                    manifest.name.clone()
+                                                } else {
+                                                    manifest.triggers.semantic.join(", ")
+                                                };
                                                 if let Ok(vec) = engine.gen_embedding(&skill_content) {
                                                     let _ = std::fs::create_dir_all(&cache_dir);
                                                     let data_bytes = unsafe { std::slice::from_raw_parts(vec.as_ptr() as *const f32 as *const u8, vec.len() * 4) };
@@ -281,9 +281,12 @@ impl DashboardEngine {
                                     }
                                 }
 
-                                if let Ok(vector) = engine.gen_embedding(&final_message) {
-                                    if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
-                                        matched_skill_path = router.check_semantic_trigger(&vector, 0.33); // 33% threshold for stable matching
+                                let prompt_words = final_message.trim().split_whitespace().count();
+                                if prompt_words >= 3 {
+                                    if let Ok(vector) = engine.gen_embedding(&final_message) {
+                                        if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
+                                            matched_skill_path = router.check_semantic_trigger(&vector, 0.33); // 33% threshold for stable matching
+                                        }
                                     }
                                 }
                             }
