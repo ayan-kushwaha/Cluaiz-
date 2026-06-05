@@ -101,6 +101,9 @@ enum CliCommand {
         /// The file path to ingest
         file_path: String,
     },
+
+    /// Test JIT KV Cache compilation and memory footprint
+    TestJit,
 }
 
 #[derive(Subcommand)]
@@ -267,6 +270,12 @@ async fn main() -> Result<()> {
         Some(CliCommand::Ingest { file_path }) => {
             if let Err(e) = crate::cli::ingest::execute(&file_path).await {
                 eprintln!("\n  {} [Cluaiz] Ingestion Error: {}\n", "❌".red(), e);
+                std::process::exit(1);
+            }
+        }
+        Some(CliCommand::TestJit) => {
+            if let Err(e) = crate::cli::test_jit::execute().await {
+                eprintln!("\n  {} [Cluaiz] JIT Test Error: {}\n", "❌".red(), e);
                 std::process::exit(1);
             }
         }

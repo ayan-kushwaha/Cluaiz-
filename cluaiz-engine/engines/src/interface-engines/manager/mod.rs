@@ -281,6 +281,35 @@ impl EngineManager {
         Ok(())
     }
 
+    /// 💾 [FFI Bridge] Load KV Cache memory state from a binary file.
+    pub fn load_kv_cache_ffi(
+        &self,
+        engine_ptr: *mut std::ffi::c_void,
+        path: &str,
+    ) -> anyhow::Result<()> {
+        let lib = self.active_lib.as_ref()
+            .ok_or_else(|| anyhow::anyhow!("Linker Error: No active kernel linked."))?;
+        
+        unsafe {
+            let load_fn: Symbol<unsafe extern "C" fn(*mut std::ffi::c_void, *const std::os::raw::c_char) -> i32> = 
+                lib.get(b"cluaiz_kernel_load_kv_cache")
+                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaiz_kernel_load_kv_cache' symbol missing."))?;
+            
+            let c_path = std::ffi::CString::new(path)?;
+            
+            let status = load_fn(
+                engine_ptr, 
+                c_path.as_ptr() as *const std::os::raw::c_char
+            );
+            
+            if status != 0 {
+                return Err(anyhow::anyhow!("FFI KV Cache Load Error (Code: {})", status));
+            }
+        }
+        
+        Ok(())
+    }
+
     /// 💉 [FFI Bridge] Injects pre-computed KV Cache chunks dynamically into the active context prefix.
     pub fn inject_signals_ffi(
         &self,

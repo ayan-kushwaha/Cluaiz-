@@ -125,6 +125,11 @@ impl CluaizInference for SovereignEngine {
         manager.dump_kv_cache_ffi(self.engine_ptr, path)
     }
 
+    fn load_kv_cache(&mut self, path: &str) -> Result<()> {
+        let manager = self.manager.lock().map_err(|e| anyhow!("Lock poisoned: {}", e))?;
+        manager.load_kv_cache_ffi(self.engine_ptr, path)
+    }
+
     fn inject_signals(&mut self, signals: Vec<cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Result<()> {
         if signals.is_empty() {
             return Ok(());

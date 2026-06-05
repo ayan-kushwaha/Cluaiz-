@@ -283,7 +283,7 @@ impl DashboardEngine {
 
                                 if let Ok(vector) = engine.gen_embedding(&final_message) {
                                     if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
-                                        matched_skill_path = router.check_semantic_trigger(&vector, 0.60); // 60% threshold for stable matching
+                                        matched_skill_path = router.check_semantic_trigger(&vector, 0.33); // 33% threshold for stable matching
                                     }
                                 }
                             }
@@ -294,7 +294,8 @@ impl DashboardEngine {
                                 }
                             }
 
-                            // Restore KV Cache if it exists, do NOT compile synchronously to prevent blocking the user
+                            // Restore KV Cache if it exists, otherwise compile it dynamically on first trigger
+                            let mut kv_cache_restored = false;
                             if let Some(ref skill_path) = matched_skill_path {
                                 let schema = engines::neural_foundry::security::permission_schema::PermissionSchema::load();
                                 if let Some(active_chat_model) = schema.get_active_chat_model() {
@@ -307,6 +308,27 @@ impl DashboardEngine {
                                         use cluaiz_shared::CluaizInference;
                                         if let Err(e) = lock.active_backend.load_kv_cache(&path_str) {
                                             println!("❌ [Sovereign-Ops] Failed to load KV cache: {}", e);
+                                        } else {
+                                            kv_cache_restored = true;
+                                        }
+                                    } else {
+                                        if let Some(frontmatter) = extract_frontmatter(skill_path) {
+                                            let prefix = format!("[System Memory Injection (Frontmatter): {}]\n", frontmatter);
+                                            println!("\r\n⏳ [Sovereign-Ops] First time trigger: Compiling KV Cache for skill: {}...", skill_path.file_name().unwrap_or_default().to_string_lossy());
+                                            use cluaiz_shared::UnifiedBackend;
+                                            if let Err(e) = lock.active_backend.prefill(&prefix) {
+                                                println!("❌ [Sovereign-Ops] Failed to prefill and compile KV Cache: {}", e);
+                                            } else {
+                                                use cluaiz_shared::CluaizInference;
+                                                let path_str = kv_cache_path.to_string_lossy().to_string();
+                                                let _ = std::fs::create_dir_all(&cache_dir);
+                                                if let Err(e) = lock.active_backend.dump_kv_cache(&path_str) {
+                                                    println!("❌ [Sovereign-Ops] Failed to dump KV Cache: {}", e);
+                                                } else {
+                                                    println!("✅ [Sovereign-Ops] KV Cache compiled successfully!");
+                                                    kv_cache_restored = true;
+                                                }
+                                            }
                                         }
                                     }
                                 }

@@ -5,7 +5,7 @@ edition.workspace = true
 authors.workspace = true
 
 [lib]
-crate-type = ["cdylib", "rlib", "staticlib"]
+crate-type = ["rlib"]
 
 
 

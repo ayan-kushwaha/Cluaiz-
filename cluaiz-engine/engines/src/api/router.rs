@@ -182,21 +182,34 @@ impl CoreRouter {
     ) -> Result<(), String> {
         let mut prompt_embedding_engine = None;
         let schema = crate::neural_foundry::security::permission_schema::PermissionSchema::load();
+        println!("🤖 [Debug-Router] Active embedding model ID in schema: {:?}", schema.vector_models.text);
         if let Some(text_model_id) = &schema.vector_models.text {
             let roster = crate::models::registry::CoreRoster::load_roster();
+            println!("🤖 [Debug-Router] Roster size: {}, models: {:?}", roster.len(), roster.iter().map(|m| &m.id).collect::<Vec<_>>());
             if let Some(manifest) = roster.iter().find(|m| &m.id == text_model_id) {
+                println!("🤖 [Debug-Router] Found manifest for embedding model. Local path: {:?}", manifest.local_path);
                 if let Some(local_path) = &manifest.local_path {
                     let model_dir = std::path::Path::new(local_path);
                     let model_file = model_dir.join("model.onnx");
                     let tokenizer_file = model_dir.join("tokenizer.json");
+                    println!("🤖 [Debug-Router] Checking files: model.onnx exists: {}, tokenizer.json exists: {}", model_file.exists(), tokenizer_file.exists());
                     if model_file.exists() && tokenizer_file.exists() {
-                        if let Ok(mut engine) = cluaiz_onnx::engine::OnnxEngine::new() {
-                            if engine.load_text_model(&model_file.to_string_lossy(), &tokenizer_file.to_string_lossy()).is_ok() {
-                                prompt_embedding_engine = Some(engine);
+                        match cluaiz_onnx::engine::OnnxEngine::new() {
+                            Ok(mut engine) => {
+                                match engine.load_text_model(&model_file.to_string_lossy(), &tokenizer_file.to_string_lossy()) {
+                                    Ok(_) => {
+                                        println!("🤖 [Debug-Router] Embedding engine loaded successfully!");
+                                        prompt_embedding_engine = Some(engine);
+                                    }
+                                    Err(e) => println!("❌ [Debug-Router] Failed to load text model: {:?}", e),
+                                }
                             }
+                            Err(e) => println!("❌ [Debug-Router] Failed to instantiate OnnxEngine: {:?}", e),
                         }
                     }
                 }
+            } else {
+                println!("❌ [Debug-Router] Embedding model ID not found in roster!");
             }
         }
 
@@ -245,7 +258,21 @@ impl CoreRouter {
             use neural_core::interfaces::router_contract::EmbeddingDriver;
             if let Ok(vector) = engine.gen_embedding(prompt) {
                 if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
-                    matched_skill_path = router.check_semantic_trigger(&vector, 0.60); // 60% threshold for structured frontmatter
+                    println!("🤖 [Debug-Router] Checking semantic triggers. Active vector dim: {}, loaded skill vectors: {:?}", vector.len(), router.skill_vectors.keys());
+                    for (path, skill_vec) in &router.skill_vectors {
+                        let mut dot = 0.0;
+                        let mut mag_a = 0.0;
+                        let mut mag_b = 0.0;
+                        for (a, b) in vector.iter().zip(skill_vec.iter()) {
+                            dot += a * b;
+                            mag_a += a * a;
+                            mag_b += b * b;
+                        }
+                        let score = dot / (mag_a.sqrt() * mag_b.sqrt());
+                        println!("🤖 [Debug-Router] Cosine similarity with {:?}: {:.4}", path.file_name().unwrap_or_default(), score);
+                    }
+                    matched_skill_path = router.check_semantic_trigger(&vector, 0.33); // 33% threshold for stable matching
+                    println!("🤖 [Debug-Router] Matched skill path: {:?}", matched_skill_path);
                 }
             }
         }
@@ -271,13 +298,20 @@ impl CoreRouter {
                         let cache_dir = skill_path.join(".cache");
                         let kv_cache_path = cache_dir.join(format!("{}.kvcache.bin", gen_model_safe));
                         if !kv_cache_path.exists() {
-                            // Non-blocking compilation via background daemon
-                            if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
-                                if let Some(shared_manifest) = router.loaded_manifests.get(&skill_path.file_name().unwrap_or_default().to_string_lossy().to_string()) {
-                                    if let Ok(manifest_json) = serde_json::to_string(shared_manifest) {
-                                        if let Ok(local_manifest) = serde_json::from_str::<crate::neural_foundry::registry::SkillManifest>(&manifest_json) {
-                                            crate::neural_foundry::registry::compiler_daemon::CompilerDaemon::new().compile_skill(skill_path, &local_manifest);
-                                        }
+                            if let Some(frontmatter) = extract_frontmatter(skill_path) {
+                                let prefix = format!("[System Memory Injection (Frontmatter): {}]\n", frontmatter);
+                                println!("⏳ [Sovereign-Ops] First time trigger: Compiling KV Cache for skill: {}...", skill_path.file_name().unwrap_or_default().to_string_lossy());
+                                use cluaiz_shared::UnifiedBackend;
+                                if let Err(e) = b.prefill(&prefix) {
+                                    println!("❌ [Sovereign-Ops] Failed to prefill and compile KV Cache: {}", e);
+                                } else {
+                                    use cluaiz_shared::CluaizInference;
+                                    let path_str = kv_cache_path.to_string_lossy().to_string();
+                                    let _ = std::fs::create_dir_all(&cache_dir);
+                                    if let Err(e) = b.dump_kv_cache(&path_str) {
+                                        println!("❌ [Sovereign-Ops] Failed to dump KV Cache: {}", e);
+                                    } else {
+                                        println!("✅ [Sovereign-Ops] KV Cache compiled successfully!");
                                     }
                                 }
                             }

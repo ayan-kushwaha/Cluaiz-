@@ -79,6 +79,7 @@ pub struct RuntimeB {
     pub booster: BoosterConfig,
     pub native: Option<NativeLlama>,
     pub lucebox: Option<Arc<ffi::lucebox::LuceboxBridge>>,
+    pub last_prefilled_tokens: Vec<i32>,
 }
 
 impl RuntimeB {
@@ -89,6 +90,7 @@ impl RuntimeB {
             booster: BoosterConfig::default(),
             native: None,
             lucebox: None,
+            last_prefilled_tokens: Vec::new(),
         }
     }
 
@@ -190,7 +192,13 @@ impl UnifiedBackend for RuntimeB {
     }
 
     fn prefill(&mut self, prompt: &str) -> Result<()> {
-        self.generate_stream(prompt, 1, Box::new(|_| false))
+        if let Some(ref native) = self.native {
+            let tokens = native.prefill_prompt(prompt)?;
+            self.last_prefilled_tokens = tokens;
+            Ok(())
+        } else {
+            Err(anyhow::anyhow!("Native backend not initialized"))
+        }
     }
 
     fn evaluate_tps(&self) -> f64 {
@@ -350,13 +358,29 @@ impl CluaizInference for RuntimeB {
         if let Some(ref native) = self.native {
             if !native.ctx_ptr.is_null() {
                 let c_path = std::ffi::CString::new(path)?;
-                let success = unsafe {
-                    crate::ffi::llama_cpp::llama_state_save_file(native.ctx_ptr, c_path.as_ptr(), std::ptr::null(), 0)
+                let bytes_written = unsafe {
+                    if !self.last_prefilled_tokens.is_empty() {
+                        crate::ffi::llama_cpp::llama_state_seq_save_file(
+                            native.ctx_ptr,
+                            c_path.as_ptr(),
+                            0, // seq_id
+                            self.last_prefilled_tokens.as_ptr(),
+                            self.last_prefilled_tokens.len()
+                        )
+                    } else {
+                        crate::ffi::llama_cpp::llama_state_seq_save_file(
+                            native.ctx_ptr,
+                            c_path.as_ptr(),
+                            0, // seq_id
+                            std::ptr::null(),
+                            0
+                        )
+                    }
                 };
-                if success {
+                if bytes_written > 0 {
                     Ok(())
                 } else {
-                    Err(anyhow::anyhow!("llama_state_save_file failed"))
+                    Err(anyhow::anyhow!("llama_state_seq_save_file failed"))
                 }
             } else {
                 Err(anyhow::anyhow!("Context pointer is null"))
@@ -373,19 +397,21 @@ impl CluaizInference for RuntimeB {
                 let c_path = std::ffi::CString::new(path)?;
                 let mut tokens = vec![0i32; 16384]; // Temp tokens vector
                 let mut n_tokens_out: usize = 0;
-                let success = unsafe {
-                    crate::ffi::llama_cpp::llama_state_load_file(
+                let bytes_read = unsafe {
+                    crate::ffi::llama_cpp::llama_state_seq_load_file(
                         native.ctx_ptr,
                         c_path.as_ptr(),
+                        0, // seq_id
                         tokens.as_mut_ptr(),
                         tokens.len(),
                         &mut n_tokens_out as *mut usize
                     )
                 };
-                if success {
+                if bytes_read > 0 {
+                    self.last_prefilled_tokens = tokens[..n_tokens_out].to_vec();
                     Ok(())
                 } else {
-                    Err(anyhow::anyhow!("llama_state_load_file failed"))
+                    Err(anyhow::anyhow!("llama_state_seq_load_file failed"))
                 }
             } else {
                 Err(anyhow::anyhow!("Context pointer is null"))
@@ -494,7 +520,7 @@ pub extern "C" fn cluaiz_kernel_instantiate(
                 2 => "Auto".to_string(),
                 _ => "Auto".to_string(),
             };
-            engine.booster.use_mmap = true;
+            engine.booster.use_mmap = false;
         } else {
             // Self-load from Binary Booster Truth if FFI was blank
             if let Ok(booster) = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings() {
@@ -609,11 +635,74 @@ pub extern "C" fn cluaiz_kernel_dump_kv_cache(
             // Using the FFI bindings to save KV cache state
             if !native.ctx_ptr.is_null() {
                 let c_path = std::ffi::CString::new(path).unwrap_or_default();
-                let success = unsafe {
-                    // llama_state_save_file signature: ctx, path_session, tokens, n_token_count
-                    crate::ffi::llama_cpp::llama_state_save_file(native.ctx_ptr, c_path.as_ptr(), std::ptr::null(), 0)
+                let bytes_written = unsafe {
+                    if !engine.last_prefilled_tokens.is_empty() {
+                        crate::ffi::llama_cpp::llama_state_seq_save_file(
+                            native.ctx_ptr,
+                            c_path.as_ptr(),
+                            0, // seq_id
+                            engine.last_prefilled_tokens.as_ptr(),
+                            engine.last_prefilled_tokens.len()
+                        )
+                    } else {
+                        crate::ffi::llama_cpp::llama_state_seq_save_file(
+                            native.ctx_ptr,
+                            c_path.as_ptr(),
+                            0, // seq_id
+                            std::ptr::null(),
+                            0
+                        )
+                    }
                 };
-                if success { 0 } else { -2 }
+                if bytes_written > 0 { 0 } else { -2 }
+            } else {
+                -3
+            }
+        } else {
+            -4
+        }
+    }));
+    
+    match result {
+        Ok(res) => res,
+        Err(_) => -5,
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn cluaiz_kernel_load_kv_cache(
+    engine_ptr: *mut RuntimeB,
+    path_ptr: *const std::os::raw::c_char,
+) -> i32 {
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        if engine_ptr.is_null() || path_ptr.is_null() { return -1; }
+        
+        let path = unsafe { std::ffi::CStr::from_ptr(path_ptr) }
+            .to_string_lossy()
+            .into_owned();
+
+        let engine = unsafe { &mut *engine_ptr };
+        if let Some(ref native) = engine.native {
+            if !native.ctx_ptr.is_null() {
+                let c_path = std::ffi::CString::new(path).unwrap_or_default();
+                let mut tokens = vec![0i32; 16384]; // Temp tokens vector
+                let mut n_tokens_out: usize = 0;
+                let bytes_read = unsafe {
+                    crate::ffi::llama_cpp::llama_state_seq_load_file(
+                        native.ctx_ptr,
+                        c_path.as_ptr(),
+                        0, // seq_id
+                        tokens.as_mut_ptr(),
+                        tokens.len(),
+                        &mut n_tokens_out as *mut usize
+                    )
+                };
+                if bytes_read > 0 {
+                    engine.last_prefilled_tokens = tokens[..n_tokens_out].to_vec();
+                    0
+                } else {
+                    -2
+                }
             } else {
                 -3
             }
