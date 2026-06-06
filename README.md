@@ -149,6 +149,39 @@ Maps inference tasks to the appropriate kernel backend based on hardware availab
 
 ---
 
+## 🧩 **WASM Skills & Agentic Tool Calling**
+
+Cluaiz is not just a text generator; it's a fully sovereign Agentic Engine. It can dynamically download, compile, and execute isolated WebAssembly (WASM) skills on your local hardware.
+
+### **How Skills Work Under the Hood**
+1. **Semantic Routing (Zero-Delay TTFT)**: When you type a prompt (e.g., `"build a landing page"`), Cluaiz's internal vector router checks if you have a skill installed that matches this intent. If found, it instantly merges the skill's instructions into the context window.
+2. **Hybrid KV Caching**: Skills contain thousands of tokens. Computing this context on your GPU every time would be too slow. Instead, Cluaiz computes a `.kvcache.bin` file once and saves it to your SSD. The next time you use the skill, the Engine bypasses the prompt evaluation phase entirely and performs a native `M-RoPE` (Rotary Positional Embedding) injection of the saved KV cache directly into the GPU's active hardware memory slot.
+3. **Agentic Pause (CPU Fallback)**: If a skill's context size (e.g., 8,000 tokens) exceeds your GPU's available VRAM, Cluaiz triggers an **Agentic Pause**. It safely offloads the heavy lifting to your CPU and System RAM to calculate the cache in the background without crashing your GPU or hitting Out-of-Memory (OOM) limits.
+4. **WASM Sandboxing**: When the AI decides to execute a skill's code (e.g., formatting output or generating code), it runs inside a strict WASM sandbox, ensuring complete security and isolation from your host OS.
+
+### **Managing Skills via CLI**
+You can seamlessly install, manage, and clean up skills using the built-in `skill` command suite. 
+Browse the official **<a href="https://github.com/cluaiz/skills" target="_blank">Cluaiz Skills Registry</a>** to find available skills.
+
+```bash
+# Install a new skill by name
+$ cluaiz skill install <skill_name>
+
+# List all actively installed skills on your machine
+$ cluaiz skill list
+
+# View all generated KV Caches stored on your SSD
+$ cluaiz skill cache ls
+
+# Delete the KV cache for a specific model (e.g., if a cache gets corrupted or needs a fresh rebuild)
+$ cluaiz skill cache clear <model_id>
+
+# Delete ALL orphaned KV caches globally across all skills to free up SSD space
+$ cluaiz skill cache clear --all
+```
+
+---
+
 ## 📊 **Benchmarking & Comparison**
 
 ### **Performance Snapshot**
