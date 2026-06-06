@@ -16,14 +16,15 @@ use tracing::{info, warn};
 use cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal;
 use neural_core::interfaces::memory_contract::MappedBuffer;
 use std::sync::{Mutex, Arc};
+use std::path::PathBuf;
 
 // Removed fixed MAX_ACTIVE_SKILLS limit. Bounding is now purely dynamic based on hardware capacity.
 // Constant threshold for the ONNX semantic similarity match.
-const SIMILARITY_THRESHOLD: f32 = 0.8;
 
 pub struct IntentResult {
     pub responses: Vec<String>,
     pub signals: Vec<CluaizSignal>,
+    pub missing_caches: Vec<(PathBuf, String)>, // (kv_cache_path, skill_content)
 }
 
 pub struct CoreFoundry {
@@ -60,9 +61,9 @@ impl CoreFoundry {
     }
 
     /// The Cluaiz Flow: Prompt -> Multi-Route -> Execute
-    pub async fn process_intent(&self, prompt: &str) -> anyhow::Result<IntentResult> {
-        let skill_ids = self.router.match_intent(prompt, &self.registry);
-        let mut result = IntentResult { responses: Vec::new(), signals: Vec::new() };
+    pub async fn process_intent(&self, prompt: &str, pre_matched_skills: Option<Vec<String>>) -> anyhow::Result<IntentResult> {
+        let skill_ids = pre_matched_skills.unwrap_or_else(|| self.router.match_intent(prompt, &self.registry));
+        let mut result = IntentResult { responses: Vec::new(), signals: Vec::new(), missing_caches: Vec::new() };
 
         if skill_ids.is_empty() {
             return Ok(result);
@@ -120,7 +121,48 @@ impl CoreFoundry {
                 let cache_dir = skill.path.join(".cache");
                 let kv_cache_path = cache_dir.join(format!("{}.kvcache.bin", gen_model_safe));
                 
-                if kv_cache_path.exists() {
+                let mut cache_exists = kv_cache_path.exists();
+                if cache_exists {
+                    let mut layers = None;
+                    let mut kv_heads = None;
+                    let roster = crate::models::registry::CoreRoster::load_roster();
+                    if let Some(manifest) = roster.iter().find(|m| m.id == gen_model) {
+                        if let Some(local_path) = &manifest.local_path {
+                            let dna_path = std::path::Path::new(local_path).join("structural_dna.json");
+                            if let Ok(dna_content) = std::fs::read_to_string(&dna_path) {
+                                if let Ok(dna) = serde_json::from_str::<cluaiz_shared::StructuralDNA>(&dna_content) {
+                                    layers = dna.layer_count;
+                                    kv_heads = dna.attention_head_count_kv.or(dna.attention_head_count);
+                                }
+                            }
+                        }
+                    }
+
+                    let mut is_valid = true;
+                    if let Ok(metadata) = std::fs::metadata(&kv_cache_path) {
+                        let actual_size = metadata.len() as usize;
+                        if actual_size == 0 {
+                            is_valid = false;
+                        } else if let (Some(l), Some(h)) = (layers, kv_heads) {
+                            let head_dim = skill.manifest.Core_metadata.as_ref().map_or(128, |m| m.head_dim);
+                            let token_count = skill.manifest.Core_metadata.as_ref().map_or(0, |m| m.token_count);
+                            let expected = token_count * l * h * head_dim * 2 * 2;
+                            if actual_size != expected {
+                                warn!("⚠️ [CoreFoundry] Cache size mismatch for {}: expected {} bytes, got {}. Evicting.", skill_id, expected, actual_size);
+                                is_valid = false;
+                            }
+                        }
+                    } else {
+                        is_valid = false;
+                    }
+
+                    if !is_valid {
+                        let _ = std::fs::remove_file(&kv_cache_path);
+                        cache_exists = false;
+                    }
+                }
+                
+                if cache_exists {
                     if let Ok(mapped_buffer) = MappedBuffer::from_file(&kv_cache_path) {
                         result.signals.push(CluaizSignal {
                             raw_data: Arc::new(mapped_buffer),
@@ -129,23 +171,69 @@ impl CoreFoundry {
                         });
                     }
                 } else {
-                    warn!("⚠️ [CoreFoundry] {} missing for skill {}. Sovereign Compiler Daemon should generate this in the background.", kv_cache_path.display(), skill_id);
+                    warn!("⚠️ [CoreFoundry] {} missing for skill {}. Flagging for Sovereign Compiler.", kv_cache_path.display(), skill_id);
+                    
+                    let content = extract_skill_body(&skill.path)
+                        .unwrap_or_else(|| skill.manifest.description.clone());
+                    
+                    result.missing_caches.push((kv_cache_path, content));
                 }
             } else {
                 warn!("⚠️ [CoreFoundry] No text model assigned in Permission.json. Skipping Zero-Copy injection for skill {}.", skill_id);
             }
             
-            // 4. Logic execution (WASM)
+            // WASM logic execution is handled during streaming/generation interceptor.
             self.guard.validate_action(&skill.manifest, PermissionLevel::ReadOnly)?;
-            let logic_path = skill.path.join("logic.wasm");
-            if logic_path.exists() {
-                match self.wasm_runtime.execute_skill_logic(&logic_path, "run", prompt).await {
-                    Ok(resp) => result.responses.push(resp),
-                    Err(e) => tracing::error!("⚠️ [CoreFoundry] Logic failed for '{}': {}", skill_id, e),
-                }
-            }
         }
         
         Ok(result)
     }
 }
+
+fn extract_skill_body(skill_dir: &std::path::Path) -> Option<String> {
+    let skill_md_path = skill_dir.join("SKILL.md");
+    if skill_md_path.exists() {
+        if let Ok(content) = std::fs::read_to_string(&skill_md_path) {
+            let normalized = content.replace("\r\n", "\n");
+            let lines: Vec<&str> = normalized.lines().collect();
+            
+            // Check if the file starts with frontmatter (first non-empty line is "---")
+            let mut first_line_idx = None;
+            for (i, line) in lines.iter().enumerate() {
+                if !line.trim().is_empty() {
+                    if line.trim() == "---" {
+                        first_line_idx = Some(i);
+                    }
+                    break;
+                }
+            }
+
+            if let Some(start_idx) = first_line_idx {
+                // Find the closing "---" of the frontmatter
+                let mut closing_idx = None;
+                for i in (start_idx + 1)..lines.len() {
+                    if lines[i].trim() == "---" {
+                        closing_idx = Some(i);
+                        break;
+                    }
+                }
+
+                if let Some(end_idx) = closing_idx {
+                    // Body starts after the closing "---"
+                    let body_lines = &lines[end_idx + 1..];
+                    let body = body_lines.join("\n").trim().to_string();
+                    if !body.is_empty() {
+                        return Some(body);
+                    }
+                }
+            }
+
+            let trimmed = content.trim().to_string();
+            if !trimmed.is_empty() {
+                return Some(trimmed);
+            }
+        }
+    }
+    None
+}
+

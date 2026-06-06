@@ -37,6 +37,8 @@ pub struct SkillRouter {
     pub loaded_manifests: HashMap<String, SkillManifest>,
     /// Maps a skill's absolute path to its semantic vector
     pub skill_vectors: HashMap<PathBuf, Vec<f32>>,
+    /// Maps a skill's absolute path to its entropy threshold
+    pub skill_thresholds: HashMap<PathBuf, f32>,
 }
 
 #[derive(serde::Deserialize)]
@@ -71,6 +73,7 @@ impl SkillRouter {
             keyword_index: HashMap::new(),
             loaded_manifests: HashMap::new(),
             skill_vectors: HashMap::new(),
+            skill_thresholds: HashMap::new(),
         }
     }
 
@@ -100,9 +103,10 @@ impl SkillRouter {
                     } else { None }
                 } else if skill_md_path.exists() {
                     if let Ok(content) = fs::read_to_string(&skill_md_path) {
-                        if let Some(start) = content.find("---\n") {
-                            if let Some(end) = content[start + 4..].find("\n---") {
-                                let yaml_content = &content[start + 4..start + 4 + end];
+                        let normalized = content.replace("\r\n", "\n");
+                        if let Some(start) = normalized.find("---\n") {
+                            if let Some(end) = normalized[start + 4..].find("\n---") {
+                                let yaml_content = &normalized[start + 4..start + 4 + end];
                                 serde_yaml::from_str::<SkillManifest>(yaml_content).ok()
                             } else { None }
                         } else { None }
@@ -113,9 +117,13 @@ impl SkillRouter {
                     if manifest.id.is_empty() {
                         manifest.id = manifest.name.clone();
                     }
+                    let norm_path = normalize_path(&path);
                     // Register into memory index
                     for keyword in &manifest.triggers.semantic {
-                        self.keyword_index.insert(keyword.to_lowercase(), path.clone());
+                        self.keyword_index.insert(keyword.to_lowercase(), norm_path.clone());
+                    }
+                    if let Some(thresh) = manifest.triggers.entropy_threshold {
+                        self.skill_thresholds.insert(norm_path.clone(), thresh);
                     }
                     self.loaded_manifests.insert(manifest.id.clone(), manifest);
                     
@@ -130,7 +138,7 @@ impl SkillRouter {
                                         .chunks_exact(4)
                                         .map(|b| f32::from_ne_bytes(b.try_into().unwrap()))
                                         .collect();
-                                    self.skill_vectors.insert(path.clone(), floats);
+                                    self.skill_vectors.insert(norm_path.clone(), floats);
                                 }
                             }
                         }
@@ -150,30 +158,52 @@ impl SkillRouter {
     /// O(N) Check if a prompt vector triggers any skill via Cosine Similarity
     pub fn check_semantic_trigger(&self, prompt_vector: &[f32], default_threshold: f32) -> Option<PathBuf> {
         let mut best_match = None;
-        let mut highest_score = default_threshold;
+        let mut highest_score = -1.0;
+
+        let dim = prompt_vector.len();
+        tracing::debug!("[Semantic Check] Prompt vector dim: {}, Skill vectors count: {}", dim, self.skill_vectors.len());
 
         for (path, skill_vec) in &self.skill_vectors {
-            if skill_vec.len() == prompt_vector.len() && !skill_vec.is_empty() {
-                let mut dot = 0.0;
-                let mut mag_a = 0.0;
-                let mut mag_b = 0.0;
-                
-                for (a, b) in prompt_vector.iter().zip(skill_vec.iter()) {
-                    dot += a * b;
-                    mag_a += a * a;
-                    mag_b += b * b;
-                }
-                
-                if mag_a > 0.0 && mag_b > 0.0 {
-                    let score = dot / (mag_a.sqrt() * mag_b.sqrt());
-                    if score > highest_score {
-                        highest_score = score;
-                        best_match = Some(path.clone());
+            tracing::debug!("[Semantic Check] Checking path: {}, skill_vec len: {}", path.display(), skill_vec.len());
+            if !skill_vec.is_empty() && skill_vec.len() % dim == 0 {
+                let threshold = self.skill_thresholds.get(path).copied().unwrap_or(default_threshold);
+                tracing::debug!("[Semantic Check] Threshold for {}: {}", path.display(), threshold);
+
+                for (idx, chunk) in skill_vec.chunks_exact(dim).enumerate() {
+                    let mut dot = 0.0;
+                    let mut mag_a = 0.0;
+                    let mut mag_b = 0.0;
+                    
+                    for (a, b) in prompt_vector.iter().zip(chunk.iter()) {
+                        dot += a * b;
+                        mag_a += a * a;
+                        mag_b += b * b;
+                    }
+                    
+                    if mag_a > 0.0 && mag_b > 0.0 {
+                        let score = dot / (mag_a.sqrt() * mag_b.sqrt());
+                        tracing::debug!("[Semantic Check]   Chunk {} score: {:.4} (Threshold: {:.4})", idx, score, threshold);
+                        if score >= threshold && score > highest_score {
+                            highest_score = score;
+                            best_match = Some(path.clone());
+                        }
                     }
                 }
+            } else {
+                tracing::debug!("[Semantic Check]   Skipping check: skill_vec len is not compatible or empty");
             }
         }
         
+        if let Some(ref matched_path) = best_match {
+            tracing::info!("[Semantic Check] MATCHED: {} with score {:.4}", matched_path.display(), highest_score);
+        } else {
+            tracing::debug!("[Semantic Check] NO MATCH FOUND");
+        }
         best_match
     }
+}
+
+pub fn normalize_path(path: &std::path::Path) -> PathBuf {
+    let s = path.to_string_lossy().replace("\\", "/").to_lowercase();
+    PathBuf::from(s)
 }

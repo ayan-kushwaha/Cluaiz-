@@ -36,7 +36,7 @@ enum CliCommand {
         model_id: String,
         
         /// Enter interactive chat mode (Default: true)
-        #[arg(short, long, default_value_t = true)]
+        #[arg(short, long, default_value_t = true, action = clap::ArgAction::Set)]
         interactive: bool,
     },
 

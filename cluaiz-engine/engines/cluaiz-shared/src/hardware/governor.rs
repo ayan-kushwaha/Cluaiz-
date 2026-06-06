@@ -251,6 +251,20 @@ impl HardwareGovernor {
         // and let the Physical VRAM Arbiter determine the safe ceiling.
         let arch_cap = dna.max_context_length.unwrap_or(usize::MAX);
         
+        // If CPU-only Mode (n_gpu_layers = 0), bypass GPU VRAM constraints entirely
+        if booster.n_gpu_layers == 0 {
+            let cpu_ctx = if arch_cap == usize::MAX { 32000 } else { arch_cap };
+            println!("⚖️ [Arbiter] CPU-only Mode detected (n_gpu_layers = 0). Bypassing GPU VRAM constraints. Safe Context: {} tokens", cpu_ctx);
+            
+            let mut registry = Self::load_process_registry();
+            let pid_str = std::process::id().to_string();
+            if let Some(info) = registry.get_mut(&pid_str) {
+                info.context_size = cpu_ctx;
+                Self::save_process_registry(&registry);
+            }
+            return cpu_ctx;
+        }
+        
         // Starting point for negotiation should be the Architecture Truth
         let mut current_ctx = arch_cap;
         

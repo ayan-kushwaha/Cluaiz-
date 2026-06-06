@@ -221,6 +221,7 @@ pub struct CluaizBoosterContext {
     pub context_shifting_mode: u8, // 0 = Off, 1 = Small, 2 = Balanced, 3 = Boost, 4 = Ultra
     pub n_gpu_layers: i32,
     pub force_memory_lock: bool,
+    pub max_context_length: u32,
 }
 
 impl From<&BoosterControl> for CluaizBoosterContext {
@@ -253,6 +254,7 @@ impl From<&BoosterControl> for CluaizBoosterContext {
             context_shifting_mode: shift_mode,
             n_gpu_layers: config.n_gpu_layers,
             force_memory_lock: config.force_memory_lock == FeatureState::On,
+            max_context_length: 0,
         }
     }
 }

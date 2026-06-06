@@ -34,7 +34,7 @@ pub struct CoreMetadata {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Triggers {
     pub semantic: Vec<String>,
-    pub entropy_threshold: f32,
+    pub entropy_threshold: Option<f32>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -88,9 +88,10 @@ impl SkillRegistry {
             if let Ok(content) = std::fs::read_to_string(&manifest_path) {
                 // If it's a SKILL.md, extract the YAML frontmatter
                 let parsed_manifest = if manifest_path.file_name().map(|n| n == "SKILL.md").unwrap_or(false) {
-                    if let Some(start) = content.find("---\n") {
-                        if let Some(end) = content[start + 4..].find("\n---") {
-                            let yaml_content = &content[start + 4..start + 4 + end];
+                    let normalized = content.replace("\r\n", "\n");
+                    if let Some(start) = normalized.find("---\n") {
+                        if let Some(end) = normalized[start + 4..].find("\n---") {
+                            let yaml_content = &normalized[start + 4..start + 4 + end];
                             serde_yaml::from_str::<SkillManifest>(yaml_content).ok()
                         } else { None }
                     } else { None }

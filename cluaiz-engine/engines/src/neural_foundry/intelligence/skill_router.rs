@@ -24,10 +24,9 @@ impl SkillRouter {
         let prompt_lower = prompt.to_lowercase();
 
 
-        let threshold: f32 = 0.80; // Configurable probability threshold
-
         for skill in &registry.skills {
             let mut is_matched = false;
+            let threshold = skill.manifest.triggers.entropy_threshold.unwrap_or(0.70);
 
             // 1. Semantic Embedding Similarity Trigger Match (Threshold > 0.8)
             // Note: In production, this computes vector cosine similarity via ONNX.

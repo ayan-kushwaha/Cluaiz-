@@ -185,7 +185,7 @@ impl EngineManager {
     }
 
     /// 🏛️ Core Instantiation: Invokes the kernel's factory method to create an active execution engine.
-    pub fn instantiate(&self, model_path: &str, booster: &cluaiz_shared::hardware::schema::booster::BoosterControl) -> anyhow::Result<*mut std::ffi::c_void> {
+    pub fn instantiate(&self, model_path: &str, booster: &cluaiz_shared::hardware::schema::booster::BoosterControl, max_context_length: Option<u32>) -> anyhow::Result<*mut std::ffi::c_void> {
         let lib = self.active_lib.as_ref()
             .ok_or_else(|| anyhow::anyhow!("Linker Error: No active kernel linked."))?;
         
@@ -195,7 +195,10 @@ impl EngineManager {
                 .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaiz_kernel_instantiate' symbol missing."))?;
             
             let c_path = std::ffi::CString::new(model_path)?;
-            let booster_ctx: cluaiz_shared::hardware::schema::booster::CluaizBoosterContext = booster.into();
+            let mut booster_ctx: cluaiz_shared::hardware::schema::booster::CluaizBoosterContext = booster.into();
+            if let Some(mcl) = max_context_length {
+                booster_ctx.max_context_length = mcl;
+            }
             let engine_ptr = instantiate_fn(c_path.as_ptr() as *const std::os::raw::c_char, &booster_ctx as *const _);
             
             if engine_ptr.is_null() {

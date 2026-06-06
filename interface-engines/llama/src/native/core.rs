@@ -11,6 +11,7 @@ pub struct NativeLlama {
     pub ctx_ptr: *mut std::ffi::c_void,
     pub interrupt_signal: Arc<AtomicBool>,
     pub n_ctx: u32,
+    pub n_batch: u32,
     pub kv_cache_quantization_mode: u8,
     pub context_shifting_mode: u8,
     pub speculative_decoding_mode: u8,
@@ -41,13 +42,17 @@ impl NativeLlama {
         unsafe { 
             #[cfg(feature = "cuda")]
             {
-                eprintln!("🔥 [Sovereign-Llama] Manually injecting CUDA backend...");
-                let reg = llama_cpp::ggml_backend_cuda_reg();
-                if !reg.is_null() {
-                    llama_cpp::ggml_backend_register(reg);
-                    eprintln!("🔥 [Sovereign-Llama] CUDA backend registered successfully!");
+                if model_params.n_gpu_layers != 0 {
+                    eprintln!("🔥 [Sovereign-Llama] Manually injecting CUDA backend...");
+                    let reg = llama_cpp::ggml_backend_cuda_reg();
+                    if !reg.is_null() {
+                        llama_cpp::ggml_backend_register(reg);
+                        eprintln!("🔥 [Sovereign-Llama] CUDA backend registered successfully!");
+                    } else {
+                        eprintln!("❌ [Sovereign-Llama] CUDA reg pointer is NULL!");
+                    }
                 } else {
-                    eprintln!("❌ [Sovereign-Llama] CUDA reg pointer is NULL!");
+                    eprintln!("❄️ [Sovereign-Llama] CPU-only mode selected. Skipping CUDA backend injection.");
                 }
             }
             llama_cpp::llama_backend_init() 
@@ -76,10 +81,18 @@ impl NativeLlama {
         
         dna.weights_already_loaded = true;
         
+        // Save the requested context size to prevent it from being overwritten by the global GPU VRAM arbiter in CPU-only mode
+        let requested_n_ctx = ctx_params.n_ctx;
+
         if let Err(e) = dna.discover_from_path(model_dir) {
             eprintln!("⚠️ [Native-Llama] DNA Discovery Failed: {}", e);
         }
         
+        if model_params.n_gpu_layers == 0 {
+            // Restore requested context size for CPU-only mode to prevent GPU VRAM capping
+            dna.max_context_length = Some(requested_n_ctx as usize);
+        }
+
         if let Some(ctx) = dna.max_context_length {
             info!("🎯 [Native-Llama] SOVEREIGN HANDSHAKE: Setting n_ctx = {} (DNA Truth)", ctx);
             ctx_params.n_ctx = ctx as u32;
@@ -109,6 +122,7 @@ impl NativeLlama {
             ctx_ptr,
             interrupt_signal: Arc::new(AtomicBool::new(false)),
             n_ctx: ctx_params.n_ctx,
+            n_batch: std::cmp::min(ctx_params.n_ctx, ctx_params.n_batch),
             kv_cache_quantization_mode,
             context_shifting_mode,
             speculative_decoding_mode,
@@ -128,6 +142,7 @@ impl NativeLlama {
                 return Err(anyhow::anyhow!("Context Resize Failure"));
             }
             self.n_ctx = ctx_params.n_ctx;
+            self.n_batch = std::cmp::min(ctx_params.n_ctx, ctx_params.n_batch);
         }
         Ok(())
     }
@@ -218,7 +233,7 @@ impl NativeLlama {
             println!("🧠 [Native-Llama] Tokenization successful: {} tokens", tokens.len());
 
             // 2. Initial Batch Decode (Prefill) with Chunking
-            let chunk_size = 512;
+            let chunk_size = self.n_batch as i32;
             println!("🧠 [Native-Llama] Initializing llama batch of size {}...", chunk_size);
             let mut batch = llama_cpp::llama_batch_init(chunk_size, 0, 1);
             
@@ -260,9 +275,10 @@ impl NativeLlama {
         prompt: &str, 
         max_tokens: usize, 
         dna: &StructuralDNA,
+        last_prefilled_tokens: &[i32],
         callback: Box<dyn FnMut(String) -> bool + Send + 'static>
     ) -> anyhow::Result<()> {
-        crate::native::stream::stream_tokens(self, prompt, max_tokens, dna, callback)
+        crate::native::stream::stream_tokens(self, prompt, max_tokens, dna, last_prefilled_tokens, callback)
     }
 }
 

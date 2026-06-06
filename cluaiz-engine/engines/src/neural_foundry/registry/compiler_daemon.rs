@@ -66,21 +66,39 @@ async fn process_skill(skill_path: PathBuf, manifest: SkillManifest) {
             info!("⏳ [Compiler Daemon] Generating Real Router Embedding Cache for {}...", skill_name);
             let roster = crate::models::registry::CoreRoster::load_roster();
             let mut success = false;
-            if let Some(manifest) = roster.iter().find(|m| m.id == orig_model_id) {
-                if let Some(local_path) = &manifest.local_path {
+            if let Some(model_manifest) = roster.iter().find(|m| m.id == orig_model_id) {
+                if let Some(local_path) = &model_manifest.local_path {
                     let model_dir = Path::new(local_path);
                     let model_file = model_dir.join("model.onnx");
                     let tokenizer_file = model_dir.join("tokenizer.json");
                     if model_file.exists() && tokenizer_file.exists() {
                         if let Ok(mut engine) = cluaiz_onnx::engine::OnnxEngine::new() {
                             if engine.load_text_model(&model_file.to_string_lossy(), &tokenizer_file.to_string_lossy()).is_ok() {
-                                if let Ok(vec) = engine.gen_embedding(&skill_content) {
-                                    let data_bytes = unsafe { std::slice::from_raw_parts(vec.as_ptr() as *const u8, vec.len() * 4) };
+                                let mut combined_vec = Vec::new();
+                                if manifest.triggers.semantic.is_empty() {
+                                    if let Ok(vec) = engine.gen_embedding(&manifest.name) {
+                                        combined_vec.extend_from_slice(&vec);
+                                    }
+                                } else {
+                                    for trigger in &manifest.triggers.semantic {
+                                        if let Ok(vec) = engine.gen_embedding(trigger) {
+                                            combined_vec.extend_from_slice(&vec);
+                                        }
+                                    }
+                                }
+
+                                if !combined_vec.is_empty() {
+                                    let data_bytes = unsafe { std::slice::from_raw_parts(combined_vec.as_ptr() as *const f32 as *const u8, combined_vec.len() * 4) };
                                     if let Err(e) = std::fs::write(&embedding_cache_path, data_bytes) {
                                         warn!("❌ Failed to write binary embedding: {}", e);
                                     } else {
                                         info!("✅ Real Router Embedding generated: {:?}", embedding_cache_path);
                                         success = true;
+                                        // Update GLOBAL_SKILL_ROUTER in memory
+                                        if let Ok(mut skill_router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.write() {
+                                            let norm_skill_path = cluaiz_shared::skills::router::normalize_path(&skill_path);
+                                            skill_router.skill_vectors.insert(norm_skill_path, combined_vec);
+                                        }
                                     }
                                 }
                             }

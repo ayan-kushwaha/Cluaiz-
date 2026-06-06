@@ -13,6 +13,7 @@ pub fn stream_tokens(
     prompt: &str, 
     max_tokens: usize, 
     dna: &StructuralDNA,
+    last_prefilled_tokens: &[i32],
     mut callback: Box<dyn FnMut(String) -> bool + Send + 'static>
 ) -> anyhow::Result<()> {
     unsafe {
@@ -27,8 +28,15 @@ pub fn stream_tokens(
         };
         
         let mem = llama_cpp::llama_get_memory(llama.ctx_ptr);
+        let has_loaded_cache = !last_prefilled_tokens.is_empty();
         if !is_pivot {
-            llama_cpp::llama_memory_seq_rm(mem, 0, -1, -1);
+            if has_loaded_cache {
+                // Keep the loaded KV cache sequence, only remove anything AFTER the loaded tokens
+                let loaded_len = last_prefilled_tokens.len() as i32;
+                llama_cpp::llama_memory_seq_rm(mem, 0, loaded_len, -1);
+            } else {
+                llama_cpp::llama_memory_seq_rm(mem, 0, -1, -1);
+            }
         }
 
         let templater = cluaiz_shared::prompting::templater::TemplateManager::default();
@@ -42,7 +50,11 @@ pub fn stream_tokens(
         };
 
         let booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
-        let suppress_thinking = booster.think_mode == cluaiz_shared::hardware::schema::booster::FeatureState::Off;
+        let mut suppress_thinking = booster.think_mode == cluaiz_shared::hardware::schema::booster::FeatureState::Off;
+        
+        if formatted_prompt.contains("CRITICAL INSTRUCTION") || (formatted_prompt.contains("<system>") && formatted_prompt.contains("\"skill\"")) {
+            suppress_thinking = true;
+        }
         
         if !suppress_thinking && !formatted_prompt.contains("<think>") {
             formatted_prompt.push_str("<think>\n");
@@ -66,7 +78,7 @@ pub fn stream_tokens(
             formatted_prompt.len() as i32, 
             tokens.as_mut_ptr(), 
             tokens.len() as i32, 
-            !is_pivot, 
+            !is_pivot && !has_loaded_cache, // Don't add BOS if we already loaded prefilled tokens (which includes BOS)
             true
         );
         
@@ -75,11 +87,26 @@ pub fn stream_tokens(
         }
         tokens.truncate(n_tokens as usize);
 
-        let chunk_size = 512; // Safe batch size
+        // 🛡️ Context Overflow Guard: Trim prompt tokens to fit within the real KV cache.
+        // This fires when ZeroDelayTTFT injects a large skill into the prompt but the engine's
+        // hardware_n_ctx (negotiated at load time) is smaller than active_dna.max_context_length
+        // (which tests may override). We keep the TAIL (the user query) and drop earlier tokens.
+        let gen_reserve = (max_tokens as i32).min(256);
+        let max_prompt_tokens = (llama.n_ctx as i32 - gen_reserve).max(1) as usize;
+        if tokens.len() > max_prompt_tokens {
+            let dropped = tokens.len() - max_prompt_tokens;
+            println!("⚠️ [stream] Prompt ({} tokens) exceeds KV capacity ({} slots). Trimming {} head tokens to prevent OOM.",
+                tokens.len(), max_prompt_tokens, dropped);
+            tokens.drain(0..dropped);
+        }
+
+        let chunk_size = llama.n_batch as i32; // Dynamic batch/chunk size
         let mut batch = llama_cpp::llama_batch_init(chunk_size, 0, 1);
 
         let start_pos = if is_pivot {
             llama_cpp::llama_memory_seq_pos_max(llama_cpp::llama_get_memory(llama.ctx_ptr), 0) + 1
+        } else if has_loaded_cache {
+            last_prefilled_tokens.len() as i32
         } else {
             0
         };

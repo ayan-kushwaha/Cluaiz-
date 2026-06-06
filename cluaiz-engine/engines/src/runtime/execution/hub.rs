@@ -11,7 +11,16 @@ impl HardwareOrchestrator {
     pub async fn instantiate(
         model_load_path: &str,
         engine_type: &str,
-        _cluaiz_context: CluaizContext,
+        cluaiz_context: CluaizContext,
+    ) -> Result<ModelWeightsWrapper> {
+        Self::instantiate_with_booster(model_load_path, engine_type, cluaiz_context, None).await
+    }
+
+    pub async fn instantiate_with_booster(
+        model_load_path: &str,
+        engine_type: &str,
+        cluaiz_context: CluaizContext,
+        booster_override: Option<cluaiz_shared::hardware::schema::booster::BoosterControl>,
     ) -> Result<ModelWeightsWrapper> {
         tracing::info!("🔩 [Orchestrator] Initiating Dynamic Hardware Handshake for Engine: {}", engine_type);
 
@@ -56,8 +65,13 @@ impl HardwareOrchestrator {
         manager.load_and_link(binary_path)?;
 
         // 🏛️ [Core Instantiation]: Create the active engine instance with User Truth
-        let booster_control = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
-        let engine_ptr = manager.instantiate(model_load_path, &booster_control)?;
+        let booster_control = if let Some(booster) = booster_override {
+            booster
+        } else {
+            cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default()
+        };
+        let max_ctx = cluaiz_context.dna.max_context_length.map(|c| c as u32);
+        let engine_ptr = manager.instantiate(model_load_path, &booster_control, max_ctx)?;
 
         tracing::info!("🧬 [Orchestrator] Hardware Handshake SUCCESS. Neural Bridge Established.");
         

@@ -241,109 +241,7 @@ impl DashboardEngine {
                             let stop_seqs = lock.get_active_dna().map(|d| d.stop_sequences.clone()).unwrap_or_default();
                             
                             // 🎭 Orchestration: native.rs handles the templating now.
-                            // 🔮 SEMANTIC VECTOR ROUTING ──
-                            let mut matched_skill_path = None;
-
-                            if let Some(engine) = prompt_embedding_engine.as_mut() {
-                                // Dynamic compilation of missing or mismatched semantic vectors
-                                if let Ok(mut router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.write() {
-                                    let _ = router.boot_index();
-                                    let schema = engines::neural_foundry::security::permission_schema::PermissionSchema::load();
-                                    if let Some(active_model_id) = schema.get_active_embedding_model() {
-                                        let safe_filename = active_model_id.replace(":", "-");
-                                        let mut new_vectors = Vec::new();
-                                        for (id, manifest) in &router.loaded_manifests {
-                                            let home_dir = dirs::home_dir().unwrap_or_default();
-                                            let skill_path = home_dir.join(".cluaiz").join("skills").join(&manifest.name);
-                                            let cache_dir = skill_path.join(".cache");
-                                            let emb_path = cache_dir.join(format!("{}.emb.bin", safe_filename));
-                                            let has_vector = router.skill_vectors.contains_key(&skill_path);
-
-                                            if !has_vector || !emb_path.exists() {
-                                                println!("\r\n⏳ [Sovereign-Ops] Mismatch detected. Generating semantic vector for skill: {}", manifest.name);
-                                                let skill_content = if manifest.triggers.semantic.is_empty() {
-                                                    manifest.name.clone()
-                                                } else {
-                                                    manifest.triggers.semantic.join(", ")
-                                                };
-                                                if let Ok(vec) = engine.gen_embedding(&skill_content) {
-                                                    let _ = std::fs::create_dir_all(&cache_dir);
-                                                    let data_bytes = unsafe { std::slice::from_raw_parts(vec.as_ptr() as *const f32 as *const u8, vec.len() * 4) };
-                                                    if let Ok(_) = std::fs::write(&emb_path, data_bytes) {
-                                                        new_vectors.push((skill_path.clone(), vec));
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        for (p, v) in new_vectors {
-                                            router.skill_vectors.insert(p, v);
-                                        }
-                                    }
-                                }
-
-                                if let Ok(vector) = engine.gen_embedding(&final_message) {
-                                    if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
-                                        matched_skill_path = router.check_semantic_trigger(&vector, 0.33); // 33% threshold — fires on ANY length prompt
-                                    }
-                                }
-                            }
-
-                            if matched_skill_path.is_none() {
-                                if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
-                                    matched_skill_path = router.check_trigger(&final_message);
-                                }
-                            }
-
-                            // Restore KV Cache if it exists, otherwise compile it dynamically on first trigger
-                            let mut kv_cache_restored = false;
-                            if let Some(ref skill_path) = matched_skill_path {
-                                let schema = engines::neural_foundry::security::permission_schema::PermissionSchema::load();
-                                if let Some(active_chat_model) = schema.get_active_chat_model() {
-                                    let gen_model_safe = active_chat_model.replace(":", "-");
-                                    let cache_dir = skill_path.join(".cache");
-                                    let kv_cache_path = cache_dir.join(format!("{}.kvcache.bin", gen_model_safe));
-                                    if kv_cache_path.exists() {
-                                        let path_str = kv_cache_path.to_string_lossy().to_string();
-                                        println!("\r\n🧠 [Sovereign-Ops] Restoring KV Cache for skill: {}", skill_path.file_name().unwrap_or_default().to_string_lossy());
-                                        use cluaiz_shared::CluaizInference;
-                                        if let Err(e) = lock.active_backend.load_kv_cache(&path_str) {
-                                            println!("❌ [Sovereign-Ops] Failed to load KV cache: {}", e);
-                                        } else {
-                                            kv_cache_restored = true;
-                                        }
-                                    } else {
-                                        if let Some(frontmatter) = extract_frontmatter(skill_path) {
-                                            let prefix = format!("[System Memory Injection (Frontmatter): {}]\n", frontmatter);
-                                            println!("\r\n⏳ [Sovereign-Ops] First time trigger: Compiling KV Cache for skill: {}...", skill_path.file_name().unwrap_or_default().to_string_lossy());
-                                            use cluaiz_shared::UnifiedBackend;
-                                            if let Err(e) = lock.active_backend.prefill(&prefix) {
-                                                println!("❌ [Sovereign-Ops] Failed to prefill and compile KV Cache: {}", e);
-                                            } else {
-                                                use cluaiz_shared::CluaizInference;
-                                                let path_str = kv_cache_path.to_string_lossy().to_string();
-                                                let _ = std::fs::create_dir_all(&cache_dir);
-                                                if let Err(e) = lock.active_backend.dump_kv_cache(&path_str) {
-                                                    println!("❌ [Sovereign-Ops] Failed to dump KV Cache: {}", e);
-                                                } else {
-                                                    println!("✅ [Sovereign-Ops] KV Cache compiled successfully!");
-                                                    kv_cache_restored = true;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            let mut formatted_prompt = final_message.clone();
-                            if let Some(skill_path) = &matched_skill_path {
-                                let skill_name = skill_path.file_name().unwrap_or_default().to_string_lossy();
-                                println!("\r\n🔥 {} {}", colored::Colorize::magenta("[SOVEREIGN OPS] Semantic Skill Triggered:").bold(), colored::Colorize::yellow(&*skill_name));
-                                if let Some(frontmatter) = extract_frontmatter(skill_path) {
-                                    formatted_prompt = format!("[System Memory Injection (Frontmatter): {}]\n{}", frontmatter, final_message);
-                                } else {
-                                    formatted_prompt = format!("[System Memory Injection (Skill): {}]\n{}", skill_name, final_message);
-                                }
-                            }
+                            let formatted_prompt = final_message.clone();
 
                             // 🧬 DYNAMIC TOKEN ALLOCATION: Calculate space based on DNA Context Window
                             let ctx_window = lock.get_active_dna().and_then(|d| d.max_context_length).unwrap_or(2048);
@@ -529,6 +427,8 @@ impl DashboardEngine {
                                     libc::fdopen(2, "w\0".as_ptr() as *const libc::c_char),
                                 );
                             }
+                            
+                            // 🚀 Hardware-managed Agentic Pause and Zero-Delay TTFT handled entirely by Native Router
                             result
                         });
 
@@ -582,7 +482,6 @@ impl DashboardEngine {
                                 }
                             }
                         }
-
 
                         
                         let ttft_secs = f64::from_bits(ttft_ref.load(Ordering::SeqCst));

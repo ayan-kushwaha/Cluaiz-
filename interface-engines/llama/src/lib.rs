@@ -142,8 +142,14 @@ impl RuntimeB {
         tracing::info!("🧬 [Native-Llama] Loading model: {} | ctx: {} tokens", self.model_path, ctx_params.n_ctx);
         
         // 🚀 BATCH SYNC: Optimized for 4GB hardware by default, scalable via BoosterConfig.
-        ctx_params.n_batch = if ctx_params.n_batch == 0 { 512 } else { ctx_params.n_batch };
-        ctx_params.n_ubatch = if ctx_params.n_ubatch == 0 { 512 } else { ctx_params.n_ubatch }; 
+        // If running in CPU-only mode (n_gpu_layers == 0), force batch size to 32 to prevent GGML graph allocation limits on large contexts.
+        if model_params.n_gpu_layers == 0 {
+            ctx_params.n_batch = 32;
+            ctx_params.n_ubatch = 32;
+        } else {
+            ctx_params.n_batch = if ctx_params.n_batch == 0 { 512 } else { ctx_params.n_batch };
+            ctx_params.n_ubatch = if ctx_params.n_ubatch == 0 { 512 } else { ctx_params.n_ubatch }; 
+        }
         
         let native = NativeLlama::load(
             &self.model_path,
@@ -231,7 +237,7 @@ impl CluaizInference for RuntimeB {
         let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             // 🚀 High-Performance Native Path
             if let Some(ref native) = self.native {
-                let res = native.stream_tokens(prompt, max_tokens, &self.context.dna, callback);
+                let res = native.stream_tokens(prompt, max_tokens, &self.context.dna, &self.last_prefilled_tokens, callback);
                 
                 if res.is_ok() {
                     cb.record_success();
@@ -256,13 +262,15 @@ impl CluaizInference for RuntimeB {
             })
         }));
 
-        match result {
+        let execution_result = match result {
             Ok(res) => res,
             Err(_) => {
                 tracing::error!("🚨 [FFI-Panic] Caught panic in generate_stream! Preventing OS crash.");
                 Err(anyhow::anyhow!("Kernel panic during stream generation."))
             }
-        }
+        };
+        self.last_prefilled_tokens.clear();
+        execution_result
     }
 
     /// 💉 Neural Injection Hook: Injects multiple pre-encoded signal states into the Llama cache.
@@ -521,6 +529,10 @@ pub extern "C" fn cluaiz_kernel_instantiate(
                 _ => "Auto".to_string(),
             };
             engine.booster.use_mmap = false;
+            
+            if booster_ctx.max_context_length > 0 {
+                engine.context.dna.max_context_length = Some(booster_ctx.max_context_length as usize);
+            }
         } else {
             // Self-load from Binary Booster Truth if FFI was blank
             if let Ok(booster) = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings() {

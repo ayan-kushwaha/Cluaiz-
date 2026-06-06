@@ -3,8 +3,23 @@
 
 use std::path::PathBuf;
 use crate::utils::healer::AutoHealer;
-use cluaiz_shared::{UnifiedBackend, BackendType, CluaizContext, StructuralDNA, TemplateManager, ModelWeightsWrapper};
+use cluaiz_shared::{UnifiedBackend, BackendType, CluaizContext, StructuralDNA, TemplateManager, ModelWeightsWrapper, CluaizInference};
 use crate::runtime::execution::hub::HardwareOrchestrator;
+use neural_core::interfaces::router_contract::EmbeddingDriver;
+
+/// Represents the architectural branch taken when generating a response.
+/// This is observable state used for integration test verification.
+#[derive(Debug, Clone, PartialEq)]
+pub enum RouteDecision {
+    /// No skill matched; plain LLM generation.
+    NoSkill,
+    /// Skill matched. Context was sufficient — inject immediately, compile KV in background.
+    ZeroDelayTTFT { skill_id: String },
+    /// Skill matched. Context was insufficient — Agentic Pause triggered, CPU prefill, then resume.
+    AgenticPause { skill_id: String, success: bool },
+    /// Skill matched. Warm KV cache already existed — loaded directly.
+    WarmCacheHit { skill_id: String },
+}
 
 pub enum Backend {
     Empty(DummyBackend),
@@ -73,13 +88,34 @@ impl cluaiz_shared::CluaizInference for Backend {
             Self::Empty(_) => Err(anyhow::anyhow!("Empty backend")),
         }
     }
+
+    fn inject_signals(&mut self, signals: Vec<cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> anyhow::Result<()> {
+        match self {
+            Self::Cluaiz(b) => b.inject_signals(signals),
+            Self::Empty(_) => Err(anyhow::anyhow!("Empty backend")),
+        }
+    }
+
+    fn apply_booster(&mut self, control: &cluaiz_shared::hardware::schema::booster::BoosterControl) -> anyhow::Result<()> {
+        match self {
+            Self::Cluaiz(b) => b.apply_booster(control),
+            Self::Empty(_) => Err(anyhow::anyhow!("Empty backend")),
+        }
+    }
 }
 
 pub struct CoreRouter {
     pub active_backend: Backend,
-
-    pub foundry: crate::neural_foundry::CoreFoundry,
     pub active_dna: Option<cluaiz_shared::StructuralDNA>,
+    pub active_model_path: Option<PathBuf>,
+    pub foundry: crate::neural_foundry::CoreFoundry,
+    pub onnx_engine: Option<cluaiz_onnx::engine::OnnxEngine>,
+    /// The routing decision taken on the last call to generate_stream.
+    /// None if generate_stream has not been called yet.
+    pub last_route_decision: Option<RouteDecision>,
+    /// The REAL hardware-negotiated context size (set once at load_model time).
+    /// active_dna.max_context_length may be overridden by tests; this is immutable.
+    pub hardware_n_ctx: usize,
 }
 
 impl Default for CoreRouter {
@@ -88,13 +124,18 @@ impl Default for CoreRouter {
     }
 }
 
+static COMPILATION_LOCKS: std::sync::LazyLock<std::sync::RwLock<std::collections::HashSet<PathBuf>>> = std::sync::LazyLock::new(|| std::sync::RwLock::new(std::collections::HashSet::new()));
+
 impl CoreRouter {
     pub fn new() -> Self {
         Self { 
             active_backend: Backend::Empty(DummyBackend),
-
             foundry: crate::neural_foundry::CoreFoundry::new(),
             active_dna: None,
+            active_model_path: None,
+            onnx_engine: None,
+            last_route_decision: None,
+            hardware_n_ctx: 2048,
         }
     }
 
@@ -157,11 +198,81 @@ impl CoreRouter {
         let skills_dir = dirs::home_dir().unwrap_or_default().join(".cluaiz").join("skills");
         foundry.initialize(&skills_dir.to_string_lossy());
 
+        // Load ONNX Engine for Semantic Routing
+        let mut onnx_engine = None;
+        let schema = crate::neural_foundry::security::permission_schema::PermissionSchema::load();
+        if let Some(active_model_id) = schema.get_active_embedding_model() {
+            let roster = crate::models::registry::CoreRoster::load_roster();
+            if let Some(manifest) = roster.iter().find(|m| m.id == active_model_id) {
+                if let Some(local_path) = &manifest.local_path {
+                    let model_dir = std::path::Path::new(local_path);
+                    let model_file = model_dir.join("model.onnx");
+                    let tokenizer_file = model_dir.join("tokenizer.json");
+                    if model_file.exists() && tokenizer_file.exists() {
+                        if let Ok(mut engine) = cluaiz_onnx::engine::OnnxEngine::new() {
+                            if engine.load_text_model(&model_file.to_string_lossy(), &tokenizer_file.to_string_lossy()).is_ok() {
+                                // Compile missing or mismatched semantic vectors
+                                if let Ok(mut skill_router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.write() {
+                                    let _ = skill_router.boot_index();
+                                    let safe_filename = active_model_id.replace(":", "-");
+                                    let mut new_vectors = Vec::new();
+                                    for (id, skill_manifest) in &skill_router.loaded_manifests {
+                                        let home_dir = dirs::home_dir().unwrap_or_default();
+                                        let skill_path = home_dir.join(".cluaiz").join("skills").join(&skill_manifest.name);
+                                        let cache_dir = skill_path.join(".cache");
+                                        let emb_path = cache_dir.join(format!("{}.emb.bin", safe_filename));
+                                        let norm_skill_path = cluaiz_shared::skills::router::normalize_path(&skill_path);
+                                        let has_vector = skill_router.skill_vectors.contains_key(&norm_skill_path);
+
+                                        if !has_vector || !emb_path.exists() {
+                                            println!("⏳ [Sovereign-Ops] Vector Mismatch. Generating semantic vector for skill: {}", skill_manifest.name);
+                                            let mut combined_vec = Vec::new();
+                                            if skill_manifest.triggers.semantic.is_empty() {
+                                                if let Ok(vec) = engine.gen_embedding(&skill_manifest.name) {
+                                                    combined_vec.extend_from_slice(&vec);
+                                                }
+                                            } else {
+                                                for trigger in &skill_manifest.triggers.semantic {
+                                                    if let Ok(vec) = engine.gen_embedding(trigger) {
+                                                        combined_vec.extend_from_slice(&vec);
+                                                    }
+                                                }
+                                            }
+
+                                            if !combined_vec.is_empty() {
+                                                let _ = std::fs::create_dir_all(&cache_dir);
+                                                let data_bytes = unsafe { std::slice::from_raw_parts(combined_vec.as_ptr() as *const f32 as *const u8, combined_vec.len() * 4) };
+                                                if let Ok(_) = std::fs::write(&emb_path, data_bytes) {
+                                                    new_vectors.push((norm_skill_path, combined_vec));
+                                                }
+                                            }
+                                        }
+                                    }
+                                    for (p, v) in new_vectors {
+                                        skill_router.skill_vectors.insert(p, v);
+                                    }
+                                }
+
+                                onnx_engine = Some(engine);
+                                println!("🧬 [CoreRouter] Internal Semantic Embedding Engine Online.");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Capture the hardware-negotiated context BEFORE active_dna can be overridden by tests.
+        let hardware_n_ctx = dna.max_context_length.unwrap_or(2048) as usize;
+
         Ok(Self { 
             active_backend: Backend::Cluaiz(engine), 
-
             foundry,
             active_dna: Some(dna),
+            active_model_path: Some(path),
+            onnx_engine,
+            last_route_decision: None,
+            hardware_n_ctx,
         })
     }
 
@@ -180,162 +291,267 @@ impl CoreRouter {
         max_tokens: usize,
         callback: Box<dyn FnMut(String) -> bool + Send + 'static>,
     ) -> Result<(), String> {
-        let mut prompt_embedding_engine = None;
-        let schema = crate::neural_foundry::security::permission_schema::PermissionSchema::load();
-        println!("🤖 [Debug-Router] Active embedding model ID in schema: {:?}", schema.vector_models.text);
-        if let Some(text_model_id) = &schema.vector_models.text {
-            let roster = crate::models::registry::CoreRoster::load_roster();
-            println!("🤖 [Debug-Router] Roster size: {}, models: {:?}", roster.len(), roster.iter().map(|m| &m.id).collect::<Vec<_>>());
-            if let Some(manifest) = roster.iter().find(|m| &m.id == text_model_id) {
-                println!("🤖 [Debug-Router] Found manifest for embedding model. Local path: {:?}", manifest.local_path);
-                if let Some(local_path) = &manifest.local_path {
-                    let model_dir = std::path::Path::new(local_path);
-                    let model_file = model_dir.join("model.onnx");
-                    let tokenizer_file = model_dir.join("tokenizer.json");
-                    println!("🤖 [Debug-Router] Checking files: model.onnx exists: {}, tokenizer.json exists: {}", model_file.exists(), tokenizer_file.exists());
-                    if model_file.exists() && tokenizer_file.exists() {
-                        match cluaiz_onnx::engine::OnnxEngine::new() {
-                            Ok(mut engine) => {
-                                match engine.load_text_model(&model_file.to_string_lossy(), &tokenizer_file.to_string_lossy()) {
-                                    Ok(_) => {
-                                        println!("🤖 [Debug-Router] Embedding engine loaded successfully!");
-                                        prompt_embedding_engine = Some(engine);
-                                    }
-                                    Err(e) => println!("❌ [Debug-Router] Failed to load text model: {:?}", e),
-                                }
-                            }
-                            Err(e) => println!("❌ [Debug-Router] Failed to instantiate OnnxEngine: {:?}", e),
+
+        let rt = tokio::runtime::Handle::current();
+
+        // 🚀 SLIDING WINDOW SEMANTIC SEARCH & ROUTING
+        let mut matched_skill_ids = Vec::new();
+        let prompt_lower = prompt.to_lowercase().trim().to_string();
+        
+        // 1. Text Match Fast-Path (Exact keyword match + Substring containment)
+        if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
+            // Try exact full-prompt match first
+            if let Some(path) = router.check_trigger(&prompt_lower) {
+                if let Some(name) = path.file_name() {
+                    matched_skill_ids.push(name.to_string_lossy().to_string());
+                }
+            }
+            
+            // If no exact match, try substring containment: check if prompt CONTAINS any registered trigger phrase
+            if matched_skill_ids.is_empty() {
+                for (keyword, path) in &router.keyword_index {
+                    if prompt_lower.contains(keyword) {
+                        if let Some(name) = path.file_name() {
+                            matched_skill_ids.push(name.to_string_lossy().to_string());
+                            break;
                         }
+                    }
+                }
+            }
+        }
+        
+        // 2. Sliding Window Semantic Match (ONNX vector similarity)
+        if matched_skill_ids.is_empty() {
+             if let Some(engine) = self.onnx_engine.as_mut() {
+                 if let Ok(full_vec) = engine.gen_embedding(prompt) {
+                     if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
+                         // Try full prompt vector first
+                         if let Some(path) = router.check_semantic_trigger(&full_vec, 0.70) {
+                             if let Some(name) = path.file_name() {
+                                 matched_skill_ids.push(name.to_string_lossy().to_string());
+                             }
+                         } else {
+                             // Multi-size sliding window search: try window sizes 2, 3, 4
+                             let words: Vec<&str> = prompt.split_whitespace().collect();
+                             'window_search: for window_size in [2, 3, 4] {
+                                 if words.len() >= window_size {
+                                     for i in 0..=words.len() - window_size {
+                                         let chunk = words[i..i + window_size].join(" ");
+                                         if let Ok(chunk_vec) = engine.gen_embedding(&chunk) {
+                                             if let Some(path) = router.check_semantic_trigger(&chunk_vec, 0.70) {
+                                                 if let Some(name) = path.file_name() {
+                                                     matched_skill_ids.push(name.to_string_lossy().to_string());
+                                                 }
+                                                 break 'window_search;
+                                             }
+                                         }
+                                     }
+                                 }
+                             }
+                         }
+                     }
+                 }
+             }
+        }
+
+        // 🧪 Cluaiz HANDSHAKE: Process Foundry Intent
+        let mut intent_result = rt.block_on(self.foundry.process_intent(prompt, Some(matched_skill_ids.clone())))
+            .map_err(|e| format!("Skill Discovery Error: {}", e))?;
+
+        // 🧠 CONTEXT BUDGET CALCULATION
+        let n_ctx = self.active_dna.as_ref().and_then(|dna| dna.max_context_length).unwrap_or(2048) as usize;
+        let system_tokens = 128; // System tool prompt rules
+        let history_tokens = 0; // For now
+        let reserve_for_generation = max_tokens.min(512); // Limit generation reserve to prevent context saturation
+        let prompt_tokens_est = prompt.len() / 3;
+        let available_ctx = n_ctx.saturating_sub(history_tokens + system_tokens + prompt_tokens_est + reserve_for_generation);
+        
+        // Reset route decision for this call
+        self.last_route_decision = if matched_skill_ids.is_empty() { Some(RouteDecision::NoSkill) } else { None };
+
+        // 🚀 TRUE AGENTIC PAUSE (FFI Hardware Spin-up)
+        for (cache_path, skill_content) in intent_result.missing_caches.drain(..) {
+            let skill_tokens_est = skill_content.len() / 3;
+            
+            // Look up skill metadata from registry to get exact size and head dimension
+            let skill_path = cache_path.parent().and_then(|p| p.parent()).map(|p| p.to_path_buf());
+            let mut head_dim = 128;
+            let mut token_count_override = skill_tokens_est;
+            if let Some(ref path) = skill_path {
+                if let Some(skill) = self.foundry.registry.skills.iter().find(|s| s.path == *path) {
+                    if let Some(meta) = &skill.manifest.Core_metadata {
+                        head_dim = meta.head_dim;
+                        token_count_override = meta.token_count;
+                    }
+                }
+            }
+
+            if skill_tokens_est > available_ctx {
+                println!("⏳ [Agentic Pause] Low Context Window detected ({} available). Spawning isolated hardware slot for {} tokens...", available_ctx, skill_tokens_est);
+                
+                // Extract skill id for telemetry before the closure moves cache_path
+                let skill_id_for_decision = cache_path
+                    .parent()
+                    .and_then(|p| p.parent())
+                    .and_then(|p| p.file_name())
+                    .map(|n| n.to_string_lossy().to_string())
+                    .unwrap_or_default();
+                
+                if let Some(model_path) = &self.active_model_path {
+                    let path_clone = model_path.clone();
+                    let cache_path_clone = cache_path.clone();
+                    let skill_content_clone = skill_content.clone();
+                    let expanded_ctx = (skill_tokens_est + 256) as usize; // Exact tailored slot
+                    
+                    let background_success = rt.block_on(async move {
+                        use cluaiz_shared::{CluaizContext, StructuralDNA, UnifiedBackend, CluaizInference};
+                        let mut temp_dna = StructuralDNA::default();
+                        temp_dna.max_context_length = Some(expanded_ctx);
+                        let ctx = CluaizContext::boot(temp_dna, cluaiz_shared::TemplateManager::default());
+                        
+                        println!("🔩 [Arbiter] Requesting {} ctx slot in background (CPU fallback mode)...", expanded_ctx);
+                        let mut booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+                        booster.n_gpu_layers = 0; // Force CPU-only to avoid CUDA device context collisions
+                        
+                        if let Ok(mut bg_engine) = crate::runtime::execution::hub::HardwareOrchestrator::instantiate_with_booster(
+                            &path_clone.to_string_lossy(),
+                            "llama", 
+                            ctx,
+                            Some(booster)
+                        ).await {
+                            println!("⚙️ [Arbiter] Background slot acquired. Prefilling {} tokens...", skill_content_clone.len() / 3);
+                            if bg_engine.prefill(&skill_content_clone).is_ok() {
+                                let _ = bg_engine.dump_kv_cache(&cache_path_clone.to_string_lossy());
+                                return true;
+                            }
+                        }
+                        false
+                    });
+                    
+                    // Record the Agentic Pause decision with success/failure outcome
+                    self.last_route_decision = Some(RouteDecision::AgenticPause {
+                        skill_id: skill_id_for_decision,
+                        success: background_success,
+                    });
+                    
+                    if background_success {
+                        println!("✅ [Agentic Pause] Dual-Cache `.kvcache.bin` safely generated to SSD.");
+                        // Only attempt KV load if the cache was saved at a size the main engine can handle.
+                        // The background engine used expanded_ctx tokens, but main engine has hardware_n_ctx.
+                        if expanded_ctx <= self.hardware_n_ctx {
+                            println!("⚙️ [Arbiter] Loading KV cache natively from SSD: {}", cache_path.display());
+                            if let Err(e) = self.active_backend.load_kv_cache(&cache_path.to_string_lossy()) {
+                                println!("❌ [Arbiter] Native KV load failed: {}. Force-resetting memory.", e);
+                                // 🛡️ Force full memory reset to prevent hybrid SSM/KV state corruption
+                                let _ = self.active_backend.prefill("");
+                            }
+                        } else {
+                            println!("⚠️ [Arbiter] KV cache was saved at {} ctx but engine has {} ctx. Skipping load (would corrupt hybrid memory).",
+                                expanded_ctx, self.hardware_n_ctx);
+                        }
+                    } else {
+                        println!("❌ [Agentic Pause] Hardware failed to acquire background slot. Proceeding safely without skill.");
                     }
                 }
             } else {
-                println!("❌ [Debug-Router] Embedding model ID not found in roster!");
-            }
-        }
+                // Case B: Fits entirely in current available_ctx! Zero-Delay TTFT!
+                let skill_id_for_decision = cache_path
+                    .parent()
+                    .and_then(|p| p.parent())
+                    .and_then(|p| p.file_name())
+                    .map(|n| n.to_string_lossy().to_string())
+                    .unwrap_or_default();
+                self.last_route_decision = Some(RouteDecision::ZeroDelayTTFT { skill_id: skill_id_for_decision });
 
-        let mut matched_skill_path = None;
-        if let Some(mut engine) = prompt_embedding_engine {
-            // Dynamic compilation of missing or mismatched semantic vectors
-            if let Ok(mut router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.write() {
-                let _ = router.boot_index();
-                if let Some(active_model_id) = schema.get_active_embedding_model() {
-                    let safe_filename = active_model_id.replace(":", "-");
-                    let mut new_vectors = Vec::new();
-                    for (id, manifest) in &router.loaded_manifests {
-                        let home_dir = dirs::home_dir().unwrap_or_default();
-                        let skill_path = home_dir.join(".cluaiz").join("skills").join(&manifest.name);
-                        let cache_dir = skill_path.join(".cache");
-                        let emb_path = cache_dir.join(format!("{}.emb.bin", safe_filename));
-                        let has_vector = router.skill_vectors.contains_key(&skill_path);
-
-                        if !has_vector || !emb_path.exists() {
-                            println!("⏳ [Sovereign-Ops] Mismatch detected. Generating semantic vector for skill: {}", manifest.name);
-                            let skill_content = if let Some(fm) = extract_frontmatter(&skill_path) {
-                                fm
-                            } else {
-                                let semantic_triggers = manifest.triggers.semantic.join(", ");
-                                format!(
-                                    "Skill Name: {}\nDescription: {}\nTriggers: {}",
-                                    manifest.name, manifest.description, semantic_triggers
-                                )
-                            };
-                            use neural_core::interfaces::router_contract::EmbeddingDriver;
-                            if let Ok(vec) = engine.gen_embedding(&skill_content) {
-                                let _ = std::fs::create_dir_all(&cache_dir);
-                                let data_bytes = unsafe { std::slice::from_raw_parts(vec.as_ptr() as *const f32 as *const u8, vec.len() * 4) };
-                                if let Ok(_) = std::fs::write(&emb_path, data_bytes) {
-                                    new_vectors.push((skill_path.clone(), vec));
-                                }
+                // ⚠️ Hardware Guard: Cap injected text to the REAL engine context window.
+                // active_dna.max_context_length may have been set artificially high (e.g. in tests),
+                // but the engine's KV cache is bounded by hardware_n_ctx (set at load time).
+                // Reserve 512 tokens for prompt + generation headroom.
+                let injection_char_cap = self.hardware_n_ctx.saturating_sub(512) * 3;
+                let safe_skill_content = if skill_content.len() > injection_char_cap && injection_char_cap > 0 {
+                    println!("⚠️ [ZeroDelayTTFT] Skill ({} chars) exceeds hardware context cap ({} chars). Truncating for safe injection.",
+                        skill_content.len(), injection_char_cap);
+                    skill_content[..injection_char_cap].to_string()
+                } else {
+                    skill_content.clone()
+                };
+                intent_result.responses.push(safe_skill_content);
+                if let Some(model_path) = &self.active_model_path {
+                    let path_clone = model_path.clone();
+                    let cache_path_clone = cache_path.clone();
+                    let skill_content_clone = skill_content.clone();
+                    let expanded_ctx = (skill_tokens_est + 256) as usize;
+                    
+                    rt.spawn(async move {
+                        use cluaiz_shared::{CluaizContext, StructuralDNA, UnifiedBackend, CluaizInference};
+                        let mut temp_dna = StructuralDNA::default();
+                        temp_dna.max_context_length = Some(expanded_ctx);
+                        let ctx = CluaizContext::boot(temp_dna, cluaiz_shared::TemplateManager::default());
+                        
+                        println!("🔩 [Arbiter] Asynchronously requesting {} ctx slot in background...", expanded_ctx);
+                        let mut booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+                        booster.n_gpu_layers = 0; // Force CPU-only to avoid CUDA device context collisions
+                        
+                        if let Ok(mut bg_engine) = crate::runtime::execution::hub::HardwareOrchestrator::instantiate_with_booster(
+                            &path_clone.to_string_lossy(),
+                            "llama", 
+                            ctx,
+                            Some(booster)
+                        ).await {
+                            println!("⚙️ [Arbiter] Async background slot acquired. Prefilling {} tokens...", skill_content_clone.len() / 3);
+                            if bg_engine.prefill(&skill_content_clone).is_ok() {
+                                let _ = bg_engine.dump_kv_cache(&cache_path_clone.to_string_lossy());
+                                println!("✅ [Arbiter] Async background KV cache compiled and dumped successfully.");
                             }
                         }
-                    }
-                    for (p, v) in new_vectors {
-                        router.skill_vectors.insert(p, v);
-                    }
+                    });
                 }
             }
+        }
 
-            use neural_core::interfaces::router_contract::EmbeddingDriver;
-            if let Ok(vector) = engine.gen_embedding(prompt) {
-                if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
-                    println!("🤖 [Debug-Router] Checking semantic triggers. Active vector dim: {}, loaded skill vectors: {:?}", vector.len(), router.skill_vectors.keys());
-                    for (path, skill_vec) in &router.skill_vectors {
-                        let mut dot = 0.0;
-                        let mut mag_a = 0.0;
-                        let mut mag_b = 0.0;
-                        for (a, b) in vector.iter().zip(skill_vec.iter()) {
-                            dot += a * b;
-                            mag_a += a * a;
-                            mag_b += b * b;
+        // If the cache already exists, load it natively (WarmCacheHit path)
+        let schema = crate::neural_foundry::security::permission_schema::PermissionSchema::load();
+        if let Some(gen_model) = schema.get_active_chat_model() {
+            let gen_model_safe = gen_model.replace(":", "-");
+            for skill_id in &matched_skill_ids {
+                if let Some(skill) = self.foundry.registry.skills.iter().find(|s| &s.manifest.id == skill_id) {
+                    let cache_dir = skill.path.join(".cache");
+                    let kv_cache_path = cache_dir.join(format!("{}.kvcache.bin", gen_model_safe));
+                    if kv_cache_path.exists() {
+                        // Check if the skill's token count exceeds what the main engine can actually load
+                        let skill_tokens_est = skill.manifest.Core_metadata.as_ref()
+                            .map(|m| m.token_count)
+                            .unwrap_or(0);
+                        if skill_tokens_est > 0 && skill_tokens_est + 256 > self.hardware_n_ctx {
+                            println!("⚠️ [Arbiter] Warm cache for '{}' was saved at ~{} tokens but engine has {} ctx. Skipping load.",
+                                skill_id, skill_tokens_est + 256, self.hardware_n_ctx);
+                            continue;
                         }
-                        let score = dot / (mag_a.sqrt() * mag_b.sqrt());
-                        println!("🤖 [Debug-Router] Cosine similarity with {:?}: {:.4}", path.file_name().unwrap_or_default(), score);
+                        println!("⚙️ [Arbiter] Warm cache found. Loading KV cache natively from SSD: {}", kv_cache_path.display());
+                        // Only override if Agentic Pause didn't already set the decision
+                        if self.last_route_decision.is_none() {
+                            self.last_route_decision = Some(RouteDecision::WarmCacheHit { skill_id: skill_id.clone() });
+                        }
+                        if let Err(e) = self.active_backend.load_kv_cache(&kv_cache_path.to_string_lossy()) {
+                            println!("❌ [Arbiter] Native warm KV load failed: {}. Force-resetting memory.", e);
+                            let _ = self.active_backend.prefill("");
+                        }
                     }
-                    matched_skill_path = router.check_semantic_trigger(&vector, 0.33); // 33% threshold for stable matching
-                    println!("🤖 [Debug-Router] Matched skill path: {:?}", matched_skill_path);
                 }
             }
         }
-
-        if matched_skill_path.is_none() {
-            if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
-                matched_skill_path = router.check_trigger(prompt);
-            }
-        }
-
-        // 🧪 Cluaiz HANDSHAKE: Check for skills before generation
-        let rt = tokio::runtime::Handle::current();
-        let intent_result = rt.block_on(self.foundry.process_intent(prompt))
-            .map_err(|e| format!("Skill Discovery Error: {}", e))?;
 
         match &mut self.active_backend {
             Backend::Cluaiz(b) => {
-                // Dynamic compilation of missing or mismatched KV Cache for the matched skill
-                if let Some(ref skill_path) = matched_skill_path {
-                    let schema = crate::neural_foundry::security::permission_schema::PermissionSchema::load();
-                    if let Some(active_chat_model) = schema.get_active_chat_model() {
-                        let gen_model_safe = active_chat_model.replace(":", "-");
-                        let cache_dir = skill_path.join(".cache");
-                        let kv_cache_path = cache_dir.join(format!("{}.kvcache.bin", gen_model_safe));
-                        if !kv_cache_path.exists() {
-                            if let Some(frontmatter) = extract_frontmatter(skill_path) {
-                                let prefix = format!("[System Memory Injection (Frontmatter): {}]\n", frontmatter);
-                                println!("⏳ [Sovereign-Ops] First time trigger: Compiling KV Cache for skill: {}...", skill_path.file_name().unwrap_or_default().to_string_lossy());
-                                use cluaiz_shared::UnifiedBackend;
-                                if let Err(e) = b.prefill(&prefix) {
-                                    println!("❌ [Sovereign-Ops] Failed to prefill and compile KV Cache: {}", e);
-                                } else {
-                                    use cluaiz_shared::CluaizInference;
-                                    let path_str = kv_cache_path.to_string_lossy().to_string();
-                                    let _ = std::fs::create_dir_all(&cache_dir);
-                                    if let Err(e) = b.dump_kv_cache(&path_str) {
-                                        println!("❌ [Sovereign-Ops] Failed to dump KV Cache: {}", e);
-                                    } else {
-                                        println!("✅ [Sovereign-Ops] KV Cache compiled successfully!");
-                                    }
-                                }
-                            }
-                        } else {
-                            let path_str = kv_cache_path.to_string_lossy().to_string();
-                            println!("🧠 [Sovereign-Ops] Restoring KV Cache for skill: {}", skill_path.file_name().unwrap_or_default().to_string_lossy());
-                            if let Err(e) = b.load_kv_cache(&path_str) {
-                                println!("❌ [Sovereign-Ops] Failed to load KV cache: {}", e);
-                            }
-                        }
-                    }
-                }
 
                 // If Core signals (skill souls) were identified, inject them into the kernel
                 if !intent_result.signals.is_empty() {
-                    println!("💉 [Router] Injecting {} Core signals into active backend...", intent_result.signals.len());
+                    println!("💉 [Router] Injecting {} M-RoPE KV Cache signals into active hardware...", intent_result.signals.len());
                     b.inject_signals(intent_result.signals).map_err(|e| format!("Signal Injection Failure: {}", e))?;
                 }
 
-                // 🎭 Orchestration: Let native backend handle templating to support pivot tags
                 let mut formatted_prompt = prompt.to_string();
                 
-                // 🧠 INJECT SKILL SYSTEM PROMPT: If the foundry provided textual skill descriptions,
-                // we must append them to the system prompt so the LLM is aware of its tools.
                 if !intent_result.responses.is_empty() {
                     let tool_context = intent_result.responses.join("\n\n");
                     formatted_prompt = format!(
@@ -343,7 +559,7 @@ impl CoreRouter {
                         tool_context, 
                         formatted_prompt
                     );
-                    println!("🧠 [Router] Injected skill descriptions into LLM context.");
+                    println!("🧠 [Router] Injected skill descriptions (Zero-Delay TTFT).");
                 }
 
                 b.generate_stream(&formatted_prompt, max_tokens, callback)

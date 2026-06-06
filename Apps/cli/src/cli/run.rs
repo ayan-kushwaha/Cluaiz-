@@ -262,17 +262,6 @@ pub async fn execute(model_id: &str, _interactive: bool) -> Result<()> {
         return Err(color_eyre::eyre::eyre!("Model file not found at: {:?}", model_file));
     }
 
-    let dna = cluaiz_shared::StructuralDNA::default();
-    let context = cluaiz_shared::CluaizContext::boot(dna, cluaiz_shared::TemplateManager::default());
-
-    let engine_mode = if manifest.architecture_type == "onnx" { "onnx" } else { "llama" };
-
-    let engine = engines::runtime::execution::hub::HardwareOrchestrator::instantiate(
-        model_file.to_str().unwrap(),
-        engine_mode,
-        context
-    ).await.map_err(|e| color_eyre::eyre::eyre!(e))?;
-
     if is_local {
         println!("  {} Local Audit Passed. Preparing Neural Matrix...", "✨".green());
     }
@@ -300,23 +289,120 @@ pub async fn execute(model_id: &str, _interactive: bool) -> Result<()> {
     let _ = engines::utils::healer::AutoHealer::heal_missing_tokenizer(&repo_id, &model_path).await;
     let tokenizer_path = model_path.join("tokenizer.json");
     let mut state = AppState::new(None);
-    // Pre-load the engine into the state
-    {
-        let mut lock = state.Core_engine.router.lock().await;
-        lock.active_backend = engines::api::router::Backend::Cluaiz(engine);
-    }
+    
+    state.Core_engine.load_model(model_file.clone()).await
+        .map_err(|e| color_eyre::eyre::eyre!("Model loading failed: {}", e))?;
+    
     state._active_model_id = Some(manifest.id.clone());
 
-    let (tx, mut rx) = mpsc::unbounded_channel();
-    let mut mode = crate::app_enums::Mode::Running;
+    if _interactive {
+        let (tx, mut rx) = mpsc::unbounded_channel();
+        let mut mode = crate::app_enums::Mode::Running;
 
-    // 🚀 Start the Dashboard UI
-    crate::core::dashboard::DashboardEngine::run_native(
-        &mut state,
-        &tx,
-        &mut rx,
-        &mut mode
-    )?;
+        // 🚀 Start the Dashboard UI
+        crate::core::dashboard::DashboardEngine::run_native(
+            &mut state,
+            &tx,
+            &mut rx,
+            &mut mode
+        )?;
+    } else {
+        println!("\n✨ Non-interactive Batch Mode Active.");
+        // Read prompts line-by-line from stdin
+        use std::io::{BufRead, Write};
+        let stdin = std::io::stdin();
+        let mut handle = stdin.lock();
+        loop {
+            print!("? > ");
+            let _ = std::io::stdout().flush();
+            let mut line = String::new();
+            if handle.read_line(&mut line)? == 0 {
+                break; // EOF
+            }
+            let prompt = line.trim();
+            if prompt.is_empty() {
+                continue;
+            }
+            if prompt == "exit" || prompt == "quit" {
+                break;
+            }
+            
+            println!("🤖 ");
+            let accumulated_output = std::sync::Arc::new(std::sync::Mutex::new(String::new()));
+            let output_clone = accumulated_output.clone();
+            let res = tokio::task::block_in_place(|| {
+                let mut router = state.Core_engine.router.blocking_lock();
+                router.generate_stream(
+                    prompt,
+                    512,
+                    Box::new(move |token| {
+                        print!("{}", token);
+                        let _ = std::io::stdout().flush();
+                        if let Ok(mut guard) = output_clone.lock() {
+                            guard.push_str(&token);
+                        }
+                        true
+                    })
+                )
+            });
+            if let Err(e) = res {
+                println!("\n❌ Inference Error: {}", e);
+            } else {
+                let clean_output = accumulated_output.lock().unwrap().trim().to_string();
+                let mut json_str = None;
+                if let Some(start) = clean_output.find('{') {
+                    if let Some(end) = clean_output.rfind('}') {
+                        if end > start {
+                            json_str = Some(clean_output[start..=end].to_string());
+                        }
+                    }
+                }
+                if let Some(js) = json_str {
+                    if let Ok(val) = serde_json::from_str::<serde_json::Value>(&js) {
+                        if let Some(action) = val.get("action").and_then(|v| v.as_str()) {
+                            println!("\n⚙️ [CLI REPL] Intercepted JSON ABI tool call: {}", action.bold().cyan());
+                            
+                            let mut skill_manifest = None;
+                            let mut logic_path = None;
+                            let mut is_allowed = false;
+                            
+                            {
+                                let router = state.Core_engine.router.lock().await;
+                                if let Some(skill) = router.foundry.registry.skills.iter().find(|s| &s.manifest.id == action) {
+                                    skill_manifest = Some(skill.manifest.clone());
+                                    logic_path = Some(skill.path.join("logic.wasm"));
+                                    is_allowed = router.foundry.guard.validate_action(&skill.manifest, engines::neural_foundry::security::guard::PermissionLevel::ReadOnly).is_ok();
+                                }
+                            }
+                            
+                            if let Some(manifest) = skill_manifest {
+                                let l_path = logic_path.unwrap();
+                                if is_allowed && l_path.exists() {
+                                    println!("⚙️ [CLI REPL] Executing WASM Sandbox for: {}", manifest.name.green());
+                                    let mut router = state.Core_engine.router.lock().await;
+                                    let wasm_res = router.foundry.wasm_runtime.execute_skill_logic(&l_path, "run", prompt).await;
+                                    match wasm_res {
+                                        Ok(output) => {
+                                            println!("\n💻 [WASM Sandbox Output]:");
+                                            println!("{}", output.green());
+                                        }
+                                        Err(e) => {
+                                            println!("\n❌ [WASM Sandbox Execution Failed]: {}", e);
+                                        }
+                                    }
+                                } else if !l_path.exists() {
+                                    println!("⚠️ [CLI REPL] logic.wasm not found for skill: {}", action);
+                                }
+                            } else {
+                                println!("⚠️ [CLI REPL] Skill not found in registry: {}", action);
+                            }
+                        }
+                    }
+                }
+            }
+            println!("\n");
+        }
+    }
 
     Ok(())
 }
