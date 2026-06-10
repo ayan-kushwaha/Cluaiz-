@@ -1,0 +1,8 @@
+{
+  "name": "shell-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "tauri:init": "echo Initialize with npm create tauri-app@latest when phase starts"
+  }
+}

@@ -110,7 +110,7 @@ To understand how data flows through Cluaiz, here is the chronological step-by-s
 
 Cluaiz nodes manage state and preferences through local configuration profiles. Developers can inspect and customize these settings to adjust computing weights or interface behavior:
 
-### System Controller Profile (`sovereign.json`)
+### System Controller Profile (`Independent.json`)
 Located in the primary directory of the node, this file governs hardware limits and environment parameters:
 
 ```json

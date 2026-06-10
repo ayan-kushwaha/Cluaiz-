@@ -4,7 +4,7 @@
 
 ---
 
-## ⚔️ Sovereign Execution
+## ⚔️ Independent Execution
 To pull and run this model natively on your silicon:
 ```bash
 cluaiz run bonsai:1.1
@@ -26,7 +26,7 @@ cluaiz run bonsai:1.1
 
 ## 🎨 Visual Identity & Benchmarks
 
-<!-- ![Sovereign Banner](../../poster.webp) -->
+<!-- ![Independent Banner](../../poster.webp) -->
 
 ### Intelligence Density Analysis
 Bonsai 8B redefines the Pareto frontier by focusing on **Intelligence per GB**, ensuring high-accuracy reasoning on mobile and edge devices.
@@ -39,8 +39,8 @@ Bonsai 8B redefines the Pareto frontier by focusing on **Intelligence per GB**, 
 
 ---
 
-## 🧠 The Sovereign Narrative: Concentrating Intelligence
-In an era of bloated models, **1-bit Bonsai** represents a paradigm shift. Developed at the intersection of Caltech research and PrismML's sovereign hardware principles, this model is built for "Intelligence Density."
+## 🧠 The Independent Narrative: Concentrating Intelligence
+In an era of bloated models, **1-bit Bonsai** represents a paradigm shift. Developed at the intersection of Caltech research and PrismML's Independent hardware principles, this model is built for "Intelligence Density."
 
 ### Beyond Quantization
 Unlike standard models that lose reasoning capability when squeezed, Bonsai is trained from the ground up as a **True 1-bit Model**. Every layer—from embeddings to attention mechanisms—operates on binary logic. This results in a **14x reduction in size** without the typical performance degradation of low-bit quantization.
@@ -50,13 +50,13 @@ Bonsai is engineered to maintain a minimum of **5 tokens per second (TPS)** on e
 
 ---
 
-## ⚖️ Sovereign Usage Rules
+## ⚖️ Independent Usage Rules
 - **Privacy First**: Local-only inference. No data exfiltration allowed.
 - **Hardware Aware**: Best suited for devices with NPU/GPU acceleration.
-- **Licensing**: Apache 2.0 (Weights) | Sovereign Metadata License (Assets).
+- **Licensing**: Apache 2.0 (Weights) | Independent Metadata License (Assets).
 
 ---
 
-**Join the Sovereign Revolution.**
+**Join the Independent Revolution.**
 Published by **PrismML** & **Cluaiz-OS**. Supported by Khosla Ventures and Google DeepMind.
 Full Technical Whitepaper: [Bonsai-Whitepaper.pdf](./assets/bonsai-whitepaper.pdf)

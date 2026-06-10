@@ -52,7 +52,7 @@ OpenClaw wizard flow	Single continuous flow architecture inspiration
 
 कोई doubt हो, extra step हो, या कोई step remove करना हो — बताओ।
 
-🧿 Cluaiz CURE CLI — Sovereign Onboarding (Updated Architecture)
+🧿 Cluaiz CURE CLI — Independent Onboarding (Updated Architecture)
 Shared core crate (shared/) banayenge jo CURE + future apps dono use karenge. CLI sirf TUI skin hoga.
 
 User Review Required

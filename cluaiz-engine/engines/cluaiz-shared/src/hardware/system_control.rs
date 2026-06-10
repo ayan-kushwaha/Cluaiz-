@@ -3,8 +3,8 @@
 //! Enforces Zero Hardcoding: If hardware cannot be probed natively via raw ASM or Syscalls, it returns PENDING.
 
 use crate::hardware::schema::profiles::{
-    Accelerators, CpuSubsystem, GpuSubsystem, MemorySubsystem, SiliconTruth, SovereignContext,
-    SovereignIdentity, StorageSubsystem, SystemControl,
+    Accelerators, CpuSubsystem, GpuSubsystem, MemorySubsystem, SiliconTruth, SovereignBrain,
+    SovereignContext, SovereignIdentity, StorageSubsystem, SystemControl,
 };
 use sysinfo::System;
 
@@ -28,6 +28,7 @@ impl HardwareOrchestrator {
         SystemControl {
             identity: Self::probe_identity(&sys),
             context: Self::probe_context(),
+            brain: Self::probe_brain(),
             silicon_truth: Self::probe_silicon(&sys),
         }
     }
@@ -48,6 +49,21 @@ impl HardwareOrchestrator {
 
         SovereignContext {
             cluaiz_root: root_path.to_string_lossy().to_string(),
+        }
+    }
+
+    fn probe_brain() -> SovereignBrain {
+        // Preserve existing brain toggle if possible, otherwise check Env Variable, default to false
+        let mut ffi_enabled = false;
+        if let Ok(existing) = crate::hardware::governor::HardwareGovernor::load_system_control() {
+            ffi_enabled = existing.brain.cluaizd_connect_ffi;
+        }
+        if std::env::var("CLUAIZD_FFI").unwrap_or_default() == "1" {
+            ffi_enabled = true;
+        }
+
+        SovereignBrain {
+            cluaizd_connect_ffi: ffi_enabled,
         }
     }
 

@@ -139,7 +139,7 @@ This is not just a UI preference file—it dynamically adjusts Rust-level execut
 - **`force_vram_reclaim`**: A critical override that enforces an ultra-tight `0.5%` VRAM safety margin. When enabled, the VRAM Arbiter performs live silicon probes (`live_vram_probe`) instead of theoretical math, ensuring absolute maximum kvcache.bin allocation without hitting OS memory spill limits.
 - **`flash_attention` & `dflash`**: Directs the engine to pass native FlashAttention kernel flags into the FFI bindings during model load.
 - **`think_mode`**: Intercepts output at the Rust orchestration layer. When `"On"`, the engine dynamically watches the token stream for `<think>` boundaries and applies native formatting before stdout.
-- **`kv_cache_quantization`**: Modifies the per-element byte allocation in the Arbiter's `SOVEREIGN MATH` formula, allowing the engine to calculate and fit significantly larger context windows on memory-constrained GPUs (like 4GB).
+- **`kv_cache_quantization`**: Modifies the per-element byte allocation in the Arbiter's `Independent MATH` formula, allowing the engine to calculate and fit significantly larger context windows on memory-constrained GPUs (like 4GB).
 
 ### **AtmaSteer: Token Masking Protocol**
 Enforces structural output (JSON/Schema) through **constrained decoding**. By applying token-level masking during the sampling phase, Cluaiz prevents structural hallucinations at the hardware layer.
@@ -151,7 +151,7 @@ Maps inference tasks to the appropriate kernel backend based on hardware availab
 
 ## 🧩 **WASM Skills & Agentic Tool Calling**
 
-Cluaiz is not just a text generator; it's a fully sovereign Agentic Engine. It can dynamically download, compile, and execute isolated WebAssembly (WASM) skills on your local hardware.
+Cluaiz is not just a text generator; it's a fully Independent Agentic Engine. It can dynamically download, compile, and execute isolated WebAssembly (WASM) skills on your local hardware.
 
 ### **How Skills Work Under the Hood**
 1. **Semantic Routing (Zero-Delay TTFT)**: When you type a prompt (e.g., `"build a landing page"`), Cluaiz's internal vector router checks if you have a skill installed that matches this intent. If found, it instantly merges the skill's instructions into the context window.
@@ -385,8 +385,17 @@ If you want to permanently bypass the unverified prompt, you can use PowerShell 
 $cert = New-SelfSignedCertificate -DnsName "cluaiz-local" -CertStoreLocation "cert:\LocalMachine\My" -Type CodeSigningCert
 Set-AuthenticodeSignature -FilePath ".\cluaiz.exe" -Certificate $cert
 ```
+ 
 
----
+## Star History
+
+<a href="https://www.star-history.com/?repos=Cluaiz%2Fcluaize&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Cluaiz/cluaize&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Cluaiz/cluaize&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Cluaiz/cluaize&type=date&legend=top-left" />
+ </picture>
+</a>
 
 ## 📜 **License & Legal**
 

@@ -1,6 +1,6 @@
 # 🌐 Archer Shared Crate: The Unified Architectural Fabric
 
-Welcome to **`archer-shared`** — the central nervous system and structural backbone of the entire **Cluaiz AI CURE Ecosystem**. 
+Welcome to **`archer-shared`** — the core network system and structural backbone of the entire **Cluaiz AI CURE Ecosystem**. 
 
 Unlike standalone scripts, `archer-shared` is not an execution layer. It is a strictly controlled, universally decoupled **Core Shared Library** (`lib.rs`). Its purpose is to enforce absolute Architectural Truth across all disparate compute engines (like `archer-candle` and `archer-llama`), ensuring they speak the exact same language without ever duplicating code.
 
@@ -28,7 +28,7 @@ Defines the universal math boundaries independent of the backend.
 - **`sampling.rs`**: Centralizes the logic for how tokens are accepted or rejected to minimize hallucination (Sampler interfaces).
 - **`ops/`**: Low-level operational structs mapping memory layouts or chunk-streams. 
 
-### 4. `metadata/` (The Sovereign Registry)
+### 4. `metadata/` (The Independent Registry)
 The parsing mechanism for reading model capabilities from disk safely.
 - **`dna.rs`**: Contains the `StructuralDNA` and `SovereignProfile` definitions. It allows the system to read a model's intrinsic physical architecture before risking an OOM (Out-of-Memory) load.
 - **`manifest.rs`**: The mapping for HuggingFace assets and parameter schemas.

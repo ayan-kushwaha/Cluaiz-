@@ -1,6 +1,6 @@
-# 🏛️ Sovereign CLI: Core Process Design
+# 🏛️ Independent CLI: Core Process Design
 **Status**: DRAFT (Protocol Audit Phase)  
-**Objective**: Industrial-grade process flow for the Archer Sovereign Console.
+**Objective**: Industrial-grade process flow for the Archer Independent Console.
 
 ---
 
@@ -43,7 +43,7 @@ The console identifies intent via two semantic triggers:
 ### 🛰️ Real-Time Feedback (Telemetry)
 - **Pulse Monitoring**: Every 100ms, the footer updates with:
     - **CPU/VRAM Load**: Real-time percentage bars.
-    - **Sovereign Status**: `ACTIVE`, `IDLE`, or `INFERENCE`.
+    - **Independent Status**: `ACTIVE`, `IDLE`, or `INFERENCE`.
 - **Inference Streaming**: When a model is running, tokens stream into the activity area with a real-time `TPS` counter.
 
 ---

@@ -102,7 +102,24 @@ if [ -n "$KERNEL_URL" ]; then
 fi
 
 write_success "Deployment successful."
-echo -e "  Launching CLI...\n"
+
+# 🧠 Cluaizd FFI Brain Setup
+echo ""
+echo -e "  ${YELLOW}>_ Optional: Enable the Cluaizd Memory Brain? (y/n)${NC}"
+read -p "    Choice: " brainChoice
+if [[ "$brainChoice" =~ ^[Yy]$ ]]; then
+    export CLUAIZD_FFI=1
+    echo -e "    ${GREEN}[ENABLED]${NC} Cluaizd FFI Memory Brain activated."
+else
+    export CLUAIZD_FFI=0
+    echo -e "    ${GRAY}[DISABLED]${NC} Using legacy file-based memory."
+fi
+
+# 🧬 Pre-Flight Calibration
+echo -e "\n  ${CYAN}>_ Synchronizing Hardware DNA...${NC}"
+"$HUB_PATH/bin/cluaiz" --calibrate
+
+echo -e "\n  ${GRAY}>_ Launching CLI...${NC}"
 
 # Launch CLI
 "$HUB_PATH/bin/cluaiz"

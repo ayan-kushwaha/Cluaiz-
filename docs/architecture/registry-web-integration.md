@@ -1,7 +1,7 @@
-# 🏛️ Sovereign Neural Registry: Web Integration & System Design
+# 🏛️ Independent Neural Registry: Web Integration & System Design
 **Software Architecture & Dynamic Routing Blueprint for cluaiz.com**
 
-This document establishes the system design, data architecture, and software blueprints for dynamically linking the local/remote **Sovereign Neural Registry** (`cluaiz/models/library`) with the front-end **Cluaiz Portal** (`cluaiz.com`). 
+This document establishes the system design, data architecture, and software blueprints for dynamically linking the local/remote **Independent Neural Registry** (`cluaiz/models/library`) with the front-end **Cluaiz Portal** (`cluaiz.com`). 
 
 ---
 
@@ -15,7 +15,7 @@ Currently, the website's models page (`/models`) and its subroutes (`/[family]/[
 
 ---
 
-## 2. The Dynamic Sovereign Registry Solution
+## 2. The Dynamic Independent Registry Solution
 To achieve a **"Universal Neural Kernel"** standard, we decouple the UI from static assets and compile the directory dynamically.
 
 ```

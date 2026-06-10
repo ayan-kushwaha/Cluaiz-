@@ -21,9 +21,17 @@ pub struct SovereignContext {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, Archive, RkyvSerialize, RkyvDeserialize)]
 #[archive(check_bytes)]
+pub struct SovereignBrain {
+    #[serde(default)]
+    pub cluaizd_connect_ffi: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default, Archive, RkyvSerialize, RkyvDeserialize)]
+#[archive(check_bytes)]
 pub struct SystemControl {
     pub identity: SovereignIdentity,
     pub context: SovereignContext,
+    pub brain: SovereignBrain,
     pub silicon_truth: SiliconTruth,
 }
 

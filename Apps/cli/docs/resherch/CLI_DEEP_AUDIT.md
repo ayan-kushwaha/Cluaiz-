@@ -1,5 +1,5 @@
-# 🏛️ Sovereign CLI Deep Audit (Research)
-**Component**: Archer Sovereign Console (`Cluaiz-ai-CURE/cli`)  
+# 🏛️ Independent CLI Deep Audit (Research)
+**Component**: Archer Independent Console (`Cluaiz-ai-CURE/cli`)  
 **Date**: 2026-04-20  
 
 
@@ -21,7 +21,7 @@ The current implementation of the CLI suffers from extreme **Domain Leakage** an
 
 ### 3. Logic-UI Coupling
 - **Issue**: `OnboardingEngine` and `DashboardEngine` are tucked inside `core/`, but they directly interact with `AppState` which is full of UI markers.
-- **Inertia**: The logic is not "Sovereign" (independent); it is tied to the `ratatui` widgets.
+- **Inertia**: The logic is not "Independent" (independent); it is tied to the `ratatui` widgets.
 
 ---
 
@@ -36,11 +36,11 @@ Auditing the `Other/gemini-cli-main` architectural blueprint reveals how an indu
 ### 2. Event-Driven Architecture
 - **Ref**: `confirmation-bus`, `telemetry`
 - **Pattern**: Asynchronous event streams instead of manual state polling.
-- **Sovereign Path**: Replace manual `mark_dirty()` with a reactive event bus.
+- **Independent Path**: Replace manual `mark_dirty()` with a reactive event bus.
 
 ---
 
-## 🛠️ Sovereign Recommendations (Path to 0.0ms Latency)
+## 🛠️ Independent Recommendations (Path to 0.0ms Latency)
 1. **State Partitioning**: 
     - Move Hardware/Neural logic to a `KernelState`.
     - Keep `UiState` local to rendering components.

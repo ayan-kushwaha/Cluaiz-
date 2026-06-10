@@ -8,7 +8,7 @@ To understand Cluaiz, we must first understand the problem with current AI syste
 **The Problem: The "Wrapper" Tax**
 Most popular AI systems today (like Ollama or vLLM) operate as "Wrappers". They use Python, Docker, or REST APIs (like HTTP/JSON) to send data back and forth between the user interface and the AI engine. Every time data moves through these layers, the computer has to translate it (Serialization/IPC). This creates a massive bottleneck. We call this the "Efficiency Tax".
 
-**The Cluaiz Solution: The Sovereign Engine**
+**The Cluaiz Solution: The Independent Engine**
 Our absolute goal is to eliminate this tax. Cluaiz does not use HTTP APIs or Python to talk to the AI engine. Instead, it builds a **Neural Interface-engine**. 
 This means the Cluaiz Orchestrator and the AI Engine run inside the **exact same memory space**. It establishes a "direct handshake" with the silicon (CPU/GPU). Because there is zero translation and zero communication overhead, Cluaiz achieves maximum possible speed and runs natively on any OS (Android, Mac, Windows, Linux).
 
@@ -16,14 +16,14 @@ This means the Cluaiz Orchestrator and the AI Engine run inside the **exact same
 
 ## 🧬 2. THE "DNA": HANDSHAKE & PROTOCOL
 
-If we want different AI engines (like Llama, BitNet, or Mamba) to plug into Cluaiz seamlessly, they all need a unified architecture. We call this the "Sovereign DNA."
+If we want different AI engines (like Llama, BitNet, or Mamba) to plug into Cluaiz seamlessly, they all need a unified architecture. We call this the "Independent DNA."
 
-### **A. `archer_shared` (The Sovereign Dictionary)**
+### **A. `archer_shared` (The Independent Dictionary)**
 *   **The Analogy**: Imagine Cluaiz-OS is a **Space Station** and a new AI engine is an external **Robot**. For the robot to work on the station, both must speak the exact same language.
 *   **What is it?**: `archer_shared` is a central Rust dictionary (crate) that defines this common language.
 *   **How it works**: It contains strict rules (called `Traits` in Rust) such as `generate()`, `load_model()`, and `unload()`. Whenever we build a new engine, we link it to `archer_shared`. This ensures the engine knows exactly what commands the Cluaiz Orchestrator will send it.
 
-### **B. `archer_kernel_init` (The Sovereign Handshake)**
+### **B. `archer_kernel_init` (The Independent Handshake)**
 *   **The Analogy**: This is the engine's "Identity Card" and "Secret Entrance."
 *   **What is it?**: It is a single, specialized function exported inside every compiled engine file (`.dll` on Windows, `.so` on Linux).
 *   **How it works**: When Cluaiz needs to load an engine, it doesn't launch a separate program. Instead, it maps the engine's file directly into its own memory and searches for the `archer_kernel_init` symbol.
@@ -69,7 +69,7 @@ interface-engines
 │   │   ├── 🦀 bitmamba.rs     # 🐍 Pure-Rust Euler-discretized Mamba-4 logic
 │   │   ├── 🦀 config.rs       # ⚙️ Architecture definitions
 │   │   ├── 🦀 infer.rs        # ⚡ Main execution loop for Rust native models
-│   │   ├── 🦀 lib.rs          # 🤝 Sovereign Handshake (archer_kernel_init)
+│   │   ├── 🦀 lib.rs          # 🤝 Independent Handshake (archer_kernel_init)
 │   │   └── 🦀 loader.rs       # 🚚 Native weight loader logic
 │   ├── ⚙️ Cargo.toml          # 📦 Native backend manifest
 │   └── 🦀 build.rs            # 🛠️ Builds native execution environments
@@ -80,7 +80,7 @@ interface-engines
 │   │   │   ├── 🦀 lora_adapter.rs  # 🔗 Low-Rank Adaptation logic
 │   │   │   └── 🦀 mod.rs           # 📦 Fine-tuning module registration
 │   │   ├── 📁 interfaces/     # 📖 Contracts for engine communication
-│   │   │   ├── 🦀 engine_contract.rs # 🤝 Sovereign execution traits
+│   │   │   ├── 🦀 engine_contract.rs # 🤝 Independent execution traits
 │   │   │   ├── 🦀 memory_contract.rs # 🧠 Cross-engine memory definitions
 │   │   │   └── 🦀 mod.rs           # 📦 Interfaces module registration
 │   │   ├── 📁 memory_ops/     # 🧠 Hardware-agnostic memory management
@@ -118,7 +118,7 @@ interface-engines
 │   │   └── 🦀 lib.rs            # ⏳ Tokio async orchestrator for streaming inferences
 │   └── ⚙️ Cargo.toml
 │
-├── 🛠️ utils/ (Sovereign Helpers)
+├── 🛠️ utils/ (Independent Helpers)
 │   ├── 📁 src/
 │   │   └── 🦀 lib.rs            # 🔧 OS-Agnostic pathing and utility tools
 │   └── ⚙️ Cargo.toml
@@ -130,7 +130,7 @@ interface-engines
 
 ## 🏗️ 4. STRATEGY B: THE "FOUNDRY" FUSION (OFFICIAL CODE + DNA)
 
-We don't need to reinvent the wheel for every mathematical operation. Instead, we take the world's best, highly-optimized open-source kernels (like `llama.cpp` for GGUF or `BitNet` logic) and **fuse** them with our Sovereign architecture.
+We don't need to reinvent the wheel for every mathematical operation. Instead, we take the world's best, highly-optimized open-source kernels (like `llama.cpp` for GGUF or `BitNet` logic) and **fuse** them with our Independent architecture.
 
 Here is the step-by-step fusion process:
 
@@ -146,13 +146,13 @@ Here is the step-by-step fusion process:
 We want Cluaiz to feel like magic for the user. They shouldn't have to install C++ compilers or CUDA toolkits. We handle all the heavy lifting in the cloud.
 
 *   **The CI/CD Matrix**: Every time we update an engine, our GitHub Actions pipeline boots up. It simultaneously compiles the engine for Linux, Windows, Mac, Android, and iOS.
-*   **The Sovereign Vault**: The resulting expert binaries (`.dll`, `.so`, `.dylib`) are securely uploaded to GitHub Releases.
+*   **The Independent Vault**: The resulting expert binaries (`.dll`, `.so`, `.dylib`) are securely uploaded to GitHub Releases.
 *   **The Master Map (`kernel-manifest.json`)**: We maintain a JSON file that acts as a treasure map. It links every possible OS and Hardware combination to its specific compiled binary URL.
 *   **The User Experience (Silicon Match)**: When a user runs Cluaiz for the first time, the system detects their hardware (e.g., Windows + NVIDIA GPU). It checks the manifest, silently downloads the exact pre-optimized engine for that hardware, and saves it to their dynamic `~/.cluaiz` folder. The user gets instant, maximum-speed inference with zero setup.
 
 ---
 
-## 🗺️ 6. THE UNIFIED SOVEREIGN FLOW (MASTER MAP)
+## 🗺️ 6. THE UNIFIED Independent FLOW (MASTER MAP)
 
 This map shows the entire lifecycle of a Cluaiz Engine—from the moment we write code in the Foundry, to the moment it generates tokens on a user's machine.
 
@@ -165,7 +165,7 @@ flowchart TD
 subgraph Foundry ["🛠️ Phase 1: Build & DNA Fusion"]
     direction TB
     B1["Official C++ / Rust Source"] --> B2["build.rs Compiles Code"]
-    B2 --> B3["Inject Sovereign DNA traits"]
+    B2 --> B3["Inject Independent DNA traits"]
     B3 --> B4["Cargo Industrial Build"]
     B4 --> B5["Silicon-Expert Binaries (.dll / .so)"]
 end
@@ -213,7 +213,7 @@ T -->|Response| U
 
 ---
 
-## 🔬 7. PERFORMANCE MECHANISM (SOVEREIGN REALITY)
+## 🔬 7. PERFORMANCE MECHANISM (Independent REALITY)
 
 How does Cluaiz achieve its extreme speed? By breaking the standard rules of software architecture. Here are the three pillars of our performance:
 

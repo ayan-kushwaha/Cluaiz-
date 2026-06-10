@@ -79,7 +79,7 @@ Cluaiz's boot sequence is divided into five distinct sub-states:
 
 ### **Step 2: Identity Persistence & UI Polish**
 1.  Update `system_control_manager.rs` to support `save_identity(name, purpose)`.
-2.  Implement **Sovereign Pad** (truncation logic) in the Roster view.
+2.  Implement **Independent Pad** (truncation logic) in the Roster view.
 3.  Display "Welcome, [Name]" on the main dashboard.
 
 ---

@@ -24,6 +24,13 @@ impl HardwareOrchestrator {
     ) -> Result<ModelWeightsWrapper> {
         tracing::info!("🔩 [Orchestrator] Initiating Dynamic Hardware Handshake for Engine: {}", engine_type);
 
+        // 🚀 Boot the LMDB Brain Environment if enabled by Sovereign Governor
+        if let Ok(control) = cluaiz_shared::hardware::governor::HardwareGovernor::load_system_control() {
+            if control.brain.cluaizd_connect_ffi {
+                crate::memory::tensor_transducer::TensorTransducer::boot_environment();
+            }
+        }
+
         if engine_type == "onnx" {
             tracing::info!("🔮 [Orchestrator] Bypassing FFI Linker. Instantiating Native Rust ONNX Gatekeeper.");
             let mut onnx_engine = cluaiz_onnx::engine::OnnxEngine::new()

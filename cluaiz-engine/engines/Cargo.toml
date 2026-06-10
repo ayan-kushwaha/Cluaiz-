@@ -43,6 +43,8 @@ neural_core = { package = "neural-core", path = "../../interface-engines/neural_
 # ── Dynamic Neural Bridge (The Soul Linker) ──
 libloading = "0.8"
 cluaiz_onnx = { package = "onnx", path = "../../interface-engines/onnx" }
+engine-lmdb = { path = "../../../cluaizd/crates/storage/engine-lmdb" }
+cluaizd-types = { path = "../../../cluaizd/components/cluaizd-types" }
 
 # ── Common Utilities (Used by All) ──
 tokenizers          = { version = "0.22.2", default-features = false, features = ["onig"] }

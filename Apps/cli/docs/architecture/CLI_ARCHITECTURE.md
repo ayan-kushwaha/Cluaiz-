@@ -1,9 +1,9 @@
-# 🏛️ Sovereign CLI Architecture (Industrial Design)
+# 🏛️ Independent CLI Architecture (Industrial Design)
 **Status**: DRAFT (Awaiting Approval)  
 **Version**: 1.0.0 (Protocol Compliant)
 
 ## 🎯 Architectural Vision
-The Archer Sovereign CLI is not just a terminal app; it's a **High-Performance Console** for the Sovereign Neural Engine. The goal is `0.0ms` UI latency and atomic state synchronization between hardware telemetry and neural inference.
+The Archer Independent CLI is not just a terminal app; it's a **High-Performance Console** for the Independent Neural Engine. The goal is `0.0ms` UI latency and atomic state synchronization between hardware telemetry and neural inference.
 
 ---
 
@@ -80,4 +80,4 @@ loop {
 
 ---
 > [!IMPORTANT]
-> The Onboarding phase is considered "Frozen". This architecture focus is entirely on the **Sovereign Core** and **Dashboard UX**.
+> The Onboarding phase is considered "Frozen". This architecture focus is entirely on the **Independent Core** and **Dashboard UX**.

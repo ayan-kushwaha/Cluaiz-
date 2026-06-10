@@ -175,8 +175,20 @@ try {
 
     Write-Host ("`n  " + $GREEN + "[DONE] Deployment successful." + $NC)
     
+    # 🧠 Cluaizd FFI Brain Setup
+    Write-Host ""
+    Write-Host ">_ Optional: Enable the Cluaizd Memory Brain? (y/n)" -ForegroundColor Yellow
+    $brainChoice = Read-Host "  Choice"
+    if ($brainChoice -match "^[yY]") {
+        [System.Environment]::SetEnvironmentVariable('CLUAIZD_FFI', '1', 'Process')
+        Write-Host ("  " + $GREEN + "[ENABLED] " + $NC + "Cluaizd FFI Memory Brain activated.")
+    } else {
+        [System.Environment]::SetEnvironmentVariable('CLUAIZD_FFI', '0', 'Process')
+        Write-Host ("  " + $GRAY + "[DISABLED] " + $NC + "Using legacy file-based memory.")
+    }
+
     # 🧬 Pre-Flight Calibration: Generate SiliconTruth before first boot
-    Write-Host '>_ Synchronizing Hardware DNA...' -ForegroundColor Cyan
+    Write-Host "`n>_ Synchronizing Hardware DNA..." -ForegroundColor Cyan
     & $BinLink --calibrate
     
     Write-Host '>_ Launching Cluaiz CLI...' -ForegroundColor Gray

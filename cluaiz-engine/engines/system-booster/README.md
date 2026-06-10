@@ -1,12 +1,12 @@
 # System Booster: The Neural Accelerator
 
-The **System Booster** is the central nervous system of Cluaiz-OS optimization. It is an industrial-grade bare-metal isolator designed to extract every bit of performance from silicon while maintaining 100% mathematical integrity.
+The **System Booster** is the core network system of Cluaiz-OS optimization. It is an industrial-grade bare-metal isolator designed to extract every bit of performance from silicon while maintaining 100% mathematical integrity.
 
 ---
 
 ## 🏛️ Phase-Level Architecture (The Deep Map)
 
-### 1. 🏛️ `manager/`: The Neural Sovereign (Governance Layer)
+### 1. 🏛️ `manager/`: The Neural Independent (Governance Layer)
 This is the "Brain" that decides the fate of every optimization.
 *   **`mod.rs`**: Central gateway. Orchestrates communication between sub-managers.
 *   **`conflict_resolver.rs` (⚖️)**: The **Logical Arbiter**. Ensures incompatible features (DFlash + Low VRAM) don't crash the GPU.
@@ -53,7 +53,7 @@ graph TD
         D --> E[Model Load Event]
         E --> F[SystemBooster::align_with_model]
         F --> G{ConflictResolver}
-        G --> H[Apply Sovereign Rules]
+        G --> H[Apply Independent Rules]
     end
 
     subgraph Phase_3_Execution
@@ -72,7 +72,7 @@ graph TD
 
 ---
 
-## ⚖️ Sovereign Conflict Matrix (The Manager's Code of Law)
+## ⚖️ Independent Conflict Matrix (The Manager's Code of Law)
 
 | Optimization | Dependent On | Conflict Action | Technical Rationale |
 | :--- | :--- | :--- | :--- |
@@ -80,7 +80,7 @@ graph TD
 | **BitNet / SSM Models** | Native Weights | **Force DFlash = OFF** | Linear recurrence speed beats speculative verification overhead. |
 | **Flash Attention** | Tensor Cores | **Force Auto-Fallback** | Uses CPU fallback if specialized hardware is missing. |
 | **Auto-Round** | MSE Weights | **Force TurboQuant = ON** | Needs Polar-rotation buffers for optimal weight correction. |
-| **OS Tuning** | Sudo/Admin | **Warn & Bypass** | Critical for HugePages, but system remains sovereign without it. |
+| **OS Tuning** | Sudo/Admin | **Warn & Bypass** | Critical for HugePages, but system remains Independent without it. |
 
 ---
 
@@ -88,6 +88,6 @@ graph TD
 1.  **Isolation**: Create a dedicated folder in `src/hyper_engine/`. 
 2.  **Kernel Link**: Implement raw logic (CUDA/Rust) in your folder.
 3.  **Governance**: Add rules to `manager/conflict_resolver.rs` to define its interaction with existing boosters.
-4.  **Sovereign Entry**: Add detection logic in `manager/auto_tuner.rs` for hardware-native support.
+4.  **Independent Entry**: Add detection logic in `manager/auto_tuner.rs` for hardware-native support.
 
  

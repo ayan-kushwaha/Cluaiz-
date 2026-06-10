@@ -1,4 +1,4 @@
-# 🛰️ Cluaiz-OS: Sovereign Inference Drivers (SID)
+# 🛰️ Cluaiz-OS: Independent Inference Drivers (SID)
 
 ## 🏛️ **Architecture Overview: The Hardware Abstraction Layer (HAL)**
 The `inference-drivers` module is the **"Silicon Heart"** of Cluaiz-OS. It serves as a unified Hardware Abstraction Layer (HAL) that bridges our high-level Neural Kernels (`Candle`, `LLaMA`, `BitNet`) with the raw physical silicon (NPU, GPU, TPU, CPU).
@@ -20,7 +20,7 @@ The `driver-manager` utilizes `archer-shared` to create a **Zero-Copy Memory Map
 
 ---
 
-## 📂 **The Sovereign Driver Matrix**
+## 📂 **The Independent Driver Matrix**
 
 | Hardware Driver | Support Parity | Optimization Target |
 | :--- | :--- | :--- |
@@ -46,13 +46,13 @@ The `SovereignLinker` automatically detects the hardware generation and provisio
 ## 🛠️ **Installation & Linking**
 Drivers are not "installed" in the traditional sense; they are **"Provisioned"**.
 1. `driver-manager` scans the hardware.
-2. It fetches the signed binary from the [Sovereign Foundry Matrix](https://github.com/cluaiz/cluaiz/releases/tag/latest-kernels).
+2. It fetches the signed binary from the [Independent Foundry Matrix](https://github.com/cluaiz/cluaiz/releases/tag/latest-kernels).
 3. It validates the SHA-256 hash via the `kernel-manifest.json`.
 4. It performs a **Dynamic Handshake** using the `archer_kernel_init` symbol to attach the driver to the engine's memory.
 
 ---
 
-## 🗺️ **Sovereign Logic Flow: The Silicon-to-Kernel Lifecycle**
+## 🗺️ **Independent Logic Flow: The Silicon-to-Kernel Lifecycle**
 
 ```mermaid
 graph TD
@@ -62,11 +62,11 @@ graph TD
     end
 
     subgraph "Phase 2: Dynamic Provisioning"
-        PROFILE -- "Query manifest.json" --> FOUNDRY["[Sovereign Foundry] GitHub Releases"]
+        PROFILE -- "Query manifest.json" --> FOUNDRY["[Independent Foundry] GitHub Releases"]
         FOUNDRY -- "Download Native Binary (.dll/.so/.dylib)" --> LOCAL_STORAGE["Secure Kernel Cache"]
     end
 
-    subgraph "Phase 3: The Sovereign Handshake"
+    subgraph "Phase 3: The Independent Handshake"
         LOCAL_STORAGE -- "Zero-Copy Linkage" --> MEM_MAP["Shared Memory Map (archer-shared)"]
         MEM_MAP -- "Dynamic Handshake (FFI)" --> KERNEL["Interface Engine (Candle/LLaMA)"]
     end

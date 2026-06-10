@@ -23,4 +23,4 @@ The binary supports the following options:
 All CLI settings and commands are tracked in two local JSON profiles:
 
 *   **`assets/commands.json`:** Mapped entries and command usage parameters, baked directly into the Rust binary at compile time.
-*   **`sovereign.json` / `system_control.json`:** Tracks active local configuration, hardware profiles, user identities, and loaded weight paths.
+*   **`Independent.json` / `system_control.json`:** Tracks active local configuration, hardware profiles, user identities, and loaded weight paths.

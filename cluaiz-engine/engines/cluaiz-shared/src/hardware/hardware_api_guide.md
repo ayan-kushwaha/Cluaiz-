@@ -1,4 +1,4 @@
-# 🏛️ Sovereign Hardware Interface Guide (API Guide)
+# 🏛️ Independent Hardware Interface Guide (API Guide)
 
 Ye document ek "API Guide" hai jo batata hai ki Cluaiz Backend Engine (`archer-shared`) ko Frontend, CLI, ya kisi doosre software se kaise call kiya jayega. **(No `cargo test` required in production!)**
 
