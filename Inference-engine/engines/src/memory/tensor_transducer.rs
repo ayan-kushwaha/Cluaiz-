@@ -33,7 +33,7 @@ impl TensorTransducer {
     pub fn inject_context(memory_key: &str) -> Option<Vec<u8>> {
         // 1. Check if the Brain is enabled by the Sovereign Governor
         if let Ok(control) = HardwareGovernor::load_system_control() {
-            if !control.brain.cluaizd_connect_ffi {
+            if !control.brain.is_enabled() {
                 // FFI Database is turned OFF. Fallback to legacy loader.
                 tracing::debug!("Cluaizd FFI Brain is disabled. Falling back.");
                 return None;
@@ -91,7 +91,7 @@ impl TensorTransducer {
     pub fn save_context(memory_id: &str, payload: &str, vector: [f32; 16]) -> Result<(), String> {
         // 1. Check if the Brain is enabled
         if let Ok(control) = HardwareGovernor::load_system_control() {
-            if !control.brain.cluaizd_connect_ffi {
+            if !control.brain.is_enabled() {
                 tracing::debug!("Cluaizd FFI Brain is disabled. Skipping save.");
                 return Ok(());
             }

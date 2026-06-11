@@ -104,6 +104,25 @@ enum CliCommand {
 
     /// Test JIT KV Cache compilation and memory footprint
     TestJit,
+
+    /// Manage the Cluaizd Brain Connection
+    Brain {
+        #[command(subcommand)]
+        command: BrainCommand,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum BrainCommand {
+    /// Enable the FFI Database connection (defaults to local, or specify a remote address)
+    On {
+        /// Remote database IP:Port (e.g. 10.0.0.5:8080)
+        address: Option<String>,
+    },
+    /// Disable the FFI Database connection
+    Off,
+    /// View the connection status and background daemon health
+    Status,
 }
 
 #[derive(Subcommand)]
@@ -276,6 +295,12 @@ async fn main() -> Result<()> {
         Some(CliCommand::TestJit) => {
             if let Err(e) = crate::cli::test_jit::execute().await {
                 eprintln!("\n  {} [Cluaiz] JIT Test Error: {}\n", "❌".red(), e);
+                std::process::exit(1);
+            }
+        }
+        Some(CliCommand::Brain { command }) => {
+            if let Err(e) = crate::cli::brain::execute(command).await {
+                eprintln!("\n  {} [Cluaiz] Brain Manager Error: {}\n", "❌".red(), e);
                 std::process::exit(1);
             }
         }

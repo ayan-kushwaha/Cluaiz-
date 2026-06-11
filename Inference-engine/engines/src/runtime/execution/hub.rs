@@ -26,8 +26,8 @@ impl HardwareOrchestrator {
 
         // 🚀 Boot the LMDB Brain Environment if enabled by Sovereign Governor
         if let Ok(control) = cluaiz_shared::hardware::governor::HardwareGovernor::load_system_control() {
-            if control.brain.cluaizd_connect_ffi {
-                crate::memory::tensor_transducer::TensorTransducer::boot_environment();
+            if control.brain.is_enabled() {
+                let _ = crate::memory::storage_bridge::load_storage_bridge();
             }
         }
 

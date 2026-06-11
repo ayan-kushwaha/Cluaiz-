@@ -53,17 +53,17 @@ impl HardwareOrchestrator {
     }
 
     fn probe_brain() -> SovereignBrain {
-        // Preserve existing brain toggle if possible, otherwise check Env Variable, default to false
-        let mut ffi_enabled = false;
+        // Preserve existing brain toggle if possible, otherwise check Env Variable, default to "off"
+        let mut ffi_val = "off".to_string();
         if let Ok(existing) = crate::hardware::governor::HardwareGovernor::load_system_control() {
-            ffi_enabled = existing.brain.cluaizd_connect_ffi;
+            ffi_val = existing.brain.cluaizd_connect_ffi.clone();
         }
         if std::env::var("CLUAIZD_FFI").unwrap_or_default() == "1" {
-            ffi_enabled = true;
+            ffi_val = "local".to_string();
         }
 
         SovereignBrain {
-            cluaizd_connect_ffi: ffi_enabled,
+            cluaizd_connect_ffi: ffi_val,
         }
     }
 

@@ -22,8 +22,66 @@ pub struct SovereignContext {
 #[derive(Debug, Clone, Serialize, Deserialize, Default, Archive, RkyvSerialize, RkyvDeserialize)]
 #[archive(check_bytes)]
 pub struct SovereignBrain {
-    #[serde(default)]
-    pub cluaizd_connect_ffi: bool,
+    #[serde(default = "default_connect_ffi", deserialize_with = "deserialize_connect_ffi")]
+    pub cluaizd_connect_ffi: String,
+}
+
+fn default_connect_ffi() -> String {
+    "off".to_string()
+}
+
+fn deserialize_connect_ffi<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    struct ConnectFfiVisitor;
+
+    impl<'de> serde::de::Visitor<'de> for ConnectFfiVisitor {
+        type Value = String;
+
+        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            formatter.write_str("a boolean or a string")
+        }
+
+        fn visit_bool<E>(self, v: bool) -> Result<Self::Value, E>
+        where
+            E: serde::de::Error,
+        {
+            if v {
+                Ok("local".to_string())
+            } else {
+                Ok("off".to_string())
+            }
+        }
+
+        fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+        where
+            E: serde::de::Error,
+        {
+            Ok(v.to_string())
+        }
+
+        fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
+        where
+            E: serde::de::Error,
+        {
+            Ok(v)
+        }
+    }
+
+    deserializer.deserialize_any(ConnectFfiVisitor)
+}
+
+impl SovereignBrain {
+    pub fn is_enabled(&self) -> bool {
+        let val = self.cluaizd_connect_ffi.trim().to_lowercase();
+        !val.is_empty() && val != "off" && val != "false"
+    }
+
+    pub fn is_local(&self) -> bool {
+        let val = self.cluaizd_connect_ffi.trim().to_lowercase();
+        val == "local" || val == "true"
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, Archive, RkyvSerialize, RkyvDeserialize)]
