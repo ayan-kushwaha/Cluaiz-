@@ -2,3 +2,7 @@
 pub use cluaiz_shared::hardware::memory::*;
 pub mod kv_injector;
 pub mod tensor_transducer;
+pub mod storage_bridge;
+pub mod local_bridge;
+pub mod remote_bridge;
+

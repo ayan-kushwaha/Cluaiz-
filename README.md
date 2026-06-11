@@ -2,7 +2,8 @@
   <img src="assets/cluaiz-banner.png" width="100%" alt="Cluaiz Logo">
 </p>
 
-<h1 align="center">Cluaiz: Rust Orchestrator for Local LLMs</h1>
+<h1 align="center">Cluaize</h1>
+<h2 align="center">Cluaiz AI Inference Engine (Cluaize): Rust Orchestrator for Local LLMs</h1>
 
 <p align="center">
   <b>High-Performance Rust Runtime & Orchestrator for Local LLMs</b><br>
@@ -20,9 +21,15 @@
 
 ## 🛡️ **Project Trust & Current Status**
 
+> [!WARNING]
+> **Active Development Warning**: This project is under active development. You may encounter bugs, performance issues, or breaking changes. During the Alpha phase, we highly recommend cloning the code and building it locally from source rather than relying on binary packages, as pre-compiled binary releases are **coming soon**.
+
 > [!IMPORTANT]
 > **Current Phase**: **Industrial Alpha (Research Phase)**.
-> Cluaiz is an experimental Rust infrastructure for LLM orchestration. While the core architecture is build-stable, hardware-constrained guarantees and specialized ternary kernels are undergoing rigorous validation.
+> Cluaize is an experimental Rust infrastructure for LLM orchestration. While the core architecture is build-stable, hardware-constrained guarantees and specialized ternary kernels are undergoing rigorous validation.
+> 
+> **Database Integration (`cluaizd`)**:
+> Cluaize integrates with the [cluaizd database engine](https://github.com/cluaiz/cluaizd) for persistent memory, DNA, and role-based vector management. For database setup, issues, internal logs, and database schema information, please visit the [cluaizd repository](https://github.com/cluaiz/cluaizd).
 
 ### **Current Capabilities**
 - ✅ **Shared-Memory Signaling**: Sub-microsecond path for IPC between application and engine.
@@ -37,19 +44,19 @@
 
 ---
 
-## 📖 **About Cluaiz**
+## 📖 **About Cluaize**
 
 **An open-source, high-performance local AI inference engine.**
 
-Cluaiz is a lightweight orchestration layer written in Rust, built on top of the robust `llama.cpp` kernel. It is designed to bridge the gap between high-level applications and low-level hardware execution, providing developers with a streamlined, memory-efficient way to run Large Language Models (LLMs) locally.
+Cluaize is a lightweight orchestration layer written in Rust, built on top of the robust `llama.cpp` kernel. It is designed to bridge the gap between high-level applications and low-level hardware execution, providing developers with a streamlined, memory-efficient way to run Large Language Models (LLMs) locally.
 
 ### **Our Motive & Objective**
-The primary goal of Cluaiz is to democratize local AI by making it accessible and stable on everyday hardware. We aim to:
+The primary goal of Cluaize is to democratize local AI by making it accessible and stable on everyday hardware. We aim to:
 - **Maximize Hardware Efficiency**: Squeeze the best possible performance out of constrained environments (like 4GB VRAM GPUs) using smart, real-time memory arbiters.
 - **Provide Seamless Integration**: Offer a simple, modular architecture so developers can easily integrate local AI into their existing applications via our C-API or Rust SDK.
 - **Support Modern Architectures**: Ensure out-of-the-box compatibility with the latest AI advancements, such as BitNet (1.58-bit ternary models) and standard GGUF formats.
 
-Cluaiz is **NOT** a new AI model, nor a new low-level math kernel—it is a specialized, lightweight engine that sits on top of existing industry-standard inference tools to manage resources intelligently and efficiently.
+Cluaize is **NOT** a new AI model, nor a new low-level math kernel—it is a specialized, lightweight engine that sits on top of existing industry-standard inference tools to manage resources intelligently and efficiently.
 
 | Component     | Role         | Implementation                   |
 | :------------ | :----------- | :------------------------------- |
@@ -65,14 +72,14 @@ Cluaiz is **NOT** a new AI model, nor a new low-level math kernel—it is a spec
 - **Minimize Abstraction Overhead**: Built directly in Rust to keep the runtime footprint small and predictable.
 - **Modular Runtime**: Decoupled engine and interface layers for heterogeneous hardware compatibility.
 - **Hardware-Aware Execution**: Dynamic kernel selection based on real-time silicon fingerprinting.
-- **Reproducible Binary Routing**: Ensuring consistent inference results across platforms via CluaizDNA.
+- **Reproducible Binary Routing**: Ensuring consistent inference results across platforms via CluaizeDNA.
 - **Cross-Platform Portability**: Native execution across Windows, Linux, and Apple Silicon.
 
 ---
 
 ## 🧭 **Universal Architecture**
 
-Cluaiz utilizes a tiered stack to bridge the gap between high-level applications and low-level hardware.
+Cluaize utilizes a tiered stack to bridge the gap between high-level applications and low-level hardware.
 
 ### **Neural Runtime Stack**
 ```text
@@ -85,13 +92,13 @@ Inference Kernels (Llama.cpp / Candle)
 Hardware (CUDA / Metal / Vulkan)
 ```
 
-### **The CluaizDNA standard**
+### **The CluaizeDNA standard**
 A decoupled, three-tier modular design that ensures zero-drift between the CLI, the Engine, and the bare-metal Drivers.
 
 ```mermaid
 graph TD
     A[Interface: CLI/SDK] -- "Optimized Signaling" --> B["Cluaiz Engine (CURE)"]
-    B -- "CluaizDNA Manifest" --> C[Model Registry]
+    B -- "CluaizeDNA Manifest" --> C[Model Registry]
     B -- "Native FFI" --> D[Kernel Drivers]
     
     subgraph "Hardware Realignment"
@@ -132,7 +139,7 @@ graph TD
 ## 🛰️ **Routing & Steering**
 
 ### ⚙️ **The Control Center: `system_booster.json`**
-Cluaiz relies on `~/.cluaiz/engine/system_booster.json` as its primary configuration gateway, acting as the bridge between user intent and the native VRAM Arbiter. 
+Cluaize relies on `~/.cluaize/engine/system_booster.json` as its primary configuration gateway, acting as the bridge between user intent and the native VRAM Arbiter. 
 This is not just a UI preference file—it dynamically adjusts Rust-level execution logic:
 
 - **`mode_run`**: Defines the active VRAM allocation strategy. For example, `UltraMaxBoost` drops the safe VRAM allocation margin down to `1%` (or an absolute 250MB floor) to maximize context length, while `Balance` mode retains larger margins (~15%) for multitasking stability.
@@ -142,7 +149,7 @@ This is not just a UI preference file—it dynamically adjusts Rust-level execut
 - **`kv_cache_quantization`**: Modifies the per-element byte allocation in the Arbiter's `Independent MATH` formula, allowing the engine to calculate and fit significantly larger context windows on memory-constrained GPUs (like 4GB).
 
 ### **AtmaSteer: Token Masking Protocol**
-Enforces structural output (JSON/Schema) through **constrained decoding**. By applying token-level masking during the sampling phase, Cluaiz prevents structural hallucinations at the hardware layer.
+Enforces structural output (JSON/Schema) through **constrained decoding**. By applying token-level masking during the sampling phase, Cluaize prevents structural hallucinations at the hardware layer.
 
 ### **Dynamic Kernel Routing**
 Maps inference tasks to the appropriate kernel backend based on hardware availability and model type, ensuring consistent performance across CUDA, Metal, and CPU fallback paths.
@@ -151,33 +158,33 @@ Maps inference tasks to the appropriate kernel backend based on hardware availab
 
 ## 🧩 **WASM Skills & Agentic Tool Calling**
 
-Cluaiz is not just a text generator; it's a fully Independent Agentic Engine. It can dynamically download, compile, and execute isolated WebAssembly (WASM) skills on your local hardware.
+Cluaize is not just a text generator; it's a fully Independent Agentic Engine. It can dynamically download, compile, and execute isolated WebAssembly (WASM) skills on your local hardware.
 
 ### **How Skills Work Under the Hood**
-1. **Semantic Routing (Zero-Delay TTFT)**: When you type a prompt (e.g., `"build a landing page"`), Cluaiz's internal vector router checks if you have a skill installed that matches this intent. If found, it instantly merges the skill's instructions into the context window.
-2. **Hybrid KV Caching**: Skills contain thousands of tokens. Computing this context on your GPU every time would be too slow. Instead, Cluaiz computes a `.kvcache.bin` file once and saves it to your SSD. The next time you use the skill, the Engine bypasses the prompt evaluation phase entirely and performs a native `M-RoPE` (Rotary Positional Embedding) injection of the saved KV cache directly into the GPU's active hardware memory slot.
-3. **Agentic Pause (CPU Fallback)**: If a skill's context size (e.g., 8,000 tokens) exceeds your GPU's available VRAM, Cluaiz triggers an **Agentic Pause**. It safely offloads the heavy lifting to your CPU and System RAM to calculate the cache in the background without crashing your GPU or hitting Out-of-Memory (OOM) limits.
+1. **Semantic Routing (Zero-Delay TTFT)**: When you type a prompt (e.g., `"build a landing page"`), Cluaize's internal vector router checks if you have a skill installed that matches this intent. If found, it instantly merges the skill's instructions into the context window.
+2. **Hybrid KV Caching**: Skills contain thousands of tokens. Computing this context on your GPU every time would be too slow. Instead, Cluaize computes a `.kvcache.bin` file once and saves it to your SSD. The next time you use the skill, the Engine bypasses the prompt evaluation phase entirely and performs a native `M-RoPE` (Rotary Positional Embedding) injection of the saved KV cache directly into the GPU's active hardware memory slot.
+3. **Agentic Pause (CPU Fallback)**: If a skill's context size (e.g., 8,000 tokens) exceeds your GPU's available VRAM, Cluaize triggers an **Agentic Pause**. It safely offloads the heavy lifting to your CPU and System RAM to calculate the cache in the background without crashing your GPU or hitting Out-of-Memory (OOM) limits.
 4. **WASM Sandboxing**: When the AI decides to execute a skill's code (e.g., formatting output or generating code), it runs inside a strict WASM sandbox, ensuring complete security and isolation from your host OS.
 
 ### **Managing Skills via CLI**
 You can seamlessly install, manage, and clean up skills using the built-in `skill` command suite. 
-Browse the official **<a href="https://github.com/cluaiz/skills" target="_blank">Cluaiz Skills Registry</a>** to find available skills.
+Browse the official **<a href="https://github.com/cluaiz/skills" target="_blank">Cluaize Skills Registry</a>** to find available skills.
 
 ```bash
 # Install a new skill by name
-$ cluaiz skill install <skill_name>
+$ cluaize skill install <skill_name>
 
 # List all actively installed skills on your machine
-$ cluaiz skill list
+$ cluaize skill list
 
 # View all generated KV Caches stored on your SSD
-$ cluaiz skill cache ls
+$ cluaize skill cache ls
 
 # Delete the KV cache for a specific model (e.g., if a cache gets corrupted or needs a fresh rebuild)
-$ cluaiz skill cache clear <model_id>
+$ cluaize skill cache clear <model_id>
 
 # Delete ALL orphaned KV caches globally across all skills to free up SSD space
-$ cluaiz skill cache clear --all
+$ cluaize skill cache clear --all
 ```
 
 ---
@@ -187,7 +194,7 @@ $ cluaiz skill cache clear --all
 ### **Performance Snapshot**
 *Measured on AMD Ryzen 7 7435HS + NVIDIA RTX 3050.*
 
-| Metric                | Cluaiz (Alpha)      |
+| Metric                | Cluaize (Alpha)      |
 | :-------------------- | :------------------ |
 | **Signaling Latency** | **Sub-microsecond** |
 | **Memory Footprint**  | **~25MB**           |
@@ -210,10 +217,10 @@ $ cluaiz skill cache clear --all
 ```text
 /Apps
   /cli            # CLI (User Interface)
-/cluaiz-engine
+/inference-engine
   /api            # Low-latency C-API Handshake
   /engines        # Core Orchestration Runtime (CURE)
-    /cluaiz-shared # Unified System DNA & Types
+    /cluaize-shared # Unified System DNA & Types
     /system-booster # Hardware Governor & Memory Arbiter
 /inference-drivers
   /drivers        # Native Kernel Binary Mapping
@@ -233,7 +240,7 @@ $ cluaiz skill cache clear --all
 
 ## ⚡ **Hardware & Performance Troubleshooting**
 
-Cluaiz pushes hardware to its absolute mathematical limits. If you experience unexpected performance drops (e.g., TPS falling from 50 to 15), check the following native constraints:
+Cluaize pushes hardware to its absolute mathematical limits. If you experience unexpected performance drops (e.g., TPS falling from 50 to 15), check the following native constraints:
 
 ### 1. **Laptop Power-Saving Throttling (The 10W vs 30W Rule)**
 Modern GPUs (like the RTX 3050 Laptop GPU) require adequate wattage for optimal tensor processing. 
@@ -248,9 +255,9 @@ Unlike cloud APIs, local inference speed is bound by physical **Memory Bandwidth
 * **Impact:** Extreme context windows inherently reduce TPS due to PCIe/VRAM bandwidth physical limits.
 
 ### 3. **The "PCIe Spill" Phenomenon (Shared Memory)**
-Cluaiz uses a dynamic VRAM Arbiter to negotiate memory. If the engine pushes too close to the physical 100% VRAM limit (e.g., allocating 3.9GB on a 4GB card), the Windows Desktop Window Manager (DWM) will forcefully evict part of the KV Cache into **Shared GPU Memory (System RAM)**.
+Cluaize uses a dynamic VRAM Arbiter to negotiate memory. If the engine pushes too close to the physical 100% VRAM limit (e.g., allocating 3.9GB on a 4GB card), the Windows Desktop Window Manager (DWM) will forcefully evict part of the KV Cache into **Shared GPU Memory (System RAM)**.
 * **Impact:** System RAM is 30x slower than VRAM. Even a tiny 0.2GB spill will force the GPU to fetch cache over the PCIe cable, crashing TPS from 50 to 15.
-* **Fix:** Cluaiz applies a strict **7.5% Safe VRAM Allocation Margin** (~300MB) to give the OS breathing room and completely prevent PCIe spilling.
+* **Fix:** Cluaize applies a strict **7.5% Safe VRAM Allocation Margin** (~300MB) to give the OS breathing room and completely prevent PCIe spilling.
 
 ---
 
@@ -273,20 +280,20 @@ For a fully exhaustive, automated hardware-wise benchmark across all models (whe
 | **Privacy**        | 100% Offline   | 100% Offline | 100% Offline  | 100% Offline | 100% Offline |
 
 > [!NOTE]
-> Cluaiz provides a **lightweight Rust runtime for llama.cpp**, designed to minimize system RAM overhead and prevent OOM crashes on 4GB VRAM setups. Inference is handled by llama.cpp under the hood — Cluaiz's value is in smarter orchestration.
+> Cluaize provides a **lightweight Rust runtime for llama.cpp**, designed to minimize system RAM overhead and prevent OOM crashes on 4GB VRAM setups. Inference is handled by llama.cpp under the hood — Cluaize's value is in smarter orchestration.
 
 🚀 Remote Power-On Installation (Recommended)
 
-Get the entire Cluaiz runtime compiled, linked, and calibrated natively with a single command:
+Get the entire Cluaize runtime compiled, linked, and calibrated natively with a single command:
 
 #### **Windows (PowerShell)**:
 ```powershell
-powershell -ExecutionPolicy Bypass -Command "iwr -useb https://raw.githubusercontent.com/cluaiz/cluaiz/main/install.ps1 | iex"
+powershell -ExecutionPolicy Bypass -Command "iwr -useb https://raw.githubusercontent.com/cluaize/cluaize/main/install.ps1 | iex"
 ```
 
 #### **Linux & macOS (Shell)**:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cluaiz/cluaiz/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/cluaize/cluaize/main/install.sh | bash
 ```
 
 ---
@@ -297,10 +304,10 @@ If you prefer to compile from source, you can build the entire workspace nativel
 
 ```bash
 # 1. Clone the repository
-$ git clone https://github.com/cluaiz/cluaiz.git
-$ cd cluaiz
+$ git clone https://github.com/cluaiz/cluaize.git
+$ cd cluaize
 
-# 2. Build the entire Cluaiz: Rust Orchestrator for Local LLMs
+# 2. Build the entire Cluaize: Rust Orchestrator for Local LLMs
 $ cargo build --release --workspace
 
 # 3. Run the CLI binary directly from Cargo
@@ -311,37 +318,37 @@ $ cargo run -p cli
 
 ### 🕹️ Operational Workflow (How to Use)
 
-Cluaiz provides an ultra-low-overhead CLI command suite:
+Cluaize provides an ultra-low-overhead CLI command suite:
 
 #### **1. Launch the Interactive TUI Dashboard**
-Run the naked `cluaiz` command to launch our full-terminal interactive control panel (replaces heavy UI web interfaces):
+Run the naked `cluaize` command to launch our full-terminal interactive control panel (replaces heavy UI web interfaces):
 ```bash
-$ cluaiz
+$ cluaize
 ```
 
 #### **2. Direct Headless Inference**
 
 Run any locally cached model by name:
 ```bash
-$ cluaiz run gemma2:2b
+$ cluaize run gemma2:2b
 ```
 
-Or pass a full **HuggingFace repo ID** — Cluaiz will automatically download the GGUF weights and run inference:
+Or pass a full **HuggingFace repo ID** — Cluaize will automatically download the GGUF weights and run inference:
 ```bash
 # Using the compiled binary
-$ cluaiz run Qwen/Qwen3-VL-2B-Instruct-GGUF
+$ cluaize run Qwen/Qwen3-VL-2B-Instruct-GGUF
 
 # Or directly from source (dev mode)
 $ cargo run -p cli -- run Qwen/Qwen3-VL-2B-Instruct-GGUF
 ```
 
 > [!NOTE]
-> HuggingFace downloads are handled natively. Cluaiz fetches GGUF weights directly over HTTPS and caches them under `~/.cluaiz/models/`.
+> HuggingFace downloads are handled natively. Cluaize fetches GGUF weights directly over HTTPS and caches them under `~/.cluaize/models/`.
 
 #### **3. Re-Calibrate Hardware Profile**
 Perform real-time RDTSC hardware clocking, SIMD profiling, and VRAM detection to update your native hardware profile:
 ```bash
-$ cluaiz --calibrate
+$ cluaize --calibrate
 ```
 
 #### **4. Run Dynamic Hardware Benchmark Suite**
@@ -350,14 +357,14 @@ The system automatically limits complex prompts on smaller models (Aukat Filter)
 
 ```bash
 # Run full suite across all downloaded models
-$ cluaiz benchmark
+$ cluaize benchmark
 
 # Run benchmark on a specific model with 3 iterations (to average out thermal throttling)
-$ cluaiz benchmark bonsai1-8b --runs 3
+$ cluaize benchmark bonsai1-8b --runs 3
 ```
 
 #### **5. In-Chat Interactive Control Menu (`@`)**
-While running the interactive TUI dashboard (`$ cluaiz`), simply type **`@`** (and press Enter) to open the **Live Action Menu**. 
+While running the interactive TUI dashboard (`$ cluaize`), simply type **`@`** (and press Enter) to open the **Live Action Menu**. 
 This gives you instant, zero-restart control over the core engine:
 - **🧠 Switch Model**: Hot-swap your active LLM directly from VRAM without restarting the terminal.
 - **⚡ Engine Modes**: Quickly toggle macro presets (e.g., Flash Mode for speed, Think Mode for CoT reasoning).
@@ -365,41 +372,41 @@ This gives you instant, zero-restart control over the core engine:
 
 #### **6. Mid-Generation Pivot (Hot-Steering)**
 If the AI is generating a long response (or is deep in `Think Mode`), you can interrupt it at any time by pressing **`Ctrl+C`**. 
-Instead of killing the process and losing your VRAM context, Cluaiz instantly **Pauses** the engine. You will be prompted to enter a **mid-way instruction** (e.g., *"Make it shorter"* or *"Skip the reasoning, just write the code"*). The engine processes this pivot and continues the exact same generation seamlessly from where it left off without starting over, saving massive amounts of compute and time.
+Instead of killing the process and losing your VRAM context, Cluaize instantly **Pauses** the engine. You will be prompted to enter a **mid-way instruction** (e.g., *"Make it shorter"* or *"Skip the reasoning, just write the code"*). The engine processes this pivot and continues the exact same generation seamlessly from where it left off without starting over, saving massive amounts of compute and time.
 
 ---
 
 ### 🛡️ Note on Windows SmartScreen Warning
 
-Since the pre-compiled `cluaiz` executables are built dynamically on GitHub Actions and are not signed with a commercial Microsoft code-signing certificate (which requires corporate entity validation), Windows Defender may show a blue **"Windows protected your PC"** pop-up upon double-clicking the app:
+Since the pre-compiled `cluaize` executables are built dynamically on GitHub Actions and are not signed with a commercial Microsoft code-signing certificate (which requires corporate entity validation), Windows Defender may show a blue **"Windows protected your PC"** pop-up upon double-clicking the app:
 
 **Option 1 (Quick Bypass):**
 1. Click on **"More info"** on the pop-up.
 2. Click **"Run anyway"** to launch the native CLI dashboard instantly.
 
 **Option 2 (Self-Signing Trick):**
-If you want to permanently bypass the unverified prompt, you can use PowerShell to create a manual, hand-made Self-Signed Certificate and sign the `cluaiz.exe` binary yourself. This establishes a trusted signature on your local machine.
+If you want to permanently bypass the unverified prompt, you can use PowerShell to create a manual, hand-made Self-Signed Certificate and sign the `cluaize.exe` binary yourself. This establishes a trusted signature on your local machine.
 
 ```powershell
 # Run in PowerShell as Administrator
-$cert = New-SelfSignedCertificate -DnsName "cluaiz-local" -CertStoreLocation "cert:\LocalMachine\My" -Type CodeSigningCert
-Set-AuthenticodeSignature -FilePath ".\cluaiz.exe" -Certificate $cert
+$cert = New-SelfSignedCertificate -DnsName "cluaize-local" -CertStoreLocation "cert:\LocalMachine\My" -Type CodeSigningCert
+Set-AuthenticodeSignature -FilePath ".\cluaize.exe" -Certificate $cert
 ```
  
 
 ## Star History
 
-<a href="https://www.star-history.com/?repos=Cluaiz%2Fcluaize&type=date&legend=top-left">
+<a href="https://www.star-history.com/?repos=Cluaize%2Fcluaize&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Cluaiz/cluaize&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Cluaiz/cluaize&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Cluaiz/cluaize&type=date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Cluaize/cluaize&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Cluaize/cluaize&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Cluaize/cluaize&type=date&legend=top-left" />
  </picture>
 </a>
 
 ## 📜 **License & Legal**
 
-Cluaiz is released under the **Apache License 2.0**.
+Cluaize is released under the **Apache License 2.0**.
 See the [LICENSE](LICENSE) file for more details.
 
 ---

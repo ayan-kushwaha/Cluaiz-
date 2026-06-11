@@ -14,7 +14,7 @@ pub async fn execute() -> Result<()> {
     }
 
     println!("  {:<20} {:<15} {:<10} {:<10}", "ID".bold(), "NAME".bold(), "SIZE".bold(), "ARCH".bold());
-    println!("{}", "  ".to_string() + &"-".repeat(60).dimmed().to_string());
+    println!("  {}", "-".repeat(60).dimmed());
 
     for model in &roster {
         println!("  {:<20} {:<15} {:<10} {:<10}", 

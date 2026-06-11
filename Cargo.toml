@@ -1,9 +1,9 @@
- [workspace]
+[workspace]
 members = [
-    "cluaiz-engine/api",
-    "cluaiz-engine/engines",
-    "cluaiz-engine/engines/cluaiz-shared",
-    "cluaiz-engine/engines/system-booster",
+    "inference-engine/api",
+    "inference-engine/engines",
+    "inference-engine/engines/cluaiz-shared",
+    "inference-engine/engines/system-booster",
     "Apps/cli", "interface-engines/onnx",
 ]
 

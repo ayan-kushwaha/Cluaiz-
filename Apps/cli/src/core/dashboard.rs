@@ -317,7 +317,7 @@ impl DashboardEngine {
 
                                     // 🛑 Deep-Suffix Scan
                                     if let Ok(mut res) = full_clone.lock() {
-                                        let clean_res = (res.clone() + &token).replace("\n", "").replace("\r", "").replace(" ", "");
+                                        let clean_res = (res.clone() + token.as_str()).replace("\n", "").replace("\r", "").replace(" ", "");
                                         if stop_seqs.iter().any(|s| {
                                             let clean_s = s.replace("\n", "").replace("\r", "").replace(" ", "");
                                             !clean_s.is_empty() && clean_res.ends_with(&clean_s)
@@ -356,7 +356,7 @@ impl DashboardEngine {
                                             display_token = display_token.replace(tag, "");
                                         }
 
-                                        let accumulated = res.clone() + &token;
+                                        let accumulated = res.clone() + token.as_str();
                                         let mut just_finished_thinking = false;
 
                                         // ALWAYS check for </think> to hide it and cleanly exit think mode

@@ -11,8 +11,8 @@ crate-type = ["cdylib", "rlib"]
 neural-core = { path = "../neural_core" }
 llama = { path = "../llama" }
 onnx = { path = "../onnx" }
-system-booster = { path = "../../cluaiz-engine/engines/system-booster" }
-cluaiz-shared = { path = "../../cluaiz-engine/engines/cluaiz-shared" }
+system-booster = { path = "../../inference-engine/engines/system-booster" }
+cluaiz-shared = { path = "../../inference-engine/engines/cluaiz-shared" }
 anyhow = "1.0"
 async-trait = "0.1"
 tracing = "0.1"
