@@ -174,6 +174,15 @@ impl DashboardEngine {
                         ));
                         state.rendered_actions_count += 1;
 
+                        // 🧠 Database FFI Integration: Vectorize and save User Prompt
+                        let storage_bridge = engines::memory::storage_bridge::load_storage_bridge();
+                        let schema = engines::neural_foundry::security::permission_schema::PermissionSchema::load();
+                        if schema.vectorize_user_input {
+                            let prompt_vector = engines::memory::embedding_generator::EmbeddingGenerator::generate_vector(&final_message);
+                            let prompt_id = format!("prompt-{}", uuid::Uuid::new_v4());
+                            let _ = storage_bridge.save_context(&prompt_id, &final_message, prompt_vector);
+                        }
+
                         // ── 🧿 NEURAL DISPATCH ──
                         let _ = std::io::Write::flush(&mut std::io::stdout());
 
@@ -466,6 +475,13 @@ impl DashboardEngine {
                             "ARCHER".to_string(),
                             response.to_string(),
                         ));
+
+                        // 🧠 Database FFI Integration: Vectorize and save AI Response
+                        if schema.vectorize_ai_response {
+                            let response_vector = engines::memory::embedding_generator::EmbeddingGenerator::generate_vector(&response);
+                            let response_id = format!("response-{}", uuid::Uuid::new_v4());
+                            let _ = storage_bridge.save_context(&response_id, &response, response_vector);
+                        }
 
                         if cluaiz_shared::GLOBAL_CANCEL_SIGNAL.load(Ordering::SeqCst) {
                             println!();

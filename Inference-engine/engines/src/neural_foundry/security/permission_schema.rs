@@ -18,6 +18,10 @@ pub struct PermissionSchema {
     pub chat_models: ModelSelection,
     #[serde(default = "default_wasm_firewall")]
     pub wasm_firewall: String,
+    #[serde(default = "default_vectorize_user_input")]
+    pub vectorize_user_input: bool,
+    #[serde(default = "default_vectorize_ai_response")]
+    pub vectorize_ai_response: bool,
 }
 
 impl Default for ModelSelection {
@@ -36,12 +40,22 @@ impl Default for PermissionSchema {
             vector_models: ModelSelection::default(),
             chat_models: ModelSelection::default(),
             wasm_firewall: default_wasm_firewall(),
+            vectorize_user_input: default_vectorize_user_input(),
+            vectorize_ai_response: default_vectorize_ai_response(),
         }
     }
 }
 
 fn default_wasm_firewall() -> String {
     "auto".to_string()
+}
+
+fn default_vectorize_user_input() -> bool {
+    true
+}
+
+fn default_vectorize_ai_response() -> bool {
+    false
 }
 
 impl PermissionSchema {
