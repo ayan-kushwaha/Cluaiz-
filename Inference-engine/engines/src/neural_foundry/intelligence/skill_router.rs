@@ -60,9 +60,9 @@ impl SkillRouter {
         matches
     }
 
-    /// Parses the JSON output from AtmaSteer and forwards it to the WASM Sandbox.
+    /// Parses the JSON output from LogitSteer and forwards it to the WASM Sandbox.
     pub fn route_llm_action(&self, json_output: &str) -> anyhow::Result<()> {
-        tracing::info!("🔄 [Skill-Router] Parsing AtmaSteer output: {}", json_output);
+        tracing::info!("🔄 [Skill-Router] Parsing LogitSteer output: {}", json_output);
         
         // In production, this decodes the JSON using Serde
         // e.g., { "skill": "git-commit", "args": { "msg": "Fix bug" } }

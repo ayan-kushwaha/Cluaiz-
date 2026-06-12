@@ -68,7 +68,7 @@ pub struct Permissions {
 pub struct Skill {
     pub manifest: SkillManifest,
     pub path: PathBuf,
-    pub soul_path: Option<PathBuf>, // 🧠 The .atma Core tensor path
+    pub core_tensor_path: Option<PathBuf>, // 🧠 The .tensor Core state path
     pub logic_path: Option<PathBuf>, // ⚙️ The .wasm execution logic path
 }
 
@@ -115,9 +115,9 @@ impl SkillRegistry {
 
                     let skill_dir = manifest_path.parent().unwrap();
                     
-                    // 🧠 Detect Core Soul (.atma)
-                    let soul_path = skill_dir.join("soul.atma");
-                    let soul = if soul_path.exists() { Some(soul_path) } else { None };
+                    // 🧠 Detect Core Tensor (.tensor)
+                    let core_tensor_path = skill_dir.join("core.tensor");
+                    let core_tensor = if core_tensor_path.exists() { Some(core_tensor_path) } else { None };
 
                     // ⚙️ Detect Execution Logic (.wasm)
                     let logic_path = skill_dir.join("logic.wasm");
@@ -126,7 +126,7 @@ impl SkillRegistry {
                     let skill = Skill {
                         manifest: manifest.clone(),
                         path: skill_dir.to_path_buf(),
-                        soul_path: soul,
+                        core_tensor_path: core_tensor,
                         logic_path: logic,
                     };
                     

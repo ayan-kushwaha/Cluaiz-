@@ -38,7 +38,7 @@
 - ✅ **Cross-Platform Baseline**: Native MSVC/GNU support for Windows and Linux.
 
 ### **Research Directions (In Progress)**
-- 🧪 **AtmaSteer v2** *(Constrained JSON/Schema Decoding Layer)*: Fine-grained structured token masking for reliable schema adherence.
+- 🧪 **LogitSteer v2** *(Constrained JSON/Schema Decoding Layer)*: Fine-grained structured token masking for reliable schema adherence.
 - 🧪 **Ternary Optimizations**: Specialized Addition-Subtraction kernels for BitNet b1.58.
 - 🧪 **P2P Universal Sync**: Local context synchronization without cloud dependencies.
 
@@ -62,7 +62,7 @@ Cluaize is **NOT** a new AI model, nor a new low-level math kernel—it is a spe
 | :------------ | :----------- | :------------------------------- |
 | **Engine**    | Orchestrator | Rust-Native Kernel Management    |
 | **DNA**       | Manifest     | Unified Identity & Versioning    |
-| **AtmaSteer** | Steering     | Constrained Decoding & Masking   |
+| **LogitSteer** | Steering     | Constrained Decoding & Masking   |
 | **Drivers**   | Interface    | Native FFI (CUDA, Metal, Vulkan) |
 
 ---
@@ -148,7 +148,7 @@ This is not just a UI preference file—it dynamically adjusts Rust-level execut
 - **`think_mode`**: Intercepts output at the Rust orchestration layer. When `"On"`, the engine dynamically watches the token stream for `<think>` boundaries and applies native formatting before stdout.
 - **`kv_cache_quantization`**: Modifies the per-element byte allocation in the Arbiter's `Independent MATH` formula, allowing the engine to calculate and fit significantly larger context windows on memory-constrained GPUs (like 4GB).
 
-### **AtmaSteer: Token Masking Protocol**
+### **LogitSteer: Token Masking Protocol**
 Enforces structural output (JSON/Schema) through **constrained decoding**. By applying token-level masking during the sampling phase, Cluaize prevents structural hallucinations at the hardware layer.
 
 ### **Dynamic Kernel Routing**
@@ -233,7 +233,7 @@ $ cluaize skill cache clear --all
 ## 🚀 **Roadmap & Versioning**
 
 - **v0.1-dev-release (Alpha)** (Current): Core shared-memory signaling, **Dynamic Model Mapping**, Hardware-Aware Arbiter, and **Thinking Mode** optimized runtime.
-- **v0.2 Runtime Probe**: AtmaSteer v2 integration and automated kernel provisioning.
+- **v0.2 Runtime Probe**: LogitSteer v2 integration and automated kernel provisioning.
 - **v0.3 Distributed Scheduler**: Distributed inference across local nodes (P2P).
 
 ---

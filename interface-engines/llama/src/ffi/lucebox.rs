@@ -1,5 +1,5 @@
 //! 🌉 Lucebox FFI Bindings
-//! Extern "C" bindings for custom C++ CUDA kernels (DFlash, DDTree, SSM Convolutions, AtmaSteer).
+//! Extern "C" bindings for custom C++ CUDA kernels (DFlash, DDTree, SSM Convolutions, LogitSteer).
 
 use std::ffi::{c_void};
 use std::os::raw::{c_int, c_float};
@@ -10,7 +10,7 @@ use neural_core::SovereignBuffer;
 type LuceboxInitFn = unsafe extern "C" fn() -> *mut c_void;
 type LuceboxFreeFn = unsafe extern "C" fn(ctx: *mut c_void);
 
-// AtmaSteer: Tier 1 KV-Stitching
+// LogitSteer: Tier 1 KV-Stitching
 type LuceboxKVStitchFn = unsafe extern "C" fn(
     ctx: *mut c_void,
     layer_idx: c_int,
@@ -78,7 +78,7 @@ impl LuceboxBridge {
         }
     }
 
-    /// 💉 AtmaSteer: Direct Tensor Stitching
+    /// 💉 LogitSteer: Direct Tensor Stitching
     /// Injects a pre-computed state tensor into a specific attention layer.
     pub fn stitch_kv_layer(&self, layer_idx: i32, buffer: &dyn SovereignBuffer) -> anyhow::Result<()> {
         let result = unsafe {

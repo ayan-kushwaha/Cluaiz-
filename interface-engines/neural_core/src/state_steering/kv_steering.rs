@@ -1,4 +1,4 @@
-//! 🚀 AtmaSteer: Bare-Metal KV Cache Mapping & Injection
+//! 🚀 LogitSteer: Bare-Metal KV Cache Mapping & Injection
 //! This module implements the zero-copy logic from the research papers.
 
 use std::path::Path;
@@ -36,7 +36,7 @@ impl SovereignMapper {
         Ok(buffer)
     }
 
-    /// ⚡ State Stitcher (AtmaSteer Tier 1)
+    /// ⚡ State Stitcher (LogitSteer Tier 1)
     /// Prepares a pre-computed state tensor for injection.
     pub fn prepare_state_injection(&self, state_path: &str) -> Result<Box<dyn SovereignBuffer>> {
         let path = Path::new(state_path);

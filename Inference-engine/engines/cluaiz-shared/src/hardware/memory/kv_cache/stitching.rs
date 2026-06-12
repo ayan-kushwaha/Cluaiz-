@@ -15,9 +15,9 @@ pub trait NeuralStitcher {
     fn inject_signal(&mut self, signal: CluaizSignal) -> Result<()>;
 }
 
-pub struct AtmaSteerStitcher;
+pub struct LogitSteerStitcher;
 
-impl AtmaSteerStitcher {
+impl LogitSteerStitcher {
     pub fn calculate_offset(block_size: usize, token_pos: usize) -> usize {
         token_pos % block_size
     }
@@ -27,7 +27,7 @@ impl AtmaSteerStitcher {
         cache: &mut crate::hardware::memory::kv_cache::PagedKVCache,
         _signal: CluaizSignal
     ) -> Result<()> {
-        tracing::info!("🔗 [AtmaSteer] Mapping frozen history blocks into PagedCache...");
+        tracing::info!("🔗 [LogitSteer] Mapping frozen history blocks into PagedCache...");
         
         // For V1, we assume the signal is pre-mapped into logical blocks
         // The orchestrator just manages the mapping, kernel handles the data.

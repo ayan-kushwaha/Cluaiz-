@@ -30,7 +30,7 @@ system_control.json बनाना/update करना — क्योंक�
 Reference: existing render_audit() जैसा, पर animated
 🔥 Step 7: Model Selection
 3 categories:
-Persona/Atma Model — select + download
+Persona/Core Model — select + download
 Chat Model — select + download
 Embedding Model — select + download
 Hardware health (Step 6) के base पर recommendations

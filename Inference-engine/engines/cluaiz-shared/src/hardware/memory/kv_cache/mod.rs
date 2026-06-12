@@ -60,7 +60,7 @@ impl PagedKVCache {
         }
     }
 
-    /// 🔗 AtmaSteer Injection: Mapping history blocks.
+    /// 🔗 LogitSteer Injection: Mapping history blocks.
     pub fn inject_block(&mut self, block_id: usize) -> Result<()> {
         self.assigned_blocks.insert(0, block_id);
         Ok(())
