@@ -55,7 +55,7 @@ fn default_vectorize_user_input() -> bool {
 }
 
 fn default_vectorize_ai_response() -> bool {
-    false
+    true
 }
 
 impl PermissionSchema {

@@ -309,6 +309,55 @@ pub fn stream_tokens(
                 break;
             }
 
+            // 🌟 Shannon Entropy Gate (cluaize Interception) 🌟
+            let logits_ptr = llama_cpp::llama_get_logits_ith(llama.ctx_ptr, 0);
+            if !logits_ptr.is_null() {
+                let n_vocab = llama_cpp::llama_vocab_n_tokens(vocab);
+                let mut logits = std::slice::from_raw_parts(logits_ptr, n_vocab as usize).to_vec();
+                
+                // Sort descending to get top-K
+                logits.sort_unstable_by(|a, b| b.partial_cmp(a).unwrap_or(std::cmp::Ordering::Equal));
+                let top_k = 50.min(logits.len());
+                let top_logits = &logits[0..top_k];
+                
+                let max_logit = top_logits[0];
+                let mut sum_exp = 0.0;
+                let mut exps = Vec::with_capacity(top_k);
+                for &l in top_logits {
+                    let e = (l - max_logit).exp();
+                    exps.push(e);
+                    sum_exp += e;
+                }
+                
+                let mut entropy = 0.0;
+                for e in exps {
+                    let p = e / sum_exp;
+                    if p > 1e-10 {
+                        entropy -= p * p.log2();
+                    }
+                }
+                
+                let max_entropy = (top_k as f32).log2();
+                let normalized_entropy = if max_entropy > 0.0 { entropy / max_entropy } else { 0.0 };
+                
+                if normalized_entropy > 0.85 {
+                    info!("💥 [Shannon Gate] Entropy Spike Detected! H(X) = {:.2} - Model is guessing!", normalized_entropy);
+                    // TODO: Trigger cluaizd lookup and inject latent tensors into layers 16-24
+                }
+
+                // 🎯 Invisible Guidance Logit Bias (Δz Injection)
+                if let Some(biases) = &dna.guidance_bias {
+                    let mut logits_mut = std::slice::from_raw_parts_mut(logits_ptr, n_vocab as usize);
+                    for (token_id, bias) in biases.iter() {
+                        if (*token_id as usize) < logits_mut.len() {
+                            logits_mut[*token_id as usize] += bias;
+                        }
+                    }
+                    info!("🎯 [Logit Bias] Applied invisible guidance vectors (Δz) to {} tokens.", biases.len());
+                }
+            }
+
+
             n_cur += 1;
             if !in_think_block {
                 n_gen += 1;

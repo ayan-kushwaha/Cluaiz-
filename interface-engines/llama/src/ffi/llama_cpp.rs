@@ -134,6 +134,9 @@ extern "C" {
     /// ⚡ Execute a decode pass.
     pub fn llama_decode(ctx: *mut std::ffi::c_void, batch: LlamaBatch) -> i32;
 
+    /// 📊 Get Logits
+    pub fn llama_get_logits_ith(ctx: *mut std::ffi::c_void, i: i32) -> *mut c_float;
+
     /// 🎲 Industrial Sampler Suite
     pub fn llama_sampler_chain_init(params: LlamaSamplerChainParams) -> *mut std::ffi::c_void;
     pub fn llama_sampler_chain_add(chain: *mut std::ffi::c_void, sampler: *mut std::ffi::c_void);

@@ -3,9 +3,20 @@
 
 pub mod scanner;
 pub mod compiler_daemon;
+pub mod parser;
 
 use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ComputationalBudget {
+    #[serde(default)]
+    pub token_length: usize,
+    #[serde(default)]
+    pub ram_overhead_mb: usize,
+    #[serde(default)]
+    pub injection_layers: Vec<usize>,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SkillManifest {
@@ -18,6 +29,10 @@ pub struct SkillManifest {
     pub description: String,
     pub triggers: Triggers,
     pub permissions: Permissions,
+    #[serde(default)]
+    pub computational_budget: Option<ComputationalBudget>,
+    #[serde(default)]
+    pub user_profile_binding: Option<String>,
     #[serde(default)]
     pub soul_type: String,
     #[serde(default)]
@@ -35,6 +50,10 @@ pub struct CoreMetadata {
 pub struct Triggers {
     pub semantic: Vec<String>,
     pub entropy_threshold: Option<f32>,
+    #[serde(default)]
+    pub hard_trigger_tokens: Vec<String>,
+    #[serde(default)]
+    pub cooldown_on_failure_tokens: usize,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -86,18 +105,7 @@ impl SkillRegistry {
 
         for manifest_path in manifest_paths {
             if let Ok(content) = std::fs::read_to_string(&manifest_path) {
-                // If it's a SKILL.md, extract the YAML frontmatter
-                let parsed_manifest = if manifest_path.file_name().map(|n| n == "SKILL.md").unwrap_or(false) {
-                    let normalized = content.replace("\r\n", "\n");
-                    if let Some(start) = normalized.find("---\n") {
-                        if let Some(end) = normalized[start + 4..].find("\n---") {
-                            let yaml_content = &normalized[start + 4..start + 4 + end];
-                            serde_yaml::from_str::<SkillManifest>(yaml_content).ok()
-                        } else { None }
-                    } else { None }
-                } else {
-                    serde_json::from_str::<SkillManifest>(&content).ok()
-                };
+                let parsed_manifest = parser::SkillParser::parse(&manifest_path, &content);
 
                 if let Some(mut manifest) = parsed_manifest {
                     // Fallback ID to name if not provided (common for YAML skills)

@@ -3,8 +3,7 @@ use std::path::Path;
 #[cfg(feature = "wasm-runtime")]
 use wasmtime::*;
 #[cfg(feature = "wasm-runtime")]
-use wasmtime_wasi::preview1::{self, WasiP1Ctx};
-#[cfg(feature = "wasm-runtime")]
+use wasmtime_wasi::p1::{WasiP1Ctx, add_to_linker_async};
 use wasmtime_wasi::WasiCtxBuilder;
 // TODO: Restore once CoreGraph is implemented in archer_shared
 // use cluaiz_shared::Core::graph::CoreGraph;
@@ -95,7 +94,7 @@ impl WasmHost {
         }
 
         let mut linker = Linker::new(&self.engine);
-        preview1::add_to_linker_async(&mut linker, |s: &mut CluaizWasmState| &mut s.wasi)?;
+        add_to_linker_async(&mut linker, |s: &mut CluaizWasmState| &mut s.wasi)?;
 
         // 🔗 Instantiate module
         let instance = linker.instantiate_async(&mut store, &module).await?;
@@ -131,7 +130,7 @@ impl WasmHost {
             &mut results
         ).await {
             tracing::error!("🧠 [CoreFoundry] Skill Execution Failed: {} | Error: {}", skill_id, e);
-            return Err(e);
+            return Err(e.into());
         }
 
         // 📖 3. Read the result back (Pooled/Zero-Allocation)

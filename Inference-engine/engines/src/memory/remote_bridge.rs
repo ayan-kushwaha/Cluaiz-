@@ -3,7 +3,7 @@
 
 use super::storage_bridge::CognitiveStorageBridge;
 use std::time::Duration;
-use reqwest::blocking::Client;
+use reqwest::Client;
 use serde_json::json;
 
 pub struct RemoteBridge {
@@ -29,19 +29,20 @@ impl RemoteBridge {
         RemoteBridge { client, base_url }
     }
 
-    fn execute_with_retry<F, T>(&self, mut operation: F) -> Option<T>
+    async fn execute_with_retry<F, Fut, T>(&self, mut operation: F) -> Option<T>
     where
-        F: FnMut() -> anyhow::Result<T>,
+        F: FnMut() -> Fut,
+        Fut: std::future::Future<Output = anyhow::Result<T>>,
     {
         let mut retries = 3;
         while retries > 0 {
-            match operation() {
+            match operation().await {
                 Ok(res) => return Some(res),
                 Err(e) => {
                     tracing::warn!("Remote database query failed ({} retries left): {}", retries - 1, e);
                     retries -= 1;
                     if retries > 0 {
-                        std::thread::sleep(Duration::from_millis(100));
+                        tokio::time::sleep(Duration::from_millis(100)).await;
                     }
                 }
             }
@@ -63,28 +64,49 @@ impl CognitiveStorageBridge for RemoteBridge {
 
         let url = format!("{}/neuron/{}", self.base_url, uuid_str);
         
-        // 2. Perform GET query with retry strategy
-        let response_body = self.execute_with_retry(|| {
-            let res = self.client.get(&url)
-                .header("x-tenant-id", "default_sandbox")
-                .send()?;
-            if res.status().is_success() {
-                Ok(res.text()?)
-            } else {
-                anyhow::bail!("HTTP status {}", res.status())
-            }
-        })?;
-
-        // 3. Parse and extract payload bytes
-        let json_val: serde_json::Value = serde_json::from_str(&response_body).ok()?;
-        if let Some(payload_val) = json_val.get("raw_payload") {
-            if let Ok(bytes) = serde_json::from_value::<Vec<u8>>(payload_val.clone()) {
-                tracing::info!("🧠 Successfully injected Remote Context: {} bytes", bytes.len());
-                return Some(bytes);
-            }
-        }
+        let client = self.client.clone();
         
-        None
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async move {
+                // 2. Perform GET query with retry strategy
+                let mut retries = 3;
+                let mut response_body = None;
+                
+                while retries > 0 {
+                    match client.get(&url).header("x-tenant-id", "default_sandbox").send().await {
+                        Ok(res) if res.status().is_success() => {
+                            if let Ok(text) = res.text().await {
+                                response_body = Some(text);
+                                break;
+                            }
+                        }
+                        Ok(res) => {
+                            tracing::warn!("Remote DB HTTP Error: {}", res.status());
+                        }
+                        Err(e) => {
+                            tracing::warn!("Remote database query failed ({} retries left): {}", retries - 1, e);
+                        }
+                    }
+                    retries -= 1;
+                    if retries > 0 {
+                        tokio::time::sleep(Duration::from_millis(100)).await;
+                    }
+                }
+                
+                let body = response_body?;
+                
+                // 3. Parse and extract payload bytes
+                let json_val: serde_json::Value = serde_json::from_str(&body).ok()?;
+                if let Some(payload_val) = json_val.get("raw_payload") {
+                    if let Ok(bytes) = serde_json::from_value::<Vec<u8>>(payload_val.clone()) {
+                        tracing::info!("🧠 Successfully injected Remote Context: {} bytes", bytes.len());
+                        return Some(bytes);
+                    }
+                }
+                
+                None
+            })
+        })
     }
 
     fn save_context(&self, memory_id: &str, payload: &str, vector: [f32; 16]) -> Result<(), String> {
@@ -102,21 +124,31 @@ impl CognitiveStorageBridge for RemoteBridge {
             "adjacency": null
         });
 
-        let write_success = self.execute_with_retry(|| {
-            let res = self.client.post(&url)
-                .header("x-tenant-id", "default_sandbox")
-                .json(&body)
-                .send()?;
-            if res.status().is_success() {
-                Ok(())
-            } else {
-                anyhow::bail!("HTTP status {}", res.status())
-            }
-        });
-
-        match write_success {
-            Some(_) => Ok(()),
-            None => Err("Failed to execute remote network database write after retries".to_string()),
-        }
+        let client = self.client.clone();
+        
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async move {
+                let mut retries = 3;
+                while retries > 0 {
+                    match client.post(&url).header("x-tenant-id", "default_sandbox").json(&body).send().await {
+                        Ok(res) if res.status().is_success() => {
+                            return Ok(());
+                        }
+                        Ok(res) => {
+                            tracing::warn!("Remote DB HTTP Error: {}", res.status());
+                        }
+                        Err(e) => {
+                            tracing::warn!("Remote database query failed ({} retries left): {}", retries - 1, e);
+                        }
+                    }
+                    retries -= 1;
+                    if retries > 0 {
+                        tokio::time::sleep(Duration::from_millis(100)).await;
+                    }
+                }
+                Err("Failed to execute remote network database write after retries".to_string())
+            })
+        })
     }
 }
+

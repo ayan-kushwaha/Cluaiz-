@@ -110,6 +110,18 @@ enum CliCommand {
         #[command(subcommand)]
         command: BrainCommand,
     },
+
+    /// Setup Cluaiz Node Profile and Identity
+    Setup {
+        #[command(subcommand)]
+        command: SetupCommand,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum SetupCommand {
+    /// Generate and register Purpose Vectorization for the Node Profile
+    Profile,
 }
 
 #[derive(Subcommand)]
@@ -301,6 +313,12 @@ async fn main() -> Result<()> {
         Some(CliCommand::Brain { command }) => {
             if let Err(e) = crate::cli::brain::execute(command).await {
                 eprintln!("\n  {} [Cluaiz] Brain Manager Error: {}\n", "❌".red(), e);
+                std::process::exit(1);
+            }
+        }
+        Some(CliCommand::Setup { command }) => {
+            if let Err(e) = crate::cli::setup::execute(command).await {
+                eprintln!("\n  {} [Cluaiz] Setup Error: {}\n", "❌".red(), e);
                 std::process::exit(1);
             }
         }

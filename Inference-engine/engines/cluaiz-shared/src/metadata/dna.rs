@@ -33,6 +33,10 @@ pub struct StructuralDNA {
     
     #[serde(default)]
     pub weights_already_loaded: bool,
+    
+    // 🎯 Active Inference State
+    #[serde(default)]
+    pub guidance_bias: Option<HashMap<i32, f32>>,
 }
 
 impl Default for StructuralDNA {
@@ -60,6 +64,7 @@ impl Default for StructuralDNA {
             requires_gpu: false,
             weights_size_gb: 0.0,
             weights_already_loaded: false,
+            guidance_bias: None,
         }
     }
 }

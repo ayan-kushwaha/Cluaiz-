@@ -10,3 +10,4 @@ pub mod skill;
 pub mod ingest;
 pub mod test_jit;
 pub mod brain;
+pub mod setup;
