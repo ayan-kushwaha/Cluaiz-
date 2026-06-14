@@ -2,11 +2,20 @@ use anyhow::{Result, anyhow};
 use cluaiz_shared::backend::signature::{KernelSignature, GlobalFeatureRegistry, BackendType};
 use system_booster::BoosterControl;
 
-/// 🚦 NeuralDispatcher
-/// The core router that takes a prompt and sends it to the correct backend.
+use tokio::sync::mpsc;
+
+pub enum EngineResponse {
+    TokenStream(mpsc::Receiver<String>),
+    FinalResult(String),
+    Error(String),
+}
+
+/// 🚦 NeuralDispatcher (The Master Router)
+/// The core router that owns hardware logic and dispatches prompts across Native IPC and HTTP.
 pub struct NeuralDispatcher {
     pub booster_state: BoosterControl,
     pub current_signature: KernelSignature,
+    // Future additions: TensorTransducer, NeuralFoundry instances
 }
 
 impl NeuralDispatcher {
@@ -17,28 +26,53 @@ impl NeuralDispatcher {
         }
     }
 
-    /// Primary entry point for inference.
-    /// Checks the SystemBooster and routes to the correct engine.
-    pub async fn dispatch_prompt(&self, prompt: &str) -> Result<String> {
+    /// Primary entry point for real-time token streaming.
+    /// Used by both the FFI Named Pipes (Native Desktop) and HTTP SSE (External).
+    pub async fn dispatch_stream(&self, prompt: &str, skip_brain: bool) -> EngineResponse {
         // 🚀 Real-time Silicon Probe
         let hardware = cluaiz_shared::hardware::HardwareOrchestrator::probe().silicon_truth;
-
-        // Use the GlobalFeatureRegistry to select the correct runtime based on signature AND hardware
         let backend = GlobalFeatureRegistry::select_runtime(&self.current_signature, &hardware);
         
-        tracing::info!("🚦 [Dispatcher] Routing prompt to backend: {:?}", backend);
-        
+        tracing::info!("🚦 [Master Router] Routing prompt to backend: {:?}", backend);
+
+        let (tx, rx) = mpsc::channel::<String>(100);
+        let prompt_clone = prompt.to_string();
+
         match backend {
-            BackendType::RuntimeB => {
-                Ok(format!("⚡ [Llama Backend via Dispatcher] Processed: {}", prompt))
-            }
-            BackendType::RuntimeC | BackendType::RuntimeA => {
-                Ok(format!("🔩 [Native Backend via Dispatcher] Processed: {}", prompt))
+            BackendType::RuntimeB | BackendType::RuntimeC | BackendType::RuntimeA => {
+                tokio::spawn(async move {
+                    // Mocking actual engine stream output for architectural wiring
+                    let words = prompt_clone.split_whitespace();
+                    for word in words {
+                        if tx.send(format!("{} ", word)).await.is_err() {
+                            break;
+                        }
+                        tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+                    }
+                    let _ = tx.send("\n[DONE]\n".to_string()).await;
+                });
+                EngineResponse::TokenStream(rx)
             }
             _ => {
-                Err(anyhow!("❌ [Dispatcher] Unsupported backend architecture for this mission: {:?}", backend))
+                EngineResponse::Error(format!("Unsupported backend architecture: {:?}", backend))
             }
         }
+    }
+
+    /// Legacy blocking call, to be deprecated once all clients shift to `dispatch_stream`.
+    pub async fn dispatch_prompt(&self, prompt: &str) -> Result<String> {
+        let mut stream = match self.dispatch_stream(prompt, false).await {
+            EngineResponse::TokenStream(rx) => rx,
+            EngineResponse::Error(e) => return Err(anyhow::anyhow!(e)),
+            EngineResponse::FinalResult(r) => return Ok(r),
+        };
+        
+        let mut final_text = String::new();
+        while let Some(token) = stream.recv().await {
+            if token.trim() == "[DONE]" { break; }
+            final_text.push_str(&token);
+        }
+        Ok(final_text)
     }
 }
 

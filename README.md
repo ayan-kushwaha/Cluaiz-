@@ -58,12 +58,58 @@ The primary goal of Cluaize is to democratize local AI by making it accessible a
 
 Cluaize is **NOT** a new AI model, nor a new low-level math kernel—it is a specialized, lightweight engine that sits on top of existing industry-standard inference tools to manage resources intelligently and efficiently.
 
-| Component     | Role         | Implementation                   |
-| :------------ | :----------- | :------------------------------- |
-| **Engine**    | Orchestrator | Rust-Native Kernel Management    |
-| **DNA**       | Manifest     | Unified Identity & Versioning    |
+| Component      | Role         | Implementation                   |
+| :------------- | :----------- | :------------------------------- |
+| **Engine**     | Orchestrator | Rust-Native Kernel Management    |
+| **DNA**        | Manifest     | Unified Identity & Versioning    |
 | **LogitSteer** | Steering     | Constrained Decoding & Masking   |
-| **Drivers**   | Interface    | Native FFI (CUDA, Metal, Vulkan) |
+| **Drivers**    | Interface    | Native FFI (CUDA, Metal, Vulkan) |
+
+---
+
+## 🧠 **Why Integrate the Database (`cluaizd`) Directly into the Engine?**
+
+A common question arises: *Why unify the database and the inference engine into a single space instead of keeping them separate and using standard APIs (like typical RAG implementations)?*
+
+**The short answer: Zero-Latency Mid-Layer Injection.**
+
+Most standard AI engines only teach a model how to "remember" context window data. Cluaize teaches a model to inject new skills and memories **directly into the neurons mid-inference, without network delay.**
+
+### **The Illusion of Traditional FFI/API**
+In standard systems, when a model needs external memory, it pauses, makes an HTTP/TCP request to a separate database process, serializes JSON, and waits for a response. This creates a 10ms - 50ms delay. In the deep-learning world, stopping the forward pass for 50ms destroys the model's neural activation flow (contextual lag).
+
+### **Dynamic Mid-Layer Micro-Injection (The Cluaize Physics)**
+Cluaize does not use network requests for internal cognition. We load the **Database (`cluaizd`)** and the **Engine (`cluaize`)** into the **exact same memory space (mmap)**.
+
+1. **Shannon Entropy Spike:** When the model reaches a dynamic intermediate layer during inference and encounters high uncertainty (entropy spike > 0.85), the kernel pauses the forward pass.
+2. **Zero-Copy Memory Access:** Because the DB is natively shared, the Engine reaches directly into the Database's C-FFI Pointer (`payload_ptr`).
+3. **Latent Tensor Injection:** It pulls raw Float32 Tensors from the database and injects them directly into the matrix multiplication sequence of the subsequent layers.
+
+This bypasses all prompt generation overhead and network latency. The AI Agent can search the web, execute WASM logic, write to the RAM Ring Buffer (`transit.rs`), and inject it into the next token generation **at 0-ms latency**.
+
+---
+
+## ⚙️ **Managing the Unified Brain (Control & Use Cases)**
+
+Even though the Database is intimately fused with the Engine, developers retain complete, granular control. Your local PC effectively becomes "One Unified Brain". 
+
+### **1. The 3 Core Brain Controls**
+You have absolute power over how the engine interacts with the database via the `POST /v1/system/brain` API:
+
+- **`"local"` or `"true"` (Local FFI Brain):** The Engine and Database run on the same machine. They connect natively via zero-copy FFI (mmap) for 0-ms latency injection.
+- **`"<IP_ADDRESS>"` (Remote Brain Connection):** You can pass an IP address (e.g., `192.168.1.50:8000`). This engine will run purely as an inference node (Muscle) and fetch its memory/vectors from a remote Centralized Brain over the network.
+- **`"false"` (Brain Disabled):** The Engine falls back to pure stateless inference. It runs the model but disconnects from the database completely without crashing.
+- **`"only_brain"` (Pure Brain Mode):** The Engine completely suspends LLM loading and VRAM allocation. The server remains online but acts strictly as a centralized "Brain" (Database) that serves other remote/connected inference nodes on your network.
+
+### **2. Practical Use Cases (How to Use DB + Engine)**
+Because the Engine and Database share the same FFI memory space, your local PC transforms into a unified cognitive architecture. Here is how you can use it:
+
+- **Use Case A: Infinite Local Memory (The Personal Brain)**
+  Instead of passing 50,000 tokens of chat history in every API request (which destroys VRAM and slows down generation), your application only passes a single `session_id`. The Engine uses FFI to pull only the strictly relevant vectorized memories from the database directly into the context window at runtime.
+- **Use Case B: Custom App Integration (Using `/v1/db/execute`)**
+  If you are building a custom frontend app, you don't need a separate database server. You send your `insert` or `find` CDQL queries directly to the Engine's API port. The Engine handles storing your app's custom data directly in its unified LMDB shards.
+- **Use Case C: Live Skill Upgrades (WASM + DB)**
+  You can download a new WASM skill. The Engine compiles it, stores its semantic vectors in the Database, and instantly the AI "learns" the new skill. Next time the user asks a related question, the DB automatically injects the skill into the Engine's layer without any network delay.
 
 ---
 
@@ -194,7 +240,7 @@ $ cluaize skill cache clear --all
 ### **Performance Snapshot**
 *Measured on AMD Ryzen 7 7435HS + NVIDIA RTX 3050.*
 
-| Metric                | Cluaize (Alpha)      |
+| Metric                | Cluaize (Alpha)     |
 | :-------------------- | :------------------ |
 | **Signaling Latency** | **Sub-microsecond** |
 | **Memory Footprint**  | **~25MB**           |
@@ -268,16 +314,16 @@ For a fully exhaustive, automated hardware-wise benchmark across all models (whe
 
 *Quick manual snapshot measured on an **RTX 3050 (Laptop)**:*
 
-| **Metric**         | **Bonsai1 8B** | **Gemma 4B** | **Gemma 2B**  | **Qwen 4B**  | **Qwen 2B**  |
-| :----------------- | :------------- | :----------- | :------------ | :----------- | :----------- |
-| **Speed (TPS)**    | 48.6           | 19.4         | 31.6          | 21.2         | 32.7         |
-| **TTFT (s)**       | 0.05s          | 0.08s        | 0.06s         | 0.08s        | 0.05s        |
-| **Total Time (s)** | ~39.3s         | ~53.5s       | ~46.4s        | ~90.2s       | ~62.6s       |
-| **Tokens Out**     | 1911           | 1038         | 1465          | 1913         | 2048         |
-| **Reasoning Mode** | Deep Thinking  | Deep Thinking| Deep Thinking | Deep Thinking| Deep Thinking|
-| **Memory (VRAM)**  | 2.82 GB        | ~2.5 GB      | 1.90 GB       | ~2.6 GB      | ~1.8 GB      |
-| **Power Used**     | ~52W           | ~45W         | ~31W          | ~45W         | ~35W         |
-| **Privacy**        | 100% Offline   | 100% Offline | 100% Offline  | 100% Offline | 100% Offline |
+| **Metric**         | **Bonsai1 8B** | **Gemma 4B**  | **Gemma 2B**  | **Qwen 4B**   | **Qwen 2B**   |
+| :----------------- | :------------- | :------------ | :------------ | :------------ | :------------ |
+| **Speed (TPS)**    | 48.6           | 19.4          | 31.6          | 21.2          | 32.7          |
+| **TTFT (s)**       | 0.05s          | 0.08s         | 0.06s         | 0.08s         | 0.05s         |
+| **Total Time (s)** | ~39.3s         | ~53.5s        | ~46.4s        | ~90.2s        | ~62.6s        |
+| **Tokens Out**     | 1911           | 1038          | 1465          | 1913          | 2048          |
+| **Reasoning Mode** | Deep Thinking  | Deep Thinking | Deep Thinking | Deep Thinking | Deep Thinking |
+| **Memory (VRAM)**  | 2.82 GB        | ~2.5 GB       | 1.90 GB       | ~2.6 GB       | ~1.8 GB       |
+| **Power Used**     | ~52W           | ~45W          | ~31W          | ~45W          | ~35W          |
+| **Privacy**        | 100% Offline   | 100% Offline  | 100% Offline  | 100% Offline  | 100% Offline  |
 
 > [!NOTE]
 > Cluaize provides a **lightweight Rust runtime for llama.cpp**, designed to minimize system RAM overhead and prevent OOM crashes on 4GB VRAM setups. Inference is handled by llama.cpp under the hood — Cluaize's value is in smarter orchestration.

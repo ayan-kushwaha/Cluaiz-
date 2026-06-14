@@ -16,11 +16,46 @@
       "example": "cluaiz run bonsai:8b"
     },
     {
+      "name": "pull",
+      "usage": "cluaiz pull <model-id>",
+      "description": "Download and register a model into the local vault without running it.",
+      "category": "models",
+      "example": "cluaiz pull unsloth/Qwen3.5-4B-GGUF"
+    },
+    {
+      "name": "rm",
+      "usage": "cluaiz rm <model-id>",
+      "description": "Remove a model from the local vault (physically deletes the .gguf file).",
+      "category": "models",
+      "example": "cluaiz rm bonsai:8b"
+    },
+    {
+      "name": "list",
+      "usage": "cluaiz list",
+      "description": "List all downloaded models in the local vault.",
+      "category": "models",
+      "example": "cluaiz list"
+    },
+    {
+      "name": "ps",
+      "usage": "cluaiz ps",
+      "description": "Show active neural engines in memory and auto-heal stale PIDs.",
+      "category": "core",
+      "example": "cluaiz ps"
+    },
+    {
       "name": "help",
       "usage": "cluaiz help",
       "description": "Show this help screen",
       "category": "core",
       "example": "cluaiz help"
+    },
+    {
+      "name": "status",
+      "usage": "cluaiz status",
+      "description": "Show hardware status and silicon health metrics.",
+      "category": "system",
+      "example": "cluaiz status"
     },
     {
       "name": "--calibrate",
@@ -35,6 +70,69 @@
       "description": "Run a full hardware performance benchmark",
       "category": "system",
       "example": "cluaiz --benchmark"
+    },
+    {
+      "name": "booster",
+      "usage": "cluaiz booster",
+      "description": "View or configure the system performance booster settings interactively.",
+      "category": "system",
+      "example": "cluaiz booster"
+    },
+    {
+      "name": "test-jit",
+      "usage": "cluaiz test-jit",
+      "description": "Test JIT KV Cache compilation and memory footprint.",
+      "category": "system",
+      "example": "cluaiz test-jit"
+    },
+    {
+      "name": "ingest",
+      "usage": "cluaiz ingest <file_path>",
+      "description": "Ingest a document natively for semantic chunking and RAG.",
+      "category": "core",
+      "example": "cluaiz ingest ./document.pdf"
+    },
+    {
+      "name": "brain",
+      "usage": "cluaiz brain <on|off|status>",
+      "description": "Manage the Cluaizd Brain Connection (FFI Daemon).",
+      "category": "core",
+      "example": "cluaiz brain status"
+    },
+    {
+      "name": "setup",
+      "usage": "cluaiz setup profile",
+      "description": "Setup Cluaiz Node Profile and Identity (Vectorization and DB Injection).",
+      "category": "core",
+      "example": "cluaiz setup profile"
+    },
+    {
+      "name": "skill install",
+      "usage": "cluaiz skill install <skill_name>",
+      "description": "Install a skill from the cluaiz-skills registry.",
+      "category": "skills",
+      "example": "cluaiz skill install web-search-github"
+    },
+    {
+      "name": "skill list",
+      "usage": "cluaiz skill list",
+      "description": "List all locally installed WASM skills.",
+      "category": "skills",
+      "example": "cluaiz skill list"
+    },
+    {
+      "name": "skill cache ls",
+      "usage": "cluaiz skill cache ls",
+      "description": "List all active and orphaned dual-caches.",
+      "category": "skills",
+      "example": "cluaiz skill cache ls"
+    },
+    {
+      "name": "skill cache clear",
+      "usage": "cluaiz skill cache clear <model_id>",
+      "description": "Clear specific or all orphaned KV caches globally.",
+      "category": "skills",
+      "example": "cluaiz skill cache clear --all"
     }
   ]
 }

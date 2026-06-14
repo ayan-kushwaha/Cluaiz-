@@ -133,6 +133,8 @@ pub enum BrainCommand {
     },
     /// Disable the FFI Database connection
     Off,
+    /// Pure Brain Mode: Enable local DB but suspend Engine LLM loading to save VRAM
+    Only,
     /// View the connection status and background daemon health
     Status,
 }
@@ -231,8 +233,18 @@ async fn main() -> Result<()> {
         std::process::exit(1);
     }
 
+    // 🚀 Check Pure Brain Mode
+    let mut pure_brain = false;
+    if let Ok(control) = cluaiz_shared::hardware::governor::HardwareGovernor::load_system_control() {
+        if control.brain.is_pure_brain() {
+            pure_brain = true;
+        }
+    }
+
     // 🚀 SILICON IGNITION: Optimize hardware before execution
-    let _ = engines::system_booster::SystemBooster::ignite();
+    if !pure_brain {
+        let _ = engines::system_booster::SystemBooster::ignite();
+    }
 
     match cli.command {
         Some(CliCommand::Run { model_id, interactive }) => {

@@ -7,7 +7,7 @@ use tower_http::cors::{Any, CorsLayer};
 use axum::http::Method;
 
 use crate::state::AppState;
-use crate::handlers::{chat, system, models};
+use crate::handlers::{chat, system, models, db};
 
 pub fn build(state: Arc<AppState>) -> Router {
     // ── CORS — Allow any origin (Desktop, Mobile, Web can all call) ──
@@ -21,17 +21,56 @@ pub fn build(state: Arc<AppState>) -> Router {
         .route("/health", get(system::health_check))
         .route("/info", get(system::system_info))
         .route("/engine/skip_think", post(system::skip_think))
+        
+        // ── External Compatible Streaming API ──
+        .route("/v1/chat/completions", post(chat::chat_completions))
+        
+        // ── Internal Legacy Chat API ──
         .route("/chat", post(chat::chat))
-        .route("/history/{session_id}", get(chat::get_history))
-        .route("/history", get(chat::get_sessions))
         
-        // ── Models API ──
+        // ── External Compatible Models API ──
+        .route("/api/tags", get(models::tags))
+        .route("/api/pull", post(models::pull_model))
+        
+        // ── Legacy Models API ──
         .route("/models/available", get(models::list_models))
-        
         .route("/hardware", get(models::hardware_status))
         .route("/models/download", post(models::download_model))
         .route("/models/load", post(models::load_model))
         
+        // ── Booster & Hardware Tuning API ──
+        .route("/v1/booster/status", get(crate::handlers::booster::status))
+        .route("/v1/booster/update", post(crate::handlers::booster::update))
+
+        // ── CDQL Database API ──
+        .route("/v1/db/execute", post(db::execute_cdql))
+
+        // ── WASM Skills & Agents API ──
+        .route("/v1/skills/list", get(crate::handlers::skills::list_skills))
+        .route("/v1/skills/install", post(crate::handlers::skills::install_skill))
+        .route("/v1/skills/cache", get(crate::handlers::skills::list_cache))
+        .route("/v1/skills/cache", axum::routing::delete(crate::handlers::skills::clear_cache))
+
+        // ── Vector Ingest API ──
+        .route("/v1/ingest/file", post(crate::handlers::ingest::file_ingest))
+
+        // ── Hardware Benchmark Suite ──
+        .route("/v1/benchmark/run", post(crate::handlers::benchmark::run))
+
+        // ── System Control API (Phase 2) ──
+        .route("/v1/system/ps", get(crate::handlers::ps::get_processes))
+        .route("/v1/system/control", get(crate::handlers::system::get_system_control))
+        .route("/v1/system/permission", get(crate::handlers::permission::get_permission))
+        .route("/v1/system/permission", post(crate::handlers::permission::update_permission))
+        .route("/v1/system/brain", post(crate::handlers::system::toggle_brain))
+        .route("/v1/system/profile", post(crate::handlers::setup::configure_profile))
+
+        // ── Hardware Calibration (Phase 2) ──
+        .route("/v1/hardware/calibrate", post(crate::handlers::models::calibrate))
+
+        // ── Vault Management (Phase 2) ──
+        .route("/v1/models/{model_id}", axum::routing::delete(crate::handlers::models::rm_model))
+
         .layer(cors)
         .with_state(state)
 }

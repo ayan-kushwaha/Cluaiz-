@@ -138,7 +138,7 @@ impl HardwareGovernor {
         Ok(())
     }
 
-    /// ⚖️ Negotiate VRAM Envelope: Performs an iterative fitting loop (Ollama/vLLM style)
+    /// ⚖️ Negotiate VRAM Envelope: Performs an iterative fitting loop
     /// to find the maximum safe context window for the current silicon state.
     /// This is NO LONGER static; it recalculates based on live architecture and booster state.
     pub fn negotiate_vram_envelope(dna: &crate::metadata::dna::StructuralDNA) -> usize {

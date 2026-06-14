@@ -6,4 +6,5 @@ pub mod storage_bridge;
 pub mod local_bridge;
 pub mod remote_bridge;
 pub mod embedding_generator;
+pub mod transit;
 

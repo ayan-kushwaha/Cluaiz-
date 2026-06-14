@@ -330,20 +330,45 @@ pub async fn execute(model_id: &str, _interactive: bool) -> Result<()> {
             println!("🤖 ");
             let accumulated_output = std::sync::Arc::new(std::sync::Mutex::new(String::new()));
             let output_clone = accumulated_output.clone();
-            let res = tokio::task::block_in_place(|| {
-                let mut router = state.Core_engine.router.blocking_lock();
-                router.generate_stream(
-                    prompt,
-                    512,
-                    Box::new(move |token| {
-                        print!("{}", token);
-                        let _ = std::io::stdout().flush();
-                        if let Ok(mut guard) = output_clone.lock() {
-                            guard.push_str(&token);
+            let res = tokio::task::block_in_place(|| -> Result<(), color_eyre::eyre::Report> {
+                // ── Native IPC Named Pipe Client ──
+                let pipe_name = r"\\.\pipe\cluaize_engine_pipe";
+                let mut client = match std::fs::OpenOptions::new()
+                    .read(true)
+                    .write(true)
+                    .open(pipe_name) {
+                    Ok(client) => client,
+                    Err(e) => {
+                        return Err(color_eyre::eyre::eyre!("❌ Failed to connect to Native Daemon IPC (Is cluaizd running?): {}", e));
+                    }
+                };
+                
+                use std::io::{Read, Write};
+                // Send the prompt natively to the daemon
+                if let Err(e) = client.write_all(prompt.as_bytes()) {
+                     return Err(color_eyre::eyre::eyre!("❌ Failed to send command to IPC: {}", e));
+                }
+                
+                // Read streaming tokens with 0ms latency
+                let mut buffer = [0; 1024];
+                loop {
+                    match client.read(&mut buffer) {
+                        Ok(0) => break, // Pipe closed
+                        Ok(n) => {
+                            let token = String::from_utf8_lossy(&buffer[..n]);
+                            if token.trim() == "[DONE]" { break; }
+                            print!("{}", token);
+                            let _ = std::io::stdout().flush();
+                            if let Ok(mut guard) = output_clone.lock() {
+                                guard.push_str(&token);
+                            }
                         }
-                        true
-                    })
-                )
+                        Err(e) => {
+                             return Err(color_eyre::eyre::eyre!("❌ IPC Read Error: {}", e));
+                        }
+                    }
+                }
+                Ok(())
             });
             if let Err(e) = res {
                 println!("\n❌ Inference Error: {}", e);

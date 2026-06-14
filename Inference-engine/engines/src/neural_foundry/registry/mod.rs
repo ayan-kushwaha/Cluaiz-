@@ -4,6 +4,7 @@
 pub mod scanner;
 pub mod compiler_daemon;
 pub mod parser;
+pub mod manager;
 
 use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
@@ -138,34 +139,5 @@ impl SkillRegistry {
                 }
             }
         }
-    }
-
-    /// 🛰️ Cluaiz Pull: Downloads and installs a skill from the Global Hub.
-    pub async fn pull_skill(skill_id: &str) -> anyhow::Result<()> {
-        let index_url = "https://github.com/cluaiz/cluaiz/releases/download/latest-library/skills_index.json";
-        
-        println!("🛰️ [Core-Foundry] Connecting to Cluaiz Skill Hub...");
-        
-        let client = reqwest::Client::new();
-        let resp = client.get(index_url).send().await?.json::<serde_json::Value>().await?;
-        
-        let skills = resp["available_skills"].as_array().ok_or(anyhow::anyhow!("Invalid library index format"))?;
-        let skill_entry = skills.iter().find(|s| s["id"] == skill_id)
-            .ok_or(anyhow::anyhow!("Skill ID '{}' not found in Cluaiz Library", skill_id))?;
-            
-        let download_url = skill_entry["download_url"].as_str().unwrap();
-        println!("📦 [Core-Foundry] Downloading Core Package: {}", download_url);
-        
-        // Binary Download & Extraction Logic (using zip-extract)
-        Ok(())
-    }
-
-    /// 📜 Remote Index: Returns a list of all skills available in the Global Hub.
-    pub async fn list_remote_skills() -> anyhow::Result<Vec<serde_json::Value>> {
-        let index_url = "https://github.com/cluaiz/cluaiz/releases/download/latest-library/skills_index.json";
-        let client = reqwest::Client::new();
-        let resp = client.get(index_url).send().await?.json::<serde_json::Value>().await?;
-        
-        Ok(resp["available_skills"].as_array().unwrap_or(&vec![]).clone())
     }
 }

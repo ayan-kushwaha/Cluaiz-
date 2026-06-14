@@ -1,13 +1,14 @@
 //! ═══════════════════════════════════════════════════════════════════════
-//!  CURE API Gateway — The Single Entry Point (Port 8000)
+//!  Cluaize API Gateway — The Single Entry Point (Port 8000)
 //! ═══════════════════════════════════════════════════════════════════════
-//!  Every client (Desktop, Mobile, Web, Robot, Developer) talks to CURE
+//!  Every client (Desktop, Mobile, Web, Robot, Developer) talks to Cluaize Engine
 //!  through this gateway. Nothing else is exposed.
 //! ═══════════════════════════════════════════════════════════════════════
 
 mod state;
 mod handlers;
 mod routes;
+mod ffi_bridge;
 
 use colored::*;
 use dispatcher::NeuralDispatcher;
@@ -43,11 +44,24 @@ async fn main() {
     let cure_root = env::current_dir().expect("Failed to determine current directory");
 
     // ── Initialize the CURE pillars ──
-    tracing::info!("🔧 Initializing CURE Engine...");
+    tracing::info!("🔧 Initializing Cluaiz Engine...");
     
 
+    // 🚀 Check Pure Brain Mode
+    let mut pure_brain = false;
+    if let Ok(control) = cluaiz_shared::hardware::governor::HardwareGovernor::load_system_control() {
+        if control.brain.is_pure_brain() {
+            tracing::info!("🧠 Pure Brain Mode Active: LLM Engine loading & VRAM allocation is suspended.");
+            pure_brain = true;
+        }
+    }
+
     // 🚀 Ignite the SystemBooster to optimize hardware before booting engines
-    let booster_state = SystemBooster::ignite().unwrap_or_default();
+    let booster_state = if pure_brain {
+        Default::default()
+    } else {
+        SystemBooster::ignite().unwrap_or_default()
+    };
     
     // Create the Dispatcher with the active booster state
     let dispatcher = NeuralDispatcher::new(
@@ -55,42 +69,87 @@ async fn main() {
         KernelSignature::default() // Default to CPU fallback; dynamically updated during /models/load
     );
 
-    // ── Create shared state ──
-    let state = Arc::new(AppState { dispatcher });
+    let embedding_dispatcher = Arc::new(dispatcher::EmbeddingDispatcher::new().expect("Failed to initialize ONNX embedding engine"));
 
-    // ── Build the Router ──
-    let app = routes::build(state);
+    // ── Create shared state ──
+    let state = Arc::new(AppState { dispatcher, embedding_dispatcher });
+
+    // ── Build API Routes ──
+    let app = routes::build(state.clone());
 
     // ── Bind to Port 8000 ──
     let addr = "0.0.0.0:8000";
 
     println!("\n{}", "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓".bright_blue());
-    println!("{} {}", "┃".bright_blue(), "🧬 CURE Engine".bright_cyan().bold());
-    println!("{} {}", "┃".bright_blue(), format!("v{} — Cluaiz Universal Runtime Engine", env!("CARGO_PKG_VERSION")).bright_black());
+    println!("{} {}", "┃".bright_blue(), "🧬 Cluaiz Engine API & FFI".bright_cyan().bold());
+    println!("{} {}", "┃".bright_blue(), format!("v{} — Cluaize Inference Engine", env!("CARGO_PKG_VERSION")).bright_black());
     println!("{}", "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫".bright_blue());
     println!("{} {}", "┃".bright_blue(), format!("{}{}", "🌐 Gateway:   ".bright_black(), "http://localhost:8000".bright_green().bold()));
     println!("{} {}", "┃".bright_blue(), format!("{}{}", "💚 Status:    ".bright_black(), "ALL SYSTEMS ONLINE".bright_green().bold()));
     println!("{} {}", "┃".bright_blue(), format!("{}{}", "🧠 Kernel:    ".bright_black(), "ACTIVE".magenta().bold()));
     println!("{}", "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫".bright_blue());
     println!("{} {}", "┃".bright_blue(), "📡 Endpoints:".bright_magenta().bold());
-    println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "    POST ".bright_cyan().bold(), "/chat             ".white(), "→ Chat with CURE".bright_black()));
+    println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "    POST ".bright_cyan().bold(), "/chat             ".white(), "→ Chat with Cluaize".bright_black()));
     println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "    GET  ".bright_cyan().bold(), "/sessions         ".white(), "→ List chat sessions".bright_black()));
+    println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "    POST ".bright_cyan().bold(), "/v1/db/execute    ".white(), "→ FFI Database Query".bright_black()));
+    println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "    POST ".bright_cyan().bold(), "/v1/system/brain  ".white(), "→ Toggle FFI Brain".bright_black()));
     println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "    GET  ".bright_cyan().bold(), "/hardware         ".white(), "→ Check system RAM/CPU".bright_black()));
     println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "    POST ".bright_cyan().bold(), "/models/download  ".white(), "→ Fetch from HF".bright_black()));
     println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "    POST ".bright_cyan().bold(), "/models/load      ".white(), "→ Activate Model".bright_black()));
     println!("{}", "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫".bright_blue());
-    println!("{} {}", "┃".bright_blue(), format!("{}{}{}{}", "🚫 ".white(), "Python BANNED".red(), "   |   🚫 ".white(), "Docker BANNED".red()));
-    println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "✨ ".yellow(), "Nothing Need.".bright_white().italic(), " Just CURE.".bright_green().bold()));
+    println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "✨ ".yellow(), "Nothing Need.".bright_white().italic(), " Just Cluaize.".bright_green().bold()));
     println!("{}", "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n".bright_blue());
 
-    tracing::info!("🌐 CURE Gateway listening on {}", addr);
+    tracing::info!("🌐 Cluaize Gateway listening on {}", addr);
 
-    // ── Start the server ──
+    // ── Start the FFI/IPC Daemon (Background) ──
+    tracing::info!("🚀 Spawning Native FFI Named Pipe Listener...");
+    tokio::spawn(async move { ffi_bridge::start_named_pipe_server(state.clone()).await; });
+
+
+    // ── Start the HTTP server ──
     let listener = tokio::net::TcpListener::bind(addr)
         .await
         .expect("❌ Failed to bind to port 8000. Is another process using it?");
 
     axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
         .await
-        .expect("❌ CURE API server crashed unexpectedly");
+        .expect("❌ Cluaize API server crashed unexpectedly");
+    
+    tracing::info!("🛑 Cluaize Gateway cleanly shut down.");
 }
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {
+            println!("\n  {} [Daemon] SIGINT received. Initiating Clean Shutdown...", "🛑".red());
+        },
+        _ = terminate => {
+            println!("\n  {} [Daemon] SIGTERM received. Initiating Clean Shutdown...", "🛑".red());
+        },
+    }
+
+    println!("  {} [Memory] Flushing LMDB rings and releasing VRAM maps...", "🧹".yellow());
+    // Give engine time to sync
+    tokio::time::sleep(std::time::Duration::from_millis(300)).await;
+    println!("  {} [System] Cluaize successfully terminated.", "✅".green());
+}
+

@@ -16,3 +16,4 @@ cluaiz-shared = { path = "../../inference-engine/engines/cluaiz-shared" }
 anyhow = "1.0"
 async-trait = "0.1"
 tracing = "0.1"
+tokio = { version = "1.0", features = ["full"] }

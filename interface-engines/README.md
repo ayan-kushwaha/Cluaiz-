@@ -6,7 +6,7 @@
 To understand Cluaiz, we must first understand the problem with current AI systems. 
 
 **The Problem: The "Wrapper" Tax**
-Most popular AI systems today (like Ollama or vLLM) operate as "Wrappers". They use Python, Docker, or REST APIs (like HTTP/JSON) to send data back and forth between the user interface and the AI engine. Every time data moves through these layers, the computer has to translate it (Serialization/IPC). This creates a massive bottleneck. We call this the "Efficiency Tax".
+Most popular AI systems today operate as "Wrappers". They use Python, Docker, or REST APIs (like HTTP/JSON) to send data back and forth between the user interface and the AI engine. Every time data moves through these layers, the computer has to translate it (Serialization/IPC). This creates a massive bottleneck. We call this the "Efficiency Tax".
 
 **The Cluaiz Solution: The Independent Engine**
 Our absolute goal is to eliminate this tax. Cluaiz does not use HTTP APIs or Python to talk to the AI engine. Instead, it builds a **Neural Interface-engine**. 

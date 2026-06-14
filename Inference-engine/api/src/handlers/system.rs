@@ -52,7 +52,7 @@ pub async fn system_info() -> Json<Value> {
             "engines": "Muscles — C++ model inference via llama.cpp FFI"
         },
         "philosophy": "Nothing Need. Just CURE.",
-        "banned": ["Python", "Docker", "Ollama", "npm", "pip"]
+        "banned": ["Python", "Docker", "npm", "pip"]
     }))
 }
 
@@ -61,6 +61,56 @@ pub async fn skip_think() -> Json<Value> {
     cluaiz_shared::GLOBAL_SKIP_THINKING_SIGNAL.store(true, std::sync::atomic::Ordering::SeqCst);
     Json(json!({
         "status": "success",
-        "message": "⚡ In-Flight Logit Clamping Triggered: Skip Thinking Active."
+        "message": "Brain skip signal injected. Neural graph will pivot."
+    }))
+}
+
+// ─── GET /v1/system/control ───────────────────────────────────────────
+pub async fn get_system_control(State(_state): State<Arc<AppState>>) -> Json<Value> {
+    use cluaiz_shared::hardware::governor::HardwareGovernor;
+    if let Ok(control) = HardwareGovernor::load_system_control() {
+        Json(json!({
+            "status": "success",
+            "control": control
+        }))
+    } else {
+        Json(json!({
+            "status": "error",
+            "message": "Failed to load system control config"
+        }))
+    }
+}
+
+// ─── POST /v1/system/brain ────────────────────────────────────────────
+#[derive(serde::Deserialize)]
+pub struct BrainControlPayload {
+    pub state: String,
+}
+
+pub async fn toggle_brain(
+    State(_state): State<Arc<AppState>>,
+    Json(payload): Json<BrainControlPayload>,
+) -> Json<Value> {
+    use cluaiz_shared::hardware::governor::HardwareGovernor;
+    use cluaiz_shared::hardware::system_control::HardwareOrchestrator;
+    
+    if let Ok(mut control) = HardwareGovernor::load_system_control() {
+        control.brain.cluaizd_connect_ffi = payload.state.clone();
+        if let Err(e) = HardwareOrchestrator::persist_sovereign_state(&control) {
+            return Json(json!({
+                "status": "error",
+                "message": format!("Failed to save system control: {}", e)
+            }));
+        } else {
+            return Json(json!({
+                "status": "success",
+                "message": format!("Cluaizd FFI Connection toggled to: {}", payload.state)
+            }));
+        }
+    }
+    
+    Json(json!({
+        "status": "error",
+        "message": "Failed to load system control config"
     }))
 }

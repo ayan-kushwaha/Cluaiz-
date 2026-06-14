@@ -1,3 +1,11 @@
 pub mod chat;
 pub mod system;
 pub mod models;
+pub mod booster;
+pub mod db;
+pub mod skills;
+pub mod ingest;
+pub mod benchmark;
+pub mod ps;
+pub mod setup;
+pub mod permission;

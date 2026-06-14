@@ -505,14 +505,17 @@ impl DashboardEngine {
                         let my_pid = std::process::id().to_string();
                         let vram_used_gb = registry.get(&my_pid).map(|i| i.vram_gb).unwrap_or(0.0);
 
-                        println!("\n  {} │ {} tokens │ {:.1} TPS │ {:.2}s │ TTFT: {:.2}s │ VRAM Used: {:.2} GB", 
-                            colored::Colorize::magenta("⚡ System Benchmark"), 
-                            colored::Colorize::cyan(tokens_in_this_run.to_string().as_str()), 
-                            avg_tps, 
-                            duration,
-                            ttft_secs,
-                            vram_used_gb
-                        );
+                        let schema_for_telemetry = engines::neural_foundry::security::permission_schema::PermissionSchema::load();
+                        if schema_for_telemetry.stream_telemetry {
+                            println!("\n  {} │ {} tokens │ {:.1} TPS │ {:.2}s │ TTFT: {:.2}s │ VRAM Used: {:.2} GB", 
+                                colored::Colorize::magenta("⚡ System Benchmark"), 
+                                colored::Colorize::cyan(tokens_in_this_run.to_string().as_str()), 
+                                avg_tps, 
+                                duration,
+                                ttft_secs,
+                                vram_used_gb
+                            );
+                        }
                         println!(); // ensure prompt starts on fresh line
                     }
                 }

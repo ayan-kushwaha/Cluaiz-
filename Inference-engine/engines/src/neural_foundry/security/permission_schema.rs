@@ -22,6 +22,10 @@ pub struct PermissionSchema {
     pub vectorize_user_input: bool,
     #[serde(default = "default_vectorize_ai_response")]
     pub vectorize_ai_response: bool,
+    #[serde(default = "default_stream_telemetry")]
+    pub stream_telemetry: bool,
+    #[serde(default = "default_temporary_chat_ttl_hours")]
+    pub temporary_chat_ttl_hours: u64,
 }
 
 impl Default for ModelSelection {
@@ -42,6 +46,8 @@ impl Default for PermissionSchema {
             wasm_firewall: default_wasm_firewall(),
             vectorize_user_input: default_vectorize_user_input(),
             vectorize_ai_response: default_vectorize_ai_response(),
+            stream_telemetry: default_stream_telemetry(),
+            temporary_chat_ttl_hours: default_temporary_chat_ttl_hours(),
         }
     }
 }
@@ -56,6 +62,14 @@ fn default_vectorize_user_input() -> bool {
 
 fn default_vectorize_ai_response() -> bool {
     true
+}
+
+fn default_stream_telemetry() -> bool {
+    false
+}
+
+fn default_temporary_chat_ttl_hours() -> u64 {
+    24
 }
 
 impl PermissionSchema {

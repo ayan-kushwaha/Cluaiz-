@@ -1,663 +1,521 @@
-2026-06-12T03:26:48.103194Z  WARN cluaiz::core::bootstrapper: ⚠️ [DevSync] Kernel source not found at: "C:\\Users\\Aryan\\my\\Cluaiz-workspace\\Cluaiz-Technologies\\cluaize\\target\\debug\\cluaiz_llama.dll"
-2026-06-12T03:26:48.103308Z  INFO cluaiz::core::bootstrapper: 🧠 [Cluaiz] Igniting Neural Foundry (Permissions & Skills)...
-2026-06-12T03:26:48.114878Z  INFO cluaiz::core::bootstrapper: 🛰️ [Cluaiz] Synchronizing Neural Registry...
-2026-06-12T03:26:52.018901Z  INFO system_booster::os_tuning: 🚀 [Bare Metal] Attempting to elevate process priority to high (Value: 128) for PID 28900
-2026-06-12T03:26:52.023295Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
-2026-06-12T03:26:52.031431Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
-2026-06-12T03:26:52.032850Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
-2026-06-12T03:26:52.033198Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
-2026-06-12T03:26:52.034120Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
-2026-06-12T03:26:52.034394Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
-2026-06-12T03:26:52.035283Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:52.035709Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:52.036434Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
-2026-06-12T03:26:52.036692Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
-2026-06-12T03:26:52.037648Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:52.037810Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:52.039816Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:52.040064Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:52.040808Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:52.041013Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:52.041653Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:52.041843Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:52.042423Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
-2026-06-12T03:26:52.042670Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
-2026-06-12T03:26:52.043455Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:26:52.044604Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:26:52.044945Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
-2026-06-12T03:26:52.045068Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
-2026-06-12T03:26:52.045089Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
-2026-06-12T03:26:52.045104Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
-2026-06-12T03:26:52.045121Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
-2026-06-12T03:26:52.045134Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
-2026-06-12T03:26:52.045146Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
-2026-06-12T03:26:52.045159Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
-2026-06-12T03:26:52.045190Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
-2026-06-12T03:26:52.045204Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
-2026-06-12T03:26:52.045217Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
-2026-06-12T03:26:52.045407Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
-2026-06-12T03:26:52.076291Z  INFO engines::neural_foundry::security::permission_schema: ✅ Updated Permission.json with active models.
-2026-06-12T03:26:56.117602Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon Worker] Background queue active. Processing skills sequentially...
-2026-06-12T03:26:56.118235Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: frontend-dev
-2026-06-12T03:26:56.118841Z  INFO engines::neural_foundry::registry::compiler_daemon: ⏳ [Compiler Daemon] Generating Real Router Embedding Cache for frontend-dev...
-2026-06-12T03:26:56.119205Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
-2026-06-12T03:26:56.128280Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
-2026-06-12T03:26:56.129301Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
-2026-06-12T03:26:56.129572Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
-2026-06-12T03:26:56.130473Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
-2026-06-12T03:26:56.130713Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
-2026-06-12T03:26:56.131867Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.132209Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.133227Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
-2026-06-12T03:26:56.133449Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
-2026-06-12T03:26:56.134345Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.134572Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.135903Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.136102Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.136773Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.136950Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.137911Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.138226Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.139328Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
-2026-06-12T03:26:56.139596Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
-2026-06-12T03:26:56.140884Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:26:56.142335Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:26:56.142721Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
-2026-06-12T03:26:56.142769Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
-2026-06-12T03:26:56.142795Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
-2026-06-12T03:26:56.142822Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
-2026-06-12T03:26:56.142853Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
-2026-06-12T03:26:56.142879Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
-2026-06-12T03:26:56.142903Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
-2026-06-12T03:26:56.142933Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
-2026-06-12T03:26:56.142986Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
-2026-06-12T03:26:56.143020Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
-2026-06-12T03:26:56.143045Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
-2026-06-12T03:26:56.143356Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
-2026-06-12T03:26:56.165504Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: minimax-music-gen
-2026-06-12T03:26:56.166163Z  INFO engines::neural_foundry::registry::compiler_daemon: ⏳ [Compiler Daemon] Generating Real Router Embedding Cache for minimax-music-gen...
-2026-06-12T03:26:56.166505Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
-2026-06-12T03:26:56.175970Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
-2026-06-12T03:26:56.176821Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
-2026-06-12T03:26:56.177019Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
-2026-06-12T03:26:56.177679Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
-2026-06-12T03:26:56.177852Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
-2026-06-12T03:26:56.178516Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.178841Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.179895Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
-2026-06-12T03:26:56.180299Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
-2026-06-12T03:26:56.181289Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.181835Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.183753Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.184017Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.184522Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.184780Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.185692Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.185912Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.186824Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
-2026-06-12T03:26:56.187057Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
-2026-06-12T03:26:56.188516Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:26:56.189638Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:26:56.189927Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
-2026-06-12T03:26:56.190023Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
-2026-06-12T03:26:56.190062Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
-2026-06-12T03:26:56.190079Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
-2026-06-12T03:26:56.190097Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
-2026-06-12T03:26:56.190110Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
-2026-06-12T03:26:56.190122Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
-2026-06-12T03:26:56.190135Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
-2026-06-12T03:26:56.190165Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
-2026-06-12T03:26:56.190179Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
-2026-06-12T03:26:56.190191Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
-2026-06-12T03:26:56.190373Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
-2026-06-12T03:26:56.215087Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: test-small-skill
-2026-06-12T03:26:56.215579Z  INFO engines::neural_foundry::registry::compiler_daemon: ⏳ [Compiler Daemon] Generating Real Router Embedding Cache for test-small-skill...
-2026-06-12T03:26:56.215970Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
-2026-06-12T03:26:56.223735Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
-2026-06-12T03:26:56.224582Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
-2026-06-12T03:26:56.224824Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
-2026-06-12T03:26:56.225654Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
-2026-06-12T03:26:56.225867Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
-2026-06-12T03:26:56.226770Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.226992Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.227838Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
-2026-06-12T03:26:56.228123Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
-2026-06-12T03:26:56.228960Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.229284Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.231071Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.231479Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.232239Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.232407Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.233327Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.233584Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.234551Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
-2026-06-12T03:26:56.234779Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
-2026-06-12T03:26:56.236229Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:26:56.237814Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:26:56.238287Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
-2026-06-12T03:26:56.238336Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
-2026-06-12T03:26:56.238357Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
-2026-06-12T03:26:56.238378Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
-2026-06-12T03:26:56.238401Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
-2026-06-12T03:26:56.238427Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
-2026-06-12T03:26:56.238450Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
-2026-06-12T03:26:56.238469Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
-2026-06-12T03:26:56.238511Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
-2026-06-12T03:26:56.238556Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
-2026-06-12T03:26:56.238578Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
-2026-06-12T03:26:56.238791Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
-2026-06-12T03:26:56.260169Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: frontend-dev
-2026-06-12T03:26:56.260838Z  INFO engines::neural_foundry::registry::compiler_daemon: ⏳ [Compiler Daemon] Generating Real Router Embedding Cache for frontend-dev...
-2026-06-12T03:26:56.261154Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
-2026-06-12T03:26:56.276566Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
-2026-06-12T03:26:56.280271Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
-2026-06-12T03:26:56.282108Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
-2026-06-12T03:26:56.283959Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
-2026-06-12T03:26:56.284810Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
-2026-06-12T03:26:56.288486Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.289950Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.292412Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
-2026-06-12T03:26:56.293269Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
-2026-06-12T03:26:56.296541Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.296946Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.300445Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.301045Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.301634Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.301780Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.302644Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.302857Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.303639Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
-2026-06-12T03:26:56.303845Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
-2026-06-12T03:26:56.304896Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:26:56.305983Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:26:56.306394Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
-2026-06-12T03:26:56.306441Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
-2026-06-12T03:26:56.306463Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
-2026-06-12T03:26:56.306486Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
-2026-06-12T03:26:56.306511Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
-2026-06-12T03:26:56.306535Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
-2026-06-12T03:26:56.306557Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
-2026-06-12T03:26:56.306577Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
-2026-06-12T03:26:56.306615Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
-2026-06-12T03:26:56.306637Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
-2026-06-12T03:26:56.306656Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
-2026-06-12T03:26:56.306853Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
-2026-06-12T03:26:56.330613Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: minimax-music-gen
-2026-06-12T03:26:56.331143Z  INFO engines::neural_foundry::registry::compiler_daemon: ⏳ [Compiler Daemon] Generating Real Router Embedding Cache for minimax-music-gen...
-2026-06-12T03:26:56.331324Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
-2026-06-12T03:26:56.341343Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
-2026-06-12T03:26:56.342625Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
-2026-06-12T03:26:56.342855Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
-2026-06-12T03:26:56.343684Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
-2026-06-12T03:26:56.343877Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
-2026-06-12T03:26:56.344826Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.345038Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.359894Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
-2026-06-12T03:26:56.360233Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
-2026-06-12T03:26:56.361012Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.361270Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.362702Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.362891Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.363575Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.363788Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.364600Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.364716Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.365083Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
-2026-06-12T03:26:56.365189Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
-2026-06-12T03:26:56.365903Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:26:56.366591Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:26:56.367010Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
-2026-06-12T03:26:56.367058Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
-2026-06-12T03:26:56.367079Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
-2026-06-12T03:26:56.367102Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
-2026-06-12T03:26:56.367128Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
-2026-06-12T03:26:56.367149Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
-2026-06-12T03:26:56.367168Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
-2026-06-12T03:26:56.367189Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
-2026-06-12T03:26:56.367232Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
-2026-06-12T03:26:56.367254Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
-2026-06-12T03:26:56.367274Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
-2026-06-12T03:26:56.367521Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
-2026-06-12T03:26:56.385938Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: test-small-skill
-2026-06-12T03:26:56.386327Z  INFO engines::neural_foundry::registry::compiler_daemon: ⏳ [Compiler Daemon] Generating Real Router Embedding Cache for test-small-skill...
-2026-06-12T03:26:56.386474Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
-2026-06-12T03:26:56.398542Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
-2026-06-12T03:26:56.399526Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
-2026-06-12T03:26:56.399693Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
-2026-06-12T03:26:56.400187Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
-2026-06-12T03:26:56.400308Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
-2026-06-12T03:26:56.405439Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.405667Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.406315Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
-2026-06-12T03:26:56.406514Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
-2026-06-12T03:26:56.407209Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.407329Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.408872Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.409104Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.410066Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.410338Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.410931Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:26:56.411102Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:26:56.411927Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
-2026-06-12T03:26:56.412147Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
-2026-06-12T03:26:56.413293Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:26:56.414713Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:26:56.415084Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
-2026-06-12T03:26:56.415135Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
-2026-06-12T03:26:56.415158Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
-2026-06-12T03:26:56.415180Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
-2026-06-12T03:26:56.415205Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
-2026-06-12T03:26:56.415225Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
-2026-06-12T03:26:56.415244Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
-2026-06-12T03:26:56.415264Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
-2026-06-12T03:26:56.415296Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
-2026-06-12T03:26:56.415317Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
-2026-06-12T03:26:56.415347Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
-2026-06-12T03:26:56.415552Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
-2026-06-12T03:27:03.660420Z  INFO cluaiz_shared::metadata::dna: ✅ [DNA] Governor Discovery Complete: Mode UltraMaxBoost | Window 2k
-2026-06-12T03:27:03.661145Z  INFO engines::runtime::execution::hub: 🔩 [Orchestrator] Initiating Dynamic Hardware Handshake for Engine: llama
-2026-06-12T03:27:03.665820Z  INFO engines::memory::storage_bridge: Initializing Remote Database Network Storage Bridge targeting localhost:9090...
-2026-06-12T03:27:04.647999Z  INFO engines::interface_engines::manager::kernel_loader: 🎯 [KernelLoader] Cluaiz path resolved: "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
-2026-06-12T03:27:04.649198Z  INFO engines::interface_engines::manager::kernel_loader: 🎯 [KernelLoader] Cluaiz path resolved: "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
-2026-06-12T03:27:04.649445Z  INFO engines::interface_engines::manager: 🧬 [Linker] Mapping binary: "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
-2026-06-12T03:27:05.733212Z  INFO engines::interface_engines::manager: 🔗 [Linker] Synchronized Sovereign Skip-Thinking Pointer across FFI.
-2026-06-12T03:27:05.733261Z  INFO engines::interface_engines::manager: ✅ [Linker] 7ns Handshake Complete. Kernel Linked.
-2026-06-12T03:27:11.183585Z  INFO engines::interface_engines::manager: 🚀 [Linker] Core Kernel Instantiated at Bare-Metal level.
-2026-06-12T03:27:11.183666Z  INFO engines::runtime::execution::hub: 🧬 [Orchestrator] Hardware Handshake SUCCESS. Neural Bridge Established.
-2026-06-12T03:27:11.195790Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: frontend-dev
-2026-06-12T03:27:11.196210Z  INFO engines::neural_foundry::registry::compiler_daemon: ⏳ [Compiler Daemon] Generating Real Router Embedding Cache for frontend-dev...
-2026-06-12T03:27:11.196442Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
-2026-06-12T03:27:11.196986Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
-2026-06-12T03:27:11.202995Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
-2026-06-12T03:27:11.203806Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
-2026-06-12T03:27:11.204038Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
-2026-06-12T03:27:11.204277Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
-2026-06-12T03:27:11.204538Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
-2026-06-12T03:27:11.204660Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
-2026-06-12T03:27:11.204993Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
-2026-06-12T03:27:11.205094Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.205137Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
-2026-06-12T03:27:11.205186Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.205644Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
-2026-06-12T03:27:11.205664Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
-2026-06-12T03:27:11.205782Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
-2026-06-12T03:27:11.205752Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
-2026-06-12T03:27:11.206228Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.206367Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.206371Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.206546Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.207071Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
-2026-06-12T03:27:11.207190Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
-2026-06-12T03:27:11.207383Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.207513Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.207645Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.207793Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.207970Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.208078Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.208546Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.208653Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.208730Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.208862Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.209152Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
-2026-06-12T03:27:11.209287Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
-2026-06-12T03:27:11.209292Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.209424Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.209804Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.209825Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:27:11.209899Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.210349Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
-2026-06-12T03:27:11.210497Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
-2026-06-12T03:27:11.210526Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:27:11.210713Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
-2026-06-12T03:27:11.210735Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
-2026-06-12T03:27:11.210743Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
-2026-06-12T03:27:11.210755Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
-2026-06-12T03:27:11.210772Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
-2026-06-12T03:27:11.210785Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
-2026-06-12T03:27:11.210796Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
-2026-06-12T03:27:11.210857Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
-2026-06-12T03:27:11.210877Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
-2026-06-12T03:27:11.210890Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
-2026-06-12T03:27:11.210901Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
-2026-06-12T03:27:11.211024Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
-2026-06-12T03:27:11.211083Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:27:11.211772Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:27:11.212041Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
-2026-06-12T03:27:11.212066Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
-2026-06-12T03:27:11.212080Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
-2026-06-12T03:27:11.212094Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
-2026-06-12T03:27:11.212107Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
-2026-06-12T03:27:11.212120Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
-2026-06-12T03:27:11.212129Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
-2026-06-12T03:27:11.212136Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
-2026-06-12T03:27:11.212147Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
-2026-06-12T03:27:11.212154Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
-2026-06-12T03:27:11.212161Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
-2026-06-12T03:27:11.212279Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
-2026-06-12T03:27:11.221486Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: minimax-music-gen
-2026-06-12T03:27:11.221880Z  INFO engines::neural_foundry::registry::compiler_daemon: ⏳ [Compiler Daemon] Generating Real Router Embedding Cache for minimax-music-gen...
-2026-06-12T03:27:11.222099Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
-2026-06-12T03:27:11.223552Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
-2026-06-12T03:27:11.228340Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
-2026-06-12T03:27:11.228966Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
-2026-06-12T03:27:11.229155Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
-2026-06-12T03:27:11.229557Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
-2026-06-12T03:27:11.229689Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
-2026-06-12T03:27:11.230039Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
-2026-06-12T03:27:11.230052Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.230193Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.230570Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
-2026-06-12T03:27:11.230655Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
-2026-06-12T03:27:11.230889Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
-2026-06-12T03:27:11.231024Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
-2026-06-12T03:27:11.231111Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.231280Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.231368Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
-2026-06-12T03:27:11.231452Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
-2026-06-12T03:27:11.231753Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.231870Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.232193Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.232202Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
-2026-06-12T03:27:11.232279Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.232284Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
-2026-06-12T03:27:11.232584Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.232667Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.232669Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.232785Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.233093Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.233189Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.233320Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.233402Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.233587Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
-2026-06-12T03:27:11.233676Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.233700Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
-2026-06-12T03:27:11.233816Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.234106Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.234108Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:27:11.234190Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.234476Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
-2026-06-12T03:27:11.234591Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
-2026-06-12T03:27:11.234619Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:27:11.234757Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
-2026-06-12T03:27:11.234776Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
-2026-06-12T03:27:11.234784Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
-2026-06-12T03:27:11.234791Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
-2026-06-12T03:27:11.234800Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
-2026-06-12T03:27:11.234807Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
-2026-06-12T03:27:11.234813Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
-2026-06-12T03:27:11.234819Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
-2026-06-12T03:27:11.234830Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
-2026-06-12T03:27:11.234836Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
-2026-06-12T03:27:11.234843Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
-2026-06-12T03:27:11.234921Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
-2026-06-12T03:27:11.235102Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:27:11.235552Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:27:11.235692Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
-2026-06-12T03:27:11.235709Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
-2026-06-12T03:27:11.235717Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
-2026-06-12T03:27:11.235725Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
-2026-06-12T03:27:11.235733Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
-2026-06-12T03:27:11.235740Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
-2026-06-12T03:27:11.235746Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
-2026-06-12T03:27:11.235752Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
-2026-06-12T03:27:11.235786Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
-2026-06-12T03:27:11.235795Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
-2026-06-12T03:27:11.235801Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
-2026-06-12T03:27:11.235880Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
-2026-06-12T03:27:11.242481Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: test-small-skill
-2026-06-12T03:27:11.242675Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:1.7b Status: Optimal, Cached: false
-2026-06-12T03:27:11.242676Z  INFO engines::neural_foundry::registry::compiler_daemon: ⏳ [Compiler Daemon] Generating Real Router Embedding Cache for test-small-skill...
-2026-06-12T03:27:11.242883Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:1.7b:gguf:binary Status: Optimal, Cached: false
-2026-06-12T03:27:11.242918Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
-2026-06-12T03:27:11.243026Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:8b Status: Optimal, Cached: false
-2026-06-12T03:27:11.243148Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:8b:gguf:binary Status: Optimal, Cached: false
-2026-06-12T03:27:11.243263Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:1.7b Status: Optimal, Cached: false
-2026-06-12T03:27:11.243384Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:1.7b:gguf:ternary Status: Optimal, Cached: false
-2026-06-12T03:27:11.243501Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:4b Status: Optimal, Cached: false
-2026-06-12T03:27:11.243621Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:4b:gguf:ternary Status: Optimal, Cached: false
-2026-06-12T03:27:11.243743Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:8b:gguf:ternary Status: Optimal, Cached: false
-2026-06-12T03:27:11.243923Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:8b Status: Optimal, Cached: false
-2026-06-12T03:27:11.244069Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:8b Status: Optimal, Cached: true
-2026-06-12T03:27:11.244168Z  INFO engines::models::registry: 🧬 [Roster] Model clip:vit-base:onnx:fp32 Status: Optimal, Cached: false
-2026-06-12T03:27:11.244256Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.244347Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:gguf:q8_0 Status: Impossible, Cached: false
-2026-06-12T03:27:11.244434Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-06-12T03:27:11.244523Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:awq:8bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.244681Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b Status: Impossible, Cached: false
-2026-06-12T03:27:11.244847Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.244941Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.245034Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b Status: Optimal, Cached: false
-2026-06-12T03:27:11.245131Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.245217Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.245300Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:awq:8bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.245388Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b Status: Optimal, Cached: false
-2026-06-12T03:27:11.245476Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.245564Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.245650Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b:gguf:q8_0 Status: Average, Cached: false
-2026-06-12T03:27:11.245758Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b Status: Optimal, Cached: false
-2026-06-12T03:27:11.245896Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.245985Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.246071Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b Status: Optimal, Cached: false
-2026-06-12T03:27:11.246156Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.246242Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b:gguf:q8_0 Status: Impossible, Cached: false
-2026-06-12T03:27:11.246333Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b Status: Heavy, Cached: false
-2026-06-12T03:27:11.246419Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b:gguf:q4_k_m Status: Heavy, Cached: false
-2026-06-12T03:27:11.246502Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.246602Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
-2026-06-12T03:27:11.246676Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b Status: Optimal, Cached: false
-2026-06-12T03:27:11.246867Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.246970Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.247055Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:awq:8bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.247150Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.247283Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:gguf:q4_k_m Status: Heavy, Cached: false
-2026-06-12T03:27:11.247374Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe Status: Heavy, Cached: false
-2026-06-12T03:27:11.247376Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
-2026-06-12T03:27:11.247459Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:gguf:q8_0 Status: Impossible, Cached: false
-2026-06-12T03:27:11.247516Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
-2026-06-12T03:27:11.247573Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.247784Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:gguf:q8_0 Status: Impossible, Cached: false
-2026-06-12T03:27:11.247885Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:awq:8bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.247967Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
-2026-06-12T03:27:11.247976Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:gguf:q4_k_m Status: Heavy, Cached: false
-2026-06-12T03:27:11.248054Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
-2026-06-12T03:27:11.248066Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b Status: Heavy, Cached: false
-2026-06-12T03:27:11.248615Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.248752Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.249396Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b Status: Optimal, Cached: true
-2026-06-12T03:27:11.249554Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.249823Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.249852Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
-2026-06-12T03:27:11.249987Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
-2026-06-12T03:27:11.250012Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b Status: Optimal, Cached: false
-2026-06-12T03:27:11.250192Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b:gguf:q4_k_m Status: Optimal, Cached: true
-2026-06-12T03:27:11.250345Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.250448Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.250484Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b Status: Optimal, Cached: false
-2026-06-12T03:27:11.250539Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.250607Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.250785Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.250980Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.251160Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:70b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-06-12T03:27:11.251287Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:70b Status: Impossible, Cached: false
-2026-06-12T03:27:11.251411Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:70b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.251507Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.251545Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.251642Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.251672Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b Status: Optimal, Cached: false
-2026-06-12T03:27:11.251840Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.252007Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.252063Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.252120Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b:awq:8bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.252148Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.252245Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b Status: Impossible, Cached: false
-2026-06-12T03:27:11.252394Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-06-12T03:27:11.252522Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.252656Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b Status: Optimal, Cached: false
-2026-06-12T03:27:11.252694Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.252781Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.252820Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.252964Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.253100Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:awq:8bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.253230Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.253366Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:405b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.253429Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
-2026-06-12T03:27:11.253576Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
-2026-06-12T03:27:11.253586Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:70b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.253712Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:70b Status: Impossible, Cached: false
-2026-06-12T03:27:11.253878Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:70b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-06-12T03:27:11.254044Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.254147Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:27:11.254184Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.254320Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.254463Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b Status: Optimal, Cached: false
-2026-06-12T03:27:11.254638Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:1b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.254774Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:1b Status: Optimal, Cached: false
-2026-06-12T03:27:11.254930Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:1b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.254977Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:27:11.255069Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.255193Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.255215Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
-2026-06-12T03:27:11.255272Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
-2026-06-12T03:27:11.255289Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
-2026-06-12T03:27:11.255302Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
-2026-06-12T03:27:11.255318Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
-2026-06-12T03:27:11.255317Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b Status: Optimal, Cached: false
-2026-06-12T03:27:11.255334Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
-2026-06-12T03:27:11.255382Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
-2026-06-12T03:27:11.255397Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
-2026-06-12T03:27:11.255409Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
-2026-06-12T03:27:11.255416Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
-2026-06-12T03:27:11.255423Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
-2026-06-12T03:27:11.255451Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.255611Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
-2026-06-12T03:27:11.255664Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.3:70b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-06-12T03:27:11.255803Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.3:70b Status: Impossible, Cached: false
-2026-06-12T03:27:11.255915Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.3:70b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.256001Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b Status: Impossible, Cached: false
-2026-06-12T03:27:11.256084Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b:gguf:q8_0 Status: Impossible, Cached: false
-2026-06-12T03:27:11.256250Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-06-12T03:27:11.256339Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.256435Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.256533Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-06-12T03:27:11.256625Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b:gguf:q8_0 Status: Impossible, Cached: false
-2026-06-12T03:27:11.256707Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b Status: Impossible, Cached: false
-2026-06-12T03:27:11.256835Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:0.5b Status: Optimal, Cached: false
-2026-06-12T03:27:11.256933Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:0.5b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.257019Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:0.5b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.257107Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:1.5b Status: Optimal, Cached: false
-2026-06-12T03:27:11.257239Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:1.5b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.257325Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:1.5b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.257410Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.257532Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gptq:int8 Status: Incompatible, Cached: false
-2026-06-12T03:27:11.257657Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.257762Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gptq:int4 Status: Incompatible, Cached: false
-2026-06-12T03:27:11.257901Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gguf:q8_0 Status: Heavy, Cached: false
-2026-06-12T03:27:11.258050Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b Status: Optimal, Cached: false
-2026-06-12T03:27:11.258200Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gptq:int8 Status: Incompatible, Cached: false
-2026-06-12T03:27:11.258324Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.258444Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gguf:q8_0 Status: Impossible, Cached: false
-2026-06-12T03:27:11.258611Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b Status: Impossible, Cached: false
-2026-06-12T03:27:11.258704Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gptq:int4 Status: Incompatible, Cached: false
-2026-06-12T03:27:11.258912Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-06-12T03:27:11.259001Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:3b Status: Optimal, Cached: false
-2026-06-12T03:27:11.259088Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:3b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.259209Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:3b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.259327Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.259422Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b Status: Impossible, Cached: false
-2026-06-12T03:27:11.259521Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gptq:int8 Status: Incompatible, Cached: false
-2026-06-12T03:27:11.259619Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-06-12T03:27:11.259781Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gptq:int4 Status: Incompatible, Cached: false
-2026-06-12T03:27:11.259887Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gguf:q8_0 Status: Impossible, Cached: false
-2026-06-12T03:27:11.260007Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.260140Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gptq:int4 Status: Incompatible, Cached: false
-2026-06-12T03:27:11.260272Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.260377Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gptq:int8 Status: Incompatible, Cached: false
-2026-06-12T03:27:11.260485Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.260681Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b Status: Optimal, Cached: false
-2026-06-12T03:27:11.260848Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:0.6b Status: Optimal, Cached: false
-2026-06-12T03:27:11.261010Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:0.6b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.261159Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:0.6b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.261330Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:1.7b Status: Optimal, Cached: false
-2026-06-12T03:27:11.261436Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:1.7b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.261559Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:1.7b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.261691Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gptq:int8 Status: Incompatible, Cached: false
-2026-06-12T03:27:11.261848Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.262004Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gguf:q8_0 Status: Impossible, Cached: false
-2026-06-12T03:27:11.262135Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b Status: Optimal, Cached: false
-2026-06-12T03:27:11.262361Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.262613Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gptq:int4 Status: Incompatible, Cached: false
-2026-06-12T03:27:11.262803Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:gptq:int4 Status: Incompatible, Cached: false
-2026-06-12T03:27:11.262962Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:gguf:q4_k_m Status: Impossible, Cached: false
-2026-06-12T03:27:11.263135Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b Status: Impossible, Cached: false
-2026-06-12T03:27:11.263247Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:gptq:int8 Status: Incompatible, Cached: false
-2026-06-12T03:27:11.263432Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.263575Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:gguf:q4_k_m Status: Impossible, Cached: false
-2026-06-12T03:27:11.263693Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:gptq:int4 Status: Incompatible, Cached: false
-2026-06-12T03:27:11.263848Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe Status: Impossible, Cached: false
-2026-06-12T03:27:11.264032Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.264182Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:gguf:q8_0 Status: Impossible, Cached: false
-2026-06-12T03:27:11.264328Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b Status: Optimal, Cached: false
-2026-06-12T03:27:11.264446Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.264582Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:awq:4bit Status: Incompatible, Cached: false
-2026-06-12T03:27:11.264689Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.264809Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:gptq:int4 Status: Incompatible, Cached: false
-2026-06-12T03:27:11.264904Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:0.5b:gguf:q4_k_m Status: Optimal, Cached: false
-2026-06-12T03:27:11.264991Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:0.5b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.265097Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:0.5b Status: Optimal, Cached: false
-2026-06-12T03:27:11.265228Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b Status: Heavy, Cached: false
-2026-06-12T03:27:11.265324Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b:gguf:q4_k_m Status: Heavy, Cached: false
-2026-06-12T03:27:11.265410Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b:gguf:q8_0 Status: Impossible, Cached: false
-2026-06-12T03:27:11.265494Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b:gptq:int4 Status: Incompatible, Cached: false
-2026-06-12T03:27:11.265590Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:2b Status: Optimal, Cached: false
-2026-06-12T03:27:11.265672Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:2b:gguf:q8_0 Status: Optimal, Cached: false
-2026-06-12T03:27:11.265776Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:35b-a3b Status: Average, Cached: false
-2026-06-12T03:27:11.265866Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:35b-a3b:gguf:q4_k_m Status: Average, Cached: false
-2026-06-12T03:27:11.265964Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:27b:gguf:q4_k_m Status: Heavy, Cached: false
-2026-06-12T03:27:11.266079Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:27b Status: Heavy, Cached: false
-2026-06-12T03:27:11.266180Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:27b:gguf:q8_0 Status: Impossible, Cached: false
-2026-06-12T03:27:11.266375Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:35b-a3b:gguf:q8_0 Status: Impossible, Cached: false
-2026-06-12T03:27:11.266522Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:35b-a3b:gguf:q4_k_m Status: Average, Cached: false
-2026-06-12T03:27:11.266652Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:35b-a3b Status: Average, Cached: false
-2026-06-12T03:27:11.266834Z  INFO engines::models::registry: 🧬 [Roster] Model bge_m3:unknown:onnx:fp32 Status: Optimal, Cached: true
-2026-06-12T03:27:11.267309Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai:4b:gguf:q1_0 Status: Optimal, Cached: true
-2026-06-12T03:27:11.271977Z  INFO engines::models::registry: 🧬 [Roster] Model deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m Status: Optimal, Cached: true
-2026-06-12T03:27:11.272332Z  INFO engines::models::registry: 🧬 [Roster] Model fashion_clip:unknown:onnx:fp32 Status: Optimal, Cached: true
-2026-06-12T03:27:11.273125Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:2b:gguf:q4_k_m Status: Optimal, Cached: true
-2026-06-12T03:27:11.273283Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:4b:gguf:q4_k_m Status: Optimal, Cached: true
-2026-06-12T03:27:11.274016Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3vl_instruct:2b:gguf:q4_k_m Status: Optimal, Cached: true
-2026-06-12T03:27:11.274344Z  INFO engines::models::registry: 🧬 [Roster] Model ternary_bonsai:1.7b:gguf:q2_0 Status: Optimal, Cached: true
-2026-06-12T03:27:11.274534Z  INFO engines::models::registry: 📊 [Roster] Generated 186 model recommendations for UI.
-2026-06-12T03:27:11.275133Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
-2026-06-12T03:27:11.279896Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
-2026-06-12T03:27:11.280429Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
-2026-06-12T03:27:11.280584Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
-2026-06-12T03:27:11.280908Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
-2026-06-12T03:27:11.280989Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
-2026-06-12T03:27:11.281307Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.281393Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.281728Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
-2026-06-12T03:27:11.281813Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
-2026-06-12T03:27:11.282112Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.282198Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.282899Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.282993Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.283389Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.283498Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.283817Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
-2026-06-12T03:27:11.283920Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
-2026-06-12T03:27:11.284313Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
-2026-06-12T03:27:11.284398Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
-2026-06-12T03:27:11.284810Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:27:11.285344Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
-2026-06-12T03:27:11.285494Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
-2026-06-12T03:27:11.285515Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
-2026-06-12T03:27:11.285523Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
-2026-06-12T03:27:11.285532Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
-2026-06-12T03:27:11.285543Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
-2026-06-12T03:27:11.285551Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
-2026-06-12T03:27:11.285557Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
-2026-06-12T03:27:11.285564Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
-2026-06-12T03:27:11.285575Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
-2026-06-12T03:27:11.285582Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
-2026-06-12T03:27:11.285588Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
-2026-06-12T03:27:11.285673Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
+2026-06-14T23:11:16.255898Z  WARN cluaiz::core::bootstrapper: ⚠️ [DevSync] Kernel source not found at: "C:\\Users\\Aryan\\my\\Cluaiz-workspace\\Cluaiz-Technologies\\cluaize\\target\\debug\\cluaiz_llama.dll"
+2026-06-14T23:11:16.256080Z  INFO cluaiz::core::bootstrapper: 🧠 [Cluaiz] Igniting Neural Foundry (Permissions & Skills)...
+2026-06-14T23:11:16.310015Z  INFO cluaiz::core::bootstrapper: 🛰️ [Cluaiz] Synchronizing Neural Registry...
+2026-06-14T23:11:18.771383Z  INFO system_booster::os_tuning: 🚀 [Bare Metal] Attempting to elevate process priority to high (Value: 128) for PID 16560
+2026-06-14T23:11:23.564463Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
+2026-06-14T23:11:23.575509Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-06-14T23:11:23.597553Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
+2026-06-14T23:11:23.598005Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
+2026-06-14T23:11:23.616082Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-06-14T23:11:23.616329Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
+2026-06-14T23:11:23.632596Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:23.632896Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:23.650823Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
+2026-06-14T23:11:23.651083Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
+2026-06-14T23:11:23.668651Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:23.668930Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:23.697344Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:23.697643Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:23.716993Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:23.717288Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:23.734262Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:23.734595Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:23.752450Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
+2026-06-14T23:11:23.752746Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
+2026-06-14T23:11:23.768489Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
+2026-06-14T23:11:23.783692Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
+2026-06-14T23:11:23.784009Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
+2026-06-14T23:11:23.784088Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-06-14T23:11:23.784109Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
+2026-06-14T23:11:23.784126Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
+2026-06-14T23:11:23.784145Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
+2026-06-14T23:11:23.784159Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
+2026-06-14T23:11:23.784173Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
+2026-06-14T23:11:23.784187Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
+2026-06-14T23:11:23.784208Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
+2026-06-14T23:11:23.784226Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
+2026-06-14T23:11:23.784240Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
+2026-06-14T23:11:23.784390Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
+2026-06-14T23:11:23.795456Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:1.7b:gguf:binary Status: Optimal, Cached: false
+2026-06-14T23:11:23.795600Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:1.7b Status: Optimal, Cached: false
+2026-06-14T23:11:23.795705Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:8b Status: Optimal, Cached: false
+2026-06-14T23:11:23.795816Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.0:8b:gguf:binary Status: Optimal, Cached: false
+2026-06-14T23:11:23.795923Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:1.7b Status: Optimal, Cached: false
+2026-06-14T23:11:23.796033Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:1.7b:gguf:ternary Status: Optimal, Cached: false
+2026-06-14T23:11:23.796141Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:4b:gguf:ternary Status: Optimal, Cached: false
+2026-06-14T23:11:23.796269Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:4b Status: Optimal, Cached: false
+2026-06-14T23:11:23.796411Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:8b:gguf:ternary Status: Optimal, Cached: false
+2026-06-14T23:11:23.796572Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1.58:8b Status: Optimal, Cached: false
+2026-06-14T23:11:23.798549Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai1:8b Status: Optimal, Cached: true
+2026-06-14T23:11:23.798672Z  INFO engines::models::registry: 🧬 [Roster] Model clip:vit-base:onnx:fp32 Status: Optimal, Cached: false
+2026-06-14T23:11:23.798791Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.798901Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:awq:8bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.799022Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-14T23:11:23.799175Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b Status: Impossible, Cached: false
+2026-06-14T23:11:23.799321Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:27b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-14T23:11:23.799466Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.799607Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b Status: Optimal, Cached: false
+2026-06-14T23:11:23.799752Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:2b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.799900Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.800043Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:awq:8bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.800172Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b Status: Optimal, Cached: false
+2026-06-14T23:11:23.800276Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.800367Z  INFO engines::models::registry: 🧬 [Roster] Model gemma2:9b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.800466Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.800575Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b:gguf:q8_0 Status: Average, Cached: false
+2026-06-14T23:11:23.800708Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.800820Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:12b Status: Optimal, Cached: false
+2026-06-14T23:11:23.800927Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.801036Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b Status: Optimal, Cached: false
+2026-06-14T23:11:23.801196Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:1b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.801338Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.801487Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-14T23:11:23.801628Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b:gguf:q4_k_m Status: Heavy, Cached: false
+2026-06-14T23:11:23.801770Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:27b Status: Heavy, Cached: false
+2026-06-14T23:11:23.801913Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.802110Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b Status: Optimal, Cached: false
+2026-06-14T23:11:23.802248Z  INFO engines::models::registry: 🧬 [Roster] Model gemma3:4b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.802386Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:gguf:q4_k_m Status: Heavy, Cached: false
+2026-06-14T23:11:23.802531Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-14T23:11:23.802675Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe Status: Heavy, Cached: false
+2026-06-14T23:11:23.802812Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:awq:8bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.802951Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:26b-moe:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.803100Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:awq:8bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.803266Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.803407Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:gguf:q4_k_m Status: Heavy, Cached: false
+2026-06-14T23:11:23.803546Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b Status: Heavy, Cached: false
+2026-06-14T23:11:23.803689Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:31b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-14T23:11:23.803833Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.805753Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b Status: Optimal, Cached: true
+2026-06-14T23:11:23.805925Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e2b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.806073Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.807519Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b:gguf:q4_k_m Status: Optimal, Cached: true
+2026-06-14T23:11:23.807686Z  INFO engines::models::registry: 🧬 [Roster] Model gemma4:e4b Status: Optimal, Cached: false
+2026-06-14T23:11:23.807830Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.807971Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.808078Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.808236Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:13b Status: Optimal, Cached: false
+2026-06-14T23:11:23.808377Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:70b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.808533Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:70b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-14T23:11:23.808685Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:70b Status: Impossible, Cached: false
+2026-06-14T23:11:23.808824Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b Status: Optimal, Cached: false
+2026-06-14T23:11:23.808962Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.809101Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.809254Z  INFO engines::models::registry: 🧬 [Roster] Model llama2:7b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.809406Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b Status: Impossible, Cached: false
+2026-06-14T23:11:23.809547Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b:awq:8bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.809677Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-14T23:11:23.809793Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:70b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.809928Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.810051Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.810156Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:awq:8bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.810260Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b Status: Optimal, Cached: false
+2026-06-14T23:11:23.810358Z  INFO engines::models::registry: 🧬 [Roster] Model llama3:8b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.810460Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:405b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.810574Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:70b Status: Impossible, Cached: false
+2026-06-14T23:11:23.810730Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:70b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.810873Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:70b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-14T23:11:23.811010Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.811138Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b Status: Optimal, Cached: false
+2026-06-14T23:11:23.811255Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.811372Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.1:8b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.811539Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:1b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.811685Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:1b Status: Optimal, Cached: false
+2026-06-14T23:11:23.811793Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:1b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.811934Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b Status: Optimal, Cached: false
+2026-06-14T23:11:23.812076Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.812227Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.812360Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.2:3b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.812485Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.3:70b Status: Impossible, Cached: false
+2026-06-14T23:11:23.812609Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.3:70b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-14T23:11:23.812753Z  INFO engines::models::registry: 🧬 [Roster] Model llama3.3:70b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.812883Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.812999Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-14T23:11:23.813105Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b Status: Impossible, Cached: false
+2026-06-14T23:11:23.813206Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:400b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-14T23:11:23.813320Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.813459Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b Status: Impossible, Cached: false
+2026-06-14T23:11:23.813554Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-14T23:11:23.813661Z  INFO engines::models::registry: 🧬 [Roster] Model llama4:109b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-14T23:11:23.813768Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:0.5b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.813892Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:0.5b Status: Optimal, Cached: false
+2026-06-14T23:11:23.814044Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:0.5b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.814218Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:1.5b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.814361Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:1.5b Status: Optimal, Cached: false
+2026-06-14T23:11:23.814507Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:1.5b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.814655Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.814795Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.814935Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gptq:int8 Status: Incompatible, Cached: false
+2026-06-14T23:11:23.815076Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gptq:int4 Status: Incompatible, Cached: false
+2026-06-14T23:11:23.815220Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b Status: Optimal, Cached: false
+2026-06-14T23:11:23.815364Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:14b:gguf:q8_0 Status: Heavy, Cached: false
+2026-06-14T23:11:23.815517Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gptq:int8 Status: Incompatible, Cached: false
+2026-06-14T23:11:23.815625Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-14T23:11:23.815781Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gptq:int4 Status: Incompatible, Cached: false
+2026-06-14T23:11:23.815930Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b Status: Impossible, Cached: false
+2026-06-14T23:11:23.816072Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.816221Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:32b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-14T23:11:23.816361Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:3b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.816510Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:3b Status: Optimal, Cached: false
+2026-06-14T23:11:23.816662Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:3b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.816805Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-14T23:11:23.816944Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gptq:int8 Status: Incompatible, Cached: false
+2026-06-14T23:11:23.817080Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b Status: Impossible, Cached: false
+2026-06-14T23:11:23.817216Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.817354Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-14T23:11:23.817498Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:72b:gptq:int4 Status: Incompatible, Cached: false
+2026-06-14T23:11:23.817646Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b Status: Optimal, Cached: false
+2026-06-14T23:11:23.817776Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.817903Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gptq:int4 Status: Incompatible, Cached: false
+2026-06-14T23:11:23.818045Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.818195Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.818336Z  INFO engines::models::registry: 🧬 [Roster] Model qwen2.5:7b:gptq:int8 Status: Incompatible, Cached: false
+2026-06-14T23:11:23.818478Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:0.6b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.818621Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:0.6b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.818754Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:0.6b Status: Optimal, Cached: false
+2026-06-14T23:11:23.818880Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:1.7b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.818994Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:1.7b Status: Optimal, Cached: false
+2026-06-14T23:11:23.819110Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:1.7b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.819230Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gptq:int8 Status: Incompatible, Cached: false
+2026-06-14T23:11:23.819343Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b Status: Optimal, Cached: false
+2026-06-14T23:11:23.819544Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.819655Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.819786Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-14T23:11:23.819902Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:14b:gptq:int4 Status: Incompatible, Cached: false
+2026-06-14T23:11:23.819999Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:gptq:int4 Status: Incompatible, Cached: false
+2026-06-14T23:11:23.820087Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b Status: Impossible, Cached: false
+2026-06-14T23:11:23.820189Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-14T23:11:23.820335Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:gptq:int8 Status: Incompatible, Cached: false
+2026-06-14T23:11:23.820474Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:235b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.820615Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:gguf:q4_k_m Status: Impossible, Cached: false
+2026-06-14T23:11:23.820742Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:gptq:int4 Status: Incompatible, Cached: false
+2026-06-14T23:11:23.820858Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.820976Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-14T23:11:23.821099Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:30b-moe Status: Impossible, Cached: false
+2026-06-14T23:11:23.821230Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.821345Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.821460Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:awq:4bit Status: Incompatible, Cached: false
+2026-06-14T23:11:23.821598Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b Status: Optimal, Cached: false
+2026-06-14T23:11:23.821744Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3:8b:gptq:int4 Status: Incompatible, Cached: false
+2026-06-14T23:11:23.821874Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:0.5b Status: Optimal, Cached: false
+2026-06-14T23:11:23.821982Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:0.5b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.822079Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:0.5b:gguf:q4_k_m Status: Optimal, Cached: false
+2026-06-14T23:11:23.822198Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b:gguf:q4_k_m Status: Heavy, Cached: false
+2026-06-14T23:11:23.822489Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b:gptq:int4 Status: Incompatible, Cached: false
+2026-06-14T23:11:23.822671Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-14T23:11:23.822833Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:27b Status: Heavy, Cached: false
+2026-06-14T23:11:23.822990Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:2b Status: Optimal, Cached: false
+2026-06-14T23:11:23.823156Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:2b:gguf:q8_0 Status: Optimal, Cached: false
+2026-06-14T23:11:23.823353Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:35b-a3b Status: Average, Cached: false
+2026-06-14T23:11:23.823516Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:35b-a3b:gguf:q4_k_m Status: Average, Cached: false
+2026-06-14T23:11:23.823620Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:27b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-14T23:11:23.823770Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:27b:gguf:q4_k_m Status: Heavy, Cached: false
+2026-06-14T23:11:23.823892Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:27b Status: Heavy, Cached: false
+2026-06-14T23:11:23.824044Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:35b-a3b Status: Average, Cached: false
+2026-06-14T23:11:23.824189Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:35b-a3b:gguf:q4_k_m Status: Average, Cached: false
+2026-06-14T23:11:23.824332Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.6:35b-a3b:gguf:q8_0 Status: Impossible, Cached: false
+2026-06-14T23:11:23.824803Z  INFO engines::models::registry: 🧬 [Roster] Model bge_m3:unknown:onnx:fp32 Status: Optimal, Cached: true
+2026-06-14T23:11:23.825813Z  INFO engines::models::registry: 🧬 [Roster] Model bonsai:4b:gguf:q1_0 Status: Optimal, Cached: true
+2026-06-14T23:11:23.837247Z  INFO engines::models::registry: 🧬 [Roster] Model deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m Status: Optimal, Cached: true
+2026-06-14T23:11:23.837827Z  INFO engines::models::registry: 🧬 [Roster] Model fashion_clip:unknown:onnx:fp32 Status: Optimal, Cached: true
+2026-06-14T23:11:23.838742Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:2b:gguf:q4_k_m Status: Optimal, Cached: true
+2026-06-14T23:11:23.839713Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3.5:4b:gguf:q4_k_m Status: Optimal, Cached: true
+2026-06-14T23:11:23.841313Z  INFO engines::models::registry: 🧬 [Roster] Model qwen3vl_instruct:2b:gguf:q4_k_m Status: Optimal, Cached: true
+2026-06-14T23:11:23.842050Z  INFO engines::models::registry: 🧬 [Roster] Model ternary_bonsai:1.7b:gguf:q2_0 Status: Optimal, Cached: true
+2026-06-14T23:11:23.842315Z  INFO engines::models::registry: 📊 [Roster] Generated 186 model recommendations for UI.
+2026-06-14T23:11:23.875361Z  INFO cluaiz_shared::metadata::dna: ✅ [DNA] Governor Discovery Complete: Mode UltraMaxBoost | Window 18k
+2026-06-14T23:11:23.875672Z  INFO engines::runtime::execution::hub: 🔩 [Orchestrator] Initiating Dynamic Hardware Handshake for Engine: llama
+2026-06-14T23:11:23.876776Z  INFO engines::memory::storage_bridge: Initializing Remote Database Network Storage Bridge targeting C:\Users\Aryan\.cluaiz...
+2026-06-14T23:11:24.288459Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon Worker] Background queue active. Processing skills sequentially...
+2026-06-14T23:11:24.288991Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: frontend-dev
+2026-06-14T23:11:24.292908Z  INFO engines::neural_foundry::registry::compiler_daemon: ⏳ [Compiler Daemon] Generating Real Router Embedding Cache for frontend-dev...
+2026-06-14T23:11:24.293197Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
+2026-06-14T23:11:24.300401Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-06-14T23:11:24.301198Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
+2026-06-14T23:11:24.301344Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
+2026-06-14T23:11:24.301825Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-06-14T23:11:24.301952Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
+2026-06-14T23:11:24.302444Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:24.302573Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:24.303054Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
+2026-06-14T23:11:24.303184Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
+2026-06-14T23:11:24.303709Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:24.303835Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:24.304869Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:24.304996Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:24.305446Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:24.305571Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:24.305927Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:24.306046Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:24.306416Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
+2026-06-14T23:11:24.306543Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
+2026-06-14T23:11:24.307153Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
+2026-06-14T23:11:24.307756Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
+2026-06-14T23:11:24.307981Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
+2026-06-14T23:11:24.308015Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-06-14T23:11:24.308028Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
+2026-06-14T23:11:24.308047Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
+2026-06-14T23:11:24.308058Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
+2026-06-14T23:11:24.308065Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
+2026-06-14T23:11:24.308071Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
+2026-06-14T23:11:24.308078Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
+2026-06-14T23:11:24.308088Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
+2026-06-14T23:11:24.308095Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
+2026-06-14T23:11:24.308102Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
+2026-06-14T23:11:24.308211Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
+2026-06-14T23:11:24.318297Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: minimax-music-gen
+2026-06-14T23:11:24.318679Z  INFO engines::neural_foundry::registry::compiler_daemon: ⏳ [Compiler Daemon] Generating Real Router Embedding Cache for minimax-music-gen...
+2026-06-14T23:11:24.318824Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
+2026-06-14T23:11:24.324664Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-06-14T23:11:24.325247Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
+2026-06-14T23:11:24.325387Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
+2026-06-14T23:11:24.325827Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-06-14T23:11:24.325941Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
+2026-06-14T23:11:24.326364Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:24.326474Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:24.326906Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
+2026-06-14T23:11:24.327046Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
+2026-06-14T23:11:24.327512Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:24.327640Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:24.328579Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:24.328711Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:24.329170Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:24.329299Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:24.329762Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:24.329927Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:24.330345Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
+2026-06-14T23:11:24.330470Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
+2026-06-14T23:11:24.331089Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
+2026-06-14T23:11:24.331637Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
+2026-06-14T23:11:24.331813Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
+2026-06-14T23:11:24.331834Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-06-14T23:11:24.331842Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
+2026-06-14T23:11:24.331850Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
+2026-06-14T23:11:24.331859Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
+2026-06-14T23:11:24.331866Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
+2026-06-14T23:11:24.331872Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
+2026-06-14T23:11:24.331879Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
+2026-06-14T23:11:24.331899Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
+2026-06-14T23:11:24.331922Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
+2026-06-14T23:11:24.331941Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
+2026-06-14T23:11:24.332068Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
+2026-06-14T23:11:24.342129Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: test-small-skill
+2026-06-14T23:11:24.342383Z  INFO engines::neural_foundry::registry::compiler_daemon: ⏳ [Compiler Daemon] Generating Real Router Embedding Cache for test-small-skill...
+2026-06-14T23:11:24.342517Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
+2026-06-14T23:11:24.348379Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-06-14T23:11:24.349449Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
+2026-06-14T23:11:24.349588Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
+2026-06-14T23:11:24.350006Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-06-14T23:11:24.350138Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
+2026-06-14T23:11:24.350639Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:24.350757Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:24.351187Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
+2026-06-14T23:11:24.351314Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
+2026-06-14T23:11:24.351780Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:24.351906Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:24.352941Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:24.353064Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:24.353548Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:24.353674Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:24.354135Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:24.354268Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:24.354699Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
+2026-06-14T23:11:24.354814Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
+2026-06-14T23:11:24.355272Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
+2026-06-14T23:11:24.356002Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
+2026-06-14T23:11:24.356251Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
+2026-06-14T23:11:24.356279Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-06-14T23:11:24.356294Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
+2026-06-14T23:11:24.356309Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
+2026-06-14T23:11:24.356326Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
+2026-06-14T23:11:24.356340Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
+2026-06-14T23:11:24.356354Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
+2026-06-14T23:11:24.356368Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
+2026-06-14T23:11:24.356391Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
+2026-06-14T23:11:24.356406Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
+2026-06-14T23:11:24.356420Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
+2026-06-14T23:11:24.356542Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
+2026-06-14T23:11:24.481085Z  INFO engines::interface_engines::manager::kernel_loader: 🎯 [KernelLoader] Cluaiz path resolved: "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
+2026-06-14T23:11:24.481787Z  INFO engines::interface_engines::manager::kernel_loader: 🎯 [KernelLoader] Cluaiz path resolved: "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
+2026-06-14T23:11:24.482161Z  INFO engines::interface_engines::manager: 🧬 [Linker] Mapping binary: "C:\\Users\\Aryan\\.cluaiz\\interface-engines\\cluaiz-llama-cuda.dll"
+2026-06-14T23:11:27.709986Z  INFO engines::interface_engines::manager: 🔗 [Linker] Synchronized Sovereign Skip-Thinking Pointer across FFI.
+2026-06-14T23:11:27.710029Z  INFO engines::interface_engines::manager: ✅ [Linker] 7ns Handshake Complete. Kernel Linked.
+2026-06-14T23:11:30.750096Z  INFO engines::interface_engines::manager: 🚀 [Linker] Core Kernel Instantiated at Bare-Metal level.
+2026-06-14T23:11:30.750146Z  INFO engines::runtime::execution::hub: 🧬 [Orchestrator] Hardware Handshake SUCCESS. Neural Bridge Established.
+2026-06-14T23:11:30.759107Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: frontend-dev
+2026-06-14T23:11:30.759387Z  INFO engines::neural_foundry::registry::compiler_daemon: ⏳ [Compiler Daemon] Generating Real Router Embedding Cache for frontend-dev...
+2026-06-14T23:11:30.759522Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
+2026-06-14T23:11:30.759572Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
+2026-06-14T23:11:30.767046Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-06-14T23:11:30.767062Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-06-14T23:11:30.767670Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
+2026-06-14T23:11:30.767675Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
+2026-06-14T23:11:30.767782Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
+2026-06-14T23:11:30.767790Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
+2026-06-14T23:11:30.768195Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-06-14T23:11:30.768208Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-06-14T23:11:30.768306Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
+2026-06-14T23:11:30.768311Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
+2026-06-14T23:11:30.768753Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.768752Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.768892Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.768916Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.769301Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
+2026-06-14T23:11:30.769428Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
+2026-06-14T23:11:30.769446Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
+2026-06-14T23:11:30.769584Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
+2026-06-14T23:11:30.769839Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.769932Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.769943Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.770026Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.770781Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.770827Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.770886Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.770926Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.771219Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.771291Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.771308Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.771378Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.771752Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.771814Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.771927Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.771930Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.772292Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
+2026-06-14T23:11:30.772310Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
+2026-06-14T23:11:30.772411Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
+2026-06-14T23:11:30.772426Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
+2026-06-14T23:11:30.773029Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
+2026-06-14T23:11:30.773037Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
+2026-06-14T23:11:30.773711Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
+2026-06-14T23:11:30.773724Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
+2026-06-14T23:11:30.773884Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
+2026-06-14T23:11:30.773906Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-06-14T23:11:30.773905Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
+2026-06-14T23:11:30.773919Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
+2026-06-14T23:11:30.773957Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
+2026-06-14T23:11:30.773958Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-06-14T23:11:30.773970Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
+2026-06-14T23:11:30.774002Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
+2026-06-14T23:11:30.774014Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
+2026-06-14T23:11:30.774022Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
+2026-06-14T23:11:30.773998Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
+2026-06-14T23:11:30.774035Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
+2026-06-14T23:11:30.774040Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
+2026-06-14T23:11:30.774043Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
+2026-06-14T23:11:30.774055Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
+2026-06-14T23:11:30.774059Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
+2026-06-14T23:11:30.774063Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
+2026-06-14T23:11:30.774069Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
+2026-06-14T23:11:30.774076Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
+2026-06-14T23:11:30.774086Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
+2026-06-14T23:11:30.774096Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
+2026-06-14T23:11:30.774104Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
+2026-06-14T23:11:30.774149Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
+2026-06-14T23:11:30.774191Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
+2026-06-14T23:11:30.782541Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: minimax-music-gen
+2026-06-14T23:11:30.782676Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
+2026-06-14T23:11:30.782805Z  INFO engines::neural_foundry::registry::compiler_daemon: ⏳ [Compiler Daemon] Generating Real Router Embedding Cache for minimax-music-gen...
+2026-06-14T23:11:30.782903Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
+2026-06-14T23:11:30.788377Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-06-14T23:11:30.788591Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-06-14T23:11:30.789049Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
+2026-06-14T23:11:30.789077Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
+2026-06-14T23:11:30.789215Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
+2026-06-14T23:11:30.789228Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
+2026-06-14T23:11:30.789678Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-06-14T23:11:30.789778Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
+2026-06-14T23:11:30.789902Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-06-14T23:11:30.790006Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
+2026-06-14T23:11:30.790111Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.790242Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.790324Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.790409Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.790633Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
+2026-06-14T23:11:30.790730Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
+2026-06-14T23:11:30.790733Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
+2026-06-14T23:11:30.790818Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
+2026-06-14T23:11:30.791134Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.791165Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.791231Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.791267Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.792041Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.792128Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.792138Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.792248Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.792426Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.792511Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.792599Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.792696Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.792886Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.792977Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.793001Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.793087Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.793342Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
+2026-06-14T23:11:30.793465Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
+2026-06-14T23:11:30.793635Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
+2026-06-14T23:11:30.793738Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
+2026-06-14T23:11:30.794064Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
+2026-06-14T23:11:30.794150Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
+2026-06-14T23:11:30.794646Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
+2026-06-14T23:11:30.794713Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
+2026-06-14T23:11:30.794874Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
+2026-06-14T23:11:30.794884Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
+2026-06-14T23:11:30.794897Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-06-14T23:11:30.794902Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-06-14T23:11:30.794906Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
+2026-06-14T23:11:30.794959Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
+2026-06-14T23:11:30.794978Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
+2026-06-14T23:11:30.794990Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
+2026-06-14T23:11:30.794999Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
+2026-06-14T23:11:30.795005Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
+2026-06-14T23:11:30.795008Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
+2026-06-14T23:11:30.795013Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
+2026-06-14T23:11:30.795016Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
+2026-06-14T23:11:30.795020Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
+2026-06-14T23:11:30.795023Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
+2026-06-14T23:11:30.795027Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
+2026-06-14T23:11:30.795033Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
+2026-06-14T23:11:30.795038Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
+2026-06-14T23:11:30.795040Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
+2026-06-14T23:11:30.795049Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
+2026-06-14T23:11:30.795068Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
+2026-06-14T23:11:30.795078Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
+2026-06-14T23:11:30.795191Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
+2026-06-14T23:11:30.795199Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
+2026-06-14T23:11:30.804147Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: test-small-skill
+2026-06-14T23:11:30.804397Z  INFO engines::neural_foundry::registry::compiler_daemon: ⏳ [Compiler Daemon] Generating Real Router Embedding Cache for test-small-skill...
+2026-06-14T23:11:30.804508Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: models
+2026-06-14T23:11:30.809274Z  INFO engines::models::registry: 🔍 [Roster] Scanning unit path: C:\Users\Aryan\.cluaiz\models
+2026-06-14T23:11:30.810014Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai:4b:gguf:q1_0'. Regenerating...
+2026-06-14T23:11:30.810175Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'bonsai:4b:gguf:q1_0' DNA transiently verified.
+2026-06-14T23:11:30.810644Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bonsai1:8b'. Regenerating...
+2026-06-14T23:11:30.810759Z  INFO engines::models::registry::discovery: 👻 [Discovery] BitNet Detected for 'bonsai1:8b'. DNA transiently verified.
+2026-06-14T23:11:30.811268Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.811386Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.811780Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e2b'. Regenerating...
+2026-06-14T23:11:30.811894Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e2b' DNA transiently verified.
+2026-06-14T23:11:30.812241Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'gemma4:e4b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.812341Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'gemma4:e4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.813221Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:2b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.813316Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.813614Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3.5:4b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.813702Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3.5:4b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.814014Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'qwen3vl_instruct:2b:gguf:q4_k_m'. Regenerating...
+2026-06-14T23:11:30.814104Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'qwen3vl_instruct:2b:gguf:q4_k_m' DNA transiently verified.
+2026-06-14T23:11:30.814406Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'ternary_bonsai:1.7b:gguf:q2_0'. Regenerating...
+2026-06-14T23:11:30.814492Z  INFO engines::models::registry::discovery: ✅ [Discovery] Native Probe Complete: 'ternary_bonsai:1.7b:gguf:q2_0' DNA transiently verified.
+2026-06-14T23:11:30.814910Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'bge_m3:unknown:onnx:fp32'. Regenerating...
+2026-06-14T23:11:30.815364Z  INFO engines::models::registry::discovery: 🧬 [Healing] Null fields detected for 'fashion_clip:unknown:onnx:fp32'. Regenerating...
+2026-06-14T23:11:30.815511Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai:4b:gguf:q1_0
+2026-06-14T23:11:30.815531Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bonsai1:8b
+2026-06-14T23:11:30.815539Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: deepseek_coder_v2_lite_instruct:unknown:gguf:q4_k_m
+2026-06-14T23:11:30.815547Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e2b
+2026-06-14T23:11:30.815556Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: gemma4:e4b:gguf:q4_k_m
+2026-06-14T23:11:30.815563Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:2b:gguf:q4_k_m
+2026-06-14T23:11:30.815570Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3.5:4b:gguf:q4_k_m
+2026-06-14T23:11:30.815576Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: qwen3vl_instruct:2b:gguf:q4_k_m
+2026-06-14T23:11:30.815586Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: ternary_bonsai:1.7b:gguf:q2_0
+2026-06-14T23:11:30.815593Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: bge_m3:unknown:onnx:fp32
+2026-06-14T23:11:30.815600Z  INFO engines::models::registry: ✅ [Roster] Discovered local unit: fashion_clip:unknown:onnx:fp32
+2026-06-14T23:11:30.815682Z  INFO engines::models::registry: 📚 [Roster] Library source found at: models/library
+2026-06-14T23:16:24.972294Z  INFO engines::interface_engines::manager: 🗑️ [Linker] Core Kernel Instantiation freed.

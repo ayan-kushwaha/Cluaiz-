@@ -80,7 +80,12 @@ impl SovereignBrain {
 
     pub fn is_local(&self) -> bool {
         let val = self.cluaizd_connect_ffi.trim().to_lowercase();
-        val == "local" || val == "true"
+        val == "local" || val == "true" || val == "only_brain"
+    }
+
+    pub fn is_pure_brain(&self) -> bool {
+        let val = self.cluaizd_connect_ffi.trim().to_lowercase();
+        val == "only_brain"
     }
 }
 

@@ -36,6 +36,19 @@ pub async fn execute(command: crate::BrainCommand) -> Result<()> {
                 eprintln!("  {} Failed to load system control config.", "❌".red());
             }
         }
+        crate::BrainCommand::Only => {
+            println!("\n  {} Enabling Pure Brain Mode (Engine Suspended)...", "🧠".cyan());
+            if let Ok(mut control) = HardwareGovernor::load_system_control() {
+                control.brain.cluaizd_connect_ffi = "only_brain".to_string();
+                if let Err(e) = HardwareOrchestrator::persist_sovereign_state(&control) {
+                    eprintln!("  {} Failed to save system control: {}", "❌".red(), e);
+                } else {
+                    println!("  {} Pure Brain Mode activated. VRAM will not be reserved.\n", "✅".green());
+                }
+            } else {
+                eprintln!("  {} Failed to load system control config.", "❌".red());
+            }
+        }
         crate::BrainCommand::Status => {
             println!("\n  {} Checking Cluaizd Brain Status...", "🧠".cyan());
             if let Ok(control) = HardwareGovernor::load_system_control() {
