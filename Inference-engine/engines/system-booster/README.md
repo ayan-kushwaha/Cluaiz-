@@ -1,93 +1,43 @@
-# System Booster: The Neural Accelerator
+# 🚀 System Booster Crate (`engines/system-booster/`)
 
-The **System Booster** is the core network system of Cluaiz-OS optimization. It is an industrial-grade bare-metal isolator designed to extract every bit of performance from silicon while maintaining 100% mathematical integrity.
-
----
-
-## 🏛️ Phase-Level Architecture (The Deep Map)
-
-### 1. 🏛️ `manager/`: The Neural Independent (Governance Layer)
-This is the "Brain" that decides the fate of every optimization.
-*   **`mod.rs`**: Central gateway. Orchestrates communication between sub-managers.
-*   **`conflict_resolver.rs` (⚖️)**: The **Logical Arbiter**. Ensures incompatible features (DFlash + Low VRAM) don't crash the GPU.
-*   **`auto_tuner.rs` (🧪)**: The **Silicon Sniper**. Calibrates `Auto` states based on hardware (NVIDIA/Apple/Qualcomm).
-*   **`dependency_graph.rs` (🔗)**: Maps feature dependencies (e.g., Speculative Decoding needs valid DraftModels).
-*   **`priority_scheduler.rs` (🚦)**: Manages compute budgets for TTT vs. Real-time generation.
-
-### 2. ⚡ `dflash/`: Speculative Decoupling (Lucebox Integration)
-*   **`engine.rs`**: Orchestrates the Block-Diffusion verification pass.
-*   **`kv_cache.rs`**: Manages **Asymmetric KV Stitching** (K=TQ3_0, V=F16).
-*   **`ddtree.rs`**: Implements the **DDTree Algorithm** for multi-token validation.
-
-### 3. 💎 `turbo_quant/`: Precision Mastery (Compression Engine)
-*   **`mse.rs`**: Mean-Squared-Error optimization for weight fitting.
-*   **`polar.rs`**: Polar-Coordinate adjustment for 2nd-order weight correction.
-*   **`rotation.rs`**: Hadamard/Givens rotation matrices for feature decorrelation.
-*   **`qjl.rs`**: Quantized Johnson-Lindenstrauss projections for extreme dimensionality reduction.
-*   **`simd_probes.rs`**: Hardware-native SIMD (AVX512/AMX) acceleration kernels.
-
-### 4. 🧠 `neural_core/`: Research Fusion
-*   **`kernel_fusion.rs`**: Fuses multiple layers into a single hardware kernel to reduce memory trips.
-
-### 5. 🌊 `flash_attn/` & `auto_round/`: Hardware Optimizers
-*   **`flash_attn/mod.rs`**: IO-aware attention implementation (Sliding Window, Paged).
-*   **`auto_round/mod.rs`**: 2nd-order weight rounding for 3-bit/4-bit accuracy.
-
-### 6. 🛰️ `telemetry/` & `os_tuning/`: Environmental Control
-*   **`telemetry/distortion.rs`**: Tracks signal-to-noise ratio during quantization.
-*   **`os_tuning/mod.rs`**: Adjusts OS-level process priorities and HugePages.
+<p align="center"><strong>Deep OS & Hardware Optimization Subsystem</strong></p>
 
 ---
 
-## 🌊 Logic & Data Flow (The Neural Mind-Map)
+## 🎯 Deep Purpose
+
+The `system-booster` crate is a highly specialized, low-level Rust module designed to fundamentally alter how the host operating system allocates resources during active LLM inference. 
+
+Running a massive transformer model locally requires enormous memory bandwidth, uninterrupted thread scheduling, and optimized matrix multiplications. Standard OS schedulers (like Windows Task Scheduler) often interrupt heavy compute tasks. This crate drops down to the OS API level and the tensor level to force the system into a "Heavy Compute" state, accelerating tokens-per-second (TPS) and minimizing latency spikes.
+
+## 🏛️ Architectural Flow
 
 ```mermaid
-graph TD
-    subgraph Phase_1_Ignition
-        A[App Start] --> B[SystemBooster::ignite]
-        B --> C{AutoTuner}
-        C --> D[Calibrate Hardware State]
-    end
-
-    subgraph Phase_2_Alignment
-        D --> E[Model Load Event]
-        E --> F[SystemBooster::align_with_model]
-        F --> G{ConflictResolver}
-        G --> H[Apply Independent Rules]
-    end
-
-    subgraph Phase_3_Execution
-        H --> I{Execution Path}
-        I -->|TurboQuant| J[Rotation/MSE Kernels]
-        I -->|DFlash| K[DDTree Verification]
-        I -->|FlashAttn| L[Fused IO-Kernel]
-        I -->|AutoRound| M[2nd Order Rounding]
-    end
-
-    J --> Z[Final Output]
-    K --> Z
-    L --> Z
-    M --> Z
+graph LR
+    Engine["Core Engine Loop"] -->|"Triggers Acceleration"| Booster["System Booster"]
+    Booster -->|"madvise / SeLockMemoryPrivilege"| OSTuning["OS Tuning (HugePages, Priority)"]
+    Booster -->|"Flash Attention"| DFlash["dflash / flash_attn"]
+    Booster -->|"Dynamic Quant"| Turbo["turbo_quant / auto_round"]
+    Booster -->|"Lookahead Decoding"| Speculative["speculative"]
+    
+    OSTuning --> Hardware["Physical RAM / CPU Scheduling"]
+    DFlash --> Hardware
 ```
 
----
+## 🧬 Significant Subsystems & Directories
 
-## ⚖️ Independent Conflict Matrix (The Manager's Code of Law)
+### 1. `os_tuning/` & `system_booster.rs`
+- **The Core Logic:** Directly interfaces with the Windows API and Linux Kernel to request elevated thread priorities and lock memory pages (`HugePages`).
+- **The "Why":** Standard 4KB memory pages cause massive Translation Lookaside Buffer (TLB) misses during tensor operations. By forcing the OS to allocate 2MB or 1GB contiguous pages, CPU inference speed increases dramatically.
 
-| Optimization | Dependent On | Conflict Action | Technical Rationale |
-| :--- | :--- | :--- | :--- |
-| **DFlash (Speculative)** | VRAM > 12GB | **Force TurboQuant = ON** | Speculative overhead is ~2GB; TQ compression prevents OOM. |
-| **BitNet / SSM Models** | Native Weights | **Force DFlash = OFF** | Linear recurrence speed beats speculative verification overhead. |
-| **Flash Attention** | Tensor Cores | **Force Auto-Fallback** | Uses CPU fallback if specialized hardware is missing. |
-| **Auto-Round** | MSE Weights | **Force TurboQuant = ON** | Needs Polar-rotation buffers for optimal weight correction. |
-| **OS Tuning** | Sudo/Admin | **Warn & Bypass** | Critical for HugePages, but system remains Independent without it. |
+### 2. `flash_attn/` & `dflash/`
+- **The Core Logic:** Hardware-native implementations of Flash Attention and Distributed Flash Attention.
+- **The "Why":** Standard attention scales quadratically with sequence length. By fusing the attention calculation into a single hardware kernel pass, the engine avoids swapping intermediate matrices to VRAM, ensuring that 32k+ token contexts remain fast.
 
----
+### 3. `turbo_quant/` & `auto_round/`
+- **The Core Logic:** Real-time, dynamic quantization algorithms.
+- **The "Why":** Allows the engine to downcast FP16 weights to 4-bit or 2-bit representations mathematically on the fly, drastically reducing memory bandwidth requirements on constrained edge devices without permanently altering the source model file.
 
-## 🛠️ Scale Guide: Adding a New "Hyper-Engine"
-1.  **Isolation**: Create a dedicated folder in `src/hyper_engine/`. 
-2.  **Kernel Link**: Implement raw logic (CUDA/Rust) in your folder.
-3.  **Governance**: Add rules to `manager/conflict_resolver.rs` to define its interaction with existing boosters.
-4.  **Independent Entry**: Add detection logic in `manager/auto_tuner.rs` for hardware-native support.
-
- 
+### 4. `speculative/`
+- **The Core Logic:** Speculative decoding / Lookahead algorithms.
+- **The "Why":** Uses a smaller, faster "draft" model to predict the next $N$ tokens, while the large model verifies them in parallel. If correct, all $N$ tokens are accepted simultaneously, resulting in massive bursts of generation speed.

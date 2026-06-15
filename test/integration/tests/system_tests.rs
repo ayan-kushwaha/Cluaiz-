@@ -13,7 +13,7 @@ async fn test_root_endpoint() {
     
     assert!(res.status().is_success());
     let json: Value = res.json().await.unwrap();
-    assert_eq!(json["engine"], "CURE — Cluaiz Universal Runtime Engine");
+    assert_eq!(json["engine"], "Cluaize Inference Engine");
 }
 
 #[tokio::test]
@@ -39,7 +39,7 @@ async fn test_system_info() {
     
     assert!(res.status().is_success());
     let json: Value = res.json().await.unwrap();
-    assert_eq!(json["engine"], "CURE");
+    assert_eq!(json["engine"], "Cluaize");
 }
 
 #[tokio::test]

@@ -9,23 +9,43 @@ use crate::state::AppState;
 // ─── Root ────────────────────────────────────────────────────────────
 pub async fn root() -> Json<Value> {
     Json(json!({
-        "engine": "CURE — Cluaiz Universal Runtime Engine",
+        "engine": "Cluaize Inference Engine",
         "version": env!("CARGO_PKG_VERSION"),
         "gateway": "http://localhost:8000",
         "endpoints": {
-            "GET  /":                 "This welcome message",
-            "GET  /health":           "Engine health check",
-            "GET  /info":             "System information & pillars",
-            "POST /chat":             "Send message → get AI response",
-            "GET  /history/:session": "Chat history for a session",
-            "GET  /sessions":         "List all chat sessions",
-            "GET  /status/sidecars":  "Database sidecar status",
-            "GET  /hardware":         "Detect system RAM/CPU to suggest models",
-            "POST /models/download":  "Download .gguf from Hugging Face",
-            "POST /models/load":      "Load a downloaded .gguf file",
-            "POST /engine/skip_think":"Skip thinking during generation"
+            "GET  /":                     "This welcome message",
+            "GET  /api/tags":             "List external compatible models",
+            "POST /api/pull":             "Pull external compatible model",
+            "GET  /models/available":     "List legacy available models",
+            "GET  /hardware":             "Detect system RAM/CPU to suggest models",
+            "POST /models/download":      "Download .gguf from Hugging Face",
+            "POST /models/load":          "Load a downloaded .gguf file",
+            "DELETE /v1/models/:model_id":"Remove a model from vault",
+            "GET  /health":               "Engine health check",
+            "GET  /history/:session":     "Chat history for a session",
+            "GET  /info":                 "System information & pillars",
+            "GET  /sessions":             "List all chat sessions",
+            "GET  /status/sidecars":      "Database sidecar status",
+            "POST /chat":                 "Send message → get AI response",
+            "POST /engine/skip_think":    "Skip thinking during generation",
+            "POST /v1/db/execute":        "FFI Database Query",
+            "POST /v1/system/brain":      "Toggle FFI Brain modes",
+            "GET  /v1/system/ps":         "Get running processes",
+            "GET  /v1/system/control":    "Get system control status",
+            "GET  /v1/system/permission": "Get system permissions",
+            "POST /v1/system/permission": "Update system permissions",
+            "POST /v1/system/profile":    "Configure hardware profile",
+            "GET  /v1/skills/list":       "List all available WASM skills",
+            "POST /v1/skills/install":    "Install a new WASM skill",
+            "GET  /v1/skills/cache":      "List skill cache",
+            "DELETE /v1/skills/cache":    "Clear skill cache",
+            "GET  /v1/booster/status":    "Get hardware booster status",
+            "POST /v1/booster/update":    "Update hardware booster configuration",
+            "POST /v1/ingest/file":       "Ingest file into vector database",
+            "POST /v1/benchmark/run":     "Run hardware benchmark suite",
+            "POST /v1/hardware/calibrate":"Calibrate hardware settings"
         },
-        "philosophy": "Nothing Need. Just CURE."
+        "philosophy": "Nothing Need. Just Cluaize."
     }))
 }
 
@@ -33,17 +53,17 @@ pub async fn root() -> Json<Value> {
 pub async fn health_check() -> Json<Value> {
     Json(json!({
         "status": "alive",
-        "engine": "CURE — Cluaiz Universal Runtime Engine",
+        "engine": "Cluaize Inference Engine",
         "version": env!("CARGO_PKG_VERSION"),
-        "message": "🚀 CURE is alive! All systems operational."
+        "message": "🚀 Cluaize is alive! All systems operational."
     }))
 }
 
 // ─── System Info ─────────────────────────────────────────────────────
 pub async fn system_info() -> Json<Value> {
     Json(json!({
-        "engine": "CURE",
-        "full_name": "Cluaiz Universal Runtime Engine",
+        "engine": "Cluaize",
+        "full_name": "Cluaize Inference Engine",
         "version": env!("CARGO_PKG_VERSION"),
         "pillars": {
             "api": "Gateway — HTTP server on port 8000 (this!)",
@@ -51,7 +71,7 @@ pub async fn system_info() -> Json<Value> {
             "storage": "Sidecars — 5 Official DB engines (Mongo, Neo4j, ClickHouse, Qdrant, MinIO)",
             "engines": "Muscles — C++ model inference via llama.cpp FFI"
         },
-        "philosophy": "Nothing Need. Just CURE.",
+        "philosophy": "Nothing Need. Just Cluaize.",
         "banned": ["Python", "Docker", "npm", "pip"]
     }))
 }

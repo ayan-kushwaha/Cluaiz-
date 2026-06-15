@@ -40,10 +40,10 @@ async fn main() {
         .compact()
         .init();
 
-    // ── Determine CURE root directory ──
-    let cure_root = env::current_dir().expect("Failed to determine current directory");
+    // ── Determine Cluaiz root directory ──
+    let cluaiz_root = env::current_dir().expect("Failed to determine current directory");
 
-    // ── Initialize the CURE pillars ──
+    // ── Initialize the Cluaize pillars ──
     tracing::info!("🔧 Initializing Cluaiz Engine...");
     
 
@@ -96,6 +96,8 @@ async fn main() {
     println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "    GET  ".bright_cyan().bold(), "/hardware         ".white(), "→ Check system RAM/CPU".bright_black()));
     println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "    POST ".bright_cyan().bold(), "/models/download  ".white(), "→ Fetch from HF".bright_black()));
     println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "    POST ".bright_cyan().bold(), "/models/load      ".white(), "→ Activate Model".bright_black()));
+    println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "    GET  ".bright_cyan().bold(), "/v1/skills/list   ".white(), "→ List WASM skills".bright_black()));
+    println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "    POST ".bright_cyan().bold(), "/v1/skills/install".white(), "→ Install WASM skill".bright_black()));
     println!("{}", "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫".bright_blue());
     println!("{} {}", "┃".bright_blue(), format!("{}{}{}", "✨ ".yellow(), "Nothing Need.".bright_white().italic(), " Just Cluaize.".bright_green().bold()));
     println!("{}", "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n".bright_blue());

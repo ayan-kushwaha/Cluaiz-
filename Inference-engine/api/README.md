@@ -1,10 +1,10 @@
-# 🌐 CURE API Architecture & Guidelines (`inference-engine/api`)
+# 🌐 Cluaize API Architecture & Guidelines (`inference-engine/api`)
 
-This document establishes the strict architectural rules, API design paradigms, and folder structures for the **Cluaiz Universal Runtime Engine (CURE) API**. 
+This document establishes the strict architectural rules, API design paradigms, and folder structures for the **Cluaize Inference Engine API**. 
 
 ## 🏗️ 1. Dual-Gateway Architecture
 
-The CURE API is designed to serve two entirely different paradigms simultaneously without coupling them:
+The Cluaize API is designed to serve two entirely different paradigms simultaneously without coupling them:
 
 1. **Native FFI / IPC Gateway (0.00ms Latency)**
    - **Target:** Cluaize Native Desktop App, Native CLI.

@@ -18,7 +18,7 @@ pub struct BenchmarkTarget {
 #[tokio::main]
 async fn main() {
     println!("╔══════════════════════════════════════════════════════════╗");
-    println!("║     🧠 CURE: Cluaiz Core BENCHMARK v2.0            ║");
+    println!("║     🧠 Cluaize: Cluaiz Core BENCHMARK v2.0            ║");
     println!("║     Quad-Transformer Faceoff — GPU Powered               ║");
     println!("╚══════════════════════════════════════════════════════════╝");
     println!();
@@ -32,8 +32,8 @@ async fn main() {
     println!();
 
     // ── Model Roster ──
-    let models_root = r"C:\Users\Aryan\my\Cluaiz-workspace\Cluaiz-OS\Cluaiz-ai-CURE\models";
-    let tui_models   = r"C:\Users\Aryan\my\Cluaiz-workspace\Cluaiz-OS\Cluaiz-ai-CURE\terminal_ui\models";
+    let models_root = r"C:\Users\Aryan\my\Cluaiz-workspace\Cluaiz-OS\Cluaiz-ai\models";
+    let tui_models   = r"C:\Users\Aryan\my\Cluaiz-workspace\Cluaiz-OS\Cluaiz-ai\terminal_ui\models";
 
     let targets = vec![
         BenchmarkTarget {
@@ -74,7 +74,7 @@ async fn main() {
 
     let header = format!(
         "╔══════════════════════════════════════════════════════════╗\n\
-         ║       CURE: Cluaiz Core BENCHMARK REPORT            ║\n\
+         ║       Cluaize: Cluaiz Core BENCHMARK REPORT            ║\n\
          ║       Device: {:?}\n\
          ╚══════════════════════════════════════════════════════════╝\n\n\
          Prompt: \"{}\"\n\
@@ -202,6 +202,6 @@ async fn main() {
     println!("╚══════════════════════════════════════════════════════════╝");
     println!("\n💾 Report saved → {}", report_path);
     writeln!(report, "\n════════════════════════════════════════════════════════════").unwrap();
-    writeln!(report, "Report saved by CURE Cluaiz Benchmark v2.0").unwrap();
+    writeln!(report, "Report saved by Cluaize Benchmark v2.0").unwrap();
     report.flush().unwrap();
 }

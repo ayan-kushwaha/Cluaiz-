@@ -24,7 +24,7 @@ pub struct RosterFile {
 
 fn generate_repo(name: &str) -> String {
     let lower_name = name.to_lowercase();
-    if lower_name.contains("bonsai") || lower_name.contains("cure") {
+    if lower_name.contains("bonsai") || lower_name.contains("cluaize") {
         let first = name.split_whitespace().next().unwrap().replace("(", "").replace(")", "");
         format!("cluaiz/{}", first.to_lowercase())
     } else if lower_name.contains("qwen") {
@@ -54,8 +54,7 @@ fn generate_repo(name: &str) -> String {
 
 fn generate_detailed_description(name: &str, params: &str, strength: &str, arch: &str, bit_depth: &str, tokens: &str) -> String {
     format!(
-        "This is the highly optimized {}, featuring a robust {} parameter architecture built by leading AI engineers. Designed explicitly to master the trait of '{}', this model pushes the boundaries of modern Core networks. Unlike legacy architectures, it operates perfectly at the {} layer, meaning its memory management is flawlessly optimized for the local Cluaiz CURE engine without compromising zero-shot reasoning. \
-        It has been rigorously scaled and pre-trained across a staggering {} corpus, absorbing dense human knowledge spanning logic, mathematics, multi-language translation, and coding syntax. The {} backbone ensures that token processing speeds and semantic latency remain ultra-low. For end-users seeking absolute data privacy and autonomous intelligence at the edge, this specific model guarantees an elite balance between extreme cross-platform speed and deep contextual understanding. Highly recommended for heavy edge execution and next-generation inference loops.",
+        "The {} model utilizes a {} parameter architecture tailored for '{}'. It operates at the {} layer and runs locally on user hardware via the Cluaize Inference Engine. Pre-trained on a {} corpus, it supports offline execution for logic, mathematics, and coding syntax. Powered by the {} architecture, it ensures complete data privacy for cross-platform deployment.",
         name, params, strength, bit_depth, tokens, arch
     )
 }

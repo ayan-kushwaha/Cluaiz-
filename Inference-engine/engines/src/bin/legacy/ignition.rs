@@ -9,7 +9,7 @@ use tokenizers::Tokenizer;
 #[tokio::main]
 async fn main() {
     println!("═══════════════════════════════════════════════════════════════");
-    println!("🚀 [CURE] Cluaiz Core IGNITION (ONBOARDING MODE)");
+    println!("🚀 [Cluaize] Cluaiz Core IGNITION (ONBOARDING MODE)");
     println!("═══════════════════════════════════════════════════════════════\n");
 
     // ── PHASE 1: HARDWARE DISCOVERY ──
@@ -39,7 +39,7 @@ async fn main() {
     // ── PHASE 4: MODEL LOADING & INFERENCE ──
     println!("\n⏳ Initiating Cluaiz Dispatcher (Tier Mode: {:?})...", tier);
     
-    let model_path = PathBuf::from(r"C:\Users\Aryan\my\Cluaiz-workspace\Cluaiz-OS\Cluaiz-ai-CURE\models\models--Qwen--Qwen2.5-0.5B-Instruct-GGUF\qwen2.5-0.5b-instruct-q4_k_m.gguf");
+    let model_path = PathBuf::from(r"C:\Users\Aryan\my\Cluaiz-workspace\Cluaiz-OS\Cluaiz-ai\models\models--Qwen--Qwen2.5-0.5B-Instruct-GGUF\qwen2.5-0.5b-instruct-q4_k_m.gguf");
     
     if !model_path.exists() {
         println!("❌ Warning: Model not found at: {}. Skipping generation check.", model_path.display());
@@ -55,7 +55,7 @@ async fn main() {
         }
     };
 
-    let tokenizer_path = r"C:\Users\Aryan\my\Cluaiz-workspace\Cluaiz-OS\Cluaiz-ai-CURE\models\models--Qwen--Qwen2.5-0.5B-Instruct-GGUF\tokenizer.json";
+    let tokenizer_path = r"C:\Users\Aryan\my\Cluaiz-workspace\Cluaiz-OS\Cluaiz-ai\models\models--Qwen--Qwen2.5-0.5B-Instruct-GGUF\tokenizer.json";
     let tokenizer = Tokenizer::from_file(tokenizer_path).expect("Tokenizer load error");
     
     let sampler = CoreSampler::new(299792, 0.7, 0.9, 1.1);
@@ -63,7 +63,7 @@ async fn main() {
 
     println!("\n✅ SUCCESS: Cluaiz Onboarding Complete. System Stable.");
     println!("🤖 Assistant Prompted: \"Describe the soul of a Cluaiz AI OS.\"");
-    println!("\n═════════════════- 🧠 CURE BRAIN -═════════════════\n");
+    println!("\n═════════════════- 🧠 Cluaize BRAIN -═════════════════\n");
 
     let prompt = "<|im_start|>user\nDescribe the soul of a Cluaiz AI OS in one short sentence.<|im_end|>\n<|im_start|>assistant\n";
     

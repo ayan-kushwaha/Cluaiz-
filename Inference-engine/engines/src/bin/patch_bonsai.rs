@@ -5,7 +5,7 @@ use std::time::Instant;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("╔══════════════════════════════════════════════════════════════╗");
-    println!("║   CURE Core OS: Cluaiz BONSAI BINARY PATCHER v1.0       ║");
+    println!("║   Cluaize Core OS: Cluaiz BONSAI BINARY PATCHER v1.0       ║");
     println!("╚══════════════════════════════════════════════════════════════╝\n");
 
     let args: Vec<String> = env::args().collect();

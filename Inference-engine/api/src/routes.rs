@@ -34,6 +34,7 @@ pub fn build(state: Arc<AppState>) -> Router {
         
         // ── Legacy Models API ──
         .route("/models/available", get(models::list_models))
+        .route("/v1/models/installed", get(models::list_installed_models))
         .route("/hardware", get(models::hardware_status))
         .route("/models/download", post(models::download_model))
         .route("/models/load", post(models::load_model))

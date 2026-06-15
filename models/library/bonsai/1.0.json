@@ -9,7 +9,7 @@
     "context_window": "32k",
     "category": "chat",
     "default_quant": "binary",
-    "description": "The Bonsai 1.0b 1.7B is an absolute engineering marvel in edge AI. Utilizing native 1-bit binary quantization (-1 and +1), it bypasses MatMul bottlenecks for addition-based processing. Requiring just 300MB of active VRAM, it shatters limits on offline inference for IoT and wearables. Operating with zero latency and absolute privacy, it retains robust conversational capability and dynamic reasoning while drastically reducing power consumption compared to traditional FP16 models.",
+    "description": "The Bonsai 1.0b 1.7B utilizes native 1-bit binary quantization (-1 and +1) for addition-based processing. It requires 300MB of active VRAM for offline edge inference on IoT and wearables. It runs locally with lower power consumption compared to FP16 models.",
     "prompt_template": "ChatML",
     "licenses": [
       {

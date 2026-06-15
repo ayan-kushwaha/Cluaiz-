@@ -29,7 +29,7 @@ impl HardwareDetector {
 }
 
 pub enum InferenceEngine {
-    Cure,
+    Cluaize,
     Llama,
     Candle,
 }
