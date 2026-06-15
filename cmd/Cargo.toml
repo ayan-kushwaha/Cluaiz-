@@ -3,10 +3,10 @@ name = "cli"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
-default-run = "cluaiz"
+default-run = "cluaize"
 
 [[bin]]
-name = "cluaiz"
+name = "cluaize"
 path = "src/main.rs"
 
 [dependencies]

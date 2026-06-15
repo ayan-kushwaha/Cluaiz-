@@ -4,7 +4,7 @@ members = [
     "inference-engine/engines",
     "inference-engine/engines/cluaiz-shared",
     "inference-engine/engines/system-booster",
-    "Apps/cli", "interface-engines/onnx",
+    "cmd", "interface-engines/onnx",
 ]
 
 resolver = "2"

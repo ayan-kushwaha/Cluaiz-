@@ -79,6 +79,7 @@ impl PermissionSchema {
         let home_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
         let engine_dir = home_dir.join(".cluaiz").join("engine");
         let permission_path = engine_dir.join("Permission.json");
+        let permission_bin_path = engine_dir.join("Permission.bin");
 
         if !permission_path.exists() {
             warn!("⚠️ Permission.json not found at {:?}. Creating default.", permission_path);
@@ -92,6 +93,10 @@ impl PermissionSchema {
                     warn!("Failed to write default Permission.json: {}", e);
                 } else {
                     info!("✅ Created default Permission.json");
+                    // Sync to .bin
+                    if let Ok(bin_data) = bincode::serialize(&default_schema) {
+                        let _ = fs::write(&permission_bin_path, bin_data);
+                    }
                 }
             }
             return default_schema;
@@ -163,6 +168,7 @@ impl PermissionSchema {
         let home_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
         let engine_dir = home_dir.join(".cluaiz").join("engine");
         let permission_path = engine_dir.join("Permission.json");
+        let permission_bin_path = engine_dir.join("Permission.bin");
 
         if let Err(e) = fs::create_dir_all(&engine_dir) {
             warn!("Failed to create engine directory for saving Permission.json: {}", e);
@@ -174,6 +180,10 @@ impl PermissionSchema {
                 warn!("Failed to save Permission.json: {}", e);
             } else {
                 info!("✅ Updated Permission.json with active models.");
+                // Sync to .bin
+                if let Ok(bin_data) = bincode::serialize(self) {
+                    let _ = fs::write(&permission_bin_path, bin_data);
+                }
             }
         }
     }
