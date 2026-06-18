@@ -95,7 +95,7 @@ pub async fn chat_completions(
 
                     if send_telemetry {
                         let mut pulse_json = json!({});
-                        if let Ok(lock) = cluaiz_shared::hardware::telemetry::get_pulse().pulse.read() {
+                        if let Ok(lock) = cluaize_shared::hardware::telemetry::get_pulse().pulse.read() {
                             pulse_json = serde_json::to_value(&*lock).unwrap_or(json!({}));
                         }
 
@@ -189,7 +189,7 @@ pub async fn chat_completions(
         if send_telemetry {
             let total_time_ms = start_time.elapsed().as_millis();
             let mut pulse_json = json!({});
-            if let Ok(lock) = cluaiz_shared::hardware::telemetry::get_pulse().pulse.read() {
+            if let Ok(lock) = cluaize_shared::hardware::telemetry::get_pulse().pulse.read() {
                 pulse_json = serde_json::to_value(&*lock).unwrap_or(json!({}));
             }
             response["usage"] = json!({

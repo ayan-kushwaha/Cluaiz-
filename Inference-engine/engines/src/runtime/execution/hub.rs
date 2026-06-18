@@ -1,31 +1,31 @@
 use anyhow::{anyhow, Result};
 use neural_core::interfaces::router_contract::{EmbeddingDriver, EngineError};
-use cluaiz_shared::{ModelWeightsWrapper, CluaizContext, UnifiedBackend, CluaizInference};
+use cluaize_shared::{ModelWeightsWrapper, CluaizeContext, UnifiedBackend, CluaizeInference};
 use crate::interface_engines::EngineManager;
 use std::sync::{Arc, Mutex};
 
 pub struct HardwareOrchestrator;
 
 impl HardwareOrchestrator {
-    /// Dispatches and instantiates the correct model kernel via the Dynamic Cluaiz Linker.
+    /// Dispatches and instantiates the correct model kernel via the Dynamic Cluaize Linker.
     pub async fn instantiate(
         model_load_path: &str,
         engine_type: &str,
-        cluaiz_context: CluaizContext,
+        cluaize_context: CluaizeContext,
     ) -> Result<ModelWeightsWrapper> {
-        Self::instantiate_with_booster(model_load_path, engine_type, cluaiz_context, None).await
+        Self::instantiate_with_booster(model_load_path, engine_type, cluaize_context, None).await
     }
 
     pub async fn instantiate_with_booster(
         model_load_path: &str,
         engine_type: &str,
-        cluaiz_context: CluaizContext,
-        booster_override: Option<cluaiz_shared::hardware::schema::booster::BoosterControl>,
+        cluaize_context: CluaizeContext,
+        booster_override: Option<cluaize_shared::hardware::schema::booster::BoosterControl>,
     ) -> Result<ModelWeightsWrapper> {
         tracing::info!("🔩 [Orchestrator] Initiating Dynamic Hardware Handshake for Engine: {}", engine_type);
 
         // 🚀 Boot the LMDB Brain Environment if enabled by Sovereign Governor
-        if let Ok(control) = cluaiz_shared::hardware::governor::HardwareGovernor::load_system_control() {
+        if let Ok(control) = cluaize_shared::hardware::governor::HardwareGovernor::load_system_control() {
             if control.brain.is_enabled() {
                 let _ = crate::memory::storage_bridge::load_storage_bridge();
             }
@@ -33,7 +33,7 @@ impl HardwareOrchestrator {
 
         if engine_type == "onnx" {
             tracing::info!("🔮 [Orchestrator] Bypassing FFI Linker. Instantiating Native Rust ONNX Gatekeeper.");
-            let mut onnx_engine = cluaiz_onnx::engine::OnnxEngine::new()
+            let mut onnx_engine = cluaize_onnx::engine::OnnxEngine::new()
                 .map_err(|e| anyhow!("Failed to init ONNX: {}", e))?;
             
             let model_path = std::path::Path::new(model_load_path);
@@ -56,8 +56,8 @@ impl HardwareOrchestrator {
             return Ok(Box::new(NativeOnnxWrapper { engine: onnx_engine }));
         }
 
-        // 1. Initialize the Engine Manager (The Cluaiz Linker)
-        let base_path = cluaiz_shared::hardware::governor::HardwareGovernor::resolve_hub_path();
+        // 1. Initialize the Engine Manager (The Cluaize Linker)
+        let base_path = cluaize_shared::hardware::governor::HardwareGovernor::resolve_hub_path();
         let mut manager = EngineManager::new(base_path);
 
         // 2. Engine Type provided by Unified Router (e.g., "llama" or "onnx")
@@ -75,9 +75,9 @@ impl HardwareOrchestrator {
         let booster_control = if let Some(booster) = booster_override {
             booster
         } else {
-            cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default()
+            cluaize_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default()
         };
-        let max_ctx = cluaiz_context.dna.max_context_length.map(|c| c as u32);
+        let max_ctx = cluaize_context.dna.max_context_length.map(|c| c as u32);
         let engine_ptr = manager.instantiate(model_load_path, &booster_control, max_ctx)?;
 
         tracing::info!("🧬 [Orchestrator] Hardware Handshake SUCCESS. Neural Bridge Established.");
@@ -126,7 +126,7 @@ impl UnifiedBackend for SovereignEngine {
     }
 }
 
-impl CluaizInference for SovereignEngine {
+impl CluaizeInference for SovereignEngine {
     fn generate_stream(
         &mut self,
         prompt: &str,
@@ -151,7 +151,7 @@ impl CluaizInference for SovereignEngine {
         manager.load_kv_cache_ffi(self.engine_ptr, path)
     }
 
-    fn inject_signals(&mut self, signals: Vec<cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Result<()> {
+    fn inject_signals(&mut self, signals: Vec<cluaize_shared::hardware::memory::kv_cache::stitching::CluaizeSignal>) -> Result<()> {
         if signals.is_empty() {
             return Ok(());
         }
@@ -170,7 +170,7 @@ impl CluaizInference for SovereignEngine {
         Ok(())
     }
 
-    fn apply_booster(&mut self, _control: &cluaiz_shared::hardware::schema::booster::BoosterControl) -> Result<()> {
+    fn apply_booster(&mut self, _control: &cluaize_shared::hardware::schema::booster::BoosterControl) -> Result<()> {
         Ok(())
     }
 
@@ -180,7 +180,7 @@ impl CluaizInference for SovereignEngine {
 }
 
 pub struct NativeOnnxWrapper {
-    pub engine: cluaiz_onnx::engine::OnnxEngine,
+    pub engine: cluaize_onnx::engine::OnnxEngine,
 }
 
 impl UnifiedBackend for NativeOnnxWrapper {
@@ -197,7 +197,7 @@ impl UnifiedBackend for NativeOnnxWrapper {
     }
 }
 
-impl CluaizInference for NativeOnnxWrapper {
+impl CluaizeInference for NativeOnnxWrapper {
     fn generate_stream(
         &mut self,
         prompt: &str,
@@ -270,7 +270,7 @@ impl CluaizInference for NativeOnnxWrapper {
         Err(anyhow!("ONNX Native does not support forward_raw for text tokens yet."))
     }
 
-    fn inject_signals(&mut self, _signals: Vec<cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Result<()> { Ok(()) }
-    fn apply_booster(&mut self, _control: &cluaiz_shared::hardware::schema::booster::BoosterControl) -> Result<()> { Ok(()) }
+    fn inject_signals(&mut self, _signals: Vec<cluaize_shared::hardware::memory::kv_cache::stitching::CluaizeSignal>) -> Result<()> { Ok(()) }
+    fn apply_booster(&mut self, _control: &cluaize_shared::hardware::schema::booster::BoosterControl) -> Result<()> { Ok(()) }
     fn set_liquid_mode(&mut self, _enabled: bool) -> Result<()> { Ok(()) }
 }

@@ -25,14 +25,14 @@ pub async fn execute(command: SkillCommand) -> Result<()> {
 async fn handle_cache_command(command: crate::SkillCacheCommand) -> Result<()> {
     match command {
         crate::SkillCacheCommand::Ls => {
-            println!("\n  {} [Cluaiz Dual-Cache] Scanning Global Skill Memory...", "🧠".cyan());
+            println!("\n  {} [Cluaize Dual-Cache] Scanning Global Skill Memory...", "ðŸ§ ".cyan());
             match engines::neural_foundry::registry::SkillRegistry::list_skills_cache() {
                 Ok(report) => println!("{}", report),
                 Err(e) => println!("Error listing cache: {}", e),
             }
         }
         crate::SkillCacheCommand::Clear { model_id, all, force } => {
-            println!("\n  {} [Cluaiz Dual-Cache] Initiating Global Wipe...", "🧹".yellow());
+            println!("\n  {} [Cluaize Dual-Cache] Initiating Global Wipe...", "ðŸ§¹".yellow());
             match engines::neural_foundry::registry::SkillRegistry::clear_skills_cache(model_id, all, force) {
                 Ok(wiped) => println!("\n    Successfully wiped {} caches.\n", wiped),
                 Err(e) => println!("Error clearing cache: {}", e),
@@ -50,14 +50,14 @@ async fn install_skill(skill_name: &str) -> Result<()> {
 }
 
 async fn list_skills() -> Result<()> {
-    println!("\n  {} [Cluaiz] Installed Sovereign Skills:", "📦".cyan());
+    println!("\n  {} [Cluaize] Installed Sovereign Skills:", "ðŸ“¦".cyan());
     match engines::neural_foundry::registry::SkillRegistry::list_installed_skills() {
         Ok(skills) => {
             if skills.is_empty() {
-                println!("    No skills installed yet. Use `cluaiz skill install <name>`.");
+                println!("    No skills installed yet. Use `cluaize skill install <name>`.");
             } else {
                 for name in skills {
-                    println!("    {} {}", "🔹".blue(), name.bold());
+                    println!("    {} {}", "ðŸ”¹".blue(), name.bold());
                 }
             }
         }

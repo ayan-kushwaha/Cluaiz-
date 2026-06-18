@@ -1,12 +1,12 @@
 use crate::hardware::{SiliconTruth, StorageSubsystem};
 use sysinfo::System;
 
-pub struct CluaizHealthChecker;
+pub struct CluaizeHealthChecker;
 
-impl CluaizHealthChecker {
+impl CluaizeHealthChecker {
     /// Conducts a macro-benchmark of the entire system on first boot
     pub fn execute_initial_diagnostic(mut profile: SiliconTruth) -> SiliconTruth {
-        println!("🩺 [Cluaiz Health] Initiating Deep Profiling Sequence...");
+        println!("🩺 [Cluaize Health] Initiating Deep Profiling Sequence...");
 
         // 1. RAM Profiling via sysinfo (Lightweight)
         let mut sys = System::new();
@@ -47,10 +47,10 @@ impl CluaizHealthChecker {
 
     /// Runs a deep manual benchmark consisting of a 50MB disk I/O write/read test
     pub fn run_full_benchmark() {
-        println!("🚀 [Cluaiz Benchmark] Initiating Deep Hardware Diagnostics...");
+        println!("🚀 [Cluaize Benchmark] Initiating Deep Hardware Diagnostics...");
         let start = std::time::Instant::now();
         
-        let path = std::path::Path::new(".Cluaiz_io_bench.tmp");
+        let path = std::path::Path::new(".cluaize_io_bench.tmp");
         let payload = vec![0u8; 50 * 1024 * 1024]; // 50MB payload
         
         if let Ok(mut file) = std::fs::File::create(path) {
@@ -69,7 +69,7 @@ impl CluaizHealthChecker {
         
         let _ = std::fs::remove_file(path);
         
-        println!("✅ [Cluaiz Benchmark] Storage Speed: {:.1} MB/s", speed_mbps);
-        println!("✅ [Cluaiz Benchmark] Complete in {:.2}s", duration.as_secs_f64());
+        println!("✅ [Cluaize Benchmark] Storage Speed: {:.1} MB/s", speed_mbps);
+        println!("✅ [Cluaize Benchmark] Complete in {:.2}s", duration.as_secs_f64());
     }
 }

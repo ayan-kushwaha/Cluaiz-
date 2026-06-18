@@ -1,5 +1,5 @@
-//! Cluaiz Memory Bridge: Linked to archer-shared Hardware HAL.
-pub use cluaiz_shared::hardware::memory::*;
+//! Cluaize Memory Bridge: Linked to archer-shared Hardware HAL.
+pub use cluaize_shared::hardware::memory::*;
 pub mod kv_injector;
 pub mod tensor_transducer;
 pub mod storage_bridge;

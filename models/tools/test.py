@@ -149,7 +149,7 @@ def validate_json(filepath):
     return all_passed
 
 def main():
-    print(f"Starting Cluaiz Model Validation...")
+    print(f"Starting Cluaize Model Validation...")
     print(f"Target Directory: {LIBRARY_DIR}")
     
     json_files = glob.glob(os.path.join(LIBRARY_DIR, '**/*.json'), recursive=True)

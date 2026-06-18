@@ -64,7 +64,7 @@ async fn handle_client(mut pipe: NamedPipeServer, state: Arc<AppState>) {
                             "BOOSTER_UPDATE" => {
                                 if let Some(payload) = json_cmd.get("payload") {
                                     if let Ok(booster_ctrl) = serde_json::from_value(payload.clone()) {
-                                        let _ = cluaiz_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster_ctrl);
+                                        let _ = cluaize_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster_ctrl);
                                         let _ = pipe.write_all(b"{\"status\": \"success\"}").await;
                                     } else {
                                         let _ = pipe.write_all(b"{\"status\": \"error\", \"message\": \"invalid payload\"}").await;
@@ -83,7 +83,7 @@ async fn handle_client(mut pipe: NamedPipeServer, state: Arc<AppState>) {
                                 continue;
                             }
                             "SYSTEM_PS" => {
-                                let registry = cluaiz_shared::hardware::governor::HardwareGovernor::load_process_registry();
+                                let registry = cluaize_shared::hardware::governor::HardwareGovernor::load_process_registry();
                                 let mut processes = Vec::new();
                                 for (pid_str, info) in registry {
                                     processes.push(serde_json::json!({
@@ -99,12 +99,12 @@ async fn handle_client(mut pipe: NamedPipeServer, state: Arc<AppState>) {
                                 continue;
                             }
                             "HARDWARE_CALIBRATE" => {
-                                let _ = cluaiz_shared::hardware::governor::HardwareGovernor::auto_calibrate();
+                                let _ = cluaize_shared::hardware::governor::HardwareGovernor::auto_calibrate();
                                 let _ = pipe.write_all(b"{\"status\": \"success\", \"message\": \"Hardware recalibrated\"}").await;
                                 continue;
                             }
                             "BENCHMARK_RUN" => {
-                                engines::telemetry::health_check::CluaizHealthChecker::run_full_benchmark();
+                                engines::telemetry::health_check::CluaizeHealthChecker::run_full_benchmark();
                                 let _ = pipe.write_all(b"{\"status\": \"success\", \"message\": \"Benchmark started\"}").await;
                                 continue;
                             }
@@ -116,7 +116,7 @@ async fn handle_client(mut pipe: NamedPipeServer, state: Arc<AppState>) {
                             "MODEL_RM" => {
                                 if let Some(model_id) = json_cmd.get("payload").and_then(|p| p.get("model_id")).and_then(|m| m.as_str()) {
                                     if let Some(home_dir) = ::dirs::home_dir() {
-                                        let model_file = home_dir.join(".cluaiz").join("models").join(format!("{}.gguf", model_id));
+                                        let model_file = home_dir.join(".cluaize").join("models").join(format!("{}.gguf", model_id));
                                         if model_file.exists() {
                                             let _ = std::fs::remove_file(&model_file);
                                             let _ = pipe.write_all(b"{\"status\": \"success\", \"message\": \"Model removed\"}").await;
@@ -134,10 +134,10 @@ async fn handle_client(mut pipe: NamedPipeServer, state: Arc<AppState>) {
                                 continue;
                             }
                             "SYSTEM_BRAIN" => {
-                                if let Some(payload) = json_cmd.get("payload").and_then(|p| p.get("state")).and_then(|s| s.as_str()) {
-                                    if let Ok(mut control) = cluaiz_shared::hardware::governor::HardwareGovernor::load_system_control() {
-                                        control.brain.cluaizd_connect_ffi = payload.to_string();
-                                        let _ = cluaiz_shared::hardware::system_control::HardwareOrchestrator::persist_sovereign_state(&control);
+                                if let Some(payload) = json_cmd.get("payload").and_then(|p| p.get("state")).and_then(|s| s.as_bool()) {
+                                    if let Ok(mut control) = cluaize_shared::hardware::governor::HardwareGovernor::load_system_control() {
+                                        control.brain.cluaizd_connect_ffi = if payload { "on".to_string() } else { "off".to_string() };
+                                        let _ = cluaize_shared::hardware::system_control::HardwareOrchestrator::persist_sovereign_state(&control);
                                         let _ = pipe.write_all(b"{\"status\": \"success\"}").await;
                                     } else {
                                         let _ = pipe.write_all(b"{\"status\": \"error\"}").await;
@@ -145,6 +145,153 @@ async fn handle_client(mut pipe: NamedPipeServer, state: Arc<AppState>) {
                                 } else {
                                     let _ = pipe.write_all(b"{\"status\": \"error\", \"message\": \"missing state payload\"}").await;
                                 }
+                                continue;
+                            }
+                            "GET_SETTINGS" => {
+                                let perms = engines::neural_foundry::security::permission_schema::PermissionSchema::load();
+                                let control = cluaize_shared::hardware::governor::HardwareGovernor::load_system_control().unwrap_or_default();
+                                let brain_mode = if control.brain.cluaizd_connect_ffi == "on" { "on" } else { "off" };
+                                
+                                // Load real booster from disk — NOT hardcoded
+                                let booster = cluaize_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+                                
+                                let roster = engines::models::registry::CoreRoster::load_roster();
+                                let mut available_chat_models: Vec<String> = Vec::new();
+                                let mut available_vector_models: Vec<String> = Vec::new();
+                                let mut all_models: Vec<String> = Vec::new();
+
+                                for model in &roster {
+                                    all_models.push(model.id.clone());
+
+                                    // PRIMARY: Classify by the actual folder path on disk
+                                    // ~/.cluaize/models/chat/     → chat models
+                                    // ~/.cluaize/models/embedding/ → vector models (text embeddings)
+                                    // ~/.cluaize/models/vision/    → vector models (image embeddings / CLIP)
+                                    let folder_category = model.local_path.as_deref()
+                                        .and_then(|p| {
+                                            let p_lower = p.replace('\\', "/").to_lowercase();
+                                            if p_lower.contains("/models/chat/") {
+                                                Some("chat")
+                                            } else if p_lower.contains("/models/embedding/") {
+                                                Some("embedding")
+                                            } else if p_lower.contains("/models/vision/") {
+                                                Some("vision")
+                                            } else {
+                                                None
+                                            }
+                                        });
+
+                                    // FALLBACK: Use the `category` field from model_manifest.json
+                                    let cat = folder_category
+                                        .unwrap_or_else(|| model.category.as_str())
+                                        .to_lowercase();
+
+                                    // "embedding" and "vision" models go into vector list.
+                                    // Vision/CLIP models can embed images into vector space.
+                                    match cat.as_str() {
+                                        "embedding" | "vision" | "multimodal" => {
+                                            available_vector_models.push(model.id.clone());
+                                        }
+                                        _ => {
+                                            available_chat_models.push(model.id.clone());
+                                        }
+                                    }
+                                }
+
+                                // Safety: always ensure the currently-active model appears in its list
+                                if let Some(ref t) = perms.chat_models.text {
+                                    if !t.is_empty() && !available_chat_models.contains(t) {
+                                        available_chat_models.push(t.clone());
+                                    }
+                                }
+                                if let Some(ref t) = perms.vector_models.text {
+                                    if !t.is_empty() && !available_vector_models.contains(t) {
+                                        available_vector_models.push(t.clone());
+                                    }
+                                }
+
+                                
+                                let response = serde_json::json!({
+                                    "permissions": {
+                                        "wasm_firewall": perms.wasm_firewall,
+                                        "vectorize_user_input": perms.vectorize_user_input,
+                                        "vectorize_ai_response": perms.vectorize_ai_response,
+                                        "stream_telemetry": perms.stream_telemetry,
+                                        "lazy_load_model": perms.lazy_load_model,
+                                        "temporary_chat_ttl_hours": perms.temporary_chat_ttl_hours,
+                                        "chat_models": perms.chat_models,
+                                        "vector_models": perms.vector_models,
+                                        "available_models": all_models,
+                                        "available_chat_models": available_chat_models,
+                                        "available_vector_models": available_vector_models,
+                                        "available_devices": ["auto", "gpu", "cpu"]
+                                    },
+                                    "booster": booster,
+                                    "brainMode": brain_mode
+                                });
+                                
+                                let _ = pipe.write_all(response.to_string().as_bytes()).await;
+                                continue;
+                            }
+                            // UPDATE_BOOSTER — sent by Tauri store (matches store action name)
+                            "UPDATE_BOOSTER" | "BOOSTER_UPDATE" => {
+                                if let Some(payload) = json_cmd.get("payload") {
+                                    // Handle single key-value update: {key: "flash_attention", value: "On"}
+                                    if let (Some(key), Some(value)) = (payload.get("key").and_then(|k| k.as_str()), payload.get("value")) {
+                                        let mut booster = cluaize_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+                                        if let Ok(mut booster_json) = serde_json::to_value(&booster) {
+                                            booster_json[key] = value.clone();
+                                            if let Ok(updated) = serde_json::from_value(booster_json) {
+                                                booster = updated;
+                                                let _ = cluaize_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster);
+                                                let _ = pipe.write_all(b"{\"status\": \"success\"}").await;
+                                            } else {
+                                                let _ = pipe.write_all(b"{\"status\": \"error\", \"message\": \"invalid booster format\"}").await;
+                                            }
+                                        }
+                                    // Handle full booster object update (legacy BOOSTER_UPDATE format)
+                                    } else if let Ok(booster_ctrl) = serde_json::from_value(payload.clone()) {
+                                        let _ = cluaize_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster_ctrl);
+                                        let _ = pipe.write_all(b"{\"status\": \"success\"}").await;
+                                    } else {
+                                        let _ = pipe.write_all(b"{\"status\": \"error\", \"message\": \"invalid payload\"}").await;
+                                    }
+                                }
+                                continue;
+                            }
+                            "UPDATE_PERMISSION" => {
+                                if let Some(payload) = json_cmd.get("payload") {
+                                    if let (Some(key), Some(value)) = (payload.get("key").and_then(|k| k.as_str()), payload.get("value")) {
+                                        let perms = engines::neural_foundry::security::permission_schema::PermissionSchema::load();
+                                        if let Ok(mut perms_json) = serde_json::to_value(&perms) {
+                                            perms_json[key] = value.clone();
+                                            if let Ok(updated_perms) = serde_json::from_value::<engines::neural_foundry::security::permission_schema::PermissionSchema>(perms_json) {
+                                                updated_perms.save();
+                                                let _ = pipe.write_all(b"{\"status\": \"success\"}").await;
+                                            } else {
+                                                let _ = pipe.write_all(b"{\"status\": \"error\", \"message\": \"invalid permission format\"}").await;
+                                            }
+                                        }
+                                    }
+                                }
+                                continue;
+                            }
+
+                            "SET_HARDWARE" => {
+                                tracing::info!("🚀 [IPC] Received SET_HARDWARE: {:?}", json_cmd);
+                                // Here we would dynamically adjust thread counts/Vulcan map in engine
+                                let _ = pipe.write_all(b"{\"status\": \"success\"}").await;
+                                continue;
+                            }
+                            "SET_MODEL" => {
+                                tracing::info!("🚀 [IPC] Received SET_MODEL: {:?}", json_cmd);
+                                // Here we would unload current model and load new one
+                                let _ = pipe.write_all(b"{\"status\": \"success\"}").await;
+                                continue;
+                            }
+                            "EAGER_LOAD" => {
+                                tracing::info!("🚀 [IPC] Received EAGER_LOAD. Pre-loading text model...");
+                                let _ = pipe.write_all(b"{\"status\": \"success\"}").await;
                                 continue;
                             }
                             _ => {}

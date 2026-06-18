@@ -1,4 +1,4 @@
-# CLUAIZ CORE INFRASTRUCTURE - VERSION 0.1.0
+# CLUAIZE CORE INFRASTRUCTURE - VERSION 0.1.0
 # Industrial Standard Deployment Script (CURL ENHANCED)
 
 param ([string]$Version = 'latest')
@@ -93,12 +93,12 @@ Write-Host $Logo3 -ForegroundColor Cyan
 
 # --- Header ---
 Write-Host ""
-Write-Host "  >_ Installing Cluaiz..." -ForegroundColor Gray
+Write-Host "  >_ Installing Cluaize..." -ForegroundColor Gray
 Write-Host ""
 
 try {
-    $HubPath = if ($env:CLUAIZ_ROOT) { $env:CLUAIZ_ROOT } else { Join-Path $HOME '.cluaiz' }
-    $Repo = 'cluaiz/cluaiz'
+    $HubPath = if ($env:CLUAIZE_ROOT) { $env:CLUAIZE_ROOT } else { Join-Path $HOME '.cluaize' }
+    $Repo = 'cluaize/cluaize'
 
     # 1. Provisioning
     $step1 = '[PROVISIONING] Silicon Environment Setup'
@@ -113,7 +113,7 @@ try {
     # 2. Sovereign Registry Sync
     $step2 = '[AUDITING] Neural Registry Sync'
     Write-Step $step2
-    $MasterRegistryUrl = 'https://raw.githubusercontent.com/cluaiz/cluaiz/main/package.json'
+    $MasterRegistryUrl = 'https://raw.githubusercontent.com/cluaiz/cluaize/main/package.json'
     $MasterRegistry = Invoke-RestMethod -Uri $MasterRegistryUrl
     $Arch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { 'win-arm64' } else { 'win-x64' }
     Complete-Step $step2
@@ -124,13 +124,13 @@ try {
     $CliUrl = $CliManifest.cli.$Arch
     if (-not $CliUrl) { throw "No CLI asset matching $Arch found in registry." }
     
-    $TargetCli = Join-Path $HubPath 'apps/cli/cluaiz.exe'
-    $CliLabel = "Cluaiz CLI ($Arch) - latest"
+    $TargetCli = Join-Path $HubPath 'apps/cli/cluaize.exe'
+    $CliLabel = "Cluaize CLI ($Arch) - latest"
     Invoke-CluaizDownload -url $CliUrl -path $TargetCli -label $CliLabel
     
     # 🚀 Zero-Copy Linkage
     $BinPath = Join-Path $HubPath 'bin'
-    $BinLink = Join-Path $BinPath 'cluaiz.exe'
+    $BinLink = Join-Path $BinPath 'cluaize.exe'
     $step3 = 'Linking CLI Gateway'
     Write-Step $step3
     if (Test-Path $BinLink) { Remove-Item $BinLink -Force }
@@ -145,8 +145,8 @@ try {
     $EUrl = $EngManifest.engines.$Arch
     if (-not $EUrl) { throw "No Engine asset matching $Arch found in registry." }
     
-    $EngLabel = "Cluaiz Engine ($Arch) - latest"
-    Invoke-CluaizDownload -url $EUrl -path (Join-Path $HubPath 'engine/cluaiz-engine.dll') -label $EngLabel
+    $EngLabel = "Cluaize Engine ($Arch) - latest"
+    Invoke-CluaizDownload -url $EUrl -path (Join-Path $HubPath 'engine/cluaize-engine.dll') -label $EngLabel
 
     # --- Kernel Deployment (Driven by package.json) ---
     $KerManifestUrl = $MasterRegistry.components.kernel.manifest_url
@@ -160,13 +160,13 @@ try {
 
     $KUrl = $KerManifest.kernels.$TargetPlatform
     if ($KUrl) {
-        $KName = 'cluaiz-llama.dll'
-        $KerLabel = "Cluaiz Llama Kernel ($TargetPlatform) - latest"
+        $KName = 'cluaize-llama.dll'
+        $KerLabel = "Cluaize Llama Kernel ($TargetPlatform) - latest"
         Invoke-CluaizDownload -url $KUrl -path (Join-Path $HubPath "interface-engines/kernels/$KName") -label $KerLabel
     }
 
     # ── Environment Path Update ──────────────────────────────────────────
-    [System.Environment]::SetEnvironmentVariable('CLUAIZ_ROOT', $HubPath, 'User')
+    [System.Environment]::SetEnvironmentVariable('CLUAIZE_ROOT', $HubPath, 'User')
     $OldPath = [System.Environment]::GetEnvironmentVariable('Path', 'User')
     if ($OldPath -notlike ('*' + $BinPath + '*')) {
         $NewPath = $OldPath + ';' + $BinPath
@@ -191,7 +191,7 @@ try {
     Write-Host "`n>_ Synchronizing Hardware DNA..." -ForegroundColor Cyan
     & $BinLink --calibrate
     
-    Write-Host '>_ Launching Cluaiz CLI...' -ForegroundColor Gray
+    Write-Host '>_ Launching Cluaize CLI...' -ForegroundColor Gray
     & $BinLink
 }
 catch {

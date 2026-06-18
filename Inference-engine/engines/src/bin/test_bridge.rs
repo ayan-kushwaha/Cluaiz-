@@ -12,7 +12,7 @@ fn main() {
     println!("  - vectorize_ai_response: {:?}", schema.vectorize_ai_response);
 
     // 2. Generate vector embedding
-    let text = "Hello Cluaiz Database!";
+    let text = "Hello Cluaize Database!";
     println!("⚙️ [Test Bridge] Generating vector embedding for: '{}'...", text);
     let vector = EmbeddingGenerator::generate_vector(text);
     println!("✅ [Test Bridge] Generated 16-D Vector: {:?}", vector);

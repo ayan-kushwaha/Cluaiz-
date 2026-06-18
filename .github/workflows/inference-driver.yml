@@ -1,4 +1,4 @@
-name: "Cluaiz Interface Drivers"
+name: "Cluaize Interface Drivers"
 
 on:
   push:
@@ -397,16 +397,16 @@ jobs:
 
           mkdir -p artifacts
           if [ "${{ runner.os }}" == "Windows" ]; then
-            SRC="D:/t/${{ matrix.target }}/release/${{ matrix.prefix }}cluaiz_llama.${{ matrix.ext }}"
+            SRC="D:/t/${{ matrix.target }}/release/${{ matrix.prefix }}cluaize_llama.${{ matrix.ext }}"
           else
-            SRC="target/${{ matrix.target }}/release/${{ matrix.prefix }}cluaiz_llama.${{ matrix.ext }}"
+            SRC="target/${{ matrix.target }}/release/${{ matrix.prefix }}cluaize_llama.${{ matrix.ext }}"
           fi
           PREFIX="${{ matrix.prefix }}"
 
           if [ -n "${{ matrix.cuda_v }}" ]; then
-            DEST="artifacts/${PREFIX}cluaiz-driver-${VERSION}-${{ matrix.platform }}-${{ matrix.backend }}-${{ matrix.cuda_v }}.${{ matrix.ext }}"
+            DEST="artifacts/${PREFIX}cluaize-driver-${VERSION}-${{ matrix.platform }}-${{ matrix.backend }}-${{ matrix.cuda_v }}.${{ matrix.ext }}"
           else
-            DEST="artifacts/${PREFIX}cluaiz-driver-${VERSION}-${{ matrix.platform }}-${{ matrix.backend }}.${{ matrix.ext }}"
+            DEST="artifacts/${PREFIX}cluaize-driver-${VERSION}-${{ matrix.platform }}-${{ matrix.backend }}.${{ matrix.ext }}"
           fi
 
           cp "$SRC" "$DEST"
@@ -418,7 +418,7 @@ jobs:
         with:
           files: artifacts/*
           tag_name: "${{ github.event_name == 'workflow_dispatch' && format('driver-{0}', github.event.inputs.tag_name) || github.ref_name }}"
-          name: "Cluaiz Interface Driver Release ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}"
+          name: "Cluaize Interface Driver Release ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}"
           append_body: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -444,28 +444,28 @@ jobs:
             TAG="${{ github.ref_name }}"
           fi
           
-          cat <<EOF > cluaiz-driver.json
+          cat <<EOF > cluaize-driver.json
           {
             "version": "$VERSION",
             "drivers": {
-              "win-x64-cuda-13": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-driver-$VERSION-win-x64-cuda-v13.dll",
-              "win-x64-cuda-12": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-driver-$VERSION-win-x64-cuda-v12.dll",
-              "win-x64-cuda-11": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-driver-$VERSION-win-x64-cuda-v11.dll",
-              "win-x64-openvino": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-driver-$VERSION-win-x64-openvino.dll",
-              "win-x64-vulkan": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-driver-$VERSION-win-x64-vulkan.dll",
-              "linux-x64-cuda-13": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-linux-x64-cuda-v13.so",
-              "linux-x64-cuda-12": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-linux-x64-cuda-v12.so",
-              "linux-x64-cuda-11": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-linux-x64-cuda-v11.so",
-              "linux-x64-openvino": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-linux-x64-openvino.so",
-              "linux-x64-sycl": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-linux-x64-sycl.so",
-              "linux-x64-rocm": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-linux-x64-rocm.so",
-              "linux-x64-hip": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-linux-x64-hip.so",
-              "linux-x64-cann": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-linux-x64-cann.so",
-              "linux-x64-vulkan": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-linux-x64-vulkan.so",
-              "mac-arm64-metal": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-mac-arm64-metal.dylib",
-              "mac-x64-metal": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-mac-x64-metal.dylib",
-              "android-arm64-qnn": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-android-arm64-qnn.so",
-              "ios-arm64-metal": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-driver-$VERSION-ios-arm64-metal.a"
+              "win-x64-cuda-13": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-driver-$VERSION-win-x64-cuda-v13.dll",
+              "win-x64-cuda-12": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-driver-$VERSION-win-x64-cuda-v12.dll",
+              "win-x64-cuda-11": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-driver-$VERSION-win-x64-cuda-v11.dll",
+              "win-x64-openvino": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-driver-$VERSION-win-x64-openvino.dll",
+              "win-x64-vulkan": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-driver-$VERSION-win-x64-vulkan.dll",
+              "linux-x64-cuda-13": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-driver-$VERSION-linux-x64-cuda-v13.so",
+              "linux-x64-cuda-12": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-driver-$VERSION-linux-x64-cuda-v12.so",
+              "linux-x64-cuda-11": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-driver-$VERSION-linux-x64-cuda-v11.so",
+              "linux-x64-openvino": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-driver-$VERSION-linux-x64-openvino.so",
+              "linux-x64-sycl": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-driver-$VERSION-linux-x64-sycl.so",
+              "linux-x64-rocm": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-driver-$VERSION-linux-x64-rocm.so",
+              "linux-x64-hip": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-driver-$VERSION-linux-x64-hip.so",
+              "linux-x64-cann": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-driver-$VERSION-linux-x64-cann.so",
+              "linux-x64-vulkan": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-driver-$VERSION-linux-x64-vulkan.so",
+              "mac-arm64-metal": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-driver-$VERSION-mac-arm64-metal.dylib",
+              "mac-x64-metal": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-driver-$VERSION-mac-x64-metal.dylib",
+              "android-arm64-qnn": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-driver-$VERSION-android-arm64-qnn.so",
+              "ios-arm64-metal": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-driver-$VERSION-ios-arm64-metal.a"
             }
           }
           EOF
@@ -473,7 +473,7 @@ jobs:
       - name: 🚀 Upload Manifest to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: cluaiz-driver.json
+          files: cluaize-driver.json
           tag_name: "${{ github.event_name == 'workflow_dispatch' && format('driver-{0}', github.event.inputs.tag_name) || github.ref_name }}"
           make_latest: true
         env:

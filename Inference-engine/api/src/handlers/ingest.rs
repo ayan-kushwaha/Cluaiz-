@@ -27,7 +27,7 @@ pub async fn file_ingest(
     let mut returned_chunks = Vec::new();
 
     // Foregound Processing for API response
-    match ingestor.ingest_and_vectorize(&file_path, &state.embedding_dispatcher.onnx_engine) {
+    match ingestor.ingest_and_vectorize(&file_path, &*state.embedding_dispatcher) {
         Ok(chunks) => {
             if temp_mode.is_none() {
                 // Save to LMDB

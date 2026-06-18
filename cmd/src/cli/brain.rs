@@ -1,5 +1,5 @@
-use cluaiz_shared::hardware::governor::HardwareGovernor;
-use cluaiz_shared::hardware::system_control::HardwareOrchestrator;
+use cluaize_shared::hardware::governor::HardwareGovernor;
+use cluaize_shared::hardware::system_control::HardwareOrchestrator;
 use color_eyre::Result;
 use colored::Colorize;
 use reqwest::Client;
@@ -8,7 +8,7 @@ use std::time::Duration;
 pub async fn execute(command: crate::BrainCommand) -> Result<()> {
     match command {
         crate::BrainCommand::On { address } => {
-            let target = address.unwrap_or_else(|| "local".to_string());
+            let target = address.unwrap_or_else(|| "on".to_string());
             println!("\n  {} Enabling Cluaizd FFI Brain (Connection: {})...", "🧠".cyan(), target.bold());
             
             // Load, modify, and persist
@@ -39,7 +39,7 @@ pub async fn execute(command: crate::BrainCommand) -> Result<()> {
         crate::BrainCommand::Only => {
             println!("\n  {} Enabling Pure Brain Mode (Engine Suspended)...", "🧠".cyan());
             if let Ok(mut control) = HardwareGovernor::load_system_control() {
-                control.brain.cluaizd_connect_ffi = "only_brain".to_string();
+                control.brain.cluaizd_connect_ffi = "only".to_string();
                 if let Err(e) = HardwareOrchestrator::persist_sovereign_state(&control) {
                     eprintln!("  {} Failed to save system control: {}", "❌".red(), e);
                 } else {

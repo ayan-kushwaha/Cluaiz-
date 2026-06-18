@@ -1,20 +1,20 @@
 use super::SkillRegistry;
 
 impl SkillRegistry {
-    /// 🛰️ Cluaiz Pull: Downloads and installs a skill from the Global Hub.
+    /// ðŸ›°ï¸ Cluaize Pull: Downloads and installs a skill from the Global Hub.
     pub async fn install_skill(skill_name: &str) -> anyhow::Result<()> {
         use colored::Colorize;
         use std::io::Write;
-        println!("\n  {} [Cluaiz] Contacting Universal Skill Registry...", "📡".cyan());
+        println!("\n  {} [Cluaize] Contacting Universal Skill Registry...", "ðŸ“¡".cyan());
         
         let home_dir = dirs::home_dir().ok_or_else(|| anyhow::anyhow!("Could not find home directory"))?;
-        let skills_dir = home_dir.join(".cluaiz").join("skills").join(skill_name);
+        let skills_dir = home_dir.join(".cluaize").join("skills").join(skill_name);
         
         if !skills_dir.exists() {
             std::fs::create_dir_all(&skills_dir)?;
         }
         
-        println!("  {} [Cluaiz] Installing skill '{}' to {}...", "🚀".green(), skill_name.bold(), skills_dir.display());
+        println!("  {} [Cluaize] Installing skill '{}' to {}...", "ðŸš€".green(), skill_name.bold(), skills_dir.display());
 
         let registry_url = "https://raw.githubusercontent.com/cluaiz/skills/main/registry.json";
         let client = reqwest::Client::new();
@@ -31,7 +31,7 @@ impl SkillRegistry {
                                 if let Some(versions) = skill_data.get("versions").and_then(|v| v.as_object()) {
                                     if let Some(url) = versions.get(latest).and_then(|u| u.as_str()) {
                                         download_url = url.to_string();
-                                        println!("  {} [Registry] Found skill release: v{}", "✅".green(), latest.bold());
+                                        println!("  {} [Registry] Found skill release: v{}", "âœ…".green(), latest.bold());
                                     }
                                 }
                             }
@@ -42,12 +42,12 @@ impl SkillRegistry {
         }
 
         if download_url.is_empty() {
-            println!("  {} [Registry] Skill '{}' not found or has no valid release in the registry.", "❌".red(), skill_name.bold());
+            println!("  {} [Registry] Skill '{}' not found or has no valid release in the registry.", "âŒ".red(), skill_name.bold());
             let _ = std::fs::remove_dir(&skills_dir);
             return Err(anyhow::anyhow!("Skill not found in registry"));
         }
 
-        println!("  {} [Cluaiz] Downloading release package...", "⬇️".cyan());
+        println!("  {} [Cluaize] Downloading release package...", "â¬‡ï¸".cyan());
         let zip_resp = client.get(&download_url).send().await?;
         
         if !zip_resp.status().is_success() {
@@ -61,7 +61,7 @@ impl SkillRegistry {
         let mut file = std::fs::File::create(&temp_zip_path)?;
         file.write_all(&zip_bytes)?;
         
-        println!("  {} [Cluaiz] Extracting package...", "📦".cyan());
+        println!("  {} [Cluaize] Extracting package...", "ðŸ“¦".cyan());
         let status = std::process::Command::new("tar")
             .arg("-xf")
             .arg(&temp_zip_path)
@@ -77,7 +77,7 @@ impl SkillRegistry {
         
         let _ = std::fs::remove_file(&temp_zip_path);
 
-        println!("\n  {} [Cluaiz] Skill '{}' successfully installed and registered!\n", "✅".green(), skill_name.bold());
+        println!("\n  {} [Cluaize] Skill '{}' successfully installed and registered!\n", "âœ…".green(), skill_name.bold());
 
         let manifest_path = skills_dir.join("manifest.json");
         let parsed_manifest = if manifest_path.exists() {
@@ -116,7 +116,7 @@ impl SkillRegistry {
                         let model_file = model_dir.join("model.onnx");
                         let tokenizer_file = model_dir.join("tokenizer.json");
                         if model_file.exists() && tokenizer_file.exists() {
-                            println!("  {} [Cluaiz] Compiling skill vector immediately...", "⚙️".cyan());
+                            println!("  {} [Cluaize] Compiling skill vector immediately...", "âš™ï¸".cyan());
                             let cache_dir = skills_dir.join(".cache");
                             let _ = std::fs::create_dir_all(&cache_dir);
                             let safe_filename = embedding_model_id.replace(":", "-");
@@ -132,14 +132,14 @@ impl SkillRegistry {
                                 )
                             };
 
-                            if let Ok(mut engine) = cluaiz_onnx::engine::OnnxEngine::new() {
+                            if let Ok(mut engine) = cluaize_onnx::engine::OnnxEngine::new() {
                                 if engine.load_text_model(&model_file.to_string_lossy(), &tokenizer_file.to_string_lossy()).is_ok() {
                                     if let Ok(vec) = neural_core::interfaces::router_contract::EmbeddingDriver::gen_embedding(&mut engine, &skill_content) {
                                         let data_bytes = unsafe { std::slice::from_raw_parts(vec.as_ptr() as *const f32 as *const u8, vec.len() * 4) };
                                         if let Err(e) = std::fs::write(&embedding_cache_path, data_bytes) {
-                                            println!("❌ Failed to write binary embedding: {}", e);
+                                            println!("âŒ Failed to write binary embedding: {}", e);
                                         } else {
-                                            println!("✅ Real Router Embedding generated: {:?}", embedding_cache_path);
+                                            println!("âœ… Real Router Embedding generated: {:?}", embedding_cache_path);
                                         }
                                     }
                                 }
@@ -182,7 +182,7 @@ impl SkillRegistry {
 
     pub fn list_installed_skills() -> anyhow::Result<Vec<String>> {
         let home_dir = dirs::home_dir().ok_or_else(|| anyhow::anyhow!("Could not find home directory"))?;
-        let skills_dir = home_dir.join(".cluaiz").join("skills");
+        let skills_dir = home_dir.join(".cluaize").join("skills");
         let mut skills = Vec::new();
 
         if skills_dir.exists() {
@@ -200,7 +200,7 @@ impl SkillRegistry {
 
     pub fn list_skills_cache() -> anyhow::Result<String> {
         let home_dir = dirs::home_dir().ok_or_else(|| anyhow::anyhow!("Could not find home directory"))?;
-        let skills_dir = home_dir.join(".cluaiz").join("skills");
+        let skills_dir = home_dir.join(".cluaize").join("skills");
         
         if !skills_dir.exists() {
             return Ok("No skills installed.".to_string());
@@ -225,7 +225,7 @@ impl SkillRegistry {
                                 cache_count += 1;
                                 let name = cache_path.file_name().unwrap_or_default().to_string_lossy();
                                 let size_mb = meta.len() as f64 / 1_048_576.0;
-                                report.push_str(&format!("🔹 {} | Size: {:.2} MB\n", name, size_mb));
+                                report.push_str(&format!("ðŸ”¹ {} | Size: {:.2} MB\n", name, size_mb));
                             }
                         }
                     }
@@ -238,7 +238,7 @@ impl SkillRegistry {
 
     pub fn clear_skills_cache(model_id: Option<String>, all: bool, force: bool) -> anyhow::Result<usize> {
         let home_dir = dirs::home_dir().ok_or_else(|| anyhow::anyhow!("Could not find home directory"))?;
-        let skills_dir = home_dir.join(".cluaiz").join("skills");
+        let skills_dir = home_dir.join(".cluaize").join("skills");
         if !skills_dir.exists() { return Ok(0); }
         
         let mut wiped = 0;

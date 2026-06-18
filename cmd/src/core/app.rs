@@ -26,11 +26,11 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(profile_override: Option<UserProfile>, auto_start_model: Option<engines::models::registry::ModelManifest>) -> color_eyre::Result<Self> {
+    pub fn new(profile_override: Option<UserProfile>, auto_start_model: Option<engines::models::registry::ModelManifest>, starting_state: Option<OsState>) -> color_eyre::Result<Self> {
         let (tx, rx) = mpsc::unbounded_channel();
         let (inf_tx, _inf_rx) = mpsc::unbounded_channel();
         let flow = FlowEngine::new()?;
-        let mut state = AppState::new(profile_override);
+        let mut state = AppState::new(profile_override, starting_state);
         
         if let Some(m) = auto_start_model {
             let model_id = m.id.clone();
@@ -68,31 +68,39 @@ impl App {
             match self.state.os_state {
                 OsState::Onboarding(_) => {
                     crate::ui::apps::onboarding::native::run_native_flow()?;
-                    self.state.os_state = OsState::Dashboard;
+                    self.state.os_state = OsState::MainMenu;
+                }
+                OsState::MainMenu => {
+                    crate::ui::menu::run_native(&mut self.state, &self.tx, &mut self.mode).await?;
                 }
                 OsState::Dashboard => {
                     // ── 0. Auto-Pilot Linkage (Sovereign Mount) ──
                     if !self.state.auto_mount_triggered {
-                        // 🔍 Auto-Selection: Pick first available model if none active
-                        if self.state._active_model_id.is_none() {
-                            if let Some(model) = self.state.sorted_models.iter().find(|m| m.is_cached) {
-                                self.state._active_model_id = Some(model.manifest.id.clone());
+                        if self.state.is_client_mode {
+                            self.state.auto_mount_triggered = true;
+                            // Skip loading model locally since we are using background API
+                        } else {
+                            // 🔍 Auto-Selection: Pick first available model if none active
+                            if self.state._active_model_id.is_none() {
+                                if let Some(model) = self.state.sorted_models.iter().find(|m| m.is_cached) {
+                                    self.state._active_model_id = Some(model.manifest.id.clone());
+                                }
                             }
-                        }
-
-                        if let Some(active_id) = &self.state._active_model_id {
-                            if let Some(model) = self.state.sorted_models.iter().find(|m| &m.manifest.id == active_id) {
-                                if let Some(local_path) = engines::models::fetch::ModelDownloader::get_cached_path(
-                                    &model.manifest.category,
-                                    &model.manifest.id,
-                                    &model.manifest.huggingface_filename
-                                ) {
-                                    self.state.auto_mount_triggered = true;
-                                    let engine = self.state.Core_engine.clone();
-                                    println!("  {} Mounting auto-selected model: {}", "⚙️".yellow(), model.manifest.name);
-                                    tokio::spawn(async move {
-                                        let _ = engine.load_model(local_path).await;
-                                    });
+    
+                            if let Some(active_id) = &self.state._active_model_id {
+                                if let Some(model) = self.state.sorted_models.iter().find(|m| &m.manifest.id == active_id) {
+                                    if let Some(local_path) = engines::models::fetch::ModelDownloader::get_cached_path(
+                                        &model.manifest.category,
+                                        &model.manifest.id,
+                                        &model.manifest.huggingface_filename
+                                    ) {
+                                        self.state.auto_mount_triggered = true;
+                                        let engine = self.state.Core_engine.clone();
+                                        println!("  {} Mounting auto-selected model: {}", "⚙️".yellow(), model.manifest.name);
+                                        tokio::spawn(async move {
+                                            let _ = engine.load_model(local_path).await;
+                                        });
+                                    }
                                 }
                             }
                         }
@@ -105,14 +113,17 @@ impl App {
                         print!("\x1B[2J\x1B[1;1H"); // Clear and home
                         crate::assets::logos::logo::print_native_logo(self.state.logo_index);
                         println!();
-                        println!("  {} {}", "CLUAIZ".cyan().bold(), "v0.1.0".bright_black());
-                        println!("  {} {}", "API Gateway: ".dimmed(), "http://0.0.0.0:8000 ↗".cyan().bold());
-                        println!("  {} {}", "Dashboard:   ".dimmed(), "http://0.0.0.0:3030 ↗".yellow().bold());
+                        println!("  {} {}", "CLUAIZE".cyan().bold(), "v0.1.0".bright_black());
+                        if self.state.is_client_mode {
+                            println!("  {} {}", "Mode:        ".dimmed(), "Pure Client (Connected to Background API)".green().bold());
+                        } else {
+                            println!("  {} {}", "Mode:        ".dimmed(), "Standalone (Local Engine)".yellow().bold());
+                        }
                         self.state.printed_logo = true;
                     }
  
                     // ── 2. Background Event Processing ──
-                    self.state.handle_events(&mut self.rx);
+                    self.state.handle_events(&mut self.rx); 
                     crate::ui::apps::stream::commit_to_stdout(&mut self.state);
 
                     // ── 3. Native Dashboard Interaction ──

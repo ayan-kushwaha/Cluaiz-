@@ -1,8 +1,8 @@
 //! ═══════════════════════════════════════════════════════════════════════
-//!  CURE Shared: The Sovereign Reusable Core
+//!   Shared: The Sovereign Reusable Core
 //! ═══════════════════════════════════════════════════════════════════════
 //!  This crate holds ALL business logic, data structures, and constants
-//!  that are shared across every CURE interface:
+//!  that are shared across every  interface:
 //!  - CLI (Ratatui TUI)
 //!  - API (Axum HTTP Gateway)
 //!  - Desktop App (future)

@@ -1,5 +1,5 @@
 {
-  "name": "Cluaiz Docs",
+  "name": "Cluaize Docs",
   "version": "1.0.0",
   "last_updated": "2026-05-19T00:15:00Z",
   "theme": {
@@ -49,8 +49,8 @@
         ]
       },
       {
-        "id": "cluaiz-engine",
-        "title": "🧠 Cluaiz Engine",
+        "id": "cluaize-engine",
+        "title": "🧠 Cluaize Engine",
         "groups": [
           {
             "group": "Core Engine",

@@ -1,5 +1,5 @@
 //! ═══════════════════════════════════════════════════════════════════════
-//!  Cluaiz Onboarding Ritual — Single Continuous Flow Renderer
+//!  Cluaize Onboarding Ritual — Single Continuous Flow Renderer
 //! ═══════════════════════════════════════════════════════════════════════
 //!  ONE page. Steps appear sequentially with animations.
 //!  Completed steps collapse to 1-line summaries.
@@ -13,22 +13,22 @@ use ratatui::{
     prelude::*,
     widgets::{Block, Borders, Paragraph, Clear, Padding, Scrollbar, ScrollbarState, ScrollbarOrientation},
 };
-use ::cluaiz_shared::profile::AccountType;
+use ::cluaize_shared::profile::AccountType;
 use crate::core::onboarding::textwrap;
 
 // ── About Text ────────────────────────────────────────────────────────
 
 const ABOUT_TEXT: &str = "\
-Archer Cluaiz — The Pinnacle of Core Orchestration. \
+Archer Cluaize — The Pinnacle of Core Orchestration. \
 An open-source, local-first AI runtime built for absolute privacy and zero-latency intelligence. \
 Archer runs advanced Core models directly on your hardware — \
 no cloud, no tracking, no compromises. Whether you are a researcher pushing the boundaries of AI, \
 a business owner automating operations, or a creator seeking an intelligent companion, \
-Archer delivers Cluaiz computing power at your fingertips. \
+Archer delivers Cluaize computing power at your fingertips. \
 Built with Rust for bare-metal performance, Archer supports multi-model orchestration, \
 hardware-optimized inference with GPU acceleration, and a modular architecture \
 that adapts to your exact needs. Your data never leaves your machine. \
-Your models run under your control. Welcome to the future of Cluaiz AI.";
+Your models run under your control. Welcome to the future of Cluaize AI.";
 
 // ── Main Entry Point ──────────────────────────────────────────────────
 
@@ -94,7 +94,7 @@ pub fn render_flow(state: &mut AppState, theme: &Theme, area: Rect, buf: &mut Bu
 // ── Completed Step (1-line collapsed summary) ─────────────────────────
 
 fn render_completed_step(state: &AppState, step: OnboardingStep, area: Rect, buf: &mut Buffer) {
-    let summary = ::cluaiz_shared::onboarding::get_completed_summary(step, &state.user_profile);
+    let summary = ::cluaize_shared::onboarding::get_completed_summary(step, &state.user_profile);
     let step_num = step.step_number();
 
     let line = Line::from(vec![
@@ -152,14 +152,14 @@ fn render_logo_step(state: &mut AppState, area: Rect, buf: &mut Buffer) {
 
     // Tagline (fade in after 30 frames)
     if state.frame_counter > 30 {
-        Paragraph::new("Cluaiz Core ENGINE")
+        Paragraph::new("Cluaize Core ENGINE")
             .style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD | Modifier::REVERSED))
             .render(Rect::new(area.x + left_margin, chunks[3].y, area.width, 1), buf);
     }
 
     // Version
     if state.frame_counter > 50 {
-        Paragraph::new("v1.0.0-Cluaiz │ ARCHER CORE V10")
+        Paragraph::new("v1.0.0-Cluaize │ ARCHER CORE V10")
             .style(Style::default().fg(Color::DarkGray))
             .render(Rect::new(area.x + left_margin, chunks[4].y, area.width, 1), buf);
     }
@@ -189,7 +189,7 @@ fn render_welcome_step(state: &mut AppState, area: Rect, buf: &mut Buffer) {
     let left_margin = 2;
 
     // Title
-    Paragraph::new("⚡ Welcome to Archer Cluaiz CLI")
+    Paragraph::new("⚡ Welcome to Archer Cluaize CLI")
         .style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))
         .render(Rect::new(area.x + left_margin, chunks[1].y, area.width, 1), buf);
 
@@ -341,7 +341,7 @@ fn render_usage_step(state: &mut AppState, area: Rect, buf: &mut Buffer) {
     let selected = state.menu_state.selected().unwrap_or(0);
 
     // Title
-    Paragraph::new(format!("👋 Hey {}! How will you use Archer Cluaiz?",
+    Paragraph::new(format!("👋 Hey {}! How will you use Archer Cluaize?",
         state.user_profile.auth.display_name))
         .style(Style::default().fg(Color::White).add_modifier(Modifier::BOLD))
         .render(Rect::new(area.x + lm, area.y + 1, area.width, 1), buf);
@@ -378,7 +378,7 @@ fn render_personal_profile(state: &mut AppState, area: Rect, buf: &mut Buffer) {
     let lm = 2u16;
     let input_w = 46u16.min(area.width.saturating_sub(lm + 2));
 
-    Paragraph::new("👤 What's your name, Cluaiz?")
+    Paragraph::new("👤 What's your name, Cluaize?")
         .style(Style::default().fg(Color::White).add_modifier(Modifier::BOLD))
         .render(Rect::new(area.x + lm, area.y + 1, area.width, 1), buf);
 
@@ -418,16 +418,16 @@ fn render_business_profile(state: &mut AppState, area: Rect, buf: &mut Buffer) {
                 .style(Style::default().fg(Color::Cyan))
                 .render(input_area, buf);
         }
-        1 => { render_option_list(::cluaiz_shared::profile::INDUSTRY_TAXONOMY.iter().map(|i| format!("{} {}", i.icon, i.label)).collect(), selected, area.x + lm + 2, opt_w, list_area, buf); }
+        1 => { render_option_list(::cluaize_shared::profile::INDUSTRY_TAXONOMY.iter().map(|i| format!("{} {}", i.icon, i.label)).collect(), selected, area.x + lm + 2, opt_w, list_area, buf); }
         2 => {
             let biz = state.user_profile.business.as_ref();
             let industry_id = biz.map(|b| b.industry.as_str()).unwrap_or("");
-            let subs = ::cluaiz_shared::profile::get_sub_categories(industry_id);
+            let subs = ::cluaize_shared::profile::get_sub_categories(industry_id);
             render_option_list(subs.iter().map(|s| format!("{} {}", s.icon, s.label)).collect(), selected, area.x + lm + 2, opt_w, list_area, buf);
         }
-        3 => { render_option_list(::cluaiz_shared::profile::BUSINESS_MODELS.iter().map(|m| format!("{} {}", m.icon, m.label)).collect(), selected, area.x + lm + 2, opt_w, list_area, buf); }
-        4 => { render_option_list(::cluaiz_shared::profile::AUDIENCES.iter().map(|a| format!("{} {}", a.icon, a.label)).collect(), selected, area.x + lm + 2, opt_w, list_area, buf); }
-        5 => { render_option_list(::cluaiz_shared::profile::PRIMARY_GOALS.iter().map(|g| format!("{} {}", g.icon, g.label)).collect(), selected, area.x + lm + 2, opt_w, list_area, buf); }
+        3 => { render_option_list(::cluaize_shared::profile::BUSINESS_MODELS.iter().map(|m| format!("{} {}", m.icon, m.label)).collect(), selected, area.x + lm + 2, opt_w, list_area, buf); }
+        4 => { render_option_list(::cluaize_shared::profile::AUDIENCES.iter().map(|a| format!("{} {}", a.icon, a.label)).collect(), selected, area.x + lm + 2, opt_w, list_area, buf); }
+        5 => { render_option_list(::cluaize_shared::profile::PRIMARY_GOALS.iter().map(|g| format!("{} {}", g.icon, g.label)).collect(), selected, area.x + lm + 2, opt_w, list_area, buf); }
         _ => {}
     }
 }
@@ -560,12 +560,12 @@ fn render_model_step(state: &mut AppState, area: Rect, buf: &mut Buffer) {
 fn render_complete_step(state: &mut AppState, area: Rect, buf: &mut Buffer) {
     let lm = 2u16;
 
-    Paragraph::new(" 🧿 Cluaiz Core ENGINE — ONLINE ")
+    Paragraph::new(" 🧿 Cluaize Core ENGINE — ONLINE ")
         .style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD | Modifier::REVERSED))
         .render(Rect::new(area.x + lm, area.y + 1, area.width.saturating_sub(lm), 1), buf);
 
     let summary = format!(
-        "  Identity : {}\n  Mode     : {}\n  Hardware : Verified ✓\n\n  Welcome to the future of Cluaiz AI, {}.",
+        "  Identity : {}\n  Mode     : {}\n  Hardware : Verified ✓\n\n  Welcome to the future of Cluaize AI, {}.",
         state.user_profile.display_name(),
         state.user_profile.account_type,
         state.user_profile.display_name(),

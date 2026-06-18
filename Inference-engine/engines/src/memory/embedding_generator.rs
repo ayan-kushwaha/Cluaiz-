@@ -1,7 +1,7 @@
 //! 🔮 Embedding Generator: Lazily loaded ONNX text embedding generator with safe fallbacks.
 
 use crate::neural_foundry::security::permission_schema::PermissionSchema;
-use cluaiz_onnx::engine::OnnxEngine;
+use cluaize_onnx::engine::OnnxEngine;
 use neural_core::interfaces::router_contract::EmbeddingDriver;
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
@@ -18,7 +18,7 @@ impl EmbeddingGenerator {
         
         let home = dirs::home_dir()?;
         let formatted_model_id = model_id.replace(":", "-");
-        let model_dir = home.join(".cluaiz").join("models").join("embedding").join(&formatted_model_id);
+        let model_dir = home.join(".cluaize").join("models").join("embedding").join(&formatted_model_id);
         
         let model_path = model_dir.join("model.onnx");
         let tokenizer_path = model_dir.join("tokenizer.json");

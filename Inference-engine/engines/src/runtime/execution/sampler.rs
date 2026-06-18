@@ -1,5 +1,5 @@
 //! ═══════════════════════════════════════════════════════════════════════
-//!  CURE Engine: Core Sampler (Cluaiz) — Native Refactor
+//!   Engine: Core Sampler (Cluaize) — Native Refactor
 //! ═══════════════════════════════════════════════════════════════════════
 
 use rand::{distr::Distribution, SeedableRng};

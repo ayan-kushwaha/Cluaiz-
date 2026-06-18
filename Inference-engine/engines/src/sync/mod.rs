@@ -3,7 +3,7 @@ use std::time::Duration;
 use std::thread;
 use serde::{Serialize, Deserialize};
 
-/// 🧠 Cluaiz Sync Identity
+/// 🧠 Cluaize Sync Identity
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DeviceIdentity {
     pub device_id: String,
@@ -12,27 +12,27 @@ pub struct DeviceIdentity {
     pub last_seen: u64,
 }
 
-/// 🛰️ Cluaiz P2P Manager
+/// 🛰️ Cluaize P2P Manager
 /// Handles device discovery and brain fragment synchronization.
-pub struct CluaizSync {
+pub struct CluaizeSync {
     discovery_port: u16,
 }
 
-impl Default for CluaizSync {
+impl Default for CluaizeSync {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl CluaizSync {
+impl CluaizeSync {
     pub fn new() -> Self {
         Self {
-            discovery_port: 7711, // Industrial Cluaiz Port
+            discovery_port: 7711, // Industrial Cluaize Port
         }
     }
 
     /// 📡 Start Local Discovery (mDNS Alternative)
-    /// Broadcasts presence and listens for other Cluaiz devices.
+    /// Broadcasts presence and listens for other Cluaize devices.
     pub fn start_discovery(&self, identity: DeviceIdentity) -> anyhow::Result<()> {
         let socket = UdpSocket::bind("0.0.0.0:0")?;
         socket.set_broadcast(true)?;

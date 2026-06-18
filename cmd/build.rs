@@ -2,17 +2,18 @@ fn main() {
     #[cfg(windows)]
     {
         let mut res = winres::WindowsResource::new();
-        res.set("InternalName", "cluaiz.exe");
-        res.set("FileDescription", "Cluaiz AI Engine");
-        res.set("ProductName", "Cluaiz");
-        res.set("OriginalFilename", "cluaiz.exe");
+        res.set("InternalName", "cluaize.exe");
+        res.set("FileDescription", "Cluaize");
+        res.set("ProductName", "Cluaize");
+        res.set("OriginalFilename", "cluaize.exe");
         res.set("LegalCopyright", "Copyright © 2026 Cluaiz Technologies");
         res.set("CompanyName", "Cluaiz Technologies");
         // Alpha Version Alignment Lock
         res.set("FileVersion", "0.0.1.0");
         res.set("ProductVersion", "0.0.1.0");
-        
-        res.set_manifest(r#"
+
+        res.set_manifest(
+            r#"
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
 <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
     <security>
@@ -22,14 +23,16 @@ fn main() {
     </security>
 </trustInfo>
 </assembly>
-"#);
-        
-        // 🚀 Set the Cluaiz Taskbar & Executable Icon
-        res.set_icon("../../assets/logo.ico");
-        
+"#,
+        );
+
+        // 🚀 Set the Cluaize Taskbar & Executable Icon
+        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+        let icon_path = std::path::Path::new(&manifest_dir).parent().unwrap().join("assets").join("logo.ico");
+        res.set_icon(icon_path.to_str().unwrap());
+
         if let Err(e) = res.compile() {
             eprintln!("Failed to compile Windows resources: {}", e);
         }
     }
 }
-  

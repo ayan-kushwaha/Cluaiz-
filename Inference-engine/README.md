@@ -11,7 +11,7 @@
 <p align="center"> 
   <a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/Built%20with-Rust-orange.svg" alt="Rust"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-BSL%201.1-blue.svg" alt="License"></a>
-  <a href="https://cluaiz.com"><img src="https://img.shields.io/badge/By-Cluaiz-purple.svg" alt="Cluaiz"></a>
+  <a href="https://cluaize.com"><img src="https://img.shields.io/badge/By-Cluaize-purple.svg" alt="Cluaize"></a>
 </p>
 
 ---
@@ -47,7 +47,7 @@ It then automatically compiles the optimal execution graph before the first toke
 |-----------|--------------|
 | `api/`    | The external HTTP and FFI gateway. Manages connection state, CORS, and request parsing. |
 | `engines/`| The heavy computational engine. Manages LMDB memory, tensor math, and active token streaming. |
-| `shared/` | The `cluaiz-shared` crate containing standard structural DNA shared across the workspace. |
+| `shared/` | The `cluaize-shared` crate containing standard structural DNA shared across the workspace. |
 
 ---
 

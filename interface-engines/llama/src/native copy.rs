@@ -7,7 +7,7 @@ use std::os::raw::c_char;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::collections::HashMap;
-use cluaiz_shared::StructuralDNA;
+use cluaize_shared::StructuralDNA;
 use tracing::{info, error, warn};
 
 pub struct NativeLlama {
@@ -29,7 +29,7 @@ impl NativeLlama {
         model_path: &str, 
         model_params: LlamaModelParams, 
         mut ctx_params: LlamaContextParams,
-        dna: &mut cluaiz_shared::metadata::dna::StructuralDNA,
+        dna: &mut cluaize_shared::metadata::dna::StructuralDNA,
         kv_cache_quantization_mode: u8,
         context_shifting_mode: u8,
         speculative_decoding_mode: u8,
@@ -203,7 +203,7 @@ impl NativeLlama {
             }
 
             // 🧬 DYNAMIC TEMPLATING: Resolve template from DNA/Context
-            let templater = cluaiz_shared::prompting::templater::TemplateManager::default();
+            let templater = cluaize_shared::prompting::templater::TemplateManager::default();
             let mut formatted_prompt = if is_pivot {
                 templater.format_turn(dna, &actual_prompt)
             } else {
@@ -212,8 +212,8 @@ impl NativeLlama {
             println!("🔍 [DEBUG-NATIVE] formatted_prompt: {:?}", formatted_prompt);
 
             // 🧠 THINKING MODE CONTROL: Read from dashboard/JSON settings
-            let booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
-            let suppress_thinking = booster.think_mode == cluaiz_shared::hardware::schema::booster::FeatureState::Off;
+            let booster = cluaize_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+            let suppress_thinking = booster.think_mode == cluaize_shared::hardware::schema::booster::FeatureState::Off;
             
             // Root-level tracking for suppression (we no longer force-inject tags, preserving model purity)
             // UPDATE: The user specifically requested Think Mode for Gemma, so we WILL force-inject it if enabled!
@@ -393,13 +393,13 @@ impl NativeLlama {
             // 🚀 [Native-Llama] Entering generation loop...
             while n_gen < max_tokens as i32 {
                 // 🛑 Check for Real-time Interrupt (Direct check for zero-latency pause)
-                if self.interrupt_signal.load(Ordering::SeqCst) || cluaiz_shared::GLOBAL_CANCEL_SIGNAL.load(Ordering::SeqCst) {
+                if self.interrupt_signal.load(Ordering::SeqCst) || cluaize_shared::GLOBAL_CANCEL_SIGNAL.load(Ordering::SeqCst) {
                     break;
                 }
 
                 // ⚡ In-Flight Logit Clamping Bypass
-                if cluaiz_shared::GLOBAL_SKIP_THINKING_SIGNAL.load(Ordering::SeqCst) {
-                    cluaiz_shared::GLOBAL_SKIP_THINKING_SIGNAL.store(false, Ordering::SeqCst);
+                if cluaize_shared::GLOBAL_SKIP_THINKING_SIGNAL.load(Ordering::SeqCst) {
+                    cluaize_shared::GLOBAL_SKIP_THINKING_SIGNAL.store(false, Ordering::SeqCst);
                     
                     // 🚀 UNIVERSAL FLUSH & BREAK (Model-Agnostic)
                     // We inject a strong semantic breaker. By adding \n before </think>, we break the current sentence.
@@ -420,7 +420,7 @@ impl NativeLlama {
                             injected_tokens_queue.push_back(force_token_arr[i as usize]);
                         }
                     } else {
-                        if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open("cluaiz_lookahead.log") {
+                        if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open("cluaize_lookahead.log") {
                             use std::io::Write;
                             let _ = writeln!(f, "❌ [Native-Llama] Tokenization failed for strong semantic breaker");
                         }
@@ -610,7 +610,7 @@ impl NativeLlama {
                     error!("{}", msg);
                     lookahead_logs.push(msg.clone());
                     // Write immediately to the lookahead log so we capture the failure even if the process crashes.
-                    if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open("cluaiz_lookahead.log") {
+                    if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open("cluaize_lookahead.log") {
                         use std::io::Write;
                         let _ = writeln!(f, "[DECODE FAILURE] {}", msg);
                     }
@@ -627,7 +627,7 @@ impl NativeLlama {
                         break;
                     }
                 }
-                cluaiz_shared::hardware::telemetry::get_pulse().tps_counter.fetch_add(1, Ordering::SeqCst);
+                cluaize_shared::hardware::telemetry::get_pulse().tps_counter.fetch_add(1, Ordering::SeqCst);
 
                 // 5. 🛡️ Verification Loop
                 let mut n_match = 0;
@@ -710,7 +710,7 @@ impl NativeLlama {
                                 break;
                             }
                         }
-                        cluaiz_shared::hardware::telemetry::get_pulse().tps_counter.fetch_add(1, Ordering::SeqCst);
+                        cluaize_shared::hardware::telemetry::get_pulse().tps_counter.fetch_add(1, Ordering::SeqCst);
 
                         // Check for EOS within verification loop
                         if llama_cpp::llama_vocab_is_eog(vocab, next_token_id) {
@@ -749,7 +749,7 @@ impl NativeLlama {
                 if let Ok(mut file) = std::fs::OpenOptions::new()
                     .create(true)
                     .append(true)
-                    .open("cluaiz_lookahead.log")
+                    .open("cluaize_lookahead.log")
                 {
                     use std::io::Write;
                     let timestamp = match std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH) {

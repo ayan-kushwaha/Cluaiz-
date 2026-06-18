@@ -5,11 +5,11 @@ use crossterm::event::{self, Event, KeyCode, EnableBracketedPaste, DisableBracke
 use crossterm::terminal::{enable_raw_mode, disable_raw_mode};
 use crossterm::execute;
 
-/// 🧠 Cluaiz Gemini-Style Paste Input
+/// 🧠 Cluaize Gemini-Style Paste Input
 /// Handles the 'Visual vs Logical' split: 
 /// - Visual: Typed chars + [Pasted Text: X lines, Y chars] slugs.
 /// - Logical: The actual full string to be submitted.
-pub fn read_line_Cluaiz(prompt_text: &str, placeholder: &str) -> Result<Option<String>> {
+pub fn read_line_Cluaize(prompt_text: &str, placeholder: &str) -> Result<Option<String>> {
     let mut logical_buffer = String::new();
     let mut has_input = false;
 

@@ -1,4 +1,4 @@
-name: Cluaiz Skills
+name: Cluaize Skills
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
   publish-skills:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Cluaiz
+      - name: Checkout Cluaize
         uses: actions/checkout@v4
 
       - name: Setup Tools
@@ -69,13 +69,13 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
         with:
           tag_name: ${{ github.event_name == 'workflow_dispatch' && format('skills-{0}', github.event.inputs.tag_name) || github.ref_name }}
-          name: "Cluaiz Skills Release ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}"
+          name: "Cluaize Skills Release ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}"
           body: |
-            Cluaiz Ai Skills Library.
+            Cluaize Ai Skills Library.
             
             ### 🚀 Quick Start
             ```bash
-            cluaiz run skill:<skill_id>
+            cluaize run skill:<skill_id>
             ```
           files: |
             dist/library/*.zip

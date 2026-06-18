@@ -1,5 +1,5 @@
 [package]
-name = "cli"
+name = "cmd"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -11,10 +11,11 @@ path = "src/main.rs"
 
 [dependencies]
 # ── Root Architecture ──
-engines = { path = "../../inference-engine/engines" }
-cluaiz_shared = { package = "cluaiz-shared", path = "../../inference-engine/engines/cluaiz-shared" }
-neural-core = { path = "../../interface-engines/neural_core" }
-cluaiz_onnx = { package = "onnx", path = "../../interface-engines/onnx" }
+engines = { path = "../inference-engine/engines" }
+cluaize_shared = { package = "cluaize-shared", path = "../inference-engine/engines/cluaize-shared" }
+neural-core = { path = "../interface-engines/neural_core" }
+cluaize_onnx = { package = "onnx", path = "../interface-engines/onnx" }
+cluaize_api = { path = "../inference-engine/api" }
 
 
 # ── Powerhouse Ratatui Framework ──

@@ -1,7 +1,7 @@
 //! ⚡ Tensor Transducer: Zero-Latency FFI Bridge to cluaizd LMDB Database
 //! Maps raw binary memory from the database directly into the AI Engine's context.
 
-use cluaiz_shared::hardware::governor::HardwareGovernor;
+use cluaize_shared::hardware::governor::HardwareGovernor;
 use engine_lmdb::env::LmdbEnv;
 use engine_lmdb::ffi::{
     cluaizd_ffi_execute_parameterized, cluaizd_ffi_free_neuron_payload, cluaizd_ffi_read_neuron,
@@ -21,7 +21,8 @@ impl TensorTransducer {
     pub fn boot_environment() {
         let base_path = dirs::home_dir()
             .unwrap_or_default()
-            .join(".cluaiz")
+            .join(".cluaize")
+            .join("brain")
             .join("cluaizd");
 
         let mut shards = Vec::new();

@@ -78,7 +78,7 @@ pub async fn system_info() -> Json<Value> {
 
 // ─── Skip Thinking ───────────────────────────────────────────────────
 pub async fn skip_think() -> Json<Value> {
-    cluaiz_shared::GLOBAL_SKIP_THINKING_SIGNAL.store(true, std::sync::atomic::Ordering::SeqCst);
+    cluaize_shared::GLOBAL_SKIP_THINKING_SIGNAL.store(true, std::sync::atomic::Ordering::SeqCst);
     Json(json!({
         "status": "success",
         "message": "Brain skip signal injected. Neural graph will pivot."
@@ -87,7 +87,7 @@ pub async fn skip_think() -> Json<Value> {
 
 // ─── GET /v1/system/control ───────────────────────────────────────────
 pub async fn get_system_control(State(_state): State<Arc<AppState>>) -> Json<Value> {
-    use cluaiz_shared::hardware::governor::HardwareGovernor;
+    use cluaize_shared::hardware::governor::HardwareGovernor;
     if let Ok(control) = HardwareGovernor::load_system_control() {
         Json(json!({
             "status": "success",
@@ -104,18 +104,18 @@ pub async fn get_system_control(State(_state): State<Arc<AppState>>) -> Json<Val
 // ─── POST /v1/system/brain ────────────────────────────────────────────
 #[derive(serde::Deserialize)]
 pub struct BrainControlPayload {
-    pub state: String,
+    pub state: bool,
 }
 
 pub async fn toggle_brain(
     State(_state): State<Arc<AppState>>,
     Json(payload): Json<BrainControlPayload>,
 ) -> Json<Value> {
-    use cluaiz_shared::hardware::governor::HardwareGovernor;
-    use cluaiz_shared::hardware::system_control::HardwareOrchestrator;
+    use cluaize_shared::hardware::governor::HardwareGovernor;
+    use cluaize_shared::hardware::system_control::HardwareOrchestrator;
     
     if let Ok(mut control) = HardwareGovernor::load_system_control() {
-        control.brain.cluaizd_connect_ffi = payload.state.clone();
+        control.brain.cluaizd_connect_ffi = if payload.state { "on".to_string() } else { "off".to_string() };
         if let Err(e) = HardwareOrchestrator::persist_sovereign_state(&control) {
             return Json(json!({
                 "status": "error",
@@ -124,7 +124,7 @@ pub async fn toggle_brain(
         } else {
             return Json(json!({
                 "status": "success",
-                "message": format!("Cluaizd FFI Connection toggled to: {}", payload.state)
+                "message": format!("Pure Brain Mode toggled to: {}", payload.state)
             }));
         }
     }

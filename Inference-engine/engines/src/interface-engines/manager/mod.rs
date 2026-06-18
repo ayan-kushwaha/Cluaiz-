@@ -2,8 +2,8 @@ use std::path::PathBuf;
 use libloading::{Library, Symbol};
 use crate::interface_engines::manager::kernel_loader::KernelLoader;
 use crate::interface_engines::manager::driver_bridge::DriverBridge;
-use cluaiz_shared::hardware::schema::profiles::SystemControl;
-use cluaiz_shared::hardware::governor::HardwareGovernor;
+use cluaize_shared::hardware::schema::profiles::SystemControl;
+use cluaize_shared::hardware::governor::HardwareGovernor;
 use colored::Colorize;
 
 pub mod kernel_loader;
@@ -13,7 +13,7 @@ pub mod driver_provisioner;
 
 use driver_provisioner::DriverProvisioner;
 
-/// Cluaiz Engine Manager
+/// Cluaize Engine Manager
 /// Orchestrates pre-compiled Kernels (BitNet, Llama, Candle) and Hardware Drivers.
 pub struct EngineManager {
     kernel_dir: PathBuf,
@@ -42,7 +42,7 @@ impl EngineManager {
         let control: SystemControl = serde_json::from_str(&content)
             .map_err(|e| format!("Hardware Config Parse Error: {}", e))?;
 
-        // 🚀 Cluaiz Detection Logic: The Triple Handshake
+        // 🚀 Cluaize Detection Logic: The Triple Handshake
         let os = control.identity.os_target.to_lowercase();
         let arch = control.identity.architecture.to_lowercase();
         let gpu_vendor = control.silicon_truth.accelerators.gpus.first().map(|g| g.vendor.to_lowercase());
@@ -51,16 +51,16 @@ impl EngineManager {
         println!("🎯 Engine Prep: OS={}, Arch={}, GPU={:?}, Drivers={}", os, arch, gpu_vendor, has_drivers);
 
         // 🧠 Mission 12: Chronicle Core Activity
-        // Temporarily commented out due to missing CoreGraph in cluaiz_shared
-        // let _ = cluaiz_shared::Core::graph::CoreGraph::chronicle_pulse(
+        // Temporarily commented out due to missing CoreGraph in cluaize_shared
+        // let _ = cluaize_shared::Core::graph::CoreGraph::chronicle_pulse(
         //     "Hardware Handshake & Engine Preparation",
         //     engine_type,
         //     &format!("OS: {}, GPU: {:?}", os, gpu_vendor)
         // );
 
         // 🚀 Sovereign Backend Resolution (Driven by Registry)
-        let registry = cluaiz_shared::RegistryGovernor::load_registry().unwrap_or_default();
-        let suffix = cluaiz_shared::RegistryGovernor::resolve_backend(&control, &registry);
+        let registry = cluaize_shared::RegistryGovernor::load_registry().unwrap_or_default();
+        let suffix = cluaize_shared::RegistryGovernor::resolve_backend(&control, &registry);
         
         println!("🎯 Engine Prep: OS={}, Arch={}, Backend={}", os, arch, suffix);
 
@@ -72,12 +72,12 @@ impl EngineManager {
             }
         }
 
-        let binary_id = format!("{}-{}", engine_type, suffix);
+        let binary_id = engine_type.to_string();
 
         let mut target_suffix = suffix.as_str();
         let mut target_binary_id = binary_id.clone();
 
-        // 🚀 Cluaiz VRAM Handshake: Pre-Flight Check (Hardware-Aware Routing)
+        // 🚀 Cluaize VRAM Handshake: Pre-Flight Check (Hardware-Aware Routing)
         // Only enforce strict GPU VRAM limits if the target hardware is a GPU backend.
         if suffix == "cuda" || suffix == "metal" || suffix == "rocm" || suffix == "vulkan" {
             // Defaulting to 2.0GB for V1 Baseline. Future: Pull from model metadata.
@@ -85,7 +85,7 @@ impl EngineManager {
             if let Err(e) = HardwareGovernor::request_vram(&binary_id, required_vram) {
                 tracing::warn!("⚠️ [Arbiter] VRAM Arbitration Failed ({}). Falling back to CPU.", e);
                 target_suffix = "cpu";
-                target_binary_id = format!("{}-cpu", engine_type);
+                target_binary_id = engine_type.to_string();
             }
         } else {
             tracing::info!("🧠 [Arbiter] Hardware Linkage targeting CPU/System RAM. Bypassing GPU VRAM limits.");
@@ -97,12 +97,8 @@ impl EngineManager {
         let mut using_base_fallback = false;
         
         let binary_path = if self.loader.exists(&target_binary_id) {
-            // 🚀 Try specific kernel first (e.g., cluaiz-llama-cuda.dll from DevSync)
+            // 🚀 Try specific kernel first (e.g., cluaize-llama.dll from DevSync)
             self.loader.resolve_path(&target_binary_id)
-        } else if self.loader.exists(engine_type) {
-            // 🚀 Fallback to base bootstrapper kernel (e.g., cluaiz-llama.dll)
-            using_base_fallback = true;
-            self.loader.resolve_path(engine_type)
         } else {
             // 🚀 ATOMIC PROVISIONING: Attempt to download specialized kernel from registry
             if target_suffix != "cpu" {
@@ -112,7 +108,7 @@ impl EngineManager {
                     Err(e) => {
                         tracing::warn!("⚠️ [Provisioner] Kernel provisioning failed ({}). Attempting CPU fallback.", e);
                         target_suffix = "cpu";
-                        target_binary_id = format!("{}-cpu", engine_type);
+                        target_binary_id = engine_type.to_string();
                         self.loader.resolve_path(&target_binary_id)
                     }
                 }
@@ -130,14 +126,14 @@ impl EngineManager {
         }
     }
 
-    /// Unload Engine: Release resources back to the Cluaiz Governor.
+    /// Unload Engine: Release resources back to the Cluaize Governor.
     pub fn release_engine(&self, engine_type: &str) -> anyhow::Result<()> {
         // We need to know which suffix was used to reconstruct the ID
         // For simplicity in V1, we iterate and release what matches the prefix
         HardwareGovernor::release_vram(engine_type)
     }
 
-    /// 🔗 Cluaiz Linker: Maps the binary kernel to process memory and resolves symbols.
+    /// 🔗 Cluaize Linker: Maps the binary kernel to process memory and resolves symbols.
     pub fn load_and_link(&mut self, binary_path: PathBuf) -> anyhow::Result<()> {
         println!("🧬 [Linker] Mapping binary: {:?}", binary_path);
         tracing::info!("🧬 [Linker] Mapping binary: {:?}", binary_path);
@@ -168,12 +164,12 @@ impl EngineManager {
                 .map_err(|e| anyhow::anyhow!("Binary Mapping Failed (libloading): {}", e))?;
             
             // 🎯 Phase 1: Symbol Validation
-            let _init: Symbol<unsafe extern "C" fn() -> *const std::os::raw::c_char> = lib.get(b"cluaiz_kernel_init")
-                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaiz_kernel_init' symbol missing."))?;
+            let _init: Symbol<unsafe extern "C" fn() -> *const std::os::raw::c_char> = lib.get(b"cluaize_kernel_init")
+                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaize_kernel_init' symbol missing."))?;
 
             // 🎯 Phase 1.5: Pass the GLOBAL_SKIP_THINKING_SIGNAL pointer if the kernel supports it
-            if let Ok(set_skip_ptr_fn) = lib.get::<unsafe extern "C" fn(*const std::sync::atomic::AtomicBool)>(b"cluaiz_kernel_set_skip_ptr") {
-                set_skip_ptr_fn(&cluaiz_shared::GLOBAL_SKIP_THINKING_SIGNAL as *const _);
+            if let Ok(set_skip_ptr_fn) = lib.get::<unsafe extern "C" fn(*const std::sync::atomic::AtomicBool)>(b"cluaize_kernel_set_skip_ptr") {
+                set_skip_ptr_fn(&cluaize_shared::GLOBAL_SKIP_THINKING_SIGNAL as *const _);
                 tracing::info!("🔗 [Linker] Synchronized Sovereign Skip-Thinking Pointer across FFI.");
             }
 
@@ -185,17 +181,17 @@ impl EngineManager {
     }
 
     /// 🏛️ Core Instantiation: Invokes the kernel's factory method to create an active execution engine.
-    pub fn instantiate(&self, model_path: &str, booster: &cluaiz_shared::hardware::schema::booster::BoosterControl, max_context_length: Option<u32>) -> anyhow::Result<*mut std::ffi::c_void> {
+    pub fn instantiate(&self, model_path: &str, booster: &cluaize_shared::hardware::schema::booster::BoosterControl, max_context_length: Option<u32>) -> anyhow::Result<*mut std::ffi::c_void> {
         let lib = self.active_lib.as_ref()
             .ok_or_else(|| anyhow::anyhow!("Linker Error: No active kernel linked."))?;
         
         unsafe {
-            let instantiate_fn: Symbol<unsafe extern "C" fn(*const std::os::raw::c_char, *const cluaiz_shared::hardware::schema::booster::CluaizBoosterContext) -> *mut std::ffi::c_void> = 
-                lib.get(b"cluaiz_kernel_instantiate")
-                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaiz_kernel_instantiate' symbol missing."))?;
+            let instantiate_fn: Symbol<unsafe extern "C" fn(*const std::os::raw::c_char, *const cluaize_shared::hardware::schema::booster::CluaizeBoosterContext) -> *mut std::ffi::c_void> = 
+                lib.get(b"cluaize_kernel_instantiate")
+                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaize_kernel_instantiate' symbol missing."))?;
             
             let c_path = std::ffi::CString::new(model_path)?;
-            let mut booster_ctx: cluaiz_shared::hardware::schema::booster::CluaizBoosterContext = booster.into();
+            let mut booster_ctx: cluaize_shared::hardware::schema::booster::CluaizeBoosterContext = booster.into();
             if let Some(mcl) = max_context_length {
                 booster_ctx.max_context_length = mcl;
             }
@@ -223,8 +219,8 @@ impl EngineManager {
         
         unsafe {
             let generate_fn: Symbol<unsafe extern "C" fn(*mut std::ffi::c_void, *const std::os::raw::c_char, usize, extern "C" fn(*const std::os::raw::c_char, *mut std::ffi::c_void) -> bool, *mut std::ffi::c_void) -> i32> = 
-                lib.get(b"cluaiz_kernel_generate_stream")
-                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaiz_kernel_generate_stream' symbol missing."))?;
+                lib.get(b"cluaize_kernel_generate_stream")
+                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaize_kernel_generate_stream' symbol missing."))?;
             
             let c_prompt = std::ffi::CString::new(prompt)?;
             
@@ -255,6 +251,44 @@ impl EngineManager {
         Ok(())
     }
 
+    /// 🚥 [FFI Bridge] Direct embedding generation from the linked binary (used for ONNX).
+    pub fn generate_embedding_ffi(
+        &self,
+        engine_ptr: *mut std::ffi::c_void,
+        prompt: &str,
+    ) -> anyhow::Result<Vec<f32>> {
+        let lib = self.active_lib.as_ref()
+            .ok_or_else(|| anyhow::anyhow!("Linker Error: No active kernel linked."))?;
+        
+        unsafe {
+            let gen_emb_fn: Symbol<unsafe extern "C" fn(*mut std::ffi::c_void, *const std::os::raw::c_char, *mut f32, usize, *mut usize) -> i32> = 
+                lib.get(b"cluaize_kernel_generate_embedding")
+                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaize_kernel_generate_embedding' symbol missing."))?;
+            
+            let c_prompt = std::ffi::CString::new(prompt)?;
+            
+            // Allocate a buffer for the embeddings (e.g., max 8192 dims)
+            let max_dims = 8192;
+            let mut out_buffer = vec![0.0f32; max_dims];
+            let mut out_len: usize = 0;
+
+            let status = gen_emb_fn(
+                engine_ptr, 
+                c_prompt.as_ptr() as *const std::os::raw::c_char, 
+                out_buffer.as_mut_ptr(),
+                max_dims,
+                &mut out_len as *mut usize
+            );
+            
+            if status != 0 {
+                return Err(anyhow::anyhow!("FFI Embedding Generation Error (Code: {})", status));
+            }
+            
+            out_buffer.truncate(out_len);
+            Ok(out_buffer)
+        }
+    }
+
     /// 💾 [FFI Bridge] Dump the active KV Cache memory state to a safetensors/bin file.
     pub fn dump_kv_cache_ffi(
         &self,
@@ -266,8 +300,8 @@ impl EngineManager {
         
         unsafe {
             let dump_fn: Symbol<unsafe extern "C" fn(*mut std::ffi::c_void, *const std::os::raw::c_char) -> i32> = 
-                lib.get(b"cluaiz_kernel_dump_kv_cache")
-                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaiz_kernel_dump_kv_cache' symbol missing."))?;
+                lib.get(b"cluaize_kernel_dump_kv_cache")
+                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaize_kernel_dump_kv_cache' symbol missing."))?;
             
             let c_path = std::ffi::CString::new(path)?;
             
@@ -295,8 +329,8 @@ impl EngineManager {
         
         unsafe {
             let load_fn: Symbol<unsafe extern "C" fn(*mut std::ffi::c_void, *const std::os::raw::c_char) -> i32> = 
-                lib.get(b"cluaiz_kernel_load_kv_cache")
-                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaiz_kernel_load_kv_cache' symbol missing."))?;
+                lib.get(b"cluaize_kernel_load_kv_cache")
+                .map_err(|_| anyhow::anyhow!("Invalid Kernel: 'cluaize_kernel_load_kv_cache' symbol missing."))?;
             
             let c_path = std::ffi::CString::new(path)?;
             
@@ -317,14 +351,14 @@ impl EngineManager {
     pub fn inject_signals_ffi(
         &self,
         engine_ptr: *mut std::ffi::c_void,
-        signals: Vec<cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal>,
+        signals: Vec<cluaize_shared::hardware::memory::kv_cache::stitching::CluaizeSignal>,
     ) -> anyhow::Result<()> {
         let lib = self.active_lib.as_ref()
             .ok_or_else(|| anyhow::anyhow!("Linker Error: No active kernel linked."))?;
         
         unsafe {
             // Check if kernel supports dynamic signal injection
-            match lib.get::<unsafe extern "C" fn(*mut std::ffi::c_void, *const u8, usize, usize) -> i32>(b"cluaiz_kernel_inject_signals") {
+            match lib.get::<unsafe extern "C" fn(*mut std::ffi::c_void, *const u8, usize, usize) -> i32>(b"cluaize_kernel_inject_signals") {
                 Ok(inject_fn) => {
                     for signal in signals {
                         // Assuming raw_data maps to underlying MappedBuffer bytes
@@ -339,7 +373,7 @@ impl EngineManager {
                     }
                 }
                 Err(_) => {
-                    tracing::warn!("⚠️ [Linker] 'cluaiz_kernel_inject_signals' symbol missing. Hardware does not support dynamic KV prefixing yet.");
+                    tracing::warn!("⚠️ [Linker] 'cluaize_kernel_inject_signals' symbol missing. Hardware does not support dynamic KV prefixing yet.");
                 }
             }
         }
@@ -356,13 +390,13 @@ impl EngineManager {
             .ok_or_else(|| anyhow::anyhow!("Linker Error: No active kernel linked."))?;
         
         unsafe {
-            match lib.get::<unsafe extern "C" fn(*mut std::ffi::c_void)>(b"cluaiz_kernel_free") {
+            match lib.get::<unsafe extern "C" fn(*mut std::ffi::c_void)>(b"cluaize_kernel_free") {
                 Ok(free_fn) => {
                     free_fn(engine_ptr);
                     tracing::info!("🗑️ [Linker] Core Kernel Instantiation freed.");
                 }
                 Err(_) => {
-                    tracing::warn!("⚠️ [Linker] 'cluaiz_kernel_free' symbol missing from active kernel. Memory might be leaked.");
+                    tracing::warn!("⚠️ [Linker] 'cluaize_kernel_free' symbol missing from active kernel. Memory might be leaked.");
                 }
             }
             Ok(())

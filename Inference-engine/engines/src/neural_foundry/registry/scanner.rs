@@ -1,5 +1,5 @@
-// cluaiz-engine: Core Foundry - Skill Scanner
-// Scans the Cluaiz skills directory for package manifests.
+// cluaize-engine: Core Foundry - Skill Scanner
+// Scans the Cluaize skills directory for package manifests.
 
 use std::path::{Path, PathBuf};
 use std::fs;
@@ -19,12 +19,12 @@ impl SkillScanner {
     pub fn scan_manifests(&self) -> Vec<PathBuf> {
         let mut manifests = Vec::new();
         if !self.base_path.exists() {
-            println!("[CLUAIZ] [WARN] Skills directory not found: {:?}", self.base_path);
+            println!("[Cluaize] [WARN] Skills directory not found: {:?}", self.base_path);
             return manifests;
         }
 
         self.walk_dir(&self.base_path, &mut manifests);
-        println!("[CLUAIZ] Found {} skill manifests.", manifests.len());
+        println!("[Cluaize] Found {} skill manifests.", manifests.len());
         manifests
     }
 

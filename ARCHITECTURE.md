@@ -1,15 +1,15 @@
-# 🏗️ Cluaiz System Architecture
+# 🏗️ Cluaize System Architecture
 
-This document provides a deep technical breakdown of the **3-Tier Silicon-First** architecture that powers Cluaiz.
+This document provides a deep technical breakdown of the **3-Tier Silicon-First** architecture that powers Cluaize.
 
 ## 🛰️ 1. The Design Philosophy: "Zero-Overhead Sovereignty"
-Cluaiz is designed to eliminate the "Abstraction Bloat" found in traditional inference engines. We speak directly to the silicon, bypassing Docker, VMs, and high-level Python wrappers.
+Cluaize is designed to eliminate the "Abstraction Bloat" found in traditional inference engines. We speak directly to the silicon, bypassing Docker, VMs, and high-level Python wrappers.
 
 ---
 
 ## 🧬 2. The 3-Tier Hierarchy
 
-### Tier I: The CURE (Cluaiz Universal Runtime Engine)
+### Tier I: Cluaize Runtime Engine
 - **Role**: The high-performance orchestration hub.
 - **Logic**: Manages the life-cycle of inference requests, FFI bindings, and memory synchronization.
 - **Engine C**: The native ternary compute kernel resides here, optimized for AVX/Metal/CUDA.

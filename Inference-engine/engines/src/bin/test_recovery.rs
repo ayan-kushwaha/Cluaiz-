@@ -1,10 +1,10 @@
-use cluaiz_shared::HardwareGovernor;
+use cluaize_shared::HardwareGovernor;
 
 fn main() {
-    println!("🧪 [Test] Attempting to load Cluaiz Truth...");
+    println!("🧪 [Test] Attempting to load Cluaize Truth...");
     match HardwareGovernor::load_system_control() {
         Ok(control) => {
-            println!("✅ [Test] Load Success! Cluaiz Root: {}", control.context.cluaiz_root);
+            println!("✅ [Test] Load Success! Cluaize Root: {}", control.context.cluaize_root);
         },
         Err(e) => {
             println!("❌ [Test] Load Failed (as expected if recovery failed): {}", e);

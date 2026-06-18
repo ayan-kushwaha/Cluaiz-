@@ -5,15 +5,15 @@ edition.workspace = true
 authors.workspace = true
 
 [lib]
-name = "cluaiz_onnx"
-crate-type = ["rlib"]
+name = "cluaize_onnx"
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 # ── Sovereign ONNX Backend (CPU Multimodal Engine) ──
-ort = "2.0.0-rc.12" # ONNX Runtime bindings
+ort = { version = "2.0.0-rc.12", features = ["copy-dylibs", "download-binaries", "cuda"] } # ONNX Runtime bindings
 anyhow = "1.0"
 tracing = "0.1"
-cluaiz-shared = { path = "../../inference-engine/engines/cluaiz-shared" }
+cluaize-shared = { path = "../../inference-engine/engines/cluaize-shared" }
 neural-core = { path = "../neural_core" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

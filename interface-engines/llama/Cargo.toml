@@ -6,14 +6,14 @@ authors.workspace = true
 build = "build.rs"
 
 [lib]
-name = "cluaiz_llama"
+name = "cluaize_llama"
 crate-type = ["cdylib", "rlib", "staticlib"]
 
 [dependencies]
 # ── Sovereign LLaMA Backend (Direct C++ Bridge) ──
 anyhow = "1.0"
 tracing = "0.1"
-cluaiz-shared = { path = "../../inference-engine/engines/cluaiz-shared" }
+cluaize-shared = { path = "../../inference-engine/engines/cluaize-shared" }
 tokenizers = "0.22.2"
 libloading = "0.8"
 tokio = { version = "1.37", features = ["full"] }
@@ -29,7 +29,7 @@ cmake = "0.1"
 
 [features]
 # ── Silicon Driver Switches ──
-default = []
+default = ["cuda"]
 
 # High-Performance GPUs
 cuda = []       # NVIDIA GPU

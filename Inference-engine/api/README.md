@@ -9,7 +9,7 @@ The Cluaize API is designed to serve two entirely different paradigms simultaneo
 1. **Native FFI / IPC Gateway (0.00ms Latency)**
    - **Target:** Cluaize Native Desktop App, Native CLI.
    - **Protocol:** Named Pipes / Shared Memory.
-   - **Rule:** Native clients MUST NOT use the HTTP API. They must connect directly to the IPC Daemon pipe to stream tokens and send CDQL (Cluaiz Data Query Language) commands.
+   - **Rule:** Native clients MUST NOT use the HTTP API. They must connect directly to the IPC Daemon pipe to stream tokens and send CDQL (Cluaize Data Query Language) commands.
 
 2. **HTTP REST Gateway (Port 8000)**
    - **Target:** Web Apps, Mobile Apps, Raspberry Pi, External Cluster Servers, Third-Party Developers.
@@ -40,19 +40,19 @@ api/
 
 ## ⚙️ 3. API Design Philosophy (Inspired by Market Leaders)
 
-Based on extensive research of the current LLM serving market, CURE adopts a **Hybrid Design**:
+Based on extensive research of the current LLM serving market,  adopts a **Hybrid Design**:
 
 ### The vLLM Approach (Standardization & Throughput)
-- Like vLLM, CURE's HTTP API will offer **OpenAI-Compatible Endpoints** (e.g., `/v1/chat/completions`) for the external REST API. This allows developers to use existing OpenAI libraries instantly.
+- Like vLLM, 's HTTP API will offer **OpenAI-Compatible Endpoints** (e.g., `/v1/chat/completions`) for the external REST API. This allows developers to use existing OpenAI libraries instantly.
 - **Streaming:** Implement Server-Sent Events (SSE) standard for streaming responses.
 
 ### Local Lifecycle Management
-- CURE will feature custom, intuitive endpoints for local model management, heavily mapped to our custom Silicon probing (`HardwareGovernor`).
+-  will feature custom, intuitive endpoints for local model management, heavily mapped to our custom Silicon probing (`HardwareGovernor`).
 - **Endpoints:** `/api/models/pull`, `/api/models/list`.
 
 ---
 
 ## 🚫 4. Strict "DO NOT" Rules (Kayde Kanoon)
 1. **NO Python / NO Docker:** The API must compile down to a single bare-metal Rust executable.
-2. **NO Local Database Mocking in UI:** The API must serve data directly from `~/.cluaiz/cluaizd` LMDB.
+2. **NO Local Database Mocking in UI:** The API must serve data directly from `~/.cluaize/cluaizd` LMDB.
 3. **NO Blocking Operations in Chat:** Inference endpoints must immediately yield to Tokio's async runtime to prevent locking up the server.

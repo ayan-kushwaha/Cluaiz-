@@ -36,7 +36,7 @@ graph TD
 - **The "Why":** Achieves true 0.0ms latency for database writes, ensuring the token stream is never blocked by database serialization overhead.
 
 ### 3. `storage_bridge.rs` & `local_bridge.rs`
-- **The Core Logic:** High-level abstractions that decide if the engine should write to a local LMDB file, or send the state over the network to a remote Cluaiz instance.
+- **The Core Logic:** High-level abstractions that decide if the engine should write to a local LMDB file, or send the state over the network to a remote Cluaize instance.
 
 ### 4. `kv_injector.rs`
 - **The Core Logic:** Manages the KV Cache (Key-Value Attention Cache) swapping. When a conversation exceeds VRAM capacity, this module strips the oldest KV tensors and pages them to disk, re-injecting them seamlessly when needed.

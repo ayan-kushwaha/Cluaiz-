@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/cluaiz-banner.png" width="100%" alt="Cluaiz Logo">
+  <img src="assets/cluaize-banner.png" width="100%" alt="Cluaize Logo">
 </p>
 
 <h1 align="center">Cluaize</h1>
@@ -131,7 +131,7 @@ Cluaize utilizes a tiered stack to bridge the gap between high-level application
 ```text
 Application (CLI / SDK)
       ↓ (Shared-Memory Signaling)
-Cluaiz Engine (Orchestrator)
+Cluaize Engine (Orchestrator)
       ↓ (Dynamic Native FFI)
 Inference Kernels (Llama.cpp / Candle)
       ↓ (Silicon Drivers)
@@ -143,7 +143,7 @@ A decoupled, three-tier modular design that ensures zero-drift between the CLI, 
 
 ```mermaid
 graph TD
-    A[Interface: CLI/SDK] -- "Optimized Signaling" --> B["Cluaiz Engine (CURE)"]
+    A[Interface: CLI/SDK] -- "Optimized Signaling" --> B["Cluaize Engine"]
     B -- "CluaizeDNA Manifest" --> C[Model Registry]
     B -- "Native FFI" --> D[Kernel Drivers]
     
@@ -265,7 +265,7 @@ $ cluaize skill cache clear --all
   /cli            # CLI (User Interface)
 /inference-engine
   /api            # Low-latency C-API Handshake
-  /engines        # Core Orchestration Runtime (CURE)
+  /engines        # Core Orchestration Runtime 
     /cluaize-shared # Unified System DNA & Types
     /system-booster # Hardware Governor & Memory Arbiter
 /inference-drivers
@@ -334,12 +334,12 @@ Get the entire Cluaize runtime compiled, linked, and calibrated natively with a 
 
 #### **Windows (PowerShell)**:
 ```powershell
-powershell -ExecutionPolicy Bypass -Command "iwr -useb https://raw.githubusercontent.com/cluaize/cluaize/main/install.ps1 | iex"
+powershell -ExecutionPolicy Bypass -Command "iwr -useb https://raw.githubusercontent.com/cluaiz/cluaize/main/install.ps1 | iex"
 ```
 
 #### **Linux & macOS (Shell)**:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cluaize/cluaize/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/cluaiz/cluaize/main/install.sh | bash
 ```
 
 ---
@@ -372,7 +372,17 @@ Run the naked `cluaize` command to launch our full-terminal interactive control 
 $ cluaize
 ```
 
-#### **2. Direct Headless Inference**
+#### **2. Start the Background API Server**
+Run the background daemon to serve models via the OpenAI-compatible REST API (Default port: 8000).
+```bash
+$ cluaize serve
+```
+*(Aliases: `cluaize api`, `cluaize server`)*
+
+> [!TIP]
+> **Pure Client Auto-Detection**: If you start `cluaize serve` in the background, and then run the `cluaize` dashboard in another terminal, the dashboard will automatically detect the running server and connect to it as a **Pure Client**. It will skip loading a duplicate engine locally, saving 100% of your VRAM!
+
+#### **3. Direct Headless Inference**
 
 Run any locally cached model by name:
 ```bash
@@ -391,13 +401,13 @@ $ cargo run -p cli -- run Qwen/Qwen3-VL-2B-Instruct-GGUF
 > [!NOTE]
 > HuggingFace downloads are handled natively. Cluaize fetches GGUF weights directly over HTTPS and caches them under `~/.cluaize/models/`.
 
-#### **3. Re-Calibrate Hardware Profile**
+#### **4. Re-Calibrate Hardware Profile**
 Perform real-time RDTSC hardware clocking, SIMD profiling, and VRAM detection to update your native hardware profile:
 ```bash
 $ cluaize --calibrate
 ```
 
-#### **4. Run Dynamic Hardware Benchmark Suite**
+#### **5. Run Dynamic Hardware Benchmark Suite**
 Stress-test your local CPU/GPU subsystems to measure neural operations per second. 
 The system automatically limits complex prompts on smaller models (Aukat Filter) and saves hardware-aware reports to `test/benchmark/<hardware>/<model>/`.
 
@@ -409,14 +419,14 @@ $ cluaize benchmark
 $ cluaize benchmark bonsai1-8b --runs 3
 ```
 
-#### **5. In-Chat Interactive Control Menu (`@`)**
+#### **6. In-Chat Interactive Control Menu (`@`)**
 While running the interactive TUI dashboard (`$ cluaize`), simply type **`@`** (and press Enter) to open the **Live Action Menu**. 
 This gives you instant, zero-restart control over the core engine:
 - **🧠 Switch Model**: Hot-swap your active LLM directly from VRAM without restarting the terminal.
 - **⚡ Engine Modes**: Quickly toggle macro presets (e.g., Flash Mode for speed, Think Mode for CoT reasoning).
 - **🚀 System Booster**: Access the granular `system_booster.json` configuration natively. Change hardware compute targets (GPU/CPU layers), adjust KV Cache Quantization, toggle Flash Attention, and tweak Context Shifting behavior **live**—the engine will automatically hot-reload the changes.
 
-#### **6. Mid-Generation Pivot (Hot-Steering)**
+#### **7. Mid-Generation Pivot (Hot-Steering)**
 If the AI is generating a long response (or is deep in `Think Mode`), you can interrupt it at any time by pressing **`Ctrl+C`**. 
 Instead of killing the process and losing your VRAM context, Cluaize instantly **Pauses** the engine. You will be prompted to enter a **mid-way instruction** (e.g., *"Make it shorter"* or *"Skip the reasoning, just write the code"*). The engine processes this pivot and continues the exact same generation seamlessly from where it left off without starting over, saving massive amounts of compute and time.
 
@@ -442,11 +452,11 @@ Set-AuthenticodeSignature -FilePath ".\cluaize.exe" -Certificate $cert
 
 ## Star History
 
-<a href="https://www.star-history.com/?repos=Cluaiz%2Fcluaize&type=date&legend=top-left">
+<a href="https://www.star-history.com/?repos=Cluaize%2Fcluaize&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Cluaiz/cluaize&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Cluaiz/cluaize&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Cluaiz/cluaize&type=date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Cluaize/cluaize&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Cluaize/cluaize&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Cluaize/cluaize&type=date&legend=top-left" />
  </picture>
 </a>
 
@@ -455,8 +465,3 @@ Set-AuthenticodeSignature -FilePath ".\cluaize.exe" -Certificate $cert
 Cluaize is released under the **Apache License 2.0**.
 See the [LICENSE](LICENSE) file for more details.
 
----
-
-<p align="center">
-  <b>© 2026 Cluaiz Technologies. Open-Sourced under Apache 2.0.</b><br>
- </p>

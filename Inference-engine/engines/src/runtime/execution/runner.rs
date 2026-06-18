@@ -1,35 +1,35 @@
 //! ═══════════════════════════════════════════════════════════════════════
-//!  CURE Engine: Universal Runner (Cluaiz)
+//!   Engine: Universal Runner (Cluaize)
 //! ═══════════════════════════════════════════════════════════════════════
 
 use anyhow::Result;
 use crate::runtime::execution::sampler::CoreSampler;
-use cluaiz_shared::ModelWeightsWrapper;
+use cluaize_shared::ModelWeightsWrapper;
 
 
 
 #[derive(Debug, Clone)]
-pub struct CluaizMetrics {
+pub struct CluaizeMetrics {
     pub ttft_ms: f64,
     pub tps: f64,
     pub total_tokens: usize,
     pub total_time_ms: f64,
 }
 
-pub struct CluaizRunner {
+pub struct CluaizeRunner {
     pub model: ModelWeightsWrapper,
 
     pub sampler: CoreSampler,
     pub bos_token_id: Option<u32>,
 }
 
-impl CluaizRunner {
+impl CluaizeRunner {
     pub fn new(model: ModelWeightsWrapper, sampler: CoreSampler, bos_token_id: Option<u32>) -> Self {
         Self { model, sampler, bos_token_id }
     }
 
-    /// 🔗 Instant Recall: Injects Core Cluaiz signals before generation.
-    pub fn inject_Core_signals(&mut self, signals: Vec<cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Result<()> {
+    /// 🔗 Instant Recall: Injects Core Cluaize signals before generation.
+    pub fn inject_Core_signals(&mut self, signals: Vec<cluaize_shared::hardware::memory::kv_cache::stitching::CluaizeSignal>) -> Result<()> {
         self.model.inject_signals(signals)
     }
 
@@ -38,13 +38,13 @@ impl CluaizRunner {
         prompt: &str,
         max_tokens: usize,
         mut callback: impl FnMut(String) + Send + 'static,
-    ) -> Result<CluaizMetrics> {
-        // 🛰️ Cluaiz BOOSTER SYNC: Load truth from Governor before generation
-        let booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+    ) -> Result<CluaizeMetrics> {
+        // 🛰️ Cluaize BOOSTER SYNC: Load truth from Governor before generation
+        let booster = cluaize_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
         self.model.apply_booster(&booster)?;
         
         // 🌊 Liquid Mode Linkage
-        if booster.turbo_quant == cluaiz_shared::hardware::schema::booster::FeatureState::On {
+        if booster.turbo_quant == cluaize_shared::hardware::schema::booster::FeatureState::On {
             self.model.set_liquid_mode(true)?;
         }
 
@@ -76,7 +76,7 @@ impl CluaizRunner {
             0.0
         };
 
-        Ok(CluaizMetrics {
+        Ok(CluaizeMetrics {
             ttft_ms: 0.0, // Model TTFT placeholder for now
             tps,
             total_tokens: actual_tokens,

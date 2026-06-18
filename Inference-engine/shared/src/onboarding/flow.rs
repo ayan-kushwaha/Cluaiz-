@@ -14,8 +14,8 @@ use crate::profile::{UserProfile, AccountType, AuthMethod};
 #[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Debug, Default)]
 pub enum OnboardingStep {
     #[default]
-    LogoAnimation,       // Step 1: Animated CLUAIZ logo
-    WelcomeAbout,        // Step 2: "Welcome to Cluaiz CURE" + about text
+    LogoAnimation,       // Step 1: Animated CLUAIZE logo
+    WelcomeAbout,        // Step 2: "Welcome to Cluaize " + about text
     Auth,                // Step 3: Google or Email+Password login
     UsageChoice,         // Step 4: Personal vs Business
     ProfileInfo,         // Step 5: Name / Business details
@@ -117,8 +117,8 @@ pub fn can_advance(step: OnboardingStep, profile: &UserProfile) -> bool {
 /// Get a 1-line summary of a completed step (for collapsed display)
 pub fn get_completed_summary(step: OnboardingStep, profile: &UserProfile) -> String {
     match step {
-        OnboardingStep::LogoAnimation => "CLUAIZ Neural Core Booted".to_string(),
-        OnboardingStep::WelcomeAbout => "Welcome to Cluaiz CURE CLI".to_string(),
+        OnboardingStep::LogoAnimation => "CLUAIZE Neural Core Booted".to_string(),
+        OnboardingStep::WelcomeAbout => "Welcome to Cluaize".to_string(),
         OnboardingStep::Auth => {
             format!("Auth: {} ({})", profile.auth.email, 
                 match profile.auth.method {

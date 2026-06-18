@@ -1,5 +1,5 @@
 //! ═══════════════════════════════════════════════════════════════════════
-//!  CURE Engine: The Core Roster (Cluaiz Installation Registry)
+//!   Engine: The Core Roster (Cluaize Installation Registry)
 //! ═══════════════════════════════════════════════════════════════════════
 
 use serde::{Deserialize, Serialize};
@@ -12,7 +12,7 @@ pub use provisioner::Provisioner;
 pub use discovery::AutonomousDiscovery;
 use crate::hardware::SiliconTruth;
 use crate::models::fetch::ModelDownloader;
-pub use cluaiz_shared::{KernelSignature, StructuralDNA};
+pub use cluaize_shared::{KernelSignature, StructuralDNA};
 use reqwest;
 
 // ─── Installation JSON Schema ──────────────────────────────────────────────
@@ -178,14 +178,14 @@ pub struct ModelRecommendation {
 
 pub struct CoreRoster;
 
-pub const REGISTRY_URL: &str = "https://cdn.jsdelivr.net/gh/cluaiz/cluaiz@main/models/library/registry.json";
+pub const REGISTRY_URL: &str = "https://cdn.jsdelivr.net/gh/cluaize/cluaize@main/models/library/registry.json";
 
 impl CoreRoster {
     /// 🌐 Fetches an external models.json registry from a URL (Default: jsDelivr).
     pub async fn fetch_external_registry(url: Option<&str>) -> Result<Vec<ModelManifest>, String> {
         let fetch_url = url.unwrap_or(REGISTRY_URL);
         let client = reqwest::Client::builder()
-            .user_agent("Cluaiz/1.0")
+            .user_agent("Cluaize/1.0")
             .timeout(std::time::Duration::from_secs(10))
             .build()
             .map_err(|e| e.to_string())?;
@@ -209,7 +209,7 @@ impl CoreRoster {
         Ok(manifests)
     }
 
-    /// Scans the local Cluaiz Library recursively and merges with the Sovereign Registry.
+    /// Scans the local Cluaize Library recursively and merges with the Sovereign Registry.
     pub fn load_roster() -> Vec<ModelManifest> {
         let mut registry = std::collections::HashMap::new();
 
@@ -222,14 +222,14 @@ impl CoreRoster {
         ];
         
         if let Some(home) = dirs::home_dir() {
-            model_paths.push(home.join(".cluaiz").join("models").to_string_lossy().to_string());
+            model_paths.push(home.join(".cluaize").join("models").to_string_lossy().to_string());
         }
 
         for path in model_paths {
             let base = Path::new(&path);
             if base.exists() && base.is_dir() {
                 info!("🔍 [Roster] Scanning unit path: {}", path);
-                let local_units = AutonomousDiscovery::index_Cluaiz_models(base);
+                let local_units = AutonomousDiscovery::index_Cluaize_models(base);
                 for unit in local_units {
                     info!("✅ [Roster] Discovered local unit: {}", unit.id);
                     registry.insert(unit.id.to_lowercase(), unit);
@@ -237,14 +237,14 @@ impl CoreRoster {
             }
         }
 
-        // 2. Load Cluaiz Library (The Sovereign Source)
+        // 2. Load Cluaize Library (The Sovereign Source)
         let mut templates = Vec::new();
         let search_paths = vec![
             "models/library",
             "../models/library",
             "../../models/library",
-            "cluaiz-engine/models/library",
-            "../cluaiz-engine/models/library"
+            "cluaize-engine/models/library",
+            "../cluaize-engine/models/library"
         ];
         
         let mut base_dir = None;

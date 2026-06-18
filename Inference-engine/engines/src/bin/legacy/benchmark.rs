@@ -2,12 +2,12 @@ use std::path::PathBuf;
 use std::fs::OpenOptions;
 use std::io::Write;
 use tokenizers::Tokenizer;
-use engines::engine::runner::CluaizRunner;
+use engines::engine::runner::CluaizeRunner;
 use engines::loader::gguf::GGUFLoader;
 use engines::engine::sampler::CoreSampler;
 
 const BENCHMARK_PROMPT: &str =
-    "Explain the importance of local AI models and Cluaiz Core hardware in one paragraph.";
+    "Explain the importance of local AI models and Cluaize Core hardware in one paragraph.";
 
 pub struct BenchmarkTarget {
     pub name: String,
@@ -18,13 +18,13 @@ pub struct BenchmarkTarget {
 #[tokio::main]
 async fn main() {
     println!("╔══════════════════════════════════════════════════════════╗");
-    println!("║     🧠 Cluaize: Cluaiz Core BENCHMARK v2.0            ║");
+    println!("║     🧠 Cluaize: Cluaize Core BENCHMARK v2.0            ║");
     println!("║     Quad-Transformer Faceoff — GPU Powered               ║");
     println!("╚══════════════════════════════════════════════════════════╝");
     println!();
 
     // ── Hardware Boot ──
-    let profile = engines::hardware::CluaizProfile::boot();
+    let profile = engines::hardware::CluaizeProfile::boot();
     let device = profile.device.clone();
     println!("⚡ Device: {:?}", device);
     println!("⚡ VRAM:   {:.1} GB", profile.vram_gb);
@@ -32,8 +32,8 @@ async fn main() {
     println!();
 
     // ── Model Roster ──
-    let models_root = r"C:\Users\Aryan\my\Cluaiz-workspace\Cluaiz-OS\Cluaiz-ai\models";
-    let tui_models   = r"C:\Users\Aryan\my\Cluaiz-workspace\Cluaiz-OS\Cluaiz-ai\terminal_ui\models";
+    let models_root = r"C:\Users\Aryan\my\Cluaize-workspace\Cluaize-OS\Cluaize-ai\models";
+    let tui_models   = r"C:\Users\Aryan\my\Cluaize-workspace\Cluaize-OS\Cluaize-ai\terminal_ui\models";
 
     let targets = vec![
         BenchmarkTarget {
@@ -74,7 +74,7 @@ async fn main() {
 
     let header = format!(
         "╔══════════════════════════════════════════════════════════╗\n\
-         ║       Cluaize: Cluaiz Core BENCHMARK REPORT            ║\n\
+         ║       Cluaize: Cluaize Core BENCHMARK REPORT            ║\n\
          ║       Device: {:?}\n\
          ╚══════════════════════════════════════════════════════════╝\n\n\
          Prompt: \"{}\"\n\
@@ -136,7 +136,7 @@ async fn main() {
         };
 
         let sampler = CoreSampler::new(299792, 0.7, 0.9, 1.1);
-        let mut runner = CluaizRunner::new(model, tokenizer, sampler, None);
+        let mut runner = CluaizeRunner::new(model, tokenizer, sampler, None);
 
         // ── Generation Run ──
         println!("   🚀 Generating...");

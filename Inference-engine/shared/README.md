@@ -1,4 +1,4 @@
-# 🧩 Cluaiz Shared (`shared/`)
+# 🧩 Cluaize Shared (`shared/`)
 
 <p align="center"><strong>The Sovereign Reusable Core</strong></p>
 
@@ -18,7 +18,7 @@ This crate solves that by centralizing all structural DNA.
 
 ```mermaid
 graph LR
-    API["API Gateway (Axum)"] -->|"Uses Structs"| Shared["cluaiz-shared"]
+    API["API Gateway (Axum)"] -->|"Uses Structs"| Shared["cluaize-shared"]
     CLI["Terminal UI (Ratatui)"] -->|"Uses Structs"| Shared
     Desktop["Desktop Application"] -->|"Uses Structs"| Shared
     

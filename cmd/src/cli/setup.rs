@@ -3,8 +3,8 @@ use crate::SetupCommand;
 pub async fn execute(command: SetupCommand) -> color_eyre::Result<()> {
     match command {
         SetupCommand::Profile => {
-            println!("⚙️ [Cluaiz Setup] Initiating Node Purpose Vectorization...");
-            println!("⚙️ [Cluaiz Setup] Generating semantic vectors for SKILL_NODE_ROOT identity...");
+            println!("⚙️ [Cluaize Setup] Initiating Node Purpose Vectorization...");
+            println!("⚙️ [Cluaize Setup] Generating semantic vectors for SKILL_NODE_ROOT identity...");
             
             let prompt_vector = engines::memory::embedding_generator::EmbeddingGenerator::generate_vector("SKILL_NODE_ROOT");
             
@@ -12,7 +12,7 @@ pub async fn execute(command: SetupCommand) -> color_eyre::Result<()> {
             let _ = storage_bridge.save_context("SKILL_NODE_ROOT_IDENTITY", "System Profile Node", prompt_vector)
                 .map_err(|e| color_eyre::eyre::eyre!("Failed to save vector to Cluaizd brain: {}", e))?;
                 
-            println!("✅ [Cluaiz Setup] Purpose Vectorization saved to Local Brain.");
+            println!("✅ [Cluaize Setup] Purpose Vectorization saved to Local Brain.");
         }
     }
     Ok(())

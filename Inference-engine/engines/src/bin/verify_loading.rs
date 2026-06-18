@@ -1,7 +1,7 @@
 use engines::models::registry::CoreRoster;
 
 fn main() {
-    println!("🚀 [ROSTER DIAGNOSTIC] Initiating Cluaiz Registry Scan...");
+    println!("🚀 [ROSTER DIAGNOSTIC] Initiating Cluaize Registry Scan...");
     
     // We run the same function the TUI calls
     let manifests = CoreRoster::load_roster();

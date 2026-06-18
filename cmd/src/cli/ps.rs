@@ -1,10 +1,10 @@
 use color_eyre::Result;
 use colored::Colorize;
 use sysinfo::System;
-use cluaiz_shared::hardware::governor::HardwareGovernor;
+use cluaize_shared::hardware::governor::HardwareGovernor;
 
 pub async fn execute() -> Result<()> {
-    println!("\n  {} [Cluaiz] Sovereign Process Audit...", "🔍".cyan());
+    println!("\n  {} [Cluaize] Sovereign Process Audit...", "ðŸ”".cyan());
 
     let mut registry = HardwareGovernor::load_process_registry();
     let mut sys = System::new_all();
@@ -36,7 +36,7 @@ pub async fn execute() -> Result<()> {
     }
 
     if active_processes.is_empty() {
-        println!("  {} No active neural engines running.", "💤".yellow());
+        println!("  {} No active neural engines running.", "ðŸ’¤".yellow());
         return Ok(());
     }
 

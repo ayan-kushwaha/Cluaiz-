@@ -3,7 +3,7 @@
 //! This kernel is loaded dynamically by the SiliconOrchestrator.
 
 use anyhow::Result;
-use cluaiz_shared::{CluaizContext, CluaizInference, UnifiedBackend};
+use cluaize_shared::{CluaizeContext, CluaizeInference, UnifiedBackend};
 use std::sync::Arc;
 use tokenizers::Tokenizer;
 use neural_core::interfaces::memory_contract::SovereignBuffer;
@@ -75,7 +75,7 @@ mod tests {
 
 pub struct RuntimeB {
     pub model_path: String,
-    pub context: CluaizContext,
+    pub context: CluaizeContext,
     pub booster: BoosterConfig,
     pub native: Option<NativeLlama>,
     pub lucebox: Option<Arc<ffi::lucebox::LuceboxBridge>>,
@@ -83,7 +83,7 @@ pub struct RuntimeB {
 }
 
 impl RuntimeB {
-    pub fn new(path: &str, context: CluaizContext) -> Self {
+    pub fn new(path: &str, context: CluaizeContext) -> Self {
         Self {
             model_path: path.to_string(),
             context,
@@ -108,10 +108,10 @@ impl RuntimeB {
         // 🧠 RESOLVE SPECULATIVE MODE & SYNC DNA
         // We probe GGUF metadata + tensor names to detect hybrid/recurrent models (e.g. Qwen3.5 GDN).
         // GGUFProber now checks: architecture name, *.layer_types metadata, AND tensor patterns.
-        let (has_native_mtp, is_ssm_model) = if let Ok((metadata, tensor_infos, _)) = cluaiz_shared::utils::GGUFProber::probe(std::path::Path::new(&self.model_path)) {
+        let (has_native_mtp, is_ssm_model) = if let Ok((metadata, tensor_infos, _)) = cluaize_shared::utils::GGUFProber::probe(std::path::Path::new(&self.model_path)) {
             (
-                cluaiz_shared::utils::GGUFProber::check_native_mtp(&tensor_infos),
-                cluaiz_shared::utils::GGUFProber::check_recurrent_ssm(&metadata, &tensor_infos)
+                cluaize_shared::utils::GGUFProber::check_native_mtp(&tensor_infos),
+                cluaize_shared::utils::GGUFProber::check_recurrent_ssm(&metadata, &tensor_infos)
             )
         } else {
             (false, false)
@@ -210,11 +210,11 @@ impl UnifiedBackend for RuntimeB {
     fn evaluate_tps(&self) -> f64 {
         // 📡 Sovereign Telemetry: Return the real-time TPS from the pulse counter.
         // This counter is incremented for every token generated in native.rs.
-        cluaiz_shared::hardware::telemetry::get_pulse().tps_counter.load(std::sync::atomic::Ordering::Relaxed) as f64
+        cluaize_shared::hardware::telemetry::get_pulse().tps_counter.load(std::sync::atomic::Ordering::Relaxed) as f64
     }
 }
 
-impl CluaizInference for RuntimeB {
+impl CluaizeInference for RuntimeB {
     fn forward_raw(&mut self, _input_ids: &[u32], _pos: usize) -> Result<Vec<f32>> {
         Err(anyhow::anyhow!("FFI forward optimized via ASM kernels"))
     }
@@ -229,7 +229,7 @@ impl CluaizInference for RuntimeB {
         let mut callback = callback;
         
         // 🛡️ Neural Circuit Breaker: check if paths are safe
-        let mut cb = cluaiz_shared::hardware::circuit_breaker::NeuralCircuitBreaker::default();
+        let mut cb = cluaize_shared::hardware::circuit_breaker::NeuralCircuitBreaker::default();
         if !cb.can_proceed() {
             return Err(anyhow::anyhow!("🚨 [Circuit Breaker] Inference blocked due to previous system instability."));
         }
@@ -274,7 +274,7 @@ impl CluaizInference for RuntimeB {
     }
 
     /// 💉 Neural Injection Hook: Injects multiple pre-encoded signal states into the Llama cache.
-    fn inject_signals(&mut self, signals: Vec<cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> Result<()> {
+    fn inject_signals(&mut self, signals: Vec<cluaize_shared::hardware::memory::kv_cache::stitching::CluaizeSignal>) -> Result<()> {
         let max_ctx = self.context.dna.max_context_length.unwrap_or(4096);
         let mut current_offset = 0;
 
@@ -293,7 +293,7 @@ impl CluaizInference for RuntimeB {
                 // 🛑 Positional Guard
                 if current_offset + token_count > max_ctx {
                     tracing::error!("❌ [Llama-Engine] Positional Collision: Signal {} exceeds remaining context space.", i);
-                    return Err(anyhow::anyhow!("CluaizSignal: Context Overflow at Signal {}", i));
+                    return Err(anyhow::anyhow!("CluaizeSignal: Context Overflow at Signal {}", i));
                 }
 
                 println!("🧵 [Llama-Engine] Stitching Signal {} ({} tokens) at offset {}.", i, token_count, current_offset);
@@ -320,7 +320,7 @@ impl CluaizInference for RuntimeB {
     }
 
     /// 🚀 Booster Sync: Applies hardware-level optimization flags (TurboQuant, KV-Cache, etc.)
-    fn apply_booster(&mut self, control: &cluaiz_shared::hardware::schema::booster::BoosterControl) -> Result<()> {
+    fn apply_booster(&mut self, control: &cluaize_shared::hardware::schema::booster::BoosterControl) -> Result<()> {
         tracing::info!("🚀 [Llama-Engine] Applying Booster: Autonomous Performance Sync");
         
         // 🔄 Sync local booster state from system
@@ -331,21 +331,21 @@ impl CluaizInference for RuntimeB {
             let mut ctx_params = self.booster.to_context_params();
             
             // Recalculate context window through Governor using the injected control truth
-            let new_ctx = cluaiz_shared::hardware::governor::HardwareGovernor::negotiate_vram_envelope_with_booster(&self.context.dna, control);
+            let new_ctx = cluaize_shared::hardware::governor::HardwareGovernor::negotiate_vram_envelope_with_booster(&self.context.dna, control);
             ctx_params.n_ctx = new_ctx as u32;
             
             // Sync settings dynamically
             native.kv_cache_quantization_mode = match control.kv_cache_quantization {
-                cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Kv8 => 1,
-                cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Kv4 => 2,
+                cluaize_shared::hardware::schema::booster::KvCacheQuantization::Kv8 => 1,
+                cluaize_shared::hardware::schema::booster::KvCacheQuantization::Kv4 => 2,
                 _ => 0,
             };
             native.context_shifting_mode = match control.context_shifting {
-                cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Off => 0,
-                cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Minimal => 1,
-                cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Standard | cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Auto => 2,
-                cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Aggressive => 3,
-                cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Extreme => 4,
+                cluaize_shared::hardware::schema::booster::ContextShiftingMode::Off => 0,
+                cluaize_shared::hardware::schema::booster::ContextShiftingMode::Minimal => 1,
+                cluaize_shared::hardware::schema::booster::ContextShiftingMode::Standard | cluaize_shared::hardware::schema::booster::ContextShiftingMode::Auto => 2,
+                cluaize_shared::hardware::schema::booster::ContextShiftingMode::Aggressive => 3,
+                cluaize_shared::hardware::schema::booster::ContextShiftingMode::Extreme => 4,
             };
             
             native.resize_context(ctx_params)?;
@@ -432,8 +432,8 @@ impl CluaizInference for RuntimeB {
 
 // ─── Sovereign FFI Gateway ──────────────────────────────────────────────────
 
-#[export_name = "cluaiz_kernel_init"]
-pub extern "C" fn cluaiz_kernel_init() -> *const std::os::raw::c_char {
+#[no_mangle]
+pub extern "C" fn cluaize_kernel_init() -> *const std::os::raw::c_char {
     unsafe {
         // 🤫 Sovereign Silence: Hard-redirect native stdout/stderr to NUL
         // This stops all non-callback logs (CUDA Graph, etc.) from polluting the TUI.
@@ -464,16 +464,16 @@ pub extern "C" fn cluaiz_kernel_init() -> *const std::os::raw::c_char {
         ffi::llama_cpp::llama_backend_init();
     }
     tracing::info!("🧬 [Llama.cpp-Kernel] Sovereign Handshake & Backend Initialized.");
-    "cluaiz-llama.cpp-active\0".as_ptr() as *const std::os::raw::c_char
+    "cluaize-llama.cpp-active\0".as_ptr() as *const std::os::raw::c_char
 }
 
 #[used]
-static _FORCE_KEEP_INIT: extern "C" fn() -> *const std::os::raw::c_char = cluaiz_kernel_init;
+static _FORCE_KEEP_INIT: extern "C" fn() -> *const std::os::raw::c_char = cluaize_kernel_init;
 
 #[no_mangle]
-pub extern "C" fn cluaiz_kernel_instantiate(
+pub extern "C" fn cluaize_kernel_instantiate(
     path_ptr: *const std::os::raw::c_char,
-    booster_ptr: *const cluaiz_shared::hardware::schema::booster::CluaizBoosterContext,
+    booster_ptr: *const cluaize_shared::hardware::schema::booster::CluaizeBoosterContext,
 ) -> *mut RuntimeB {
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         let path_str = unsafe { std::ffi::CStr::from_ptr(path_ptr) }
@@ -484,10 +484,10 @@ pub extern "C" fn cluaiz_kernel_instantiate(
         let model_dir = model_path.parent().unwrap_or(model_path);
         
         tracing::info!("🧬 [Llama-Lib] Initiating Sovereign DNA Handshake for: {:?}", model_dir);
-        let mut dna = cluaiz_shared::metadata::dna::StructuralDNA::load(&model_dir.join("structural_dna.json"))
+        let mut dna = cluaize_shared::metadata::dna::StructuralDNA::load(&model_dir.join("structural_dna.json"))
             .unwrap_or_else(|_| {
                 println!("⚠️ [Llama-Lib] DNA Manifest missing. Creating transient skeleton...");
-                cluaiz_shared::metadata::dna::StructuralDNA::default()
+                cluaize_shared::metadata::dna::StructuralDNA::default()
             });
 
         // ALWAYS perform real-time discovery to sync with LIVE hardware state
@@ -498,14 +498,14 @@ pub extern "C" fn cluaiz_kernel_instantiate(
         eprintln!("✅ [Llama-Lib] DNA Discovery Complete. Negotiated Context: {:?}", dna.max_context_length);
         eprintln!("📊 [Llama-Lib] Weights Size: {:.2}GB", dna.weights_size_gb);
 
-        let context = CluaizContext::boot(dna, cluaiz_shared::TemplateManager::default());
+        let context = CluaizeContext::boot(dna, cluaize_shared::TemplateManager::default());
         let mut engine = Box::new(RuntimeB::new(&path_str, context));
         
         // Inject Booster Configuration from Caller
         if !booster_ptr.is_null() {
             let booster_ctx = unsafe { *booster_ptr };
-            println!("🚀 [Llama.cpp-Kernel] Received CluaizBoosterContext via FFI: {:?}", booster_ctx);
-            tracing::info!("🚀 [Llama.cpp-Kernel] Received CluaizBoosterContext via FFI: {:?}", booster_ctx);
+            println!("🚀 [Llama.cpp-Kernel] Received CluaizeBoosterContext via FFI: {:?}", booster_ctx);
+            tracing::info!("🚀 [Llama.cpp-Kernel] Received CluaizeBoosterContext via FFI: {:?}", booster_ctx);
             engine.booster.flash_attn = booster_ctx.flash_attention;
             engine.booster.n_gpu_layers = booster_ctx.n_gpu_layers;
             engine.booster.turbo_quant = if booster_ctx.turbo_quant { "active".to_string() } else { "none".to_string() };
@@ -535,7 +535,7 @@ pub extern "C" fn cluaiz_kernel_instantiate(
             }
         } else {
             // Self-load from Binary Booster Truth if FFI was blank
-            if let Ok(booster) = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings() {
+            if let Ok(booster) = cluaize_shared::hardware::governor::HardwareGovernor::load_booster_settings() {
                 let _ = engine.apply_booster(&booster);
             }
         }
@@ -553,14 +553,14 @@ pub extern "C" fn cluaiz_kernel_instantiate(
     match result {
         Ok(ptr) => ptr,
         Err(_) => {
-            tracing::error!("🚨 [FFI-Panic] Caught panic in cluaiz_kernel_instantiate! Preventing OS crash.");
+            tracing::error!("🚨 [FFI-Panic] Caught panic in cluaize_kernel_instantiate! Preventing OS crash.");
             std::ptr::null_mut()
         }
     }
 }
 
 #[no_mangle]
-pub extern "C" fn cluaiz_kernel_generate_stream(
+pub extern "C" fn cluaize_kernel_generate_stream(
     engine_ptr: *mut RuntimeB,
     prompt_ptr: *const std::os::raw::c_char,
     max_tokens: usize,
@@ -599,14 +599,14 @@ pub extern "C" fn cluaiz_kernel_generate_stream(
     match result {
         Ok(res) => res,
         Err(_) => {
-            tracing::error!("🚨 [FFI-Panic] Caught panic in cluaiz_kernel_generate_stream!");
+            tracing::error!("🚨 [FFI-Panic] Caught panic in cluaize_kernel_generate_stream!");
             -3
         }
     }
 }
 
 #[no_mangle]
-pub extern "C" fn cluaiz_kernel_free(engine_ptr: *mut RuntimeB) {
+pub extern "C" fn cluaize_kernel_free(engine_ptr: *mut RuntimeB) {
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         if !engine_ptr.is_null() {
             unsafe {
@@ -619,19 +619,19 @@ pub extern "C" fn cluaiz_kernel_free(engine_ptr: *mut RuntimeB) {
         }
     }));
     if result.is_err() {
-        tracing::error!("🚨 [FFI-Panic] Caught panic in cluaiz_kernel_free!");
+        tracing::error!("🚨 [FFI-Panic] Caught panic in cluaize_kernel_free!");
     }
 }
 
 #[no_mangle]
-pub extern "C" fn cluaiz_kernel_set_skip_ptr(ptr: *const std::sync::atomic::AtomicBool) {
+pub extern "C" fn cluaize_kernel_set_skip_ptr(ptr: *const std::sync::atomic::AtomicBool) {
     unsafe {
         crate::native::stream::SKIP_PTR = ptr;
     }
 }
 
 #[no_mangle]
-pub extern "C" fn cluaiz_kernel_dump_kv_cache(
+pub extern "C" fn cluaize_kernel_dump_kv_cache(
     engine_ptr: *mut RuntimeB,
     path_ptr: *const std::os::raw::c_char,
 ) -> i32 {
@@ -682,7 +682,7 @@ pub extern "C" fn cluaiz_kernel_dump_kv_cache(
 }
 
 #[no_mangle]
-pub extern "C" fn cluaiz_kernel_load_kv_cache(
+pub extern "C" fn cluaize_kernel_load_kv_cache(
     engine_ptr: *mut RuntimeB,
     path_ptr: *const std::os::raw::c_char,
 ) -> i32 {

@@ -1,14 +1,14 @@
 use std::process::{Command, Child, Stdio};
 use std::os::windows::process::CommandExt;
 
-/// 🛡️ Cluaiz Sandbox Manager
+/// 🛡️ Cluaize Sandbox Manager
 /// Isolate pre-compiled kernels into restricted process containers.
-pub struct CluaizSandbox {
+pub struct CluaizeSandbox {
     pub process_id: u32,
     child: Option<Child>,
 }
 
-impl CluaizSandbox {
+impl CluaizeSandbox {
     /// 🚀 Spawn a kernel in a restricted "Safe Box"
     /// On Windows, we use Job Objects / Low Integrity Level logic (Placeholder for V1)
     pub fn spawn_kernel(binary_path: &str, args: Vec<&str>) -> anyhow::Result<Self> {

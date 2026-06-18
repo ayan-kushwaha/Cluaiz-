@@ -1,6 +1,6 @@
 # System Architecture & Design
 
-Cluaiz is built as a highly modular, decoupled system. By separating user-facing terminals from heavy mathematical processors, the platform achieves absolute structural resilience, thread safety, and zero-flicker UI updates.
+Cluaize is built as a highly modular, decoupled system. By separating user-facing terminals from heavy mathematical processors, the platform achieves absolute structural resilience, thread safety, and zero-flicker UI updates.
 
 This document details how the Client (Frontend Interface) and Backend (Compute Engine) interact, how hardware acceleration is dynamically resolved, and how processes coordinate execution under the hood.
 
@@ -13,7 +13,7 @@ The entire system relies on a loopback network bridge. The Client process behave
 ```
 ┌────────────────────────┐                   ┌────────────────────────┐
 │     CLIENT CONTAINER   │                   │    ORCHESTRATOR ENGINE │
-│  (Apps/cli - Ratatui)  │                   │ (cluaiz-engine - Axum) │
+│  (Apps/cli - Ratatui)  │                   │ (cluaize-engine - Axum) │
 └───────────┬────────────┘                   └───────────▲────────────┘
             │                                            │
             │ 1. POST /chat JSON Payload                 │ 4. Dynamically Swaps Models
@@ -30,12 +30,12 @@ The entire system relies on a loopback network bridge. The Client process behave
 
 ---
 
-## 💻 1. The Client System: `cluaiz-cli` (Edge Interface)
+## 💻 1. The Client System: `cluaize-cli` (Edge Interface)
 
 The client is a pure terminal UI (TUI) running in the operator's shell. It is responsible only for rendering text, displaying telemetry charts, capturing keyboard input, and persisting local files.
 
 ### 👤 The User Perspective
-When a user launches `cluaiz`, they are greeted by an interactive dashboard that lists available models, displays active CPU/GPU temperatures, and opens a direct chat loop. The interface is optimized to remain completely active; even when a model is swamped with complex math, the cursor continues to blink, telemetry grids update, and scrolling is smooth.
+When a user launches `cluaize`, they are greeted by an interactive dashboard that lists available models, displays active CPU/GPU temperatures, and opens a direct chat loop. The interface is optimized to remain completely active; even when a model is swamped with complex math, the cursor continues to blink, telemetry grids update, and scrolling is smooth.
 
 ### ⚙️ The Developer Perspective
 The client is written in Rust, using `ratatui` for text-based graphics and `crossterm` for terminal event processing. To ensure fluid user experience, the CLI splits operation across two thread domains:
@@ -45,7 +45,7 @@ The client is written in Rust, using `ratatui` for text-based graphics and `cros
 
 ---
 
-## 🧠 2. The Backend System: `cluaiz-engine` (Orchestration Brain)
+## 🧠 2. The Backend System: `cluaize-engine` (Orchestration Brain)
 
 The engine runs as a background process, listening for local API commands. It operates as the gatekeeper for local hardware resources, swapping model weights in memory, managing inference pipelines, and communicating with hardware acceleration drivers.
 
@@ -75,7 +75,7 @@ The engine is compiled as a multithreaded Rust REST server built on the `axum` w
            ▼                             ▼
 ┌────────────────────┐         ┌────────────────────┐
 │  ACCELERATOR BRIDGE│         │ SIMD CPU KERNELS   │
-│  cluaiz-driver     │         │ cluaiz-kernel      │
+│  cluaize-driver     │         │ cluaize-kernel      │
 │  [CUDA / Metal]    │         │ [AVX512 / Neon]    │
 └────────────────────┘         └────────────────────┘
 ```
@@ -84,7 +84,7 @@ The engine is compiled as a multithreaded Rust REST server built on the `axum` w
 
 ## 🔌 3. Dynamic Silicon Dispatch & FFI Gates
 
-To achieve native speed without Python compilation dependencies, Cluaiz implements a dynamic dynamic-link library FFI mapping layer:
+To achieve native speed without Python compilation dependencies, Cluaize implements a dynamic dynamic-link library FFI mapping layer:
 
 ### Operating System & Instruction Set Probing
 At boot, the engine executes high-fidelity platform discovery commands:
@@ -98,7 +98,7 @@ At boot, the engine executes high-fidelity platform discovery commands:
     *   *Linux:* Scans `/usr/lib/libcuda.so` or `/usr/local/cuda/lib64/libcudart.so`.
     *   *macOS:* Links directly to Xcode's native `Metal.framework` APIs.
 
-If these system libraries are successfully mapped, the engine routes tensor operations directly through the FFI (Foreign Function Interface) gate to `cluaiz-driver`. If they fail or are absent, it routes execution safely to the SIMD-optimized `cluaiz-kernel`.
+If these system libraries are successfully mapped, the engine routes tensor operations directly through the FFI (Foreign Function Interface) gate to `cluaize-driver`. If they fail or are absent, it routes execution safely to the SIMD-optimized `cluaize-kernel`.
 
 ---
 
@@ -107,7 +107,7 @@ If these system libraries are successfully mapped, the engine routes tensor oper
 The client and server communicate strictly over local loopback sockets using standardized JSON API payloads.
 
 ### Streaming Pipeline (Server-Sent Events)
-To display responses as they are generated rather than waiting for the entire context to complete, Cluaiz employs **Server-Sent Events (SSE)**. 
+To display responses as they are generated rather than waiting for the entire context to complete, Cluaize employs **Server-Sent Events (SSE)**. 
 
 When the user requests generation, the server keeps the HTTP connection open, pushing discrete data packets chunk-by-chunk using standard `text/event-stream` headers. The CLI background thread reads the streaming loop and immediately updates the active chat block.
 
@@ -158,8 +158,8 @@ Sent by the CLI when the operator switches the model within the Roster UI:
 
 ## 🧪 5. Architecture Summary for Developers
 
-If you are developing or maintaining the Cluaiz ecosystem, keep these structural laws in mind:
+If you are developing or maintaining the Cluaize ecosystem, keep these structural laws in mind:
 
-1.  **Keep the FFI Boundaries Clean:** All dynamic library bindings (e.g., calling CUDA or Metal matrix functions) must execute safely within `unsafe` scopes in `cluaiz-driver`. Ensure error codes are caught and translated into Rust `Result` variants before reaching `cluaiz-engine`.
+1.  **Keep the FFI Boundaries Clean:** All dynamic library bindings (e.g., calling CUDA or Metal matrix functions) must execute safely within `unsafe` scopes in `cluaize-driver`. Ensure error codes are caught and translated into Rust `Result` variants before reaching `cluaize-engine`.
 2.  **No Core Logic inside the TUI:** The `Apps/cli` directory must contain absolutely zero inference code, weight math, or network loading logic. It is a shell interface. If you need to fetch hardware telemetry, query the `/hardware` Axum endpoint; do not compile local hardware sensors inside the TUI app.
 3.  **Strict State Synchronization:** When swapping models via `/models/load`, ensure the active weight buffers are completely dropped and garbage-collected before mounting new tensors to prevent memory spikes and OOM faults.

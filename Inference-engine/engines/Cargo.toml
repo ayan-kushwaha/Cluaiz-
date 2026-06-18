@@ -5,7 +5,7 @@ edition.workspace = true
 authors.workspace = true
 
 [lib]
-crate-type = ["rlib"]
+crate-type = ["rlib", "cdylib"]
 
 
 
@@ -35,18 +35,18 @@ serde_json = "1"
 # ── Logging ──
 tracing = "0.1.44"
 
-# ── CURE Unified Core ──
+# ──  Unified Core ──
 uuid = { version = "1", features = ["v4"] }
 
 # ── Shared Workspace Member Links ──
-cluaiz-shared = { path = "cluaiz-shared" }
+cluaize-shared = { path = "cluaize-shared" }
 # Engines (Llama, Candle, BitNet) are now loaded dynamically via libloading from interface-engines
 system-booster = { path = "system-booster", optional = true }
 neural_core = { package = "neural-core", path = "../../interface-engines/neural_core" }
 
 # ── Dynamic Neural Bridge (The Soul Linker) ──
 libloading = "0.8"
-cluaiz_onnx = { package = "onnx", path = "../../interface-engines/onnx" }
+cluaize_onnx = { package = "onnx", path = "../../interface-engines/onnx" }
 engine-lmdb = { path = "../../../cluaizd/crates/storage/engine-lmdb" }
 cluaizd-types = { path = "../../../cluaizd/components/cluaizd-types" }
 
@@ -68,6 +68,7 @@ colored = "3.1"
 pdf-extract = "0.7"
 serde_yaml = "0.9.34"
 lazy_static = "1.5.0"
+bincode = "1.3.3"
 
 
 [build-dependencies]

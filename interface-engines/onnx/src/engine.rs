@@ -14,7 +14,7 @@ impl OnnxEngine {
     pub fn new() -> Result<Self> {
         // Initialize ONNX Runtime environment implicitly.
         ort::init()
-            .with_name("cluaiz_onnx_env")
+            .with_name("cluaize_onnx_env")
             .commit();
 
         tracing::info!("🧿 [ONNX] Runtime initialized. Ready to load models via API.");
@@ -30,7 +30,7 @@ impl OnnxEngine {
         tracing::info!("📦 [ONNX] Loading model from: {}", model_path);
         
         // 📡 DYNAMIC HARDWARE TELEMETRY WIRING
-        let pulse_state = cluaiz_shared::hardware::system_performance::get_pulse();
+        let pulse_state = cluaize_shared::hardware::system_performance::get_pulse();
         let mut use_gpu = false;
         
         if let Ok(state) = pulse_state.pulse.read() {
@@ -70,7 +70,7 @@ impl OnnxEngine {
         tracing::info!("👁️ [ONNX] Loading Vision Model from: {}", model_path);
         
         // 📡 DYNAMIC HARDWARE TELEMETRY WIRING (Same as text)
-        let pulse_state = cluaiz_shared::hardware::system_performance::get_pulse();
+        let pulse_state = cluaize_shared::hardware::system_performance::get_pulse();
         let mut use_gpu = false;
         
         if let Ok(state) = pulse_state.pulse.read() {

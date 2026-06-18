@@ -1,4 +1,4 @@
-// cluaiz-engine: Core Foundry - The Cluaiz Engine Core
+// cluaize-engine: Core Foundry - The Cluaize Engine Core
 // Final integration of Registry, Intelligence, Runtime, and Security.
 
 pub mod registry;
@@ -13,7 +13,7 @@ use runtime::wasm_host::WasmHost;
 use runtime::mcp_gateway::McpGateway;
 use security::guard::{PermissionGuard, PermissionLevel};
 use tracing::{info, warn};
-use cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal;
+use cluaize_shared::hardware::memory::kv_cache::stitching::CluaizeSignal;
 use neural_core::interfaces::memory_contract::MappedBuffer;
 use std::sync::{Mutex, Arc};
 use std::path::PathBuf;
@@ -23,7 +23,7 @@ use std::path::PathBuf;
 
 pub struct IntentResult {
     pub responses: Vec<String>,
-    pub signals: Vec<CluaizSignal>,
+    pub signals: Vec<CluaizeSignal>,
     pub missing_caches: Vec<(PathBuf, String)>, // (kv_cache_path, skill_content)
 }
 
@@ -56,11 +56,11 @@ impl CoreFoundry {
 
     /// Initializes the foundry by scanning the skills directory.
     pub fn initialize(&mut self, skills_dir: &str) {
-        println!("[CLUAIZ] Initializing Core Foundry from: {}", skills_dir);
+        println!("[Cluaize] Initializing Core Foundry from: {}", skills_dir);
         self.registry.load_from_directory(skills_dir);
     }
 
-    /// The Cluaiz Flow: Prompt -> Multi-Route -> Execute
+    /// The Cluaize Flow: Prompt -> Multi-Route -> Execute
     pub async fn process_intent(&self, prompt: &str, pre_matched_skills: Option<Vec<String>>) -> anyhow::Result<IntentResult> {
         let skill_ids = pre_matched_skills.unwrap_or_else(|| self.router.match_intent(prompt, &self.registry));
         let mut result = IntentResult { responses: Vec::new(), signals: Vec::new(), missing_caches: Vec::new() };
@@ -69,7 +69,7 @@ impl CoreFoundry {
             return Ok(result);
         }
 
-        info!("🧬 [CoreFoundry] Multi-Skill Fusion Active: {} skills detected.", skill_ids.len());
+        info!("ðŸ§¬ [CoreFoundry] Multi-Skill Fusion Active: {} skills detected.", skill_ids.len());
 
         for (i, skill_id) in skill_ids.iter().enumerate() {
             // Note: Bounding is no longer hardcoded by active skills count limit, 
@@ -84,7 +84,7 @@ impl CoreFoundry {
             // 2. Dynamic Memory Management (RAM/VRAM Bounding)
             {
                 // Fetch real-time hardware telemetry to ensure we don't cause OOM.
-                let pulse = cluaiz_shared::hardware::telemetry::get_pulse();
+                let pulse = cluaize_shared::hardware::telemetry::get_pulse();
                 let pulse_lock = pulse.pulse.read().unwrap();
                 let used_mb = pulse_lock.ram.used_gb * 1024.0;
                 let util = pulse_lock.ram.utilization_pct as f64;
@@ -103,7 +103,7 @@ impl CoreFoundry {
                 while (active_ids.len() as f32 + 1.0) * skill_est_size_mb >= available_ram_mb as f32 * 0.8 {
                     if !active_ids.is_empty() {
                         let evicted_id = active_ids.remove(0);
-                        println!("[CLUAIZ] [VRAM] Bounding limit hit. Evicting LRU skill: {}", evicted_id);
+                        println!("[Cluaize] [VRAM] Bounding limit hit. Evicting LRU skill: {}", evicted_id);
                     } else {
                         break;
                     }
@@ -113,7 +113,7 @@ impl CoreFoundry {
                 active_ids.push(skill_id.to_string());
             }
 
-            // 3. Map Cluaiz Signal (Zero-Copy Dual-Cache)
+            // 3. Map Cluaize Signal (Zero-Copy Dual-Cache)
             let permissions = crate::neural_foundry::security::permission_schema::PermissionSchema::load();
             
             if let Some(gen_model) = permissions.get_active_chat_model() {
@@ -130,7 +130,7 @@ impl CoreFoundry {
                         if let Some(local_path) = &manifest.local_path {
                             let dna_path = std::path::Path::new(local_path).join("structural_dna.json");
                             if let Ok(dna_content) = std::fs::read_to_string(&dna_path) {
-                                if let Ok(dna) = serde_json::from_str::<cluaiz_shared::StructuralDNA>(&dna_content) {
+                                if let Ok(dna) = serde_json::from_str::<cluaize_shared::StructuralDNA>(&dna_content) {
                                     layers = dna.layer_count;
                                     kv_heads = dna.attention_head_count_kv.or(dna.attention_head_count);
                                 }
@@ -148,7 +148,7 @@ impl CoreFoundry {
                             let token_count = skill.manifest.Core_metadata.as_ref().map_or(0, |m| m.token_count);
                             let expected = token_count * l * h * head_dim * 2 * 2;
                             if actual_size != expected {
-                                warn!("⚠️ [CoreFoundry] Cache size mismatch for {}: expected {} bytes, got {}. Evicting.", skill_id, expected, actual_size);
+                                warn!("âš ï¸ [CoreFoundry] Cache size mismatch for {}: expected {} bytes, got {}. Evicting.", skill_id, expected, actual_size);
                                 is_valid = false;
                             }
                         }
@@ -164,14 +164,14 @@ impl CoreFoundry {
                 
                 if cache_exists {
                     if let Ok(mapped_buffer) = MappedBuffer::from_file(&kv_cache_path) {
-                        result.signals.push(CluaizSignal {
+                        result.signals.push(CluaizeSignal {
                             raw_data: Arc::new(mapped_buffer),
                             token_count: skill.manifest.Core_metadata.as_ref().map_or(0, |m| m.token_count),
                             head_dim: skill.manifest.Core_metadata.as_ref().map_or(0, |m| m.head_dim),
                         });
                     }
                 } else {
-                    warn!("⚠️ [CoreFoundry] {} missing for skill {}. Flagging for Sovereign Compiler.", kv_cache_path.display(), skill_id);
+                    warn!("âš ï¸ [CoreFoundry] {} missing for skill {}. Flagging for Sovereign Compiler.", kv_cache_path.display(), skill_id);
                     
                     let content = extract_skill_body(&skill.path)
                         .unwrap_or_else(|| skill.manifest.description.clone());
@@ -179,7 +179,7 @@ impl CoreFoundry {
                     result.missing_caches.push((kv_cache_path, content));
                 }
             } else {
-                warn!("⚠️ [CoreFoundry] No text model assigned in Permission.json. Skipping Zero-Copy injection for skill {}.", skill_id);
+                warn!("âš ï¸ [CoreFoundry] No text model assigned in Permission.json. Skipping Zero-Copy injection for skill {}.", skill_id);
             }
             
             // WASM logic execution is handled during streaming/generation interceptor.
@@ -191,7 +191,7 @@ impl CoreFoundry {
 }
 
 fn extract_skill_body(skill_dir: &std::path::Path) -> Option<String> {
-    // 🧠 1. ZERO-LATENCY FFI BRAIN INJECTION
+    // ðŸ§  1. ZERO-LATENCY FFI BRAIN INJECTION
     // If the brain is enabled, it completely bypasses disk reads.
     if let Some(skill_name) = skill_dir.file_name().map(|s| s.to_string_lossy().to_string()) {
         if let Some(raw_bytes) = crate::memory::tensor_transducer::TensorTransducer::inject_context(&skill_name) {
@@ -201,7 +201,7 @@ fn extract_skill_body(skill_dir: &std::path::Path) -> Option<String> {
         }
     }
 
-    // 🐢 2. LEGACY DISK READ FALLBACK
+    // ðŸ¢ 2. LEGACY DISK READ FALLBACK
     let skill_md_path = skill_dir.join("SKILL.md");
     if skill_md_path.exists() {
         if let Ok(content) = std::fs::read_to_string(&skill_md_path) {

@@ -1,9 +1,9 @@
 use std::path::Path;
 use anyhow::{Result, anyhow};
 use crate::runtime::execution::hub::HardwareOrchestrator as CoreHub;
-use cluaiz_shared::{ModelWeightsWrapper, CluaizContext, StructuralDNA, TemplateManager};
-use cluaiz_shared::utils::GGUFProber;
-use cluaiz_shared::hardware::schema::booster::FeatureState;
+use cluaize_shared::{ModelWeightsWrapper, CluaizeContext, StructuralDNA, TemplateManager};
+use cluaize_shared::utils::GGUFProber;
+use cluaize_shared::hardware::schema::booster::FeatureState;
 
 /// GGUFLoader: Lightweight orchestrator for quantized Core models.
 pub struct GGUFLoader;
@@ -17,7 +17,7 @@ impl GGUFLoader {
         let arch = metadata.get("general.architecture")
             .ok_or_else(|| anyhow!("Registry Alert: Architecture metadata missing in GGUF file."))?;
         
-        // [Cluaiz CLEAN]: Replaced tracing::info with println for editor stability
+        // [Cluaize CLEAN]: Replaced tracing::info with println for editor stability
         println!("🔍 Autonomous Discovery: Probed architecture '{}' via Native Prober", arch);
 
         // 2. Extract Special Tokens (Resilient Handshake)
@@ -29,13 +29,13 @@ impl GGUFLoader {
         let dna_path = model_dir.join("structural_dna.json");
         let mut architectural_dna = if dna_path.exists() {
              StructuralDNA::load(&dna_path)
-                .map_err(|load_err| anyhow!("Cluaiz Boot Failure: DNA corrupt. Detail: {}", load_err))?
+                .map_err(|load_err| anyhow!("Cluaize Boot Failure: DNA corrupt. Detail: {}", load_err))?
         } else {
              StructuralDNA::default()
         };
 
         // 🧠 Stage 1/2/3: Arbiter Routing Logic (Speculative Decoding)
-        let booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+        let booster = cluaize_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
         if booster.speculative_decoding != FeatureState::Off {
             let has_native_mtp = GGUFProber::check_native_mtp(&tensor_infos);
             if has_native_mtp {
@@ -49,7 +49,7 @@ impl GGUFLoader {
                     println!("⚡ [Arbiter] VRAM Choked. Engaging Draftless Lookahead Decoding.");
                     architectural_dna.dynamic_attributes.insert("speculative_mode".to_string(), "lookahead".to_string());
                 } else {
-                    println!("🦅 [Arbiter] VRAM Space Available. Engaging Cluaiz Eagle Decoding (2.5x Boost).");
+                    println!("🦅 [Arbiter] VRAM Space Available. Engaging Cluaize Eagle Decoding (2.5x Boost).");
                     architectural_dna.dynamic_attributes.insert("speculative_mode".to_string(), "eagle".to_string());
                 }
             }
@@ -59,14 +59,14 @@ impl GGUFLoader {
 
         // Tokenizer setup removed since GGUF natively extracts it.
 
-        // 🧬 Cluaiz ACTIVATION: Dynamic Context Bootstrapping
-        let Cluaiz_context = CluaizContext::boot(
+        // 🧬 Cluaize ACTIVATION: Dynamic Context Bootstrapping
+        let Cluaize_context = CluaizeContext::boot(
             architectural_dna,
             TemplateManager::default()
         );
  
         // 4. Delegate Instantiation to the Core Hub (Universal DNA Dispatch)
-        let model = CoreHub::instantiate(path.to_string_lossy().as_ref(), "gguf", Cluaiz_context).await?;
+        let model = CoreHub::instantiate(path.to_string_lossy().as_ref(), "gguf", Cluaize_context).await?;
   
         Ok((model, bos_token_id))
     }

@@ -26,7 +26,7 @@ fn generate_repo(name: &str) -> String {
     let lower_name = name.to_lowercase();
     if lower_name.contains("bonsai") || lower_name.contains("cluaize") {
         let first = name.split_whitespace().next().unwrap().replace("(", "").replace(")", "");
-        format!("cluaiz/{}", first.to_lowercase())
+        format!("cluaize/{}", first.to_lowercase())
     } else if lower_name.contains("qwen") {
         format!("Qwen/{}-GGUF", name.split_whitespace().next().unwrap())
     } else if lower_name.contains("llama") {
@@ -60,7 +60,7 @@ fn generate_detailed_description(name: &str, params: &str, strength: &str, arch:
 }
 
 fn main() {
-    let txt_path = Path::new(r"c:\Users\Aryan\my\Cluaiz-workspace\bitnetmocle.txt");
+    let txt_path = Path::new(r"c:\Users\Aryan\my\Cluaize-workspace\bitnetmocle.txt");
     let content = fs::read_to_string(txt_path).expect("Failed to read bitnetmocle.txt");
 
     let mut models = Vec::new();
@@ -119,7 +119,7 @@ fn main() {
     let out = RosterFile { models };
     let json_str = serde_json::to_string_pretty(&out).unwrap();
 
-    let out_path = Path::new(r"c:\Users\Aryan\my\Cluaiz-workspace\Cluaiz-OS\Cluaiz-ai-CURE\engines\src\default_roster.json");
+    let out_path = Path::new(r"c:\Users\Aryan\my\Cluaize-workspace\Cluaize-OS\Cluaize-ai-\engines\src\default_roster.json");
     fs::write(out_path, json_str).expect("Failed to write fast json");
     
     println!("✅ Perfectly generated default_roster.json using 100% Rust!");

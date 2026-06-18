@@ -1,6 +1,6 @@
 use anyhow::Result;
 use engines::runtime::execution::hub::HardwareOrchestrator;
-use cluaiz_shared::{StructuralDNA, CluaizContext, TemplateManager};
+use cluaize_shared::{StructuralDNA, CluaizeContext, TemplateManager};
 use std::path::PathBuf;
 
 #[tokio::main]
@@ -8,7 +8,7 @@ async fn main() -> Result<()> {
     println!("🧪 [Test] Starting Dynamic Pipeline Diagnostic...");
 
     let home_dir = dirs::home_dir().expect("Could not resolve Home Directory");
-    let model_path = home_dir.join(".cluaiz").join("models").join("chat").join("bonsai1-8b").join("Bonsai-8B.gguf");
+    let model_path = home_dir.join(".cluaize").join("models").join("chat").join("bonsai1-8b").join("Bonsai-8B.gguf");
     
     if !model_path.exists() {
         println!("❌ Model not found at: {:?}", model_path);
@@ -19,7 +19,7 @@ async fn main() -> Result<()> {
     engines::neural_foundry::security::permission_schema::PermissionSchema::set_active_chat_model("bonsai1:8b".to_string());
 
     let dna = StructuralDNA::default();
-    let context = CluaizContext::boot(dna, TemplateManager::default());
+    let context = CluaizeContext::boot(dna, TemplateManager::default());
 
     println!("⚙️ [Test] Instantiating Chat Engine...");
     let mut engine = HardwareOrchestrator::instantiate(
@@ -30,7 +30,7 @@ async fn main() -> Result<()> {
 
     // Load active router
     let mut router = engines::api::router::CoreRouter::new();
-    router.active_backend = engines::api::router::Backend::Cluaiz(engine);
+    router.active_backend = engines::api::router::Backend::Cluaize(engine);
 
     let prompt = "Make a sad piano instrumental track with slow tempo and emotional vibe";
     println!("🚀 [Test] Triggering stream with prompt: '{}'", prompt);
@@ -49,7 +49,7 @@ async fn main() -> Result<()> {
         println!("\n✅ [Test] Generation successful!");
         
         // Let's verify that the kvcache.bin was created for the matched skill
-        let cache_file = home_dir.join(".cluaiz").join("skills").join("minimax-music-gen").join(".cache").join("bonsai1-8b.kvcache.bin");
+        let cache_file = home_dir.join(".cluaize").join("skills").join("minimax-music-gen").join(".cache").join("bonsai1-8b.kvcache.bin");
         if cache_file.exists() {
             println!("✅ [Test] VERIFIED: kvcache.bin was compiled successfully for minimax-music-gen!");
             println!("📁 Cache file location: {:?}", cache_file);

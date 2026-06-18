@@ -1,5 +1,5 @@
 """
-    CLUAIZ DATA FACTORY v1.0
+    CLUAIZE DATA FACTORY v1.0
     Role: Synthetic Scenario Generator for Atma (278M)
     Uses: Gemini 1.5 Pro via Google AI SDK
 """
@@ -15,7 +15,7 @@ PILLARS = ["Workforce", "Cognition", "Essence"]
 INTENTS = ["Search", "Summarize", "Execute", "Route", "Analyze"]
 
 SYSTEM_PROMPT = """
-You are the Lead Data Architect for the Cluaiz Neural OS.
+You are the Lead Data Architect for the Cluaize Neural OS.
 Your task is to generate one "Instruction-Response" training pair for the Atma Supervisor (278M).
 
 Atma's primary job is INTENT ROUTING and CONTEXT COMPRESSION. 

@@ -1,4 +1,4 @@
-// cluaiz-engine: Core Foundry - Context Manager
+// cluaize-engine: Core Foundry - Context Manager
 // Manages the state of Core injections (KV-Stitching).
 
 pub struct ContextManager {}

@@ -1,11 +1,11 @@
-# 🏛️ CLUAIZ-OS: THE SOVEREIGN SYSTEM DESIGN
+# 🏛️ CLUAIZE-OS: THE SOVEREIGN SYSTEM DESIGN
 
-This document serves as the **Single Source of Truth** for the Cluaiz Neural Ecosystem. It defines the architectural DNA, industrial standards, and universal deployment laws that govern every line of code in this repository.
+This document serves as the **Single Source of Truth** for the Cluaize Neural Ecosystem. It defines the architectural DNA, industrial standards, and universal deployment laws that govern every line of code in this repository.
 
 ---
 
 ## 🛰️ 1. THE VISION: UNIVERSAL NEURAL SOVEREIGNTY
-Cluaiz-OS is designed to be a **Universal Neural Kernel**. Our mission is to provide high-performance, native inference for any model, on any silicon, under any operating system, eliminating hardware boundaries.
+Cluaize-OS is designed to be a **Universal Neural Kernel**. Our mission is to provide high-performance, native inference for any model, on any silicon, under any operating system, eliminating hardware boundaries.
 
 ### 🚀 Core Directives:
 - **Silicon Mastery**: Extract peak performance from CPU, GPU, NPU, and TPU natively.
@@ -20,15 +20,15 @@ The ecosystem is divided into four sovereign, decoupled layers. Any change to on
 
 | Layer | Component | Responsibility |
 | :--- | :--- | :--- |
-| **Edge** | `cluaiz-cli` | User interface, model management, and system orchestration. |
-| **Brain** | `cluaiz-engine` | The core orchestrator. Manages memory, context, and driver dispatch. |
-| **Kernel** | `cluaiz-kernel` | Base CPU/SIMD interpreters (AVX512, AVX2, NEON) compiled for 9 operating system targets. |
-| **Bridge** | `cluaiz-driver` | Specialized hardware/GPU drivers (CUDA, Metal, Vulkan, OpenVINO, ROCm, HIP). |
+| **Edge** | `cluaize-cli` | User interface, model management, and system orchestration. |
+| **Brain** | `cluaize-engine` | The core orchestrator. Manages memory, context, and driver dispatch. |
+| **Kernel** | `cluaize-kernel` | Base CPU/SIMD interpreters (AVX512, AVX2, NEON) compiled for 9 operating system targets. |
+| **Bridge** | `cluaize-driver` | Specialized hardware/GPU drivers (CUDA, Metal, Vulkan, OpenVINO, ROCm, HIP). |
 
 ---
 
 ## 🛰️ 3. THE UNIVERSAL MATRIX LAW
-Cluaiz-OS MUST run everywhere. The baseline CPU kernels and drivers support:
+Cluaize-OS MUST run everywhere. The baseline CPU kernels and drivers support:
 
 - **Windows**: x64 (Desktop/Surface/Server).
 - **Linux**: x86_64 (Server), aarch64 (Cloud/Edge), armv7 (IoT).
@@ -42,12 +42,12 @@ Cluaiz-OS MUST run everywhere. The baseline CPU kernels and drivers support:
 To ensure zero-latency binary mapping, all artifacts MUST follow the **Sovereign Naming Convention**:
 
 ### 📦 Baseline CPU Kernels:
-`cluaiz-kernel-<version>-<platform>.<ext>`
+`cluaize-kernel-<version>-<platform>.<ext>`
 - **Platform**: Matches the 9 core OS targets (e.g., `win-x64-avx512`, `linux-x64-avx2`, `linux-arm64`, `mac-arm64`, etc.).
 - **Releases**: Pushed to `kernel-v*` release tags.
 
 ### 🔌 Specialized Accelerator Drivers:
-`cluaiz-driver-<version>-<platform>-<backend>.<ext>`
+`cluaize-driver-<version>-<platform>-<backend>.<ext>`
 - **Backend**: Specialized silicon modules (e.g., `cuda-v13`, `cuda-v12`, `cuda-v11`, `metal`, `vulkan`, `openvino`, `rocm`, `hip`).
 - **Releases**: Pushed to `driver-v*` release tags and indexed in `registry.json`.
 
@@ -73,4 +73,4 @@ The GitHub Actions pipelines are divided into two distinct, isolated factories:
 2. **Standard over Ad-hoc**: Every fix must be architectural, not a "Kach-Khas" (quick-fix).
 3. **Total Coverage**: A build is only successful if ALL platforms in the matrix pass.
 
-**This is the Cluaiz Standard. Professional. Optimized. Sovereign.**
+**This is the Cluaize Standard. Professional. Optimized. Sovereign.**

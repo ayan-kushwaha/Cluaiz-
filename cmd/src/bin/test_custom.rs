@@ -34,7 +34,7 @@ async fn run_model_test_suite(model_id: &str, model_folder: &str, model_filename
 
     let home_dir = dirs::home_dir().expect("Could not resolve Home Directory");
     let model_path = home_dir
-        .join(".cluaiz").join("models").join("chat")
+        .join(".cluaize").join("models").join("chat")
         .join(model_folder).join(model_filename);
 
     if !model_path.exists() {
@@ -44,7 +44,7 @@ async fn run_model_test_suite(model_id: &str, model_folder: &str, model_filename
 
     engines::neural_foundry::security::permission_schema::PermissionSchema::set_active_chat_model(model_id.to_string());
 
-    let skills_dir = home_dir.join(".cluaiz").join("skills");
+    let skills_dir = home_dir.join(".cluaize").join("skills");
     let model_safe = model_id.replace(":", "-");
 
     // Clean caches for a reproducible run
@@ -61,7 +61,7 @@ async fn run_model_test_suite(model_id: &str, model_folder: &str, model_filename
     println!("\n=== TEST 1: Auto-Healing vector generation ===");
     let mut router = engines::api::router::CoreRouter::load_model(
         model_path.clone(),
-        cluaiz_shared::BackendType::RuntimeB,
+        cluaize_shared::BackendType::RuntimeB,
     ).await.map_err(|e| anyhow::anyhow!("{}", e))?;
 
     let small_skill_emb = skills_dir.join("test-small-skill").join(".cache")
@@ -443,7 +443,7 @@ async fn run_model_test_suite(model_id: &str, model_folder: &str, model_filename
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    println!("🧪 [Test] Starting Cluaiz Architectural Diagnostic Suite v2...");
+    println!("🧪 [Test] Starting Cluaize Architectural Diagnostic Suite v2...");
 
     let args: Vec<String> = std::env::args().collect();
     if args.len() > 1 {

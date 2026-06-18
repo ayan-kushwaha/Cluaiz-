@@ -1,7 +1,7 @@
 use color_eyre::Result;
 use colored::Colorize;
-use cluaiz_shared::hardware::governor::HardwareGovernor;
-use cluaiz_shared::hardware::schema::booster::{
+use cluaize_shared::hardware::governor::HardwareGovernor;
+use cluaize_shared::hardware::schema::booster::{
     BoosterMode, KvCacheQuantization, ContextShiftingMode, FeatureState
 };
 
@@ -77,128 +77,122 @@ pub async fn execute(
             modified = true;
         }
     } else {
-        // Interactive configuration using inquire
-        println!("\n  {} {}", "🚀".cyan(), "Cluaiz Booster - Interactive Performance Setup".bold());
-        println!("  Configure core neural performance profiles and hardware budgets.\n");
-
-        // 1. Mode selection
-        let modes = vec![
-            "balance (Recommended - Standard performance)",
-            "multitasking (Laptop mode - respects system apps & RAM)",
-            "edge (Mobile/NPU/Pi - extreme hardware constraints)",
-            "max_boost (Workstation mode - maximizes GPU utilization)",
-            "ultra_max_boost (Aggressively reclaims VRAM for models)",
-            "hyper_cluster (Multi-GPU/Server node deployment)",
-        ];
+        // Loop-based Interactive configuration
+        println!("\n  {} {}", "🚀".cyan(), "Cluaize Booster - Interactive Performance Setup".bold());
         
-        let default_mode_idx = match control.mode_run {
-            BoosterMode::Balance => 0,
-            BoosterMode::Multitasking => 1,
-            BoosterMode::Edge => 2,
-            BoosterMode::MaxBoost => 3,
-            BoosterMode::UltraMaxBoost => 4,
-            BoosterMode::HyperCluster => 5,
-        };
+        loop {
+            println!("\n  {} {}", "📊".cyan(), "Current Booster Settings:".bold());
+            println!("    ├─ Mode:             {:?}", control.mode_run);
+            println!("    ├─ KV Cache Quant:   {:?}", control.kv_cache_quantization);
+            println!("    ├─ Context Shifting: {:?}", control.context_shifting);
+            println!("    ├─ Spec. Decoding:   {:?}", control.speculative_decoding);
+            println!("    ├─ Turbo Quant:      {:?}", control.turbo_quant);
+            println!("    ├─ Flash Attention:  {:?}", control.flash_attention);
+            println!("    ├─ Auto Round:       {:?}", control.auto_round);
+            println!("    ├─ VRAM Reclaim:     {:?}", control.force_vram_reclaim);
+            println!("    ├─ Memory Lock:      {:?}", control.force_memory_lock);
+            println!("    ├─ MoE Routing:      {:?}", control.moe_vram_routing);
+            println!("    ├─ Think Mode:       {:?}", control.think_mode);
+            println!("    └─ N GPU Layers:     {}", control.n_gpu_layers);
 
-        let selected_mode_str = inquire::Select::new("Select execution performance mode:", modes)
-            .with_starting_cursor(default_mode_idx)
-            .prompt()?;
+            let options = vec![
+                "Mode (Execution Profile)",
+                "KV Cache Quantization",
+                "Context Shifting",
+                "Speculative Decoding",
+                "Turbo Quantization",
+                "Flash Attention",
+                "Auto Round",
+                "Force VRAM Reclaim",
+                "Force Memory Lock",
+                "MoE VRAM Routing",
+                "Think Mode",
+                "N GPU Layers",
+                "💾 Save & Exit",
+                "❌ Cancel"
+            ];
 
-        control.mode_run = match selected_mode_str.split(' ').next().unwrap() {
-            "balance" => BoosterMode::Balance,
-            "multitasking" => BoosterMode::Multitasking,
-            "edge" => BoosterMode::Edge,
-            "max_boost" => BoosterMode::MaxBoost,
-            "ultra_max_boost" => BoosterMode::UltraMaxBoost,
-            "hyper_cluster" => BoosterMode::HyperCluster,
-            _ => BoosterMode::Balance,
-        };
+            let choice = inquire::Select::new("\nSelect setting to modify:", options).prompt()?;
 
-        // 2. KV Quantization selection
-        let kv_options = vec![
-            "Auto (Recommended - Let system choose based on VRAM)",
-            "Kv16 (High Quality - Raw Float16 precision)",
-            "Kv8 (Optimized - 8-bit cache quantization, 50% size)",
-            "Kv4 (Extreme - 4-bit cache quantization, 75% size)",
-        ];
-
-        let default_kv_idx = match control.kv_cache_quantization {
-            KvCacheQuantization::Auto => 0,
-            KvCacheQuantization::Kv16 => 1,
-            KvCacheQuantization::Kv8 => 2,
-            KvCacheQuantization::Kv4 => 3,
-        };
-
-        let selected_kv_str = inquire::Select::new("Select KV-Cache Quantization level:", kv_options)
-            .with_starting_cursor(default_kv_idx)
-            .prompt()?;
-
-        control.kv_cache_quantization = match selected_kv_str.split(' ').next().unwrap() {
-            "Auto" => KvCacheQuantization::Auto,
-            "Kv16" => KvCacheQuantization::Kv16,
-            "Kv8" => KvCacheQuantization::Kv8,
-            "Kv4" => KvCacheQuantization::Kv4,
-            _ => KvCacheQuantization::Auto,
-        };
-
-        // 3. Context Shifting selection
-        let cs_options = vec![
-            "Auto (Recommended - Standard shift buffer)",
-            "Off (Disable sliding window, error on overflow)",
-            "Minimal (Prune oldest 5% of tokens when cache is full)",
-            "Standard (Prune oldest 10% of tokens when cache is full)",
-            "Aggressive (Prune oldest 25% of tokens when cache is full)",
-            "Extreme (Prune oldest 50% of tokens when cache is full)",
-        ];
-
-        let default_cs_idx = match control.context_shifting {
-            ContextShiftingMode::Auto => 0,
-            ContextShiftingMode::Off => 1,
-            ContextShiftingMode::Minimal => 2,
-            ContextShiftingMode::Standard => 3,
-            ContextShiftingMode::Aggressive => 4,
-            ContextShiftingMode::Extreme => 5,
-        };
-
-        let selected_cs_str = inquire::Select::new("Select Context Shifting (Sliding Window):", cs_options)
-            .with_starting_cursor(default_cs_idx)
-            .prompt()?;
-
-        control.context_shifting = match selected_cs_str.split(' ').next().unwrap() {
-            "Auto" => ContextShiftingMode::Auto,
-            "Off" => ContextShiftingMode::Off,
-            "Minimal" => ContextShiftingMode::Minimal,
-            "Standard" => ContextShiftingMode::Standard,
-            "Aggressive" => ContextShiftingMode::Aggressive,
-            "Extreme" => ContextShiftingMode::Extreme,
-            _ => ContextShiftingMode::Auto,
-        };
-
-        // 4. Speculative Decoding selection
-        let sd_options = vec![
-            "Auto (Hardware-aware dynamic routing - Recommended)",
-            "On (Force Hybrid Speculative Execution)",
-            "Off (Disable completely, pure single-token)",
-        ];
-
-        let default_sd_idx = match control.speculative_decoding {
-            FeatureState::Auto => 0,
-            FeatureState::On => 1,
-            FeatureState::Off => 2,
-        };
-
-        let selected_sd_str = inquire::Select::new("Select Speculative Decoding (MTP/Eagle/Lookahead):", sd_options)
-            .with_starting_cursor(default_sd_idx)
-            .prompt()?;
-
-        control.speculative_decoding = match selected_sd_str.split(' ').next().unwrap() {
-            "Auto" => FeatureState::Auto,
-            "On" => FeatureState::On,
-            "Off" => FeatureState::Off,
-            _ => FeatureState::Auto,
-        };
-
-        modified = true;
+            match choice {
+                "Mode (Execution Profile)" => {
+                    let modes = vec!["balance", "multitasking", "edge", "max_boost", "ultra_max_boost", "hyper_cluster"];
+                    if let Ok(m) = inquire::Select::new("Mode:", modes).prompt() {
+                        control.mode_run = match m {
+                            "edge" => BoosterMode::Edge,
+                            "multitasking" => BoosterMode::Multitasking,
+                            "balance" => BoosterMode::Balance,
+                            "max_boost" => BoosterMode::MaxBoost,
+                            "ultra_max_boost" => BoosterMode::UltraMaxBoost,
+                            "hyper_cluster" => BoosterMode::HyperCluster,
+                            _ => control.mode_run,
+                        };
+                        modified = true;
+                    }
+                }
+                "KV Cache Quantization" => {
+                    let kv_opts = vec!["Auto", "Kv16", "Kv8", "Kv4"];
+                    if let Ok(kv) = inquire::Select::new("KV Quantization:", kv_opts).prompt() {
+                        control.kv_cache_quantization = match kv {
+                            "Auto" => KvCacheQuantization::Auto,
+                            "Kv16" => KvCacheQuantization::Kv16,
+                            "Kv8" => KvCacheQuantization::Kv8,
+                            "Kv4" => KvCacheQuantization::Kv4,
+                            _ => control.kv_cache_quantization,
+                        };
+                        modified = true;
+                    }
+                }
+                "Context Shifting" => {
+                    let cs_opts = vec!["Auto", "Off", "Minimal", "Standard", "Aggressive", "Extreme"];
+                    if let Ok(cs) = inquire::Select::new("Context Shifting:", cs_opts).prompt() {
+                        control.context_shifting = match cs {
+                            "Auto" => ContextShiftingMode::Auto,
+                            "Off" => ContextShiftingMode::Off,
+                            "Minimal" => ContextShiftingMode::Minimal,
+                            "Standard" => ContextShiftingMode::Standard,
+                            "Aggressive" => ContextShiftingMode::Aggressive,
+                            "Extreme" => ContextShiftingMode::Extreme,
+                            _ => control.context_shifting,
+                        };
+                        modified = true;
+                    }
+                }
+                "N GPU Layers" => {
+                    if let Ok(val) = inquire::Text::new("Enter N GPU Layers (-1 for all):").prompt() {
+                        if let Ok(num) = val.parse::<i32>() {
+                            control.n_gpu_layers = num;
+                            modified = true;
+                        }
+                    }
+                }
+                "💾 Save & Exit" => break,
+                "❌ Cancel" => return Ok(()),
+                other => {
+                    // All FeatureState toggles
+                    let fs_opts = vec!["Auto", "On", "Off"];
+                    if let Ok(fs) = inquire::Select::new(&format!("Set {}:", other), fs_opts).prompt() {
+                        let state = match fs {
+                            "On" => FeatureState::On,
+                            "Off" => FeatureState::Off,
+                            _ => FeatureState::Auto,
+                        };
+                        match other {
+                            "Speculative Decoding" => control.speculative_decoding = state,
+                            "Turbo Quantization" => control.turbo_quant = state,
+                            "Flash Attention" => control.flash_attention = state,
+                            "Auto Round" => control.auto_round = state,
+                            "Force VRAM Reclaim" => control.force_vram_reclaim = state,
+                            "Force Memory Lock" => control.force_memory_lock = state,
+                            "MoE VRAM Routing" => control.moe_vram_routing = state,
+                            "Think Mode" => control.think_mode = state,
+                            _ => {}
+                        }
+                        modified = true;
+                    }
+                }
+            }
+        }
     }
 
     if modified {
@@ -208,43 +202,6 @@ pub async fn execute(
     } else {
         println!("\n  {} {}", "📊".cyan(), "Current Booster Settings:".bold());
     }
-
-    // Print a beautiful status summary
-    let mode_desc = match control.mode_run {
-        BoosterMode::Edge => "Edge (📱 Pi/Mobile optimization)",
-        BoosterMode::Multitasking => "Multitasking (💻 Balanced Laptop profile)",
-        BoosterMode::Balance => "Balance (⚖️ Default Performance)",
-        BoosterMode::MaxBoost => "MaxBoost (🚀 High GPU Priority)",
-        BoosterMode::UltraMaxBoost => "UltraMaxBoost (🔥 Maximum VRAM Reclamation)",
-        BoosterMode::HyperCluster => "HyperCluster (🌌 Multi-GPU Server Cluster)",
-    };
-
-    let kv_desc = match control.kv_cache_quantization {
-        KvCacheQuantization::Auto => "Auto (Quantized based on hardware constraints)",
-        KvCacheQuantization::Kv16 => "Kv16 (Unquantized - Raw FP16 precision)",
-        KvCacheQuantization::Kv8 => "Kv8 (8-bit Quantized - Saves ~50% KV memory)",
-        KvCacheQuantization::Kv4 => "Kv4 (4-bit Quantized - Saves ~75% KV memory)",
-    };
-
-    let cs_desc = match control.context_shifting {
-        ContextShiftingMode::Auto => "Auto (Standard 10% shift buffer)",
-        ContextShiftingMode::Off => "Off (No sliding window, stops on overflow)",
-        ContextShiftingMode::Minimal => "Minimal (5% shift buffer)",
-        ContextShiftingMode::Standard => "Standard (10% shift buffer)",
-        ContextShiftingMode::Aggressive => "Aggressive (25% shift buffer)",
-        ContextShiftingMode::Extreme => "Extreme (50% shift buffer)",
-    };
-
-    let sd_desc = match control.speculative_decoding {
-        FeatureState::Auto => "Auto (Native MTP / VRAM-Aware Fallback)",
-        FeatureState::On => "On (Forced Speculative Execution)",
-        FeatureState::Off => "Off (Single Token Generation)",
-    };
-
-    println!("    ├─ Mode:             {}", mode_desc.yellow());
-    println!("    ├─ KV Cache:         {}", kv_desc.green());
-    println!("    ├─ Spec. Decoding:   {}", sd_desc.magenta());
-    println!("    └─ Context Shifting: {}\n", cs_desc.cyan());
 
     Ok(())
 }

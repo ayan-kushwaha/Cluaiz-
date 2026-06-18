@@ -5,11 +5,11 @@
 एक Continuous Flow Page — TUI में एक ही screen पर सब steps नीचे add होती जाएं, animation के साथ:
 
 🔥 Step 1: Logo Animation (tachyonfx effects)
-CLUAIZ logo animate होकर appear होगा (fade_in, coalesce, sweep_in — tachyonfx से)
+CLUAIZE logo animate होकर appear होगा (fade_in, coalesce, sweep_in — tachyonfx से)
 जब animation complete हो, तो नीचे content appear होना शुरू
 🔥 Step 2: Welcome + About Description
-"Welcome to Cluaiz CURE CLI" — typing animation effect
-300-500 words का about description (Cluaiz CURE CLI क्या है, क्या करता है)
+"Welcome to Cluaize  CLI" — typing animation effect
+300-500 words का about description (Cluaize  CLI क्या है, क्या करता है)
 यह भी animated typing style से दिखेगा
 🔥 Step 3: Auth (Dummy Login/Register)
 2 options: Google से Login या Email + Password से Login
@@ -52,8 +52,8 @@ OpenClaw wizard flow	Single continuous flow architecture inspiration
 
 कोई doubt हो, extra step हो, या कोई step remove करना हो — बताओ।
 
-🧿 Cluaiz CURE CLI — Independent Onboarding (Updated Architecture)
-Shared core crate (shared/) banayenge jo CURE + future apps dono use karenge. CLI sirf TUI skin hoga.
+🧿 Cluaize  CLI — Independent Onboarding (Updated Architecture)
+Shared core crate (shared/) banayenge jo  + future apps dono use karenge. CLI sirf TUI skin hoga.
 
 User Review Required
 IMPORTANT
@@ -69,7 +69,7 @@ WARNING
 New workspace member: shared crate ko Cargo.toml workspace members mein add karna hoga.
 
 Architecture Diagram
-Cluaiz-ai-CURE/
+Cluaize-ai-/
 ├── shared/              ← 🆕 REUSABLE CORE (profile, auth, constants, onboarding)
 │   ├── Cargo.toml
 │   └── src/
@@ -274,12 +274,12 @@ Total: 12 NEW files, 6 MODIFIED files
 Open Questions
 IMPORTANT
 
-About Text — Step 2 ka 300-500 word Cluaiz CURE description — tum provide karoge ya main draft likhun?
+About Text — Step 2 ka 300-500 word Cluaize  description — tum provide karoge ya main draft likhun?
 
 Verification Plan
 Automated Tests
 bash
-cd c:\Users\Aryan\my\Cluaiz-workspace\Cluaiz-OS\Cluaiz-ai-CURE
+cd c:\Users\Aryan\my\Cluaize-workspace\Cluaize-OS\Cluaize-ai-
 cargo build -p shared    # shared crate compiles clean
 cargo build -p cli       # cli compiles with shared dependency
 cargo run -p cli         # Visual test — full onboarding flow

@@ -3,7 +3,7 @@
 
 use std::path::PathBuf;
 use crate::utils::healer::AutoHealer;
-use cluaiz_shared::{UnifiedBackend, BackendType, CluaizContext, StructuralDNA, TemplateManager, ModelWeightsWrapper, CluaizInference};
+use cluaize_shared::{UnifiedBackend, BackendType, CluaizeContext, StructuralDNA, TemplateManager, ModelWeightsWrapper, CluaizeInference};
 use crate::runtime::execution::hub::HardwareOrchestrator;
 use neural_core::interfaces::router_contract::EmbeddingDriver;
 
@@ -23,42 +23,42 @@ pub enum RouteDecision {
 
 pub enum Backend {
     Empty(DummyBackend),
-    Cluaiz(ModelWeightsWrapper),
+    Cluaize(ModelWeightsWrapper),
 }
 
 impl UnifiedBackend for Backend {
     fn generate(&mut self, prompt: &str, max_tokens: usize) -> Result<String, String> {
         match self {
             Self::Empty(b) => b.generate(prompt, max_tokens),
-            Self::Cluaiz(b) => b.generate(prompt, max_tokens),
+            Self::Cluaize(b) => b.generate(prompt, max_tokens),
         }
     }
     fn prefill(&mut self, prompt: &str) -> anyhow::Result<()> {
         match self {
             Self::Empty(b) => b.prefill(prompt),
-            Self::Cluaiz(b) => b.prefill(prompt),
+            Self::Cluaize(b) => b.prefill(prompt),
         }
     }
 
     fn evaluate_tps(&self) -> f64 {
         match self {
             Self::Empty(b) => b.evaluate_tps(),
-            Self::Cluaiz(b) => b.evaluate_tps(),
+            Self::Cluaize(b) => b.evaluate_tps(),
         }
     }
     
     fn embed(&mut self, input: &str) -> anyhow::Result<Vec<f32>> {
         match self {
             Self::Empty(b) => b.embed(input),
-            Self::Cluaiz(b) => b.embed(input),
+            Self::Cluaize(b) => b.embed(input),
         }
     }
 }
 
-impl cluaiz_shared::CluaizInference for Backend {
+impl cluaize_shared::CluaizeInference for Backend {
     fn forward_raw(&mut self, inputs: &[u32], pos: usize) -> anyhow::Result<Vec<f32>> {
         match self {
-            Self::Cluaiz(b) => b.forward_raw(inputs, pos),
+            Self::Cluaize(b) => b.forward_raw(inputs, pos),
             Self::Empty(_) => Err(anyhow::anyhow!("Empty backend")),
         }
     }
@@ -70,35 +70,35 @@ impl cluaiz_shared::CluaizInference for Backend {
         callback: Box<dyn FnMut(String) -> bool + Send + 'static>,
     ) -> anyhow::Result<()> {
         match self {
-            Self::Cluaiz(b) => b.generate_stream(prompt, max_tokens, callback),
+            Self::Cluaize(b) => b.generate_stream(prompt, max_tokens, callback),
             Self::Empty(_) => Err(anyhow::anyhow!("Empty backend")),
         }
     }
 
     fn dump_kv_cache(&mut self, path: &str) -> anyhow::Result<()> {
         match self {
-            Self::Cluaiz(b) => b.dump_kv_cache(path),
+            Self::Cluaize(b) => b.dump_kv_cache(path),
             Self::Empty(_) => Err(anyhow::anyhow!("Empty backend")),
         }
     }
 
     fn load_kv_cache(&mut self, path: &str) -> anyhow::Result<()> {
         match self {
-            Self::Cluaiz(b) => b.load_kv_cache(path),
+            Self::Cluaize(b) => b.load_kv_cache(path),
             Self::Empty(_) => Err(anyhow::anyhow!("Empty backend")),
         }
     }
 
-    fn inject_signals(&mut self, signals: Vec<cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal>) -> anyhow::Result<()> {
+    fn inject_signals(&mut self, signals: Vec<cluaize_shared::hardware::memory::kv_cache::stitching::CluaizeSignal>) -> anyhow::Result<()> {
         match self {
-            Self::Cluaiz(b) => b.inject_signals(signals),
+            Self::Cluaize(b) => b.inject_signals(signals),
             Self::Empty(_) => Err(anyhow::anyhow!("Empty backend")),
         }
     }
 
-    fn apply_booster(&mut self, control: &cluaiz_shared::hardware::schema::booster::BoosterControl) -> anyhow::Result<()> {
+    fn apply_booster(&mut self, control: &cluaize_shared::hardware::schema::booster::BoosterControl) -> anyhow::Result<()> {
         match self {
-            Self::Cluaiz(b) => b.apply_booster(control),
+            Self::Cluaize(b) => b.apply_booster(control),
             Self::Empty(_) => Err(anyhow::anyhow!("Empty backend")),
         }
     }
@@ -106,10 +106,10 @@ impl cluaiz_shared::CluaizInference for Backend {
 
 pub struct CoreRouter {
     pub active_backend: Backend,
-    pub active_dna: Option<cluaiz_shared::StructuralDNA>,
+    pub active_dna: Option<cluaize_shared::StructuralDNA>,
     pub active_model_path: Option<PathBuf>,
     pub foundry: crate::neural_foundry::CoreFoundry,
-    pub onnx_engine: Option<cluaiz_onnx::engine::OnnxEngine>,
+    pub onnx_engine: Option<cluaize_onnx::engine::OnnxEngine>,
     /// The routing decision taken on the last call to generate_stream.
     /// None if generate_stream has not been called yet.
     pub last_route_decision: Option<RouteDecision>,
@@ -162,7 +162,7 @@ impl CoreRouter {
             let _ = AutoHealer::heal_missing_tokenizer(&repo_id, parent).await;
         }
 
-        // [Cluaiz ALIGNMENT]: Bootstrapping context with local DNA and Templates
+        // [Cluaize ALIGNMENT]: Bootstrapping context with local DNA and Templates
         let mut dna = StructuralDNA::default();
         if let Some(parent) = path.parent() {
             let dna_path = parent.join("structural_dna.json");
@@ -180,22 +180,22 @@ impl CoreRouter {
         }
         dna.preferred_runtime = Some(runtime);
         
-        let context = CluaizContext::boot(
+        let context = CluaizeContext::boot(
             dna.clone(),
             TemplateManager::default(),
         );
 
-        // 🚀 THE Cluaiz HANDSHAKE: Dispatching to the Dynamic Linker
+        // 🚀 THE Cluaize HANDSHAKE: Dispatching to the Dynamic Linker
         println!("🧬 [Router] Dispatching to HardwareOrchestrator for dynamic linkage...");
         let engine = HardwareOrchestrator::instantiate(&path.to_string_lossy(), "llama", context)
             .await
-            .map_err(|e| format!("Cluaiz Handshake Failure: {}", e))?;
+            .map_err(|e| format!("Cluaize Handshake Failure: {}", e))?;
 
 
 
         let mut foundry = crate::neural_foundry::CoreFoundry::new();
-        // Load skills from the global ~/.cluaiz/skills directory
-        let skills_dir = dirs::home_dir().unwrap_or_default().join(".cluaiz").join("skills");
+        // Load skills from the global ~/.cluaize/skills directory
+        let skills_dir = dirs::home_dir().unwrap_or_default().join(".cluaize").join("skills");
         foundry.initialize(&skills_dir.to_string_lossy());
 
         // Load ONNX Engine for Semantic Routing
@@ -209,19 +209,19 @@ impl CoreRouter {
                     let model_file = model_dir.join("model.onnx");
                     let tokenizer_file = model_dir.join("tokenizer.json");
                     if model_file.exists() && tokenizer_file.exists() {
-                        if let Ok(mut engine) = cluaiz_onnx::engine::OnnxEngine::new() {
+                        if let Ok(mut engine) = cluaize_onnx::engine::OnnxEngine::new() {
                             if engine.load_text_model(&model_file.to_string_lossy(), &tokenizer_file.to_string_lossy()).is_ok() {
                                 // Compile missing or mismatched semantic vectors
-                                if let Ok(mut skill_router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.write() {
+                                if let Ok(mut skill_router) = cluaize_shared::skills::router::GLOBAL_SKILL_ROUTER.write() {
                                     let _ = skill_router.boot_index();
                                     let safe_filename = active_model_id.replace(":", "-");
                                     let mut new_vectors = Vec::new();
                                     for (id, skill_manifest) in &skill_router.loaded_manifests {
                                         let home_dir = dirs::home_dir().unwrap_or_default();
-                                        let skill_path = home_dir.join(".cluaiz").join("skills").join(&skill_manifest.name);
+                                        let skill_path = home_dir.join(".cluaize").join("skills").join(&skill_manifest.name);
                                         let cache_dir = skill_path.join(".cache");
                                         let emb_path = cache_dir.join(format!("{}.emb.bin", safe_filename));
-                                        let norm_skill_path = cluaiz_shared::skills::router::normalize_path(&skill_path);
+                                        let norm_skill_path = cluaize_shared::skills::router::normalize_path(&skill_path);
                                         let has_vector = skill_router.skill_vectors.contains_key(&norm_skill_path);
 
                                         if !has_vector || !emb_path.exists() {
@@ -266,7 +266,7 @@ impl CoreRouter {
         let hardware_n_ctx = dna.max_context_length.unwrap_or(2048) as usize;
 
         Ok(Self { 
-            active_backend: Backend::Cluaiz(engine), 
+            active_backend: Backend::Cluaize(engine), 
             foundry,
             active_dna: Some(dna),
             active_model_path: Some(path),
@@ -276,7 +276,7 @@ impl CoreRouter {
         })
     }
 
-    pub fn get_active_dna(&self) -> Option<&cluaiz_shared::StructuralDNA> {
+    pub fn get_active_dna(&self) -> Option<&cluaize_shared::StructuralDNA> {
         self.active_dna.as_ref()
     }
 
@@ -299,7 +299,7 @@ impl CoreRouter {
         let prompt_lower = prompt.to_lowercase().trim().to_string();
         
         // 1. Text Match Fast-Path (Exact keyword match + Substring containment)
-        if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
+        if let Ok(router) = cluaize_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
             // Try exact full-prompt match first
             if let Some(path) = router.check_trigger(&prompt_lower) {
                 if let Some(name) = path.file_name() {
@@ -324,7 +324,7 @@ impl CoreRouter {
         if matched_skill_ids.is_empty() {
              if let Some(engine) = self.onnx_engine.as_mut() {
                  if let Ok(full_vec) = engine.gen_embedding(prompt) {
-                     if let Ok(router) = cluaiz_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
+                     if let Ok(router) = cluaize_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
                          // Try full prompt vector first
                          if let Some(path) = router.check_semantic_trigger(&full_vec, 0.70) {
                              if let Some(name) = path.file_name() {
@@ -354,7 +354,7 @@ impl CoreRouter {
              }
         }
 
-        // 🧪 Cluaiz HANDSHAKE: Process Foundry Intent
+        // 🧪 Cluaize HANDSHAKE: Process Foundry Intent
         let mut intent_result = rt.block_on(self.foundry.process_intent(prompt, Some(matched_skill_ids.clone())))
             .map_err(|e| format!("Skill Discovery Error: {}", e))?;
 
@@ -404,13 +404,13 @@ impl CoreRouter {
                     let expanded_ctx = (skill_tokens_est + 256) as usize; // Exact tailored slot
                     
                     let background_success = rt.block_on(async move {
-                        use cluaiz_shared::{CluaizContext, StructuralDNA, UnifiedBackend, CluaizInference};
+                        use cluaize_shared::{CluaizeContext, StructuralDNA, UnifiedBackend, CluaizeInference};
                         let mut temp_dna = StructuralDNA::default();
                         temp_dna.max_context_length = Some(expanded_ctx);
-                        let ctx = CluaizContext::boot(temp_dna, cluaiz_shared::TemplateManager::default());
+                        let ctx = CluaizeContext::boot(temp_dna, cluaize_shared::TemplateManager::default());
                         
                         println!("🔩 [Arbiter] Requesting {} ctx slot in background (CPU fallback mode)...", expanded_ctx);
-                        let mut booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+                        let mut booster = cluaize_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
                         booster.n_gpu_layers = 0; // Force CPU-only to avoid CUDA device context collisions
                         
                         if let Ok(mut bg_engine) = crate::runtime::execution::hub::HardwareOrchestrator::instantiate_with_booster(
@@ -483,13 +483,13 @@ impl CoreRouter {
                     let expanded_ctx = (skill_tokens_est + 256) as usize;
                     
                     rt.spawn(async move {
-                        use cluaiz_shared::{CluaizContext, StructuralDNA, UnifiedBackend, CluaizInference};
+                        use cluaize_shared::{CluaizeContext, StructuralDNA, UnifiedBackend, CluaizeInference};
                         let mut temp_dna = StructuralDNA::default();
                         temp_dna.max_context_length = Some(expanded_ctx);
-                        let ctx = CluaizContext::boot(temp_dna, cluaiz_shared::TemplateManager::default());
+                        let ctx = CluaizeContext::boot(temp_dna, cluaize_shared::TemplateManager::default());
                         
                         println!("🔩 [Arbiter] Asynchronously requesting {} ctx slot in background...", expanded_ctx);
-                        let mut booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+                        let mut booster = cluaize_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
                         booster.n_gpu_layers = 0; // Force CPU-only to avoid CUDA device context collisions
                         
                         if let Ok(mut bg_engine) = crate::runtime::execution::hub::HardwareOrchestrator::instantiate_with_booster(
@@ -542,7 +542,7 @@ impl CoreRouter {
         }
 
         match &mut self.active_backend {
-            Backend::Cluaiz(b) => {
+            Backend::Cluaize(b) => {
 
                 // If Core signals (skill souls) were identified, inject them into the kernel
                 if !intent_result.signals.is_empty() {
@@ -575,7 +575,7 @@ impl CoreRouter {
 }
 
 pub struct DummyBackend;
-impl cluaiz_shared::UnifiedBackend for DummyBackend {
+impl cluaize_shared::UnifiedBackend for DummyBackend {
     fn generate(&mut self, _prompt: &str, _max_tokens: usize) -> Result<String, String> {
         Err("Core weights not loaded.".to_string())
     }
@@ -583,7 +583,7 @@ impl cluaiz_shared::UnifiedBackend for DummyBackend {
     fn evaluate_tps(&self) -> f64 { 0.0 }
 }
 
-impl cluaiz_shared::CluaizInference for DummyBackend {
+impl cluaize_shared::CluaizeInference for DummyBackend {
     fn forward_raw(&mut self, _inputs: &[u32], _pos: usize) -> anyhow::Result<Vec<f32>> {
         Err(anyhow::anyhow!("Dummy backend"))
     }

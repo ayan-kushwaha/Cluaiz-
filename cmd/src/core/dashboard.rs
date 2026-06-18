@@ -25,15 +25,15 @@ impl DashboardEngine {
         rx: &mut mpsc::UnboundedReceiver<DownloadEvent>,
         mode: &mut crate::app_enums::Mode,
     ) -> Result<()> {
-        // ══ 🔒 Cluaiz RENDER CONFIG ══
+        // ══ 🔒 Cluaize RENDER CONFIG ══
         let config = RenderConfig::default();
 
         // 🛑 GRACEFUL INTERRUPT HANDLER (Sovereign Pivot Control)
         let _ = ctrlc::set_handler(move || {
-            cluaiz_shared::GLOBAL_CANCEL_SIGNAL.store(true, Ordering::SeqCst);
+            cluaize_shared::GLOBAL_CANCEL_SIGNAL.store(true, Ordering::SeqCst);
         });
 
-        // ── 🧬 ATOMIC Core DISCOVERY (Cluaiz Startup Scan) ──
+        // ── 🧬 ATOMIC Core DISCOVERY (Cluaize Startup Scan) ──
         if state.sorted_models.is_empty() {
             state.sorted_models = engines::CoreRoster::get_recommendations(
                 &state.hardware.to_hardware_truth(),
@@ -41,8 +41,8 @@ impl DashboardEngine {
             );
         }
 
-        // ── 📡 Cluaiz TELEMETRY IGNITION (Ghost Observer Singleton) ──
-        let state_pulse = cluaiz_shared::hardware::telemetry::get_pulse();
+        // ── 📡 Cluaize TELEMETRY IGNITION (Ghost Observer Singleton) ──
+        let state_pulse = cluaize_shared::hardware::telemetry::get_pulse();
         let app_start_time = std::time::Instant::now();
         let last_inference_duration = Arc::new(std::sync::atomic::AtomicU64::new(0));
         let last_ttft = Arc::new(std::sync::atomic::AtomicU64::new(0));
@@ -53,7 +53,7 @@ impl DashboardEngine {
  
         let engine_ref = state.Core_engine.clone();
  
-        // 🚀 CLUAIZ AUTO-BOOT: Activate the latest engine silently only if no model is loaded
+        // 🚀 CLUAIZE AUTO-BOOT: Activate the latest engine silently only if no model is loaded
         let is_engine_loaded = state.Core_engine.is_loaded.load(std::sync::atomic::Ordering::SeqCst);
         if state._active_model_id.is_none() && !is_engine_loaded {
             let auto_boot_name = state.sorted_models.iter().filter(|m| m.is_cached).next().map(|m| m.manifest.name.clone());
@@ -65,12 +65,12 @@ impl DashboardEngine {
         // 🖊️ INPUT FIX: Ensure cursor is on a fresh line before inquire renders
         println!();
 
-        let mut last_booster_modified = std::fs::metadata(dirs::home_dir().unwrap_or_default().join(".cluaiz").join("engine").join("system_booster.json")).and_then(|m| m.modified()).ok();
+        let mut last_booster_modified = std::fs::metadata(dirs::home_dir().unwrap_or_default().join(".cluaize").join("engine").join("system_booster.json")).and_then(|m| m.modified()).ok();
 
         // Track global think state across pivots
         let global_think_state = Arc::new(AtomicBool::new(false));
 
-        let mut prompt_embedding_engine: Option<cluaiz_onnx::engine::OnnxEngine> = None;
+        let mut prompt_embedding_engine: Option<cluaize_onnx::engine::OnnxEngine> = None;
         let schema = engines::neural_foundry::security::permission_schema::PermissionSchema::load();
         if let Some(text_model_id) = schema.vector_models.text {
                 let roster = engines::models::registry::CoreRoster::load_roster();
@@ -80,7 +80,7 @@ impl DashboardEngine {
                         let model_file = model_dir.join("model.onnx");
                         let tokenizer_file = model_dir.join("tokenizer.json");
                         if model_file.exists() && tokenizer_file.exists() {
-                            if let Ok(mut engine) = cluaiz_onnx::engine::OnnxEngine::new() {
+                            if let Ok(mut engine) = cluaize_onnx::engine::OnnxEngine::new() {
                                 if engine.load_text_model(&model_file.to_string_lossy(), &tokenizer_file.to_string_lossy()).is_ok() {
                                     prompt_embedding_engine = Some(engine);
                                 }
@@ -210,7 +210,7 @@ impl DashboardEngine {
                         let ttft_cb = ttft_ref.clone();
                         
                         // ── 🔥 HOT RELOAD ENGINE SETTINGS ──
-                        let booster_path = dirs::home_dir().unwrap_or_default().join(".cluaiz").join("engine").join("system_booster.json");
+                        let booster_path = dirs::home_dir().unwrap_or_default().join(".cluaize").join("engine").join("system_booster.json");
                         if let Ok(meta) = std::fs::metadata(&booster_path) {
                             if let Ok(modified) = meta.modified() {
                                 let mut needs_reload = false;
@@ -241,7 +241,7 @@ impl DashboardEngine {
                         }
 
                         // Reset cancellation signal before starting
-                        cluaiz_shared::GLOBAL_CANCEL_SIGNAL.store(false, Ordering::SeqCst);
+                        cluaize_shared::GLOBAL_CANCEL_SIGNAL.store(false, Ordering::SeqCst);
 
                         let stream_result = tokio::task::block_in_place(|| {
                             let mut lock = state.Core_engine.router.blocking_lock();
@@ -280,8 +280,8 @@ impl DashboardEngine {
                                 );
                             }
                             
-                            let booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
-                            let suppress_thinking = booster.think_mode == cluaiz_shared::hardware::schema::booster::FeatureState::Off;
+                            let booster = cluaize_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+                            let suppress_thinking = booster.think_mode == cluaize_shared::hardware::schema::booster::FeatureState::Off;
                             
                             let active_model = state._active_model_id.clone().unwrap_or_default().to_lowercase();
                             let is_reasoning_model = active_model.contains("deepseek") || active_model.contains("r1") || active_model.contains("reason") || active_model.contains("bonsai") || active_model.contains("think");
@@ -301,7 +301,7 @@ impl DashboardEngine {
                                 max_t,
                                 Box::new(move |token: String| -> bool {
                                     // 🛑 Stop if already past EOS or interrupted
-                                    if eos_cb.load(Ordering::SeqCst) || cluaiz_shared::GLOBAL_CANCEL_SIGNAL.load(Ordering::SeqCst) { 
+                                    if eos_cb.load(Ordering::SeqCst) || cluaize_shared::GLOBAL_CANCEL_SIGNAL.load(Ordering::SeqCst) { 
                                         return false; 
                                     }
 
@@ -311,7 +311,7 @@ impl DashboardEngine {
                                             if key.code == crossterm::event::KeyCode::Char('t') && key.modifiers.contains(crossterm::event::KeyModifiers::CONTROL) {
                                                 // Only skip if we are currently IN thinking mode — prevents double-fire from key-repeat
                                                 if in_think_cb.load(Ordering::SeqCst) {
-                                                    cluaiz_shared::GLOBAL_SKIP_THINKING_SIGNAL.store(true, Ordering::SeqCst);
+                                                    cluaize_shared::GLOBAL_SKIP_THINKING_SIGNAL.store(true, Ordering::SeqCst);
                                                     // ✅ Immediately reset UI think state — don't wait for </think> text
                                                     in_think_cb.store(false, Ordering::SeqCst);
                                                     global_think_cb.store(false, Ordering::SeqCst);
@@ -319,7 +319,7 @@ impl DashboardEngine {
                                                 }
                                             }
                                             if key.code == crossterm::event::KeyCode::Char('c') && key.modifiers.contains(crossterm::event::KeyModifiers::CONTROL) {
-                                                cluaiz_shared::GLOBAL_CANCEL_SIGNAL.store(true, Ordering::SeqCst);
+                                                cluaize_shared::GLOBAL_CANCEL_SIGNAL.store(true, Ordering::SeqCst);
                                             }
                                         }
                                     }
@@ -483,7 +483,7 @@ impl DashboardEngine {
                             let _ = storage_bridge.save_context(&response_id, &response, response_vector);
                         }
 
-                        if cluaiz_shared::GLOBAL_CANCEL_SIGNAL.load(Ordering::SeqCst) {
+                        if cluaize_shared::GLOBAL_CANCEL_SIGNAL.load(Ordering::SeqCst) {
                             println!();
                             use crossterm::style::Stylize;
                             println!("{} {}", "⏸️  Paused:".with(crossterm::style::Color::Yellow).bold(), "Engine stopped mid-generation. Context preserved in VRAM.".with(crossterm::style::Color::DarkGrey));
@@ -501,7 +501,7 @@ impl DashboardEngine {
 
                         
                         let ttft_secs = f64::from_bits(ttft_ref.load(Ordering::SeqCst));
-                        let registry = cluaiz_shared::hardware::governor::HardwareGovernor::load_process_registry();
+                        let registry = cluaize_shared::hardware::governor::HardwareGovernor::load_process_registry();
                         let my_pid = std::process::id().to_string();
                         let vram_used_gb = registry.get(&my_pid).map(|i| i.vram_gb).unwrap_or(0.0);
 
@@ -604,12 +604,13 @@ impl DashboardEngine {
             )
             .with_highlighted_option_prefix(Styled::new("⮞").with_fg(Color::LightCyan));
 
-        let ans = if let Some(target) = auto_boot_target {
-            target.to_string()
+        let (master_ans, ans) = if let Some(target) = auto_boot_target {
+            ("🧠 Switch Chat Model".to_string(), target.to_string())
         } else {
             loop {
                 let master_options = vec![
-                    "🧠 Switch Model".to_string(),
+                    "🧠 Switch Chat Model".to_string(),
+                    "⚙️ Switch Vector Model".to_string(),
                     "⚡ Engine Modes".to_string(),
                     "🚀 System Booster".to_string(),
                 ];
@@ -649,30 +650,30 @@ impl DashboardEngine {
                     print!("\x1B[1A\x1B[2K\r");
                     stdout().flush()?;
                     
-                    let mut booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+                    let mut booster = cluaize_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
                     if mode_ans.contains("Flash Mode") {
-                        booster.mode_run = cluaiz_shared::hardware::schema::booster::BoosterMode::Edge;
-                        booster.think_mode = cluaiz_shared::hardware::schema::booster::FeatureState::Off;
+                        booster.mode_run = cluaize_shared::hardware::schema::booster::BoosterMode::Edge;
+                        booster.think_mode = cluaize_shared::hardware::schema::booster::FeatureState::Off;
                     } else if mode_ans.contains("Think Mode") {
-                        booster.mode_run = cluaiz_shared::hardware::schema::booster::BoosterMode::MaxBoost;
-                        booster.think_mode = cluaiz_shared::hardware::schema::booster::FeatureState::On;
+                        booster.mode_run = cluaize_shared::hardware::schema::booster::BoosterMode::MaxBoost;
+                        booster.think_mode = cluaize_shared::hardware::schema::booster::FeatureState::On;
                     } else if mode_ans.contains("Boot Mode") {
-                        booster.mode_run = cluaiz_shared::hardware::schema::booster::BoosterMode::Balance;
-                        booster.think_mode = cluaiz_shared::hardware::schema::booster::FeatureState::Auto;
+                        booster.mode_run = cluaize_shared::hardware::schema::booster::BoosterMode::Balance;
+                        booster.think_mode = cluaize_shared::hardware::schema::booster::FeatureState::Auto;
                     }
                     
-                    let _ = cluaiz_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster);
+                    let _ = cluaize_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster);
                     
                     println!("  {} {} activated and saved to system_booster.json.", "✅".green(), mode_ans.bold());
                     return Ok(());
                 } else if master_ans.contains("System Booster") {
                     let mut booster_path = dirs::home_dir().unwrap_or_default();
-                    booster_path.push(".cluaiz");
+                    booster_path.push(".cluaize");
                     booster_path.push("engine");
                     booster_path.push("system_booster.json");
 
                     loop {
-                        let mut booster = cluaiz_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+                        let mut booster = cluaize_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
                         
                         let compute_mode_str = match booster.n_gpu_layers {
                             0 => "CPU Only".to_string(),
@@ -761,7 +762,7 @@ impl DashboardEngine {
                                 _ => {}
                             }
 
-                            if let Ok(_) = cluaiz_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster) {
+                            if let Ok(_) = cluaize_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster) {
                                 println!("  {} System Booster updated: Compute Device = {}", "✅".green(), selected_device.bold());
                             } else {
                                 println!("  {} Failed to save system booster settings.", "❌".red());
@@ -793,15 +794,15 @@ impl DashboardEngine {
                             stdout().flush()?;
 
                             booster.context_shifting = match selected_shift.as_str() {
-                                "Off" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Off,
-                                "Minimal" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Minimal,
-                                "Standard" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Standard,
-                                "Aggressive" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Aggressive,
-                                "Extreme" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Extreme,
-                                _ => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Auto,
+                                "Off" => cluaize_shared::hardware::schema::booster::ContextShiftingMode::Off,
+                                "Minimal" => cluaize_shared::hardware::schema::booster::ContextShiftingMode::Minimal,
+                                "Standard" => cluaize_shared::hardware::schema::booster::ContextShiftingMode::Standard,
+                                "Aggressive" => cluaize_shared::hardware::schema::booster::ContextShiftingMode::Aggressive,
+                                "Extreme" => cluaize_shared::hardware::schema::booster::ContextShiftingMode::Extreme,
+                                _ => cluaize_shared::hardware::schema::booster::ContextShiftingMode::Auto,
                             };
 
-                            if let Ok(_) = cluaiz_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster) {
+                            if let Ok(_) = cluaize_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster) {
                                 println!("  {} System Booster updated: Context Shifting = {}", "✅".green(), selected_shift.bold());
                             } else {
                                 println!("  {} Failed to save system booster settings.", "❌".red());
@@ -830,13 +831,13 @@ impl DashboardEngine {
                             stdout().flush()?;
 
                             booster.kv_cache_quantization = match selected_kv.as_str() {
-                                s if s.starts_with("16-bit") => cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Kv16,
-                                s if s.starts_with("8-bit") => cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Kv8,
-                                s if s.starts_with("4-bit") => cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Kv4,
-                                _ => cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Auto,
+                                s if s.starts_with("16-bit") => cluaize_shared::hardware::schema::booster::KvCacheQuantization::Kv16,
+                                s if s.starts_with("8-bit") => cluaize_shared::hardware::schema::booster::KvCacheQuantization::Kv8,
+                                s if s.starts_with("4-bit") => cluaize_shared::hardware::schema::booster::KvCacheQuantization::Kv4,
+                                _ => cluaize_shared::hardware::schema::booster::KvCacheQuantization::Auto,
                             };
 
-                            if let Ok(_) = cluaiz_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster) {
+                            if let Ok(_) = cluaize_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster) {
                                 println!("  {} System Booster updated: KV Cache Quantization = {}", "✅".green(), selected_kv.bold());
                             } else {
                                 println!("  {} Failed to save system booster settings.", "❌".red());
@@ -860,9 +861,9 @@ impl DashboardEngine {
                         stdout().flush()?;
 
                         let feature_state = match val_ans.as_str() {
-                            "On" => cluaiz_shared::hardware::schema::booster::FeatureState::On,
-                            "Off" => cluaiz_shared::hardware::schema::booster::FeatureState::Off,
-                            _ => cluaiz_shared::hardware::schema::booster::FeatureState::Auto,
+                            "On" => cluaize_shared::hardware::schema::booster::FeatureState::On,
+                            "Off" => cluaize_shared::hardware::schema::booster::FeatureState::Off,
+                            _ => cluaize_shared::hardware::schema::booster::FeatureState::Auto,
                         };
 
                         match key_part.as_str() {
@@ -891,13 +892,13 @@ impl DashboardEngine {
                                     Err(_) => continue,
                                 };
                                 booster.mode_run = match selected_mode.as_str() {
-                                    "edge" => cluaiz_shared::hardware::schema::booster::BoosterMode::Edge,
-                                    "multitasking" => cluaiz_shared::hardware::schema::booster::BoosterMode::Multitasking,
-                                    "balance" => cluaiz_shared::hardware::schema::booster::BoosterMode::Balance,
-                                    "max_boost" => cluaiz_shared::hardware::schema::booster::BoosterMode::MaxBoost,
-                                    "ultra_max_boost" => cluaiz_shared::hardware::schema::booster::BoosterMode::UltraMaxBoost,
-                                    "hyper_cluster" => cluaiz_shared::hardware::schema::booster::BoosterMode::HyperCluster,
-                                    _ => cluaiz_shared::hardware::schema::booster::BoosterMode::Balance,
+                                    "edge" => cluaize_shared::hardware::schema::booster::BoosterMode::Edge,
+                                    "multitasking" => cluaize_shared::hardware::schema::booster::BoosterMode::Multitasking,
+                                    "balance" => cluaize_shared::hardware::schema::booster::BoosterMode::Balance,
+                                    "max_boost" => cluaize_shared::hardware::schema::booster::BoosterMode::MaxBoost,
+                                    "ultra_max_boost" => cluaize_shared::hardware::schema::booster::BoosterMode::UltraMaxBoost,
+                                    "hyper_cluster" => cluaize_shared::hardware::schema::booster::BoosterMode::HyperCluster,
+                                    _ => cluaize_shared::hardware::schema::booster::BoosterMode::Balance,
                                 };
                             },
                             "Turbo Quant" => booster.turbo_quant = feature_state,
@@ -906,16 +907,16 @@ impl DashboardEngine {
                             "Auto Round" => booster.auto_round = feature_state,
                             "DFlash (FlashKDA)" => {
                                 booster.dflash = match val_ans.as_str() {
-                                    "On" => cluaiz_shared::hardware::schema::booster::SmartState::Static("On".to_string()),
-                                    "Off" => cluaiz_shared::hardware::schema::booster::SmartState::Static("Off".to_string()),
-                                    _ => cluaiz_shared::hardware::schema::booster::SmartState::Static("Auto".to_string()),
+                                    "On" => cluaize_shared::hardware::schema::booster::SmartState::Static("On".to_string()),
+                                    "Off" => cluaize_shared::hardware::schema::booster::SmartState::Static("Off".to_string()),
+                                    _ => cluaize_shared::hardware::schema::booster::SmartState::Static("Auto".to_string()),
                                 };
                             },
                             "Force VRAM Reclaim" => booster.force_vram_reclaim = feature_state,
                             _ => {}
                         }
                         
-                        if let Ok(_) = cluaiz_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster) {
+                        if let Ok(_) = cluaize_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster) {
                             println!("  {} System Booster updated: {} = {}", "✅".green(), key_part.cyan(), val_ans.bold());
                         } else {
                             println!("  {} Failed to save system booster settings.", "❌".red());
@@ -924,13 +925,16 @@ impl DashboardEngine {
                     continue; // Go back to Master Menu after exiting System Booster
                 }
 
-                let downloaded: Vec<_> = state.sorted_models.iter().filter(|m| m.is_cached).collect();
+                let is_vector = master_ans.contains("Vector");
+                let downloaded: Vec<_> = state.sorted_models.iter().filter(|m| {
+                    if !m.is_cached { return false; }
+                    let is_model_vector = m.manifest.architecture_type == "onnx" || m.manifest.category == "embedding";
+                    if is_vector { is_model_vector } else { !is_model_vector }
+                }).collect();
 
                 if downloaded.is_empty() {
-                    println!(
-                        "  {} No downloaded models found. Install from /menu.",
-                        "ℹ️".blue()
-                    );
+                    let msg = if is_vector { "No Vector models found." } else { "No Chat models found." };
+                    println!("  {} {} Install from /menu.", "ℹ️".blue(), msg);
                     return Ok(());
                 }
 
@@ -960,7 +964,7 @@ impl DashboardEngine {
 
                 print!("\x1B[1A\x1B[2K\r");
                 stdout().flush()?;
-                break selection; // Breaks the master loop and returns the selected model
+                break (master_ans, selection); // Breaks the master loop and returns the selected model
             }
         };
 
@@ -981,13 +985,13 @@ impl DashboardEngine {
             if let Some(path_str) = &model.manifest.local_path {
                 let path = std::path::PathBuf::from(path_str);
 
-                // 🧬 Cluaiz DISPATCH:
+                // 🧬 Cluaize DISPATCH:
                 // High bit-depth -> Native Rust
                 // 1-bit BitNet -> MANDATORY Llama (Binary)
                 let runtime = if model.manifest.bit_depth < 2.0 {
-                    cluaiz_shared::BackendType::RuntimeB
+                    cluaize_shared::BackendType::RuntimeB
                 } else {
-                    cluaiz_shared::BackendType::RuntimeA
+                    cluaize_shared::BackendType::RuntimeA
                 };
 
                 let result = tokio::task::block_in_place(|| {
@@ -1013,14 +1017,14 @@ impl DashboardEngine {
                         Err(e) => {
                             // ⚠️ NATIVE FALLBACK: Only for standard models (Bit-depth >= 2.0)!
                             // BitNet MUST NOT use RuntimeA (Candle) as it will crash with tensor errors.
-                            if runtime == cluaiz_shared::BackendType::RuntimeB
+                            if runtime == cluaize_shared::BackendType::RuntimeB
                                 && model.manifest.bit_depth >= 2.0
                             {
                                 let path_inner = std::path::PathBuf::from(path_str);
                                 handle
                                     .block_on(engines::CoreRouter::load_model(
                                         path_inner,
-                                        cluaiz_shared::BackendType::RuntimeA
+                                        cluaize_shared::BackendType::RuntimeA
                                     ))
                                     .map(|router| {
                                         let mut lock = state.Core_engine.router.blocking_lock();
@@ -1036,9 +1040,15 @@ impl DashboardEngine {
 
                 match result {
                     Ok(_) => {
-                        model.manifest.id.clone();
-                        state._active_model_id = Some(model.manifest.id.clone());
-                        println!("  {} Mounted successfully.", "✅".green());
+                        let is_vector = master_ans.contains("Vector");
+                        if is_vector {
+                            engines::neural_foundry::security::permission_schema::PermissionSchema::set_active_embedding_model(model.manifest.id.clone());
+                            println!("  {} Vector Model switched successfully. (Saved to Permission.json)", "✅".green());
+                        } else {
+                            state._active_model_id = Some(model.manifest.id.clone());
+                            engines::neural_foundry::security::permission_schema::PermissionSchema::set_active_chat_model(model.manifest.id.clone());
+                            println!("  {} Mounted successfully. (Saved to Permission.json)", "✅".green());
+                        }
                     }
                     Err(e) => println!("  {} Load failed: {}", "❌".red(), e),
                 }

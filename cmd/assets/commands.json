@@ -2,137 +2,158 @@
   "version": "0.1.0",
   "commands": [
     {
-      "name": "cluaiz",
-      "usage": "cluaiz",
+      "name": "cluaize",
+      "usage": "cluaize",
       "description": "Launch the interactive dashboard (TUI)",
       "category": "core",
-      "example": "cluaiz"
+      "example": "cluaize"
     },
     {
       "name": "run",
-      "usage": "cluaiz run <model-id>",
+      "usage": "cluaize run <model-id>",
       "description": "Pull & run a model. Downloads if not cached locally.",
       "category": "models",
-      "example": "cluaiz run bonsai:8b"
+      "example": "cluaize run bonsai:8b"
     },
     {
       "name": "pull",
-      "usage": "cluaiz pull <model-id>",
+      "usage": "cluaize pull <model-id>",
       "description": "Download and register a model into the local vault without running it.",
       "category": "models",
-      "example": "cluaiz pull unsloth/Qwen3.5-4B-GGUF"
+      "example": "cluaize pull unsloth/Qwen3.5-4B-GGUF"
     },
     {
       "name": "rm",
-      "usage": "cluaiz rm <model-id>",
+      "usage": "cluaize rm <model-id>",
       "description": "Remove a model from the local vault (physically deletes the .gguf file).",
       "category": "models",
-      "example": "cluaiz rm bonsai:8b"
+      "example": "cluaize rm bonsai:8b"
     },
     {
       "name": "list",
-      "usage": "cluaiz list",
+      "usage": "cluaize list",
       "description": "List all downloaded models in the local vault.",
       "category": "models",
-      "example": "cluaiz list"
+      "example": "cluaize list"
     },
     {
       "name": "ps",
-      "usage": "cluaiz ps",
+      "usage": "cluaize ps",
       "description": "Show active neural engines in memory and auto-heal stale PIDs.",
       "category": "core",
-      "example": "cluaiz ps"
+      "example": "cluaize ps"
     },
     {
       "name": "help",
-      "usage": "cluaiz help",
+      "usage": "cluaize help",
       "description": "Show this help screen",
       "category": "core",
-      "example": "cluaiz help"
+      "example": "cluaize help"
     },
     {
       "name": "status",
-      "usage": "cluaiz status",
+      "usage": "cluaize status",
       "description": "Show hardware status and silicon health metrics.",
       "category": "system",
-      "example": "cluaiz status"
+      "example": "cluaize status"
     },
     {
-      "name": "--calibrate",
-      "usage": "cluaiz --calibrate",
+      "name": "calibrate",
+      "usage": "cluaize calibrate",
       "description": "Re-scan hardware and synchronize SiliconTruth profile",
       "category": "system",
-      "example": "cluaiz --calibrate"
+      "example": "cluaize calibrate"
     },
     {
-      "name": "--benchmark",
-      "usage": "cluaiz --benchmark",
+      "name": "benchmark",
+      "usage": "cluaize benchmark",
       "description": "Run a full hardware performance benchmark",
       "category": "system",
-      "example": "cluaiz --benchmark"
+      "example": "cluaize benchmark"
     },
     {
       "name": "booster",
-      "usage": "cluaiz booster",
+      "usage": "cluaize booster",
       "description": "View or configure the system performance booster settings interactively.",
       "category": "system",
-      "example": "cluaiz booster"
+      "example": "cluaize booster"
     },
     {
       "name": "test-jit",
-      "usage": "cluaiz test-jit",
+      "usage": "cluaize test-jit",
       "description": "Test JIT KV Cache compilation and memory footprint.",
       "category": "system",
-      "example": "cluaiz test-jit"
+      "example": "cluaize test-jit"
     },
     {
       "name": "ingest",
-      "usage": "cluaiz ingest <file_path>",
+      "usage": "cluaize ingest <file_path>",
       "description": "Ingest a document natively for semantic chunking and RAG.",
       "category": "core",
-      "example": "cluaiz ingest ./document.pdf"
+      "example": "cluaize ingest ./document.pdf"
     },
     {
       "name": "brain",
-      "usage": "cluaiz brain <on|off|status>",
+      "usage": "cluaize brain <on|off|only>",
       "description": "Manage the Cluaizd Brain Connection (FFI Daemon).",
       "category": "core",
-      "example": "cluaiz brain status"
+      "example": "cluaize brain only"
     },
     {
       "name": "setup",
-      "usage": "cluaiz setup profile",
-      "description": "Setup Cluaiz Node Profile and Identity (Vectorization and DB Injection).",
+      "usage": "cluaize setup profile",
+      "description": "Setup Cluaize Node Profile and Identity (Vectorization and DB Injection).",
       "category": "core",
-      "example": "cluaiz setup profile"
+      "example": "cluaize setup profile"
+    },
+    {
+      "name": "serve",
+      "usage": "cluaize serve (aliases: api, server)",
+      "description": "Start the background API Daemon (Server mode).",
+      "category": "core",
+      "example": "cluaize serve"
     },
     {
       "name": "skill install",
-      "usage": "cluaiz skill install <skill_name>",
-      "description": "Install a skill from the cluaiz-skills registry.",
+      "usage": "cluaize skill install <skill_name>",
+      "description": "Install a skill from the cluaize-skills registry.",
       "category": "skills",
-      "example": "cluaiz skill install web-search-github"
+      "example": "cluaize skill install web-search-github"
     },
     {
       "name": "skill list",
-      "usage": "cluaiz skill list",
+      "usage": "cluaize skill list",
       "description": "List all locally installed WASM skills.",
       "category": "skills",
-      "example": "cluaiz skill list"
+      "example": "cluaize skill list"
     },
     {
       "name": "skill cache ls",
-      "usage": "cluaiz skill cache ls",
+      "usage": "cluaize skill cache ls",
       "description": "List all active and orphaned dual-caches.",
       "category": "skills",
-      "example": "cluaiz skill cache ls"
+      "example": "cluaize skill cache ls"
     },
     {
       "name": "skill cache clear",
-      "usage": "cluaiz skill cache clear <model_id>",
+      "usage": "cluaize skill cache clear <model_id>",
       "description": "Clear specific or all orphaned KV caches globally.",
       "category": "skills",
-      "example": "cluaiz skill cache clear --all"
+      "example": "cluaize skill cache clear --all"
+    },
+    {
+      "name": "permission",
+      "usage": "cluaize permission <key> <value>",
+      "description": "Change engine permissions and firewalls natively from CLI.",
+      "category": "system",
+      "example": "cluaize permission firewall strict"
+    },
+    {
+      "name": "model",
+      "usage": "cluaize model <set-chat|set-vector> <model_id>",
+      "description": "Switch the active chat or vector/embedding model dynamically.",
+      "category": "models",
+      "example": "cluaize model set-vector all-MiniLM-L6-v2"
     }
   ]
 }

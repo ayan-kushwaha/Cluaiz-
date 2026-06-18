@@ -1,4 +1,4 @@
-/* Theme management for Cluaiz CURE. 
+/* Theme management for Cluaize . 
    Unused fields removed to maintain global professional standards. */
 use ratatui::prelude::*;
 

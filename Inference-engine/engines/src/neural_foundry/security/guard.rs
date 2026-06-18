@@ -1,5 +1,5 @@
-// cluaiz-engine: Core Foundry - Security Guard
-// Implements the 4-tier permission hierarchy for Cluaiz skills.
+// cluaize-engine: Core Foundry - Security Guard
+// Implements the 4-tier permission hierarchy for Cluaize skills.
 
 use crate::neural_foundry::registry::SkillManifest;
 use anyhow::{Result, anyhow};
@@ -75,7 +75,7 @@ impl PermissionGuard {
             return Err(anyhow!("Security Violation: Path traversal detected in '{}'.", manifest.id));
         }
 
-        if !path.contains("Cluaiz-workspace") && skill_level < PermissionLevel::DangerFullAccess {
+        if !path.contains("Cluaize-workspace") && skill_level < PermissionLevel::DangerFullAccess {
             return Err(anyhow!("Security Violation: Out-of-bounds access attempt by '{}'.", manifest.id));
         }
 

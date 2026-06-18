@@ -24,5 +24,5 @@ graph TD
 
 ### 1. `verify_roster.rs`
 - **The Core Logic:** A raw test script that imports `engines::models::registry::NeuralRoster` and invokes `load_roster()`.
-- **The Execution Flow:** Traverses the local `.cluaiz/models` directory and prints out the loaded JSON manifests to `stdout`.
+- **The Execution Flow:** Traverses the local `.cluaize/models` directory and prints out the loaded JSON manifests to `stdout`.
 - **The "Why":** Debugging JSON parsing errors or path traversal issues in the Registry is extremely difficult when triggered via an HTTP API. This scratch script allows an engineer to test the exact registry parsing logic natively on the CLI in milliseconds, isolating file-system bugs from network bugs.

@@ -1,12 +1,12 @@
 use std::path::PathBuf;
 
 
-/// Reads `cluaiz_root` securely via the Cluaiz Hardware Governor.
+/// Reads `cluaize_root` securely via the Cluaize Hardware Governor.
 /// This uses the binary truth (`system_control.bin`) as the ultimate source,
-/// exactly as the Cluaiz Architecture intends. Zero custom hardcoding.
-fn read_cluaiz_root() -> Option<PathBuf> {
-    match cluaiz_shared::HardwareGovernor::load_system_control() {
-        Ok(control) => Some(PathBuf::from(control.context.cluaiz_root)),
+/// exactly as the Cluaize Architecture intends. Zero custom hardcoding.
+fn read_cluaize_root() -> Option<PathBuf> {
+    match cluaize_shared::HardwareGovernor::load_system_control() {
+        Ok(control) => Some(PathBuf::from(control.context.cluaize_root)),
         Err(e) => {
             tracing::error!("❌ [KernelLoader] Failed to read System Truth: {}", e);
             None
@@ -50,7 +50,7 @@ impl KernelLoader {
     }
 
     /// Resolves the absolute path for a kernel binary for a SPECIFIC OS.
-    /// Priority: [cluaiz_root]/interface-engines/ → fallback to base_dir/target/release/
+    /// Priority: [cluaize_root]/interface-engines/ → fallback to base_dir/target/release/
     pub fn resolve_path_for_os(&self, kernel_name: &str, os: &str) -> PathBuf {
         let ext = match os {
             "Windows" => "dll",
@@ -62,43 +62,28 @@ impl KernelLoader {
         // We try multiple potential naming conventions and subdirectories
         let mut candidates = Vec::new();
         
-        // 1. Unified Cluaiz Naming Format (e.g. cluaiz-llama.dll, libcluaiz_llama.so)
-        candidates.push(format!("cluaiz-{}.{}", kernel_name, ext));
-        candidates.push(format!("cluaiz_{}.{}", kernel_name, ext));
-        candidates.push(format!("libcluaiz_{}.{}", kernel_name, ext));
-        candidates.push(format!("libcluaiz-{}.{}", kernel_name, ext));
+        // 1. Unified Cluaize Naming Format (e.g. cluaize-llama.dll, libcluaize_llama.so)
+        candidates.push(format!("cluaize-{}.{}", kernel_name, ext));
+        candidates.push(format!("cluaize_{}.{}", kernel_name, ext));
+        candidates.push(format!("libcluaize_{}.{}", kernel_name, ext));
+        candidates.push(format!("libcluaize-{}.{}", kernel_name, ext));
         
         // 2. Legacy Archer Naming Format (e.g. archer_llama.dll, libarcher_llama.so)
         candidates.push(format!("archer_{}.{}", kernel_name, ext));
         candidates.push(format!("archer-{}.{}", kernel_name, ext));
         candidates.push(format!("libarcher_{}.{}", kernel_name, ext));
         
-        // 3. System Truth: Read cluaiz_root
-        if let Some(cluaiz_root) = read_cluaiz_root() {
-            let base_link = cluaiz_root.join("interface-engines");
-            
-            for file_name in &candidates {
-                // Check root interface-engines/
-                let path = base_link.join(file_name);
-                if path.exists() {
-                    tracing::info!("🎯 [KernelLoader] Cluaiz path resolved: {:?}", path);
-                    return path;
-                }
-                
-                // Check kernels/ subdirectory
-                let path_kernels = base_link.join("kernels").join(file_name);
-                if path_kernels.exists() {
-                    tracing::info!("🎯 [KernelLoader] Cluaiz path resolved (kernels/): {:?}", path_kernels);
-                    return path_kernels;
-                }
-            }
-        }
-
-        // 4. FALLBACK: Local development build output
-        let mut dev_path = self.base_dir.clone();
+        // 3. DEVELOPMENT FALLBACK: Check local target/debug/ if we are running from source.
+        // We prioritize this over the global installation so developers don't accidentally load stale DLLs.
+        let mut dev_path = if let Some(root) = read_cluaize_root() {
+            // We shouldn't use cluaize_root for dev_path because that's the global .cluaize folder.
+            // We should use the current working directory where Cargo is building.
+            std::env::current_dir().unwrap_or(self.base_dir.clone())
+        } else {
+            std::env::current_dir().unwrap_or(self.base_dir.clone())
+        };
         dev_path.push("target");
 
-        // Try debug profile first if in debug mode, otherwise release
         #[cfg(debug_assertions)]
         let profiles = ["debug", "release"];
         #[cfg(not(debug_assertions))]
@@ -109,14 +94,35 @@ impl KernelLoader {
             for file_name in &candidates {
                 let path = profile_path.join(file_name);
                 if path.exists() {
-                    tracing::info!("🎯 [KernelLoader] Cluaiz path resolved (fallback {}): {:?}", profile, path);
+                    tracing::info!("🎯 [KernelLoader] Cluaize dev path resolved ({}): {:?}", profile, path);
                     return path;
                 }
             }
         }
+
+        // 4. System Truth: Read cluaize_root (Global Installation)
+        if let Some(cluaize_root) = read_cluaize_root() {
+            let base_link = cluaize_root.join("engine").join("interfaces");
+            
+            for file_name in &candidates {
+                // Check root interface-engines/
+                let path = base_link.join(file_name);
+                if path.exists() {
+                    tracing::info!("🎯 [KernelLoader] Cluaize path resolved: {:?}", path);
+                    return path;
+                }
+                
+                // Check kernels/ subdirectory
+                let path_kernels = base_link.join("kernels").join(file_name);
+                if path_kernels.exists() {
+                    tracing::info!("🎯 [KernelLoader] Cluaize path resolved (kernels/): {:?}", path_kernels);
+                    return path_kernels;
+                }
+            }
+        }
         
-        tracing::warn!("⚠️ [KernelLoader] Cluaiz path not found for {}. Checked dev paths.", kernel_name);
-        dev_path.join("release").join(format!("cluaiz_{}.{}", kernel_name, ext))
+        tracing::warn!("⚠️ [KernelLoader] Cluaize path not found for {}. Checked dev paths.", kernel_name);
+        dev_path.join("release").join(format!("cluaize_{}.{}", kernel_name, ext))
     }
 }
 

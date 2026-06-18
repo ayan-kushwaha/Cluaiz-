@@ -4,7 +4,7 @@
 use serde::{Serialize, Deserialize};
 use serde_json;
 use crate::ffi::llama_cpp::{LlamaModelParams, LlamaContextParams, llama_model_default_params, llama_context_default_params};
-use cluaiz_shared::hardware::schema::booster::{BoosterControl, BoosterMode, FeatureState, SmartState};
+use cluaize_shared::hardware::schema::booster::{BoosterControl, BoosterMode, FeatureState, SmartState};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BoosterConfig {
@@ -76,8 +76,8 @@ impl BoosterConfig {
             moe_vram_routing: "Auto".to_string(),
         };
         
-        // 🛡️ Sovereign Dynamic Pathing: Use cluaiz-shared to resolve the engine path universally.
-        let booster_path = cluaiz_shared::hardware::governor::HardwareGovernor::resolve_engine_path()
+        // 🛡️ Sovereign Dynamic Pathing: Use cluaize-shared to resolve the engine path universally.
+        let booster_path = cluaize_shared::hardware::governor::HardwareGovernor::resolve_engine_path()
             .join("system_booster.json");
 
         if let Ok(content) = std::fs::read_to_string(booster_path) {
@@ -200,18 +200,18 @@ impl BoosterConfig {
             auto_round: if self.auto_round == "On" { FeatureState::On } else if self.auto_round == "Off" { FeatureState::Off } else { FeatureState::Auto },
             dflash: SmartState::Static(self.dflash.clone()),
             kv_cache_quantization: match self.kv_cache_quantization.to_lowercase().as_str() {
-                "kv16" => cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Kv16,
-                "kv8" => cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Kv8,
-                "kv4" => cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Kv4,
-                _ => cluaiz_shared::hardware::schema::booster::KvCacheQuantization::Auto,
+                "kv16" => cluaize_shared::hardware::schema::booster::KvCacheQuantization::Kv16,
+                "kv8" => cluaize_shared::hardware::schema::booster::KvCacheQuantization::Kv8,
+                "kv4" => cluaize_shared::hardware::schema::booster::KvCacheQuantization::Kv4,
+                _ => cluaize_shared::hardware::schema::booster::KvCacheQuantization::Auto,
             },
             context_shifting: match self.context_shifting.to_lowercase().as_str() {
-                "off" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Off,
-                "minimal" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Minimal,
-                "standard" | "on" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Standard,
-                "aggressive" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Aggressive,
-                "extreme" => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Extreme,
-                _ => cluaiz_shared::hardware::schema::booster::ContextShiftingMode::Auto,
+                "off" => cluaize_shared::hardware::schema::booster::ContextShiftingMode::Off,
+                "minimal" => cluaize_shared::hardware::schema::booster::ContextShiftingMode::Minimal,
+                "standard" | "on" => cluaize_shared::hardware::schema::booster::ContextShiftingMode::Standard,
+                "aggressive" => cluaize_shared::hardware::schema::booster::ContextShiftingMode::Aggressive,
+                "extreme" => cluaize_shared::hardware::schema::booster::ContextShiftingMode::Extreme,
+                _ => cluaize_shared::hardware::schema::booster::ContextShiftingMode::Auto,
             },
             force_vram_reclaim: if self.force_vram_reclaim == "On" { FeatureState::On } else { FeatureState::Off },
             n_gpu_layers: self.n_gpu_layers,

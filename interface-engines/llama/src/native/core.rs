@@ -4,7 +4,7 @@ use std::os::raw::c_char;
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 use tracing::{info, warn};
-use cluaiz_shared::StructuralDNA;
+use cluaize_shared::StructuralDNA;
 
 pub struct NativeLlama {
     pub model_ptr: *mut std::ffi::c_void,
@@ -27,7 +27,7 @@ impl NativeLlama {
         model_path: &str, 
         model_params: LlamaModelParams, 
         mut ctx_params: LlamaContextParams,
-        dna: &mut cluaiz_shared::metadata::dna::StructuralDNA,
+        dna: &mut cluaize_shared::metadata::dna::StructuralDNA,
         kv_cache_quantization_mode: u8,
         context_shifting_mode: u8,
         speculative_decoding_mode: u8,
@@ -38,25 +38,26 @@ impl NativeLlama {
         // Register default callback
         unsafe { llama_cpp::llama_log_set(None, std::ptr::null_mut()) };
         
-        // 🚀 Initialize all native backends
-        unsafe { 
-            #[cfg(feature = "cuda")]
-            {
-                if model_params.n_gpu_layers != 0 {
-                    eprintln!("🔥 [Sovereign-Llama] Manually injecting CUDA backend...");
-                    let reg = llama_cpp::ggml_backend_cuda_reg();
-                    if !reg.is_null() {
-                        llama_cpp::ggml_backend_register(reg);
-                        eprintln!("🔥 [Sovereign-Llama] CUDA backend registered successfully!");
-                    } else {
-                        eprintln!("❌ [Sovereign-Llama] CUDA reg pointer is NULL!");
-                    }
+        // 🚀 Step 1: Initialize all native backends (loads CPU, etc.)
+        unsafe { llama_cpp::llama_backend_init() };
+
+        // 🚀 Step 2: AFTER init, manually inject CUDA backend so it isn't overwritten
+        #[cfg(feature = "cuda")]
+        unsafe {
+            if model_params.n_gpu_layers != 0 {
+                eprintln!("🔥 [Sovereign-Llama] Manually injecting CUDA backend AFTER llama_backend_init...");
+                let reg = llama_cpp::ggml_backend_cuda_reg();
+                if !reg.is_null() {
+                    llama_cpp::ggml_backend_register(reg);
+                    eprintln!("✅ [Sovereign-Llama] CUDA backend registered successfully!");
                 } else {
-                    eprintln!("❄️ [Sovereign-Llama] CPU-only mode selected. Skipping CUDA backend injection.");
+                    eprintln!("❌ [Sovereign-Llama] CUDA reg pointer is NULL! Check CUDA runtime DLLs.");
                 }
+            } else {
+                eprintln!("❄️ [Sovereign-Llama] CPU-only mode selected. Skipping CUDA backend injection.");
             }
-            llama_cpp::llama_backend_init() 
-        };
+        }
+
         
         let c_path = CString::new(model_path)?;
         

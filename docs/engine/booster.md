@@ -1,6 +1,6 @@
 # System Booster
 
-The **System Booster** is the core acceleration sub-system of `cluaiz-engine`. It operates as a bare-metal hardware optimizer, executing specialized layers to maximize inference speed and compression without losing precision.
+The **System Booster** is the core acceleration sub-system of `cluaize-engine`. It operates as a bare-metal hardware optimizer, executing specialized layers to maximize inference speed and compression without losing precision.
 
 ---
 

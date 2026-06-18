@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use anyhow::{Result, anyhow};
 use reqwest;
 use std::fs;
-use cluaiz_shared::HardwareGovernor;
+use cluaize_shared::HardwareGovernor;
 use colored::Colorize;
 
 pub struct DriverProvisioner;
@@ -34,8 +34,7 @@ impl DriverProvisioner {
 
     /// 🛠️ Provision Kernel Binary: Auto-detects and deploys specialized engine kernels (llama-cuda, etc.)
     pub async fn provision_kernel(kernel_type: &str, backend: &str, manifest_url: &str) -> Result<PathBuf> {
-        let root = HardwareGovernor::resolve_hub_path();
-        let kernel_dir = root.join("interface-engines").join("kernels");
+        let kernel_dir = HardwareGovernor::resolve_interface_path().join("kernels");
         
         if !kernel_dir.exists() {
             fs::create_dir_all(&kernel_dir)?;
@@ -43,10 +42,26 @@ impl DriverProvisioner {
 
         let registry_key = Self::get_registry_key(backend);
         let binary_id = format!("{}-{}", kernel_type, backend);
-        let marker = kernel_dir.join(format!("{}.ready", binary_id));
+        let marker = kernel_dir.join(format!("{}.ready", kernel_type));
+
+        let ext = if cfg!(windows) { "dll" } else if cfg!(target_os = "macos") { "dylib" } else { "so" };
+        let dest_filename = format!("cluaize-{}.{}", kernel_type, ext);
+        let dest_path = kernel_dir.join(&dest_filename);
+
+        // 🛡️ SOVEREIGN GUARD: If a locally-built CUDA kernel exists (>30MB), NEVER overwrite it
+        // with a downloaded CPU-only kernel from GitHub (typically 8-20MB).
+        // A large local DLL means it was built with --features cuda and has CUDA kernels baked in.
+        if dest_path.exists() {
+            let size_mb = dest_path.metadata().map(|m| m.len()).unwrap_or(0) / (1024 * 1024);
+            if size_mb > 30 {
+                tracing::info!("🛡️ [Provisioner] CUDA-linked kernel detected ({} MB). Skipping GitHub overwrite.", size_mb);
+                println!("  {} [Provisioner] Sovereign CUDA kernel preserved ({} MB). Skipping registry sync.", "🛡️".green(), size_mb);
+                return Ok(dest_path);
+            }
+        }
 
         let client = reqwest::Client::builder()
-            .user_agent("Cluaiz-Neural-Engine/0.1.0")
+            .user_agent("Cluaize-Neural-Engine/0.1.0")
             .build()?;
 
         let response = client.get(manifest_url).send().await
@@ -61,42 +76,37 @@ impl DriverProvisioner {
         if marker.exists() {
             let local_version = fs::read_to_string(&marker).unwrap_or_default();
             if local_version == manifest_version {
-                let ext = if cfg!(windows) { "dll" } else if cfg!(target_os = "macos") { "dylib" } else { "so" };
-                let p = kernel_dir.join(format!("cluaiz-{}.{}", binary_id, ext));
+                let p = kernel_dir.join(format!("cluaize-{}.{}", kernel_type, ext));
                 if p.exists() { return Ok(p); }
             }
         }
 
-        println!("  {} [PROVISIONER] Missing Neural Kernel '{}'. Provisioning from Registry...", "🧬".cyan(), binary_id);
+        println!("  {} [PROVISIONER] Missing Neural Kernel '{}'. Provisioning from Registry...", "🧬".cyan(), kernel_type);
 
         let download_url = manifest["kernel"][kernel_type][&registry_key]
             .as_str()
             .ok_or_else(|| anyhow!("Kernel '{}' for platform '{}' not found.", kernel_type, registry_key))?;
-
-        let ext = if cfg!(windows) { "dll" } else if cfg!(target_os = "macos") { "dylib" } else { "so" };
-        let dest_filename = format!("cluaiz-{}.{}", binary_id, ext);
-        let dest_path = kernel_dir.join(dest_filename);
 
         let bin_response = client.get(download_url).send().await?;
         let bytes = bin_response.bytes().await?;
         fs::write(&dest_path, bytes)?;
 
         fs::write(marker, manifest_version)?;
-        println!("  {} [PROVISIONER] Kernel '{}' successfully deployed.", "✅".green(), binary_id);
+        println!("  {} [PROVISIONER] Kernel '{}' successfully deployed.", "✅".green(), kernel_type);
 
         Ok(dest_path)
     }
 
+
     /// 🛠️ Provision Hardware Driver: Auto-detects, downloads, and deploys missing or stale silicon drivers.
     pub async fn provision_for_hardware(driver_type: &str, manifest_url: &str) -> Result<()> {
-        let root = HardwareGovernor::resolve_hub_path();
-        let driver_dir = root.join("interface-engines").join("drivers");
+        let driver_dir = HardwareGovernor::resolve_interface_path().join("drivers");
         
         if !driver_dir.exists() {
             fs::create_dir_all(&driver_dir)?;
         }
 
-        let client = reqwest::Client::builder().user_agent("Cluaiz-Neural-Engine/0.1.0").build()?;
+        let client = reqwest::Client::builder().user_agent("Cluaize-Neural-Engine/0.1.0").build()?;
         let response = client.get(manifest_url).send().await?;
         
         let text = response.text().await?;

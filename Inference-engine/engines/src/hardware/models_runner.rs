@@ -1,5 +1,5 @@
 //! ═══════════════════════════════════════════════════════════════════════
-//!  CURE Hardware: Models Runner (Chat / Persona / Embedding Dispatch)
+//!  Hardware: Models Runner (Chat / Persona / Embedding Dispatch)
 //! ═══════════════════════════════════════════════════════════════════════
 
 use serde::Deserialize;

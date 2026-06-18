@@ -1,4 +1,4 @@
-name: Cluaiz CLI
+name: Cluaize CLI
 
 on:
   push:
@@ -56,7 +56,7 @@ jobs:
             ext: binary
 
     steps:
-      - name: Checkout Cluaiz
+      - name: Checkout Cluaize
         uses: actions/checkout@v4
 
       - name: Setup Rust
@@ -93,11 +93,11 @@ jobs:
           EXT="${{ matrix.ext }}"
           
           if [ "$EXT" == "exe" ]; then
-            ORIGINAL="target/${{ matrix.target }}/release/cluaiz.exe"
-            DEST="target/${{ matrix.target }}/release/cluaiz-${VERSION}-${SUFFIX}.exe"
+            ORIGINAL="target/${{ matrix.target }}/release/cluaize.exe"
+            DEST="target/${{ matrix.target }}/release/cluaize-${VERSION}-${SUFFIX}.exe"
           else
-            ORIGINAL="target/${{ matrix.target }}/release/cluaiz"
-            DEST="target/${{ matrix.target }}/release/cluaiz-${VERSION}-${SUFFIX}"
+            ORIGINAL="target/${{ matrix.target }}/release/cluaize"
+            DEST="target/${{ matrix.target }}/release/cluaize-${VERSION}-${SUFFIX}"
           fi
           
           mv "$ORIGINAL" "$DEST"
@@ -109,7 +109,7 @@ jobs:
         with:
           files: ${{ steps.naming.outputs.binary_path }}
           tag_name: ${{ github.event_name == 'workflow_dispatch' && format('cli-{0}', github.event.inputs.tag_name) || github.ref_name }}
-          name: "Cluaiz CLI Release ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}"
+          name: "Cluaize CLI Release ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}"
           append_body: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -121,7 +121,7 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     steps:
-      - name: Checkout Cluaiz
+      - name: Checkout Cluaize
         uses: actions/checkout@v4
 
       - name: Generate CLI Manifest JSON
@@ -135,16 +135,16 @@ jobs:
             TAG="${{ github.ref_name }}"
           fi
           
-          cat <<EOF > cluaiz-cli.json
+          cat <<EOF > cluaize-cli.json
           {
             "version": "$VERSION",
             "binaries": {
-              "win-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-$VERSION-win-x64.exe",
-              "win-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-$VERSION-win-arm64.exe",
-              "linux-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-$VERSION-linux-x64",
-              "linux-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-$VERSION-linux-arm64",
-              "mac-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-$VERSION-mac-arm64",
-              "mac-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-$VERSION-mac-x64"
+              "win-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-$VERSION-win-x64.exe",
+              "win-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-$VERSION-win-arm64.exe",
+              "linux-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-$VERSION-linux-x64",
+              "linux-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-$VERSION-linux-arm64",
+              "mac-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-$VERSION-mac-arm64",
+              "mac-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-$VERSION-mac-x64"
             }
           }
           EOF
@@ -152,7 +152,7 @@ jobs:
       - name: 🚀 Upload Manifest to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: cluaiz-cli.json
+          files: cluaize-cli.json
           tag_name: ${{ github.event_name == 'workflow_dispatch' && format('cli-{0}', github.event.inputs.tag_name) || github.ref_name }}
           make_latest: true
         env:

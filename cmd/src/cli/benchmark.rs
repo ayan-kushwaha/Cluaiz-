@@ -1,7 +1,7 @@
-use cluaiz_shared::backend::traits::{CluaizInference, UnifiedBackend};
-use cluaiz_shared::hardware::governor::HardwareGovernor;
-use cluaiz_shared::hardware::schema::booster::FeatureState;
-use cluaiz_shared::{CluaizContext, StructuralDNA, TemplateManager};
+use cluaize_shared::backend::traits::{CluaizeInference, UnifiedBackend};
+use cluaize_shared::hardware::governor::HardwareGovernor;
+use cluaize_shared::hardware::schema::booster::FeatureState;
+use cluaize_shared::{CluaizeContext, StructuralDNA, TemplateManager};
 use color_eyre::Result;
 use colored::Colorize;
 use engines::models::registry::CoreRoster;
@@ -44,23 +44,82 @@ pub async fn execute(target_model_id: Option<String>, runs: usize) -> Result<()>
         return Ok(());
     }
 
-    let roster = CoreRoster::load_roster();
+    let full_roster = CoreRoster::load_roster();
+    
+    // Filter to only downloaded models
+    let mut roster = Vec::new();
+    for model in full_roster {
+        let path_str = if let Some(local_path) = &model.local_path {
+            local_path.clone()
+        } else {
+            let folder_name = model.id.replace(':', "-");
+            let models_dir = dirs::home_dir()
+                .expect("Failed to get home directory")
+                .join(".cluaize")
+                .join("models")
+                .join("chat");
+            models_dir.join(&folder_name).to_string_lossy().to_string()
+        };
+        let model_folder = PathBuf::from(path_str);
+        if find_gguf_file(&model_folder).is_some() {
+            roster.push(model);
+        }
+    }
+    
+    if roster.is_empty() {
+        println!(
+            "     {} No downloaded models found in the vault to benchmark.",
+            "⚠️ ".yellow()
+        );
+        return Ok(());
+    }
+
     let targets = if let Some(id) = target_model_id {
         roster
             .into_iter()
             .filter(|m| m.id == id)
             .collect::<Vec<_>>()
     } else {
-        roster
+        // Interactive Selection Prompt
+        let mut options = vec!["All Downloaded Models".to_string()];
+        for m in &roster {
+            options.push(m.id.clone());
+        }
+
+        let choice = inquire::Select::new("Select model to benchmark:", options).prompt()?;
+        
+        if choice == "All Downloaded Models" {
+            roster
+        } else {
+            roster
+                .into_iter()
+                .filter(|m| m.id == choice)
+                .collect::<Vec<_>>()
+        }
     };
 
     if targets.is_empty() {
         println!(
-            "     {} No models found in the vault to benchmark.",
+            "     {} Selected model not found in the vault.",
             "⚠️ ".yellow()
         );
         return Ok(());
     }
+
+    let mode_choice = inquire::Select::new(
+        "Select Benchmark Mode:",
+        vec![
+            "🚀 Auto Suite (Run all predefined prompts)",
+            "✍️ Custom Prompt (Enter your own prompt)"
+        ]
+    ).prompt()?;
+
+    let custom_prompt_val = if mode_choice.contains("Custom Prompt") {
+        let p = inquire::Text::new("Enter your custom prompt:").prompt()?;
+        Some(p)
+    } else {
+        None
+    };
 
     let out_dir = get_benchmark_out_dir();
     fs::create_dir_all(&out_dir).unwrap_or_default();
@@ -81,15 +140,23 @@ pub async fn execute(target_model_id: Option<String>, runs: usize) -> Result<()>
         );
         println!("=======================================================");
 
-        let status = std::process::Command::new(&current_exe)
-            .args(["benchmark"])
+        let folder_arg = if let Some(local_path) = &model.local_path {
+            local_path.clone()
+        } else {
+            model.id.replace(':', "-")
+        };
+
+        let mut cmd = std::process::Command::new(&current_exe);
+        cmd.args(["benchmark"])
             .env("BENCHMARK_MODEL_ID", &model.id)
-            .env(
-                "BENCHMARK_FOLDER_NAME",
-                model.local_path.as_deref().unwrap_or(&model.id),
-            )
-            .env("BENCHMARK_RUNS", runs.to_string())
-            .status();
+            .env("BENCHMARK_FOLDER_NAME", folder_arg)
+            .env("BENCHMARK_RUNS", runs.to_string());
+            
+        if let Some(ref p) = custom_prompt_val {
+            cmd.env("BENCHMARK_CUSTOM_PROMPT", p);
+        }
+
+        let status = cmd.status();
 
         match status {
             Ok(s) if s.success() => {
@@ -119,17 +186,26 @@ pub async fn execute(target_model_id: Option<String>, runs: usize) -> Result<()>
 }
 
 fn get_benchmark_out_dir() -> PathBuf {
-    let mut path = std::env::current_dir().unwrap_or_default();
-    while let Some(name) = path.file_name() {
-        if name.to_string_lossy() == "cluaiz" {
-            break;
+    let mut base = if cfg!(debug_assertions) {
+        // Development Environment
+        let mut path = std::env::current_dir().unwrap_or_default();
+        while let Some(name) = path.file_name() {
+            if name.to_string_lossy() == "cluaize" {
+                break;
+            }
+            if !path.pop() {
+                break;
+            }
         }
-        if !path.pop() {
-            break;
-        }
-    }
-
-    let base = path.join("test").join("benchmark");
+        path.join("test").join("benchmark")
+    } else {
+        // Production Environment
+        dirs::home_dir()
+            .expect("Failed to get home directory")
+            .join(".cluaize")
+            .join("reports")
+            .join("benchmark")
+    };
 
     if let Ok(control) = HardwareGovernor::load_system_control() {
         let compute = if control.silicon_truth.accelerators.gpus.is_empty() {
@@ -179,7 +255,7 @@ async fn run_single_model_isolated(model_name: &str, runs: usize) {
     } else {
         let models_dir = dirs::home_dir()
             .expect("Failed to get home directory")
-            .join(".cluaiz")
+            .join(".cluaize")
             .join("models")
             .join("chat");
         models_dir.join(&folder_name).to_string_lossy().to_string()
@@ -199,24 +275,21 @@ async fn run_single_model_isolated(model_name: &str, runs: usize) {
         }
     };
 
-    // Load suite JSON
-    let mut path = std::env::current_dir().unwrap_or_default();
-    while let Some(name) = path.file_name() {
-        if name.to_string_lossy() == "cluaiz" {
-            break;
+    let suite = if let Ok(custom_prompt_text) = std::env::var("BENCHMARK_CUSTOM_PROMPT") {
+        BenchmarkSuite {
+            prompts: vec![BenchmarkPrompt {
+                id: "custom_prompt".to_string(),
+                category: "Custom".to_string(),
+                difficulty: "Variable".to_string(),
+                text: custom_prompt_text,
+                min_model_size_b: 0,
+            }],
         }
-        if !path.pop() {
-            break;
-        }
-    }
-    let suite_path = path.join("test").join("benchmark_suite.json");
-
-    let suite = if let Ok(content) = fs::read_to_string(&suite_path) {
-        serde_json::from_str::<BenchmarkSuite>(&content)
-            .unwrap_or_else(|_| BenchmarkSuite { prompts: vec![] })
     } else {
-        println!("⚠️ Could not find benchmark_suite.json at {:?}", suite_path);
-        BenchmarkSuite { prompts: vec![] }
+        // Load suite JSON from embedded file
+        let suite_content = include_str!("../../../test/benchmark_suite.json");
+        serde_json::from_str::<BenchmarkSuite>(suite_content)
+            .unwrap_or_else(|_| BenchmarkSuite { prompts: vec![] })
     };
 
     if suite.prompts.is_empty() {
@@ -240,21 +313,24 @@ async fn run_single_model_isolated(model_name: &str, runs: usize) {
     // Allow HardwareGovernor to negotiate context length dynamically based on VRAM
     // dna.max_context_length is left untouched to represent the model's true architecture limit.
 
-    let context = CluaizContext::boot(dna.clone(), TemplateManager::default());
+    let context = CluaizeContext::boot(dna.clone(), TemplateManager::default());
 
     // Model Params Guess (for prompt filtering)
     let approx_params_b = (dna.weights_size_gb * 1.0) as usize; // Roughly 1GB = 1B params for q4/q8. Simple heuristic.
 
     println!("🔥 Booting Engine in Process Isolation...");
-    let mut engine =
-        match HardwareOrchestrator::instantiate(gguf_file.to_str().unwrap(), "gguf", context).await {
+    let mut engine = match engines::runtime::execution::hub::HardwareOrchestrator::instantiate(
+        gguf_file.to_str().unwrap(),
+        "llama",
+        context,
+    ).await {
             Ok(engine) => engine,
             Err(e) => {
                 println!(
                     "❌ Failed to instantiate engine for {}: {:?}",
                     model_name, e
                 );
-                return;
+                std::process::exit(1);
             }
         };
 
@@ -295,7 +371,7 @@ async fn run_single_model_isolated(model_name: &str, runs: usize) {
         );
 
         let mut prompt_report_md = format!(
-            "# 🚀 Cluaiz Hardware Benchmark Report\n\n\
+            "# 🚀 Cluaize Hardware Benchmark Report\n\n\
             ## 🤖 Model: {}\n\
             ### 🛠️ Hardware & Environment\n\
             - **Compute Node**: {:?}\n\

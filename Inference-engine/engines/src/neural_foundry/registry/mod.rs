@@ -1,5 +1,5 @@
-// cluaiz-engine: Core Foundry - Registry
-// Manages the lifecycle of Cluaiz skills.
+// cluaize-engine: Core Foundry - Registry
+// Manages the lifecycle of Cluaize skills.
 
 pub mod scanner;
 pub mod compiler_daemon;

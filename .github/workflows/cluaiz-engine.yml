@@ -1,9 +1,9 @@
-name: Cluaiz Engine
+name: Cluaize Engine
 
 on:
   push:
     paths:
-      - 'cluaiz-engine/**'
+      - 'cluaize-engine/**'
     tags:
       - 'v*'
   workflow_dispatch:
@@ -68,7 +68,7 @@ jobs:
             ext: a
 
     steps:
-      - name: Checkout Cluaiz
+      - name: Checkout Cluaize
         uses: actions/checkout@v4
 
       - name: Setup Rust
@@ -121,7 +121,7 @@ jobs:
             fi
           fi
           
-          DEST="target/${{ matrix.target }}/release/cluaiz-engine-${VERSION}-${SUFFIX}.${EXT}"
+          DEST="target/${{ matrix.target }}/release/cluaize-engine-${VERSION}-${SUFFIX}.${EXT}"
           mv "$SRC" "$DEST"
           echo "binary_path=${DEST}" >> $GITHUB_OUTPUT
 
@@ -131,7 +131,7 @@ jobs:
         with:
           files: ${{ steps.naming.outputs.binary_path }}
           tag_name: ${{ github.event_name == 'workflow_dispatch' && format('engine-{0}', github.event.inputs.tag_name) || github.ref_name }}
-          name: "Cluaiz Engine Release ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}"
+          name: "Cluaize Engine Release ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}"
           append_body: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -143,7 +143,7 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     steps:
-      - name: Checkout Cluaiz
+      - name: Checkout Cluaize
         uses: actions/checkout@v4
 
       - name: Generate Engine Manifest JSON
@@ -157,19 +157,19 @@ jobs:
             TAG="${{ github.ref_name }}"
           fi
           
-          cat <<EOF > cluaiz-engine.json
+          cat <<EOF > cluaize-engine.json
           {
             "version": "$VERSION",
             "assets": {
-              "win-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-engine-$VERSION-win-x64.dll",
-              "win-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-engine-$VERSION-win-arm64.dll",
-              "linux-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-engine-$VERSION-linux-x64.so",
-              "linux-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-engine-$VERSION-linux-arm64.so",
-              "android-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-engine-$VERSION-android-arm64.so",
-              "android-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-engine-$VERSION-android-x64.so",
-              "mac-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-engine-$VERSION-mac-arm64.dylib",
-              "mac-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-engine-$VERSION-mac-x64.dylib",
-              "ios-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-engine-$VERSION-ios-arm64.a"
+              "win-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-engine-$VERSION-win-x64.dll",
+              "win-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-engine-$VERSION-win-arm64.dll",
+              "linux-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-engine-$VERSION-linux-x64.so",
+              "linux-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-engine-$VERSION-linux-arm64.so",
+              "android-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-engine-$VERSION-android-arm64.so",
+              "android-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-engine-$VERSION-android-x64.so",
+              "mac-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-engine-$VERSION-mac-arm64.dylib",
+              "mac-x64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-engine-$VERSION-mac-x64.dylib",
+              "ios-arm64": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-engine-$VERSION-ios-arm64.a"
             }
           }
           EOF
@@ -177,7 +177,7 @@ jobs:
       - name: 🚀 Upload Manifest to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: cluaiz-engine.json
+          files: cluaize-engine.json
           tag_name: "${{ github.event_name == 'workflow_dispatch' && format('engine-{0}', github.event.inputs.tag_name) || github.ref_name }}"
           make_latest: true
         env:

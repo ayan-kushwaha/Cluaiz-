@@ -67,10 +67,10 @@ pub async fn tags(State(_state): State<Arc<AppState>>) -> Json<Value> {
 }
 
 // ─── GET /v1/models/installed ────────────────────────────────────────
-// Directly scans ~/.cluaiz/models on disk — no registry, no inference.
+// Directly scans ~/.cluaize/models on disk — no registry, no inference.
 pub async fn list_installed_models(State(_state): State<Arc<AppState>>) -> Json<Value> {
     let home = dirs::home_dir().unwrap_or_default();
-    let models_root = home.join(".cluaiz").join("models");
+    let models_root = home.join(".cluaize").join("models");
     let mut installed = Vec::new();
 
     let categories = ["chat", "embedding", "vision", "audio", "code"];
@@ -135,8 +135,8 @@ pub async fn pull_model(
     Json(payload): Json<PullPayload>,
 ) -> Json<Value> {
     let home_dir = ::dirs::home_dir().unwrap_or_default();
-    let cluaiz_root = home_dir.join(".cluaiz").join("models");
-    let manager = engines::models::manager::ModelManager::new(engines::models::registry::REGISTRY_URL.to_string(), cluaiz_root);
+    let cluaize_root = home_dir.join(".cluaize").join("models");
+    let manager = engines::models::manager::ModelManager::new(engines::models::registry::REGISTRY_URL.to_string(), cluaize_root);
     
     let model_id = payload.model_id.clone();
     // Background pull
@@ -152,7 +152,7 @@ pub async fn pull_model(
 
 // ─── POST /v1/hardware/calibrate ──────────────────────────────────────
 pub async fn calibrate(State(_state): State<Arc<AppState>>) -> Json<Value> {
-    let _ = cluaiz_shared::hardware::governor::HardwareGovernor::auto_calibrate();
+    let _ = cluaize_shared::hardware::governor::HardwareGovernor::auto_calibrate();
     Json(json!({
         "status": "success",
         "message": "Real-time RDTSC hardware clocking & SIMD profiling completed."
@@ -165,7 +165,7 @@ pub async fn rm_model(
     Path(model_id): Path<String>,
 ) -> Json<Value> {
     if let Some(home_dir) = ::dirs::home_dir() {
-        let model_file = home_dir.join(".cluaiz").join("models").join(format!("{}.gguf", model_id));
+        let model_file = home_dir.join(".cluaize").join("models").join(format!("{}.gguf", model_id));
         if model_file.exists() {
             let _ = std::fs::remove_file(&model_file);
             return Json(json!({
@@ -195,8 +195,8 @@ pub async fn load_model(
         if let Some(local_path) = manifest.local_path {
             let model_file = std::path::Path::new(&local_path).join(&manifest.huggingface_filename);
             if model_file.exists() {
-                let dna = cluaiz_shared::StructuralDNA::default();
-                let context = cluaiz_shared::CluaizContext::boot(dna, cluaiz_shared::TemplateManager::default());
+                let dna = cluaize_shared::StructuralDNA::default();
+                let context = cluaize_shared::CluaizeContext::boot(dna, cluaize_shared::TemplateManager::default());
                 
                 // We don't await the long load here, just signal success for now or wait
                 // In a production setup, this would spawn or use a channel.

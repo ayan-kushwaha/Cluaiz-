@@ -24,6 +24,8 @@ pub struct PermissionSchema {
     pub vectorize_ai_response: bool,
     #[serde(default = "default_stream_telemetry")]
     pub stream_telemetry: bool,
+    #[serde(default = "default_lazy_load_model")]
+    pub lazy_load_model: bool,
     #[serde(default = "default_temporary_chat_ttl_hours")]
     pub temporary_chat_ttl_hours: u64,
 }
@@ -47,6 +49,7 @@ impl Default for PermissionSchema {
             vectorize_user_input: default_vectorize_user_input(),
             vectorize_ai_response: default_vectorize_ai_response(),
             stream_telemetry: default_stream_telemetry(),
+            lazy_load_model: default_lazy_load_model(),
             temporary_chat_ttl_hours: default_temporary_chat_ttl_hours(),
         }
     }
@@ -68,16 +71,20 @@ fn default_stream_telemetry() -> bool {
     false
 }
 
+fn default_lazy_load_model() -> bool {
+    false
+}
+
 fn default_temporary_chat_ttl_hours() -> u64 {
     24
 }
 
 impl PermissionSchema {
-    /// Loads the Permission.json from ~/.cluaiz/engine/Permission.json
+    /// Loads the Permission.json from ~/.cluaize/engine/Permission.json
     /// If it doesn't exist, it creates a default one and returns it.
     pub fn load() -> Self {
         let home_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
-        let engine_dir = home_dir.join(".cluaiz").join("engine");
+        let engine_dir = home_dir.join(".cluaize").join("engine");
         let permission_path = engine_dir.join("Permission.json");
         let permission_bin_path = engine_dir.join("Permission.bin");
 
@@ -166,7 +173,7 @@ impl PermissionSchema {
 
     pub fn save(&self) {
         let home_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
-        let engine_dir = home_dir.join(".cluaiz").join("engine");
+        let engine_dir = home_dir.join(".cluaize").join("engine");
         let permission_path = engine_dir.join("Permission.json");
         let permission_bin_path = engine_dir.join("Permission.bin");
 

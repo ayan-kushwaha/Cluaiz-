@@ -1,19 +1,19 @@
 //! ═══════════════════════════════════════════════════════════════════════
-//!  CURE Engine: Asynchronous Core Pipeline (Async Double-Buffering)
+//!   Engine: Asynchronous Core Pipeline (Async Double-Buffering)
 //! ═══════════════════════════════════════════════════════════════════════
 
 use std::sync::Arc;
 use tokio::sync::mpsc;
-use crate::runtime::execution::runner::{CluaizRunner, CluaizMetrics};
-use cluaiz_shared::CluaizContext;
+use crate::runtime::execution::runner::{CluaizeRunner, CluaizeMetrics};
+use cluaize_shared::CluaizeContext;
 
 pub struct CorePipeline {
-    pub runner: CluaizRunner,
-    pub context: CluaizContext,
+    pub runner: CluaizeRunner,
+    pub context: CluaizeContext,
 }
 
 impl CorePipeline {
-    pub fn new(runner: CluaizRunner, context: CluaizContext) -> Self {
+    pub fn new(runner: CluaizeRunner, context: CluaizeContext) -> Self {
         Self { runner, context }
     }
 

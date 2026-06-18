@@ -3,12 +3,13 @@ use ratatui::widgets::{TableState, ListState};
 use std::sync::Arc;
 
 // ── Re-export shared types for CLI use ──
-pub use ::cluaiz_shared::onboarding::OnboardingStep;
-pub use ::cluaiz_shared::profile::UserProfile;
+pub use ::cluaize_shared::onboarding::OnboardingStep;
+pub use ::cluaize_shared::profile::UserProfile;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum OsState {
     Onboarding(OnboardingStep),
+    MainMenu,
     Dashboard,
 }
 
@@ -146,7 +147,7 @@ pub struct AppState {
     pub _active_tab: Tab,
     pub active_app: MenuApp,
     pub _menu_app: MenuApp,
-    pub hardware: ::cluaiz_shared::hardware::schema::profiles::CluaizProfile,
+    pub hardware: ::cluaize_shared::hardware::schema::profiles::CluaizeProfile,
     pub ram_gb: f64,
     pub sorted_models: Vec<engines::ModelRecommendation>,
     pub roster_state: TableState,
@@ -176,7 +177,7 @@ pub struct AppState {
     pub _generation_tps: f64,
     pub cpu_usage: f32,
     pub mem_usage_gb: f32,
-    pub live_pulse: Arc<::cluaiz_shared::hardware::telemetry::ObservableHardwareState>,
+    pub live_pulse: Arc<::cluaize_shared::hardware::telemetry::ObservableHardwareState>,
 
     // ── Shared Profile ──
     pub user_profile: UserProfile,
@@ -210,6 +211,7 @@ pub struct AppState {
     pub activity_stream: Vec<ActivityBlock>,
     pub onboarding_status: String,
     pub auto_mount_triggered: bool,
+    pub is_client_mode: bool,
 }
 
 
@@ -288,8 +290,8 @@ impl AppState {
         self.activity_stream.iter().rev().find(|b| b.is_live())
     }
 
-    pub fn new(profile_override: Option<::cluaiz_shared::profile::UserProfile>) -> Self {
-        let hardware = ::cluaiz_shared::hardware::get_Cluaiz_profile();
+    pub fn new(profile_override: Option<::cluaize_shared::profile::UserProfile>, starting_state: Option<OsState>) -> Self {
+        let hardware = ::cluaize_shared::hardware::get_Cluaize_profile();
 
         let mut sys = sysinfo::System::new();
         sys.refresh_memory();
@@ -304,22 +306,23 @@ impl AppState {
 
         // Check if onboarding already completed or override provided
         let (os_state, user_profile) = if let Some(p) = profile_override {
-            (OsState::Dashboard, p)
-        } else if ::cluaiz_shared::onboarding::should_skip_onboarding() {
-            let profile = ::cluaiz_shared::profile::load_profile()
+            (starting_state.unwrap_or(OsState::Dashboard), p)
+        } else if ::cluaize_shared::onboarding::should_skip_onboarding() {
+            let profile = ::cluaize_shared::profile::load_profile()
                 .ok()
                 .flatten()
                 .unwrap_or_else(UserProfile::new);
-            (OsState::Dashboard, profile)
+            (starting_state.unwrap_or(OsState::Dashboard), profile)
         } else {
             (OsState::Onboarding(OnboardingStep::LogoAnimation), UserProfile::new())
         };
 
-        let live_pulse = ::cluaiz_shared::hardware::telemetry::get_pulse();
+        let live_pulse = ::cluaize_shared::hardware::telemetry::get_pulse();
+        let is_client_mode = std::net::TcpStream::connect("127.0.0.1:8000").is_ok();
 
         Self {
             os_state,
-            username: "Cluaiz".to_string(),
+            username: "Cluaize".to_string(),
             frame_counter: 0,
             _active_tab: Tab::All,
             active_app: MenuApp::None,
@@ -386,6 +389,7 @@ impl AppState {
             activity_stream: Vec::new(),
             onboarding_status: "OPTIMIZED ✓".to_string(),
             auto_mount_triggered: false,
+            is_client_mode: false,
         }
     }
 

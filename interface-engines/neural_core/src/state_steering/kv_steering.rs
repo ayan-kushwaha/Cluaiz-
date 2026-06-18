@@ -5,8 +5,8 @@ use std::path::Path;
 use std::sync::Arc;
 use anyhow::{Result, anyhow};
 use crate::interfaces::memory_contract::{SovereignBuffer, MappedBuffer};
-use cluaiz_shared::hardware::schema::profiles::SiliconTruth;
-use cluaiz_shared::hardware::memory::kv_cache::stitching::CluaizSignal;
+use cluaize_shared::hardware::schema::profiles::SiliconTruth;
+use cluaize_shared::hardware::memory::kv_cache::stitching::CluaizeSignal;
 
 /// 🏛️ SovereignMapper
 /// Handles the mapping of .kv-cache or .gguf files based on hardware capabilities.
@@ -50,18 +50,18 @@ impl SovereignMapper {
 }
 
 /// 🚥 KVStitcher
-/// High-level engine for preparing CluaizSignals for the Foundry.
+/// High-level engine for preparing CluaizeSignals for the Foundry.
 pub struct KVStitcher;
 
 impl KVStitcher {
-    pub fn prepare_signal(state_path: &Path, token_count: usize, head_dim: usize) -> Result<CluaizSignal> {
+    pub fn prepare_signal(state_path: &Path, token_count: usize, head_dim: usize) -> Result<CluaizeSignal> {
         if !state_path.exists() {
             return Err(anyhow!("❌ State file not found: {:?}", state_path));
         }
 
         let buffer = MappedBuffer::from_file(state_path)?;
         
-        Ok(CluaizSignal {
+        Ok(CluaizeSignal {
             raw_data: Arc::new(buffer),
             token_count,
             head_dim,

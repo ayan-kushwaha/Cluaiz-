@@ -1,4 +1,4 @@
-name: "Cluaiz Interface Kernels"
+name: "Cluaize Interface Kernels"
 
 on:
   push:
@@ -171,8 +171,8 @@ jobs:
           fi
           
           mkdir -p artifacts
-          SRC="target/${{ matrix.target }}/release/${{ matrix.prefix }}cluaiz_llama.${{ matrix.ext }}"
-          DEST="artifacts/cluaiz-kernel-${VERSION}-${{ matrix.platform }}.${{ matrix.ext }}"
+          SRC="target/${{ matrix.target }}/release/${{ matrix.prefix }}cluaize_llama.${{ matrix.ext }}"
+          DEST="artifacts/cluaize-kernel-${VERSION}-${{ matrix.platform }}.${{ matrix.ext }}"
           
           cp "$SRC" "$DEST"
           echo "binary_path=${DEST}" >> $GITHUB_OUTPUT
@@ -183,7 +183,7 @@ jobs:
         with:
           files: artifacts/*
           tag_name: "${{ github.event_name == 'workflow_dispatch' && format('kernel-{0}', github.event.inputs.tag_name) || github.ref_name }}"
-          name: "Cluaiz Interface Kernel Release ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}"
+          name: "Cluaize Interface Kernel Release ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}"
           append_body: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -209,19 +209,19 @@ jobs:
             TAG="${{ github.ref_name }}"
           fi
           
-          cat <<EOF > cluaiz-kernel.json
+          cat <<EOF > cluaize-kernel.json
           {
             "version": "$VERSION",
             "kernels": {
-              "win-x64-avx512": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-kernel-$VERSION-win-x64-avx512.dll",
-              "win-x64-avx2": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaiz-kernel-$VERSION-win-x64-avx2.dll",
-              "linux-x64-avx512": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-kernel-$VERSION-linux-x64-avx512.so",
-              "linux-x64-avx2": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-kernel-$VERSION-linux-x64-avx2.so",
-              "linux-arm64-neon": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-kernel-$VERSION-linux-arm64.so",
-              "mac-arm64-neon": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-kernel-$VERSION-mac-arm64.dylib",
-              "mac-x64-avx2": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-kernel-$VERSION-mac-x64.dylib",
-              "ios-arm64-neon": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-kernel-$VERSION-ios-arm64.a",
-              "android-arm64-neon": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaiz-kernel-$VERSION-android-arm64.so"
+              "win-x64-avx512": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-kernel-$VERSION-win-x64-avx512.dll",
+              "win-x64-avx2": "https://github.com/${{ github.repository }}/releases/download/$TAG/cluaize-kernel-$VERSION-win-x64-avx2.dll",
+              "linux-x64-avx512": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-kernel-$VERSION-linux-x64-avx512.so",
+              "linux-x64-avx2": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-kernel-$VERSION-linux-x64-avx2.so",
+              "linux-arm64-neon": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-kernel-$VERSION-linux-arm64.so",
+              "mac-arm64-neon": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-kernel-$VERSION-mac-arm64.dylib",
+              "mac-x64-avx2": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-kernel-$VERSION-mac-x64.dylib",
+              "ios-arm64-neon": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-kernel-$VERSION-ios-arm64.a",
+              "android-arm64-neon": "https://github.com/${{ github.repository }}/releases/download/$TAG/libcluaize-kernel-$VERSION-android-arm64.so"
             }
           }
           EOF
@@ -229,7 +229,7 @@ jobs:
       - name: 🚀 Upload Manifest to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: cluaiz-kernel.json
+          files: cluaize-kernel.json
           tag_name: "${{ github.event_name == 'workflow_dispatch' && format('kernel-{0}', github.event.inputs.tag_name) || github.ref_name }}"
           make_latest: true
         env:

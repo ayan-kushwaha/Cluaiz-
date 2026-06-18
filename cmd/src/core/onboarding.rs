@@ -1,6 +1,6 @@
 use crate::app_enums::Mode;
 use crate::core::state::{AppState, AuthMode, OnboardingStep, OsState};
-use ::cluaiz_shared::profile::AccountType;
+use ::cluaize_shared::profile::AccountType;
 use color_eyre::Result;
 use crossterm::event::{KeyCode, KeyEvent};
 use colored::Colorize;
@@ -35,7 +35,7 @@ impl OnboardingEngine {
                 state.completed_steps.push(current);
             }
 
-            match ::cluaiz_shared::onboarding::next_step(current) {
+            match ::cluaize_shared::onboarding::next_step(current) {
                 Some(next) => {
                     state.os_state = OsState::Onboarding(next);
                     // Reset UI state for new step
@@ -53,7 +53,7 @@ impl OnboardingEngine {
                 None => {
                     // 🛰️ Hardware READINESS GUARD
                     let os_str = if cfg!(windows) { "windows" } else { "linux" };
-                    let binary_path = engines::runtime::execution::provisioner::BinaryProvisioner::resolve_local_kernel_path(os_str, &cluaiz_shared::hardware::schema::BackendDriver::CPU).unwrap_or_default();
+                    let binary_path = engines::runtime::execution::provisioner::BinaryProvisioner::resolve_local_kernel_path(os_str, &cluaize_shared::hardware::schema::BackendDriver::CPU).unwrap_or_default();
 
                     if !binary_path.exists() {
                         println!("  {} [Onboarding] Core Core still forging. Holding transition until Hardware is ready...", "⏳".yellow());
@@ -68,7 +68,7 @@ impl OnboardingEngine {
                     state.user_profile.onboarding_completed = true;
                     state.user_profile.hardware_completed = true;
                     state.user_profile.touch();
-                    let _ = ::cluaiz_shared::onboarding::seed_workspace(&state.user_profile);
+                    let _ = ::cluaize_shared::onboarding::seed_workspace(&state.user_profile);
                     state.username = state.user_profile.display_name().to_string();
                     state.os_state = OsState::Dashboard;
                 }
@@ -84,7 +84,7 @@ impl OnboardingEngine {
     ) -> Result<()> {
         // Global: ESC to go back
         if key.code == KeyCode::Esc {
-            if let Some(prev) = ::cluaiz_shared::onboarding::prev_step(step) {
+            if let Some(prev) = ::cluaize_shared::onboarding::prev_step(step) {
                 state.completed_steps.retain(|&s| s != step);
                 state.os_state = OsState::Onboarding(prev);
             } else {
@@ -125,9 +125,9 @@ impl OnboardingEngine {
                     }
                     KeyCode::Enter => match state.auth_mode {
                         AuthMode::Google => {
-                            state.user_profile.auth = ::cluaiz_shared::auth::dummy_google_auth(
-                                "Cluaiz@cluaiz.os",
-                                "Cluaiz User",
+                            state.user_profile.auth = ::cluaize_shared::auth::dummy_google_auth(
+                                "Cluaize@cluaize.os",
+                                "Cluaize User",
                             );
                             Self::advance(state);
                         }
@@ -156,7 +156,7 @@ impl OnboardingEngine {
                     }
                     KeyCode::Enter => {
                         if !state.auth_password_input.is_empty() {
-                            state.user_profile.auth = ::cluaiz_shared::auth::dummy_email_auth(
+                            state.user_profile.auth = ::cluaize_shared::auth::dummy_email_auth(
                                 &state.auth_email_input,
                                 &state.auth_password_input,
                             );
@@ -246,8 +246,8 @@ impl OnboardingEngine {
                                 }
                                 1 => {
                                     let sel = state.menu_state.selected().unwrap_or(0);
-                                    if sel < ::cluaiz_shared::profile::INDUSTRY_TAXONOMY.len() {
-                                        biz.industry = ::cluaiz_shared::profile::INDUSTRY_TAXONOMY
+                                    if sel < ::cluaize_shared::profile::INDUSTRY_TAXONOMY.len() {
+                                        biz.industry = ::cluaize_shared::profile::INDUSTRY_TAXONOMY
                                             [sel]
                                             .id
                                             .to_string();
@@ -257,7 +257,7 @@ impl OnboardingEngine {
                                 }
                                 2 => {
                                     let subs =
-                                        ::cluaiz_shared::profile::get_sub_categories(&biz.industry);
+                                        ::cluaize_shared::profile::get_sub_categories(&biz.industry);
                                     let sel = state.menu_state.selected().unwrap_or(0);
                                     if sel < subs.len() {
                                         biz.sub_category = subs[sel].id.to_string();
@@ -282,12 +282,12 @@ impl OnboardingEngine {
                     let os = if cfg!(windows) { "windows" } else { "linux" };
                     let driver = if let Some(d) = state.hardware.active_drivers.get(0) {
                         match d.driver_id.as_str() {
-                            "CUDA" => cluaiz_shared::hardware::schema::BackendDriver::CUDA,
-                            "METAL" => cluaiz_shared::hardware::schema::BackendDriver::METAL,
-                            _ => cluaiz_shared::hardware::schema::BackendDriver::CPU,
+                            "CUDA" => cluaize_shared::hardware::schema::BackendDriver::CUDA,
+                            "METAL" => cluaize_shared::hardware::schema::BackendDriver::METAL,
+                            _ => cluaize_shared::hardware::schema::BackendDriver::CPU,
                         }
                     } else {
-                        cluaiz_shared::hardware::schema::BackendDriver::CPU
+                        cluaize_shared::hardware::schema::BackendDriver::CPU
                     };
                     let binary_path = engines::runtime::execution::provisioner::BinaryProvisioner::resolve_local_kernel_path(os, &driver).unwrap_or_default();
 

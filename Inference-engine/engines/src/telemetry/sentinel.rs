@@ -1,5 +1,5 @@
 //! ═══════════════════════════════════════════════════════════════════════
-//!  CURE Telemetry: Dynamic Memory Sentinel (Safety Guard)
+//!   Telemetry: Dynamic Memory Sentinel (Safety Guard)
 //! ═══════════════════════════════════════════════════════════════════════
 
 use sysinfo::System;

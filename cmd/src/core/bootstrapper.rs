@@ -1,46 +1,68 @@
 use std::path::Path;
-use cluaiz_shared::HardwareGovernor;
+use cluaize_shared::HardwareGovernor;
 use color_eyre::{Result, eyre::eyre};
 use colored::Colorize;
 
 pub struct Bootstrapper;
 
 impl Bootstrapper {
-    const MASTER_REGISTRY_URL: &'static str = "https://raw.githubusercontent.com/cluaiz/cluaiz/main/package.json";
+    const MASTER_REGISTRY_URL: &'static str = "https://raw.githubusercontent.com/cluaiz/cluaize/main/package.json";
 
-    /// 🚀 Cluaiz BOOTSTRAP: The Sovereign Handshake.
+    /// 🚀 Cluaize BOOTSTRAP: The Sovereign Handshake.
     pub async fn ignite() -> Result<()> {
-        #[cfg(debug_assertions)]
         let _ = Self::sync_dev_artifacts();
+        Self::ensure_global_path();
         
         // 🚀 0. Neural Foundry Genesis (Create Permission.json and Trigger Compiler Daemons)
-        tracing::info!("🧠 [Cluaiz] Igniting Neural Foundry (Permissions & Skills)...");
+        tracing::info!("🧠 [Cluaize] Igniting Neural Foundry (Permissions & Skills)...");
         let mut permissions = engines::neural_foundry::security::permission_schema::PermissionSchema::load();
         permissions.auto_assign_defaults();
         
         let home_dir = dirs::home_dir().unwrap_or_else(|| std::path::PathBuf::from("."));
-        let skills_dir = home_dir.join(".cluaiz").join("skills");
+        let skills_dir = home_dir.join(".cluaize").join("skills");
         if skills_dir.exists() {
             let mut registry = engines::neural_foundry::registry::SkillRegistry::new();
             registry.load_from_directory(&skills_dir.to_string_lossy());
         }
 
+        // 📜 Write Third-Party Licenses (Automatic Legal Compliance)
+        let hub_path = cluaize_shared::HardwareGovernor::resolve_hub_path();
+        let _ = std::fs::create_dir_all(&hub_path);
+        let license_text = include_str!("../assets/THIRD_PARTY_NOTICES.txt");
+        let _ = std::fs::write(hub_path.join("THIRD_PARTY_LICENSES.txt"), license_text);
+
         #[cfg(windows)]
         let _ = colored::control::set_virtual_terminal(true);
 
         let bin_dir = HardwareGovernor::resolve_hub_path().join("bin");
-        let local_registry_path = bin_dir.join("package.json");
         
         let client = reqwest::Client::builder()
-            .user_agent("Cluaiz-Bootstrapper/0.1.0")
+            .user_agent("Cluaize-Bootstrapper/0.1.0")
             .build()?;
 
         // 🎯 1. Fetch Master Registry (package.json)
-        tracing::info!("🛰️ [Cluaiz] Synchronizing Neural Registry...");
-        let master_registry: serde_json::Value = client.get(Self::MASTER_REGISTRY_URL).send().await?.json().await?;
+        tracing::info!("🛰️ [Cluaize] Synchronizing Neural Registry...");
+        
+        let master_registry_res = client.get(Self::MASTER_REGISTRY_URL).send().await;
+        
+        let master_registry: serde_json::Value = match master_registry_res {
+            Ok(res) if res.status().is_success() => {
+                match res.json().await {
+                    Ok(json) => json,
+                    Err(_) => {
+                        println!("  {} [Cluaiz] Network sync skipped (invalid registry format).", "⚠️".yellow());
+                        return Ok(());
+                    }
+                }
+            },
+            _ => {
+                println!("  {} [Cluaiz] Network sync skipped (offline mode).", "⚠️".yellow());
+                return Ok(());
+            }
+        };
         
         // 🏛️ Seal the Master Registry with Atomic Write Protocol
-        cluaiz_shared::RegistryGovernor::seal_registry(master_registry.clone())
+        cluaize_shared::RegistryGovernor::seal_registry(master_registry.clone())
             .map_err(|e| eyre!("Binary Truth Seal Error: {}", e))?;
         tracing::debug!("✅ [Registry] Binary Truth sealed and verified.");
 
@@ -50,21 +72,21 @@ impl Bootstrapper {
         let current_cli = env!("CARGO_PKG_VERSION");
         
         if latest_cli != current_cli && !latest_cli.is_empty() {
-            println!("  {} [Cluaiz] Update Available: {} -> {}", "🚀".green(), current_cli, latest_cli);
+            println!("  {} [Cluaize] Update Available: {} -> {}", "🚀".green(), current_cli, latest_cli);
         }
 
         // 🎯 3. Engine Sync (Driven by package.json)
         let engine_info = &master_registry["components"]["engine"];
         let engine_dir = HardwareGovernor::resolve_engine_path();
         let ext = if cfg!(windows) { "dll" } else if cfg!(target_os = "macos") { "dylib" } else { "so" };
-        let engine_path = engine_dir.join(format!("cluaiz-engine.{}", ext));
-        let engine_marker = engine_dir.join("cluaiz-engine.ready");
+        let engine_path = engine_dir.join(format!("cluaize-engine.{}", ext));
+        let engine_marker = engine_dir.join("cluaize-engine.ready");
 
         let manifest_version = engine_info["version"].as_str().unwrap_or("unknown");
         let local_version = std::fs::read_to_string(&engine_marker).unwrap_or_default();
 
         if !engine_path.exists() || local_version != manifest_version {
-            println!("  {} [Cluaiz] Provisioning Core Engine ({})...", "⚙️".yellow(), manifest_version);
+            println!("  {} [Cluaize] Provisioning Core Engine ({})...", "⚙️".yellow(), manifest_version);
             let manifest_url = engine_info["manifest_url"].as_str().ok_or_else(|| eyre!("Engine Manifest URL missing."))?;
             let engine_manifest: serde_json::Value = client.get(manifest_url).send().await?.json().await?;
             
@@ -75,11 +97,7 @@ impl Bootstrapper {
         // 🎯 4. Kernel & Stack Sync
         Self::sync_neural_stack(&master_registry).await?;
 
-        // Cache the master registry locally for offline reference
-        if let Some(parent) = local_registry_path.parent() {
-            std::fs::create_dir_all(parent)?;
-        }
-        std::fs::write(local_registry_path, serde_json::to_string_pretty(&master_registry)?)?;
+
 
         Ok(())
     }
@@ -116,17 +134,17 @@ impl Bootstrapper {
 
         // Kernel Sync (Version-Aware via package.json)
         let kernel_info = &master_registry["components"]["kernel"];
-        let kernel_dir = HardwareGovernor::resolve_hub_path().join("interface-engines/kernels");
+        let kernel_dir = HardwareGovernor::resolve_hub_path().join("engine/interfaces/kernels");
         let kernel_ext = if cfg!(windows) { "dll" } else if cfg!(target_os = "macos") { "dylib" } else { "so" };
-        let kernel_path = kernel_dir.join(format!("cluaiz-llama.{}", kernel_ext));
-        let kernel_marker = kernel_dir.join("cluaiz-llama.ready");
+        let kernel_path = kernel_dir.join(format!("cluaize-llama.{}", kernel_ext));
+        let kernel_marker = kernel_dir.join("cluaize-llama.ready");
 
         let manifest_version = kernel_info["version"].as_str().unwrap_or("unknown");
         let local_version = std::fs::read_to_string(&kernel_marker).unwrap_or_default();
 
         if !kernel_path.exists() || local_version != manifest_version {
-            println!("  {} [Cluaiz] Synchronizing Neural Kernel ({})...", "📦".magenta(), manifest_version);
-            let client = reqwest::Client::builder().user_agent("Cluaiz-Bootstrapper/0.1.0").build()?;
+            println!("  {} [Cluaize] Synchronizing Neural Kernel ({})...", "📦".magenta(), manifest_version);
+            let client = reqwest::Client::builder().user_agent("Cluaize-Bootstrapper/0.1.0").build()?;
             let manifest_url = kernel_info["manifest_url"].as_str().ok_or_else(|| eyre!("Kernel Manifest URL missing."))?;
             let manifest: serde_json::Value = client.get(manifest_url).send().await?.json().await?;
 
@@ -159,7 +177,7 @@ impl Bootstrapper {
 
     async fn download_asset(url: &str, dest: &Path) -> Result<()> {
         if let Some(parent) = dest.parent() { std::fs::create_dir_all(parent)?; }
-        let client = reqwest::Client::builder().user_agent("Cluaiz-Bootstrapper/0.1.0").danger_accept_invalid_certs(true).build()?;
+        let client = reqwest::Client::builder().user_agent("Cluaize-Bootstrapper/0.1.0").danger_accept_invalid_certs(true).build()?;
         let response = client.get(url).send().await.map_err(|e| eyre!("Registry Link Error: {}", e))?;
         if !response.status().is_success() { return Err(eyre!("Registry Error: {} returned {}", url, response.status())); }
         let content = response.bytes().await?;
@@ -167,17 +185,16 @@ impl Bootstrapper {
         Ok(())
     }
 
-    /// 🛠️ Dev-Sync: Synchronizes local build artifacts to .cluaiz during development.
-    /// This ensures cargo run always uses the latest compiled binaries.
-    #[cfg(debug_assertions)]
+    /// 🛠️ Artifact Sync: Synchronizes local build artifacts to .cluaize.
+    /// This ensures cargo run or the first boot always uses the latest compiled binaries.
     fn sync_dev_artifacts() -> Result<()> {
-        let hub_path = cluaiz_shared::HardwareGovernor::resolve_hub_path();
+        let hub_path = cluaize_shared::HardwareGovernor::resolve_hub_path();
         
         // Robust workspace root lookup by traversing parent directories
         let mut project_root = None;
         let mut path = std::env::current_dir().unwrap_or_default();
         for _ in 0..5 {
-            if path.join("Apps").exists() && path.join("interface-engines").exists() {
+            if path.join("cmd").exists() && path.join("interface-engines").exists() {
                 project_root = Some(path.clone());
                 break;
             }
@@ -189,64 +206,74 @@ impl Bootstrapper {
         }
         
         if let Some(root) = project_root {
-            let target_dir = root.join("target").join("debug");
+            // Determine if we are running from debug or release folder
+            let is_release = !cfg!(debug_assertions);
+            let target_dir = root.join("target").join(if is_release { "release" } else { "debug" });
             let ext = if cfg!(windows) { "dll" } else if cfg!(target_os = "macos") { "dylib" } else { "so" };
 
-            // 1. Engine Sync (engines.dll -> cluaiz-engine.dll)
+            // 1. Engine Sync (engines.dll -> cluaize-engine.dll)
             let engine_src = target_dir.join(format!("engines.{}", ext));
-            let engine_dest = hub_path.join("engine").join(format!("cluaiz-engine.{}", ext));
+            let engine_dest = hub_path.join("engine").join(format!("cluaize-engine.{}", ext));
             
             if engine_src.exists() {
                 let _ = std::fs::create_dir_all(engine_dest.parent().unwrap());
                 if let Err(e) = std::fs::copy(&engine_src, &engine_dest) {
                     tracing::warn!("⚠️ [DevSync] Engine Link Failed: {}. (File might be locked by another process)", e);
                 } else {
-                    let _ = std::fs::write(hub_path.join("engine").join("cluaiz-engine.ready"), "dev-release");
+                    let marker = if is_release { "prod-release" } else { "dev-release" };
+                    let _ = std::fs::write(hub_path.join("engine").join("cluaize-engine.ready"), marker);
                     tracing::info!("🧬 [DevSync] Engine Linked: {:?}", engine_dest);
                 }
             }
 
-            // 2. Kernel Sync (cluaiz_llama.dll -> cluaiz-llama.dll or cluaiz-llama-cuda.dll)
-            let kernel_src = target_dir.join(format!("cluaiz_llama.{}", ext));
-            let control_path = cluaiz_shared::HardwareGovernor::resolve_engine_path().join("system_control.json");
-            let has_nvidia = if control_path.exists() {
-                if let Ok(content) = std::fs::read_to_string(&control_path) {
-                    if let Ok(control_data) = serde_json::from_str::<serde_json::Value>(&content) {
-                        control_data["silicon_truth"]["accelerators"]["gpus"]
-                            .as_array()
-                            .map(|gpus| gpus.iter().any(|g| g["vendor"].as_str().map(|v| v.to_uppercase()).unwrap_or_default().contains("NVIDIA")))
-                            .unwrap_or(false)
-                    } else { false }
-                } else { false }
-            } else { false };
+            // 2. Kernel Sync
+            let kernels_to_sync = vec![
+                ("cluaize_llama", "cluaize-llama"),
+                ("cluaize_onnx", "cluaize-onnx"),
+                ("onnxruntime", "onnxruntime"),
+                ("onnxruntime_providers_shared", "onnxruntime_providers_shared"),
+                ("onnxruntime_providers_cuda", "onnxruntime_providers_cuda"),
+                ("onnxruntime_providers_tensorrt", "onnxruntime_providers_tensorrt"),
+                ("onnxruntime_providers_nv_tensorrt_rtx", "onnxruntime_providers_nv_tensorrt_rtx"),
+            ];
 
-            // In dev mode, we mimic the target kernel ID based on hardware.
-            // (Assumes the user ran cargo build with the correct feature flag, e.g. --features cuda)
-            let kernel_name = if has_nvidia { "cluaiz-llama-cuda" } else { "cluaiz-llama" };
-            let kernel_dest = hub_path.join("interface-engines").join(format!("{}.{}", kernel_name, ext));
-            let kernel_dest_subdir = hub_path.join("interface-engines").join("kernels").join(format!("{}.{}", kernel_name, ext));
-            
-            if kernel_src.exists() {
-                // Copy to both root and kernels subdirectory to ensure loader finds it
-                let _ = std::fs::create_dir_all(kernel_dest.parent().unwrap());
-                let _ = std::fs::create_dir_all(kernel_dest_subdir.parent().unwrap());
+            let interface_path = cluaize_shared::HardwareGovernor::resolve_interface_path();
+
+            for (src_name, dest_name) in kernels_to_sync {
+                let kernel_src = target_dir.join(format!("{}.{}", src_name, ext));
+                let kernel_dest = interface_path.join("kernels").join(format!("{}.{}", dest_name, ext));
                 
-                if let Err(e) = std::fs::copy(&kernel_src, &kernel_dest) {
-                    tracing::warn!("⚠️ [DevSync] Kernel Link Failed (root): {}.", e);
+                if kernel_src.exists() {
+                    let _ = std::fs::create_dir_all(kernel_dest.parent().unwrap());
+                    
+                    if let Err(e) = std::fs::copy(&kernel_src, &kernel_dest) {
+                        tracing::warn!("⚠️ [DevSync] {} Kernel Link Failed: {}.", dest_name, e);
+                    } else {
+                        // Create a ready marker
+                        let marker_name = format!("{}.ready", dest_name.replace("cluaize-", ""));
+                        let marker = if is_release { "prod-release" } else { "dev-release" };
+                        let _ = std::fs::write(interface_path.join("kernels").join(marker_name), marker);
+                        tracing::info!("🧬 [DevSync] {} Kernel Linked: {:?}", dest_name, kernel_dest);
+                    }
                 } else {
-                    let _ = std::fs::write(hub_path.join("interface-engines").join(format!("{}.ready", kernel_name)), "dev-release");
-                    tracing::info!("🧬 [DevSync] Kernel Linked (root): {:?}", kernel_dest);
+                    tracing::warn!("⚠️ [DevSync] Kernel source not found at: {:?}", kernel_src);
                 }
-                
-                if let Err(e) = std::fs::copy(&kernel_src, &kernel_dest_subdir) {
-                    tracing::warn!("⚠️ [DevSync] Kernel Link Failed (subdir): {}.", e);
-                } else {
-                    let _ = std::fs::write(hub_path.join("interface-engines").join("kernels").join(format!("{}.ready", kernel_name)), "dev-release");
-                    tracing::info!("🧬 [DevSync] Kernel Linked (subdir): {:?}", kernel_dest_subdir);
-                }
-            } else {
-                tracing::warn!("⚠️ [DevSync] Kernel source not found at: {:?}", kernel_src);
             }
+
+            // 3. CLI Executable Sync (cluaize.exe -> bin/cluaize.exe)
+            let exe_name = if cfg!(windows) { "cluaize.exe" } else { "cluaize" };
+            let exe_src = target_dir.join(exe_name);
+            let bin_dir = cluaize_shared::HardwareGovernor::resolve_bin_gateway();
+            let exe_dest = bin_dir.join(exe_name);
+            
+            if exe_src.exists() {
+                if let Err(e) = std::fs::copy(&exe_src, &exe_dest) {
+                    tracing::warn!("⚠️ [DevSync] CLI Executable Sync Failed (File might be in use): {}.", e);
+                } else {
+                    tracing::info!("🚀 [DevSync] CLI Executable Synced: {:?}", exe_dest);
+                }
+            }
+
         } else {
             tracing::error!("❌ [DevSync] Failed to resolve project root. Binaries will not be synced.");
         }
@@ -254,8 +281,27 @@ impl Bootstrapper {
         Ok(())
     }
 
-    #[cfg(not(debug_assertions))]
-    fn sync_dev_artifacts() -> Result<()> {
-        Ok(())
+    /// 🌐 Automatically injects Cluaize into the Windows Global PATH.
+    /// Just like Ollama or Bun, users won't need to manually configure environment variables.
+    fn ensure_global_path() {
+        #[cfg(windows)]
+        {
+            let bin_dir = cluaize_shared::HardwareGovernor::resolve_bin_gateway();
+            let bin_str = bin_dir.to_string_lossy().to_string();
+            
+            // Simple PowerShell script to read User PATH, check if Cluaize is in it, and append if missing.
+            let script = format!(
+                "$userPath = [Environment]::GetEnvironmentVariable('Path', 'User'); \
+                 if ($userPath -notlike '*{}*') {{ \
+                     $newPath = $userPath + ';{}'; \
+                     [Environment]::SetEnvironmentVariable('Path', $newPath, 'User'); \
+                 }}",
+                bin_str, bin_str
+            );
+
+            let _ = std::process::Command::new("powershell")
+                .args(&["-NoProfile", "-Command", &script])
+                .output();
+        }
     }
 }
