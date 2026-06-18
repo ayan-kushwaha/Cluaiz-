@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/cluaize-banner.png" width="100%" alt="Cluaize Logo">
+  <img src="assets/cluaiz-banner.png" width="100%" alt="Cluaize Logo">
 </p>
 
 <h1 align="center">Cluaize</h1>
