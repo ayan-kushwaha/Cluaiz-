@@ -1,7 +1,0 @@
-2026-06-16T11:28:05.395600Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] Engine Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\cluaize-engine.dll"
-2026-06-16T11:28:05.404687Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] cluaize-llama Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\cluaize-llama.dll"
-2026-06-16T11:28:05.420712Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] cluaize-onnx Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\cluaize-onnx.dll"
-2026-06-16T11:28:05.466315Z  INFO cluaize::core::bootstrapper: 🚀 [DevSync] CLI Executable Synced: "C:\\Users\\Aryan\\.cluaize\\bin\\cluaize.exe"
-2026-06-16T11:28:05.466362Z  INFO cluaize::core::bootstrapper: 🧠 [Cluaize] Igniting Neural Foundry (Permissions & Skills)...
-2026-06-16T11:28:05.474119Z  INFO cluaize::core::bootstrapper: 🛰️ [Cluaize] Synchronizing Neural Registry...
-2026-06-16T11:28:06.155943Z  INFO system_booster::os_tuning: 🚀 [Bare Metal] Attempting to elevate process priority to high (Value: 128) for PID 2856

@@ -56,7 +56,11 @@ impl HardwareGovernor {
         let _ = crate::neural::graph::NeuralGraph::chronicle_pulse(
             "Foundry Calibration & Silicon Audit",
             "HardwareGovernor",
-            &format!("Silicon: {}, Arch: {}", control.silicon_truth.cpu.brand.trim(), control.identity.architecture)
+            &format!(
+                "Silicon: {}, Arch: {}",
+                control.silicon_truth.cpu.brand.trim(),
+                control.identity.architecture
+            ),
         );
 
         // Update Arbiter with latest hardware truth
@@ -84,11 +88,18 @@ impl HardwareGovernor {
         // If total_vram is 0, we try to load from the existing System Truth first (Fast)
         if arbiter.total_vram_gb == 0.0 {
             if let Ok(control) = Self::load_system_control() {
-                let total = control.silicon_truth.accelerators.gpus.iter()
+                let total = control
+                    .silicon_truth
+                    .accelerators
+                    .gpus
+                    .iter()
                     .map(|g| g.vram_total_gb)
                     .sum::<f64>();
                 arbiter.total_vram_gb = total;
-                tracing::info!("⚖️ [Arbiter] VRAM Truth synchronized from System Control (Total): {:.2}GB", total);
+                tracing::info!(
+                    "⚖️ [Arbiter] VRAM Truth synchronized from System Control (Total): {:.2}GB",
+                    total
+                );
             } else {
                 // Only calibrate if absolutely no truth is found (Slow fallback)
                 let _ = Self::auto_calibrate();
@@ -98,10 +109,11 @@ impl HardwareGovernor {
         // 🛡️ Sovereign Limit: In Max Boost, we allow 98% utilization.
         let booster = Self::load_booster_settings().unwrap_or_default();
         let safety_margin = match booster.mode_run {
-            crate::hardware::schema::booster::BoosterMode::UltraMaxBoost | crate::hardware::schema::booster::BoosterMode::HyperCluster => 0.025, // 2.5% Margin for extreme modes (102MB on 4GB)
+            crate::hardware::schema::booster::BoosterMode::UltraMaxBoost
+            | crate::hardware::schema::booster::BoosterMode::HyperCluster => 0.025, // 2.5% Margin for extreme modes (102MB on 4GB)
             crate::hardware::schema::booster::BoosterMode::MaxBoost => 0.05, // 5% Margin
             crate::hardware::schema::booster::BoosterMode::Balance => 0.07,  // 7% Margin
-            _ => 0.12,                                                      // 12% for multitasking 
+            _ => 0.12,                                                       // 12% for multitasking
         };
 
         let available = arbiter.total_vram_gb * (1.0 - safety_margin) - arbiter.allocated_vram_gb;
@@ -126,13 +138,16 @@ impl HardwareGovernor {
 
         // Sync to cross-process registry
         let mut registry = Self::load_process_registry();
-        registry.insert(std::process::id().to_string(), ProcessInfo {
-            pid: std::process::id(),
-            model_id: engine_id.to_string(),
-            vram_gb: required_gb,
-            context_size: 0, // Will be updated by negotiate_vram_envelope
-            engine: "Native Llama".to_string(),
-        });
+        registry.insert(
+            std::process::id().to_string(),
+            ProcessInfo {
+                pid: std::process::id(),
+                model_id: engine_id.to_string(),
+                vram_gb: required_gb,
+                context_size: 0, // Will be updated by negotiate_vram_envelope
+                engine: "Native Llama".to_string(),
+            },
+        );
         Self::save_process_registry(&registry);
 
         Ok(())
@@ -147,11 +162,11 @@ impl HardwareGovernor {
     }
 
     pub fn negotiate_vram_envelope_with_booster(
-        dna: &crate::metadata::dna::StructuralDNA, 
-        booster: &crate::hardware::schema::booster::BoosterControl
+        dna: &crate::metadata::dna::StructuralDNA,
+        booster: &crate::hardware::schema::booster::BoosterControl,
     ) -> usize {
         let mut arbiter = ARBITER.lock().unwrap();
-        
+
         let mut path = dirs::home_dir().unwrap_or_default();
         path.push(".cluaize");
         path.push("engine");
@@ -159,8 +174,13 @@ impl HardwareGovernor {
 
         // 🔍 LIVE SILICON PROBE: We don't trust cached values for safety-critical negotiation.
         if let Ok(control) = Self::load_system_control() {
-            arbiter.total_vram_gb = control.silicon_truth.accelerators.gpus.iter()
-                .map(|g| g.vram_total_gb).sum::<f64>();
+            arbiter.total_vram_gb = control
+                .silicon_truth
+                .accelerators
+                .gpus
+                .iter()
+                .map(|g| g.vram_total_gb)
+                .sum::<f64>();
         } else if arbiter.total_vram_gb == 0.0 {
             let _ = Self::auto_calibrate();
         }
@@ -169,11 +189,15 @@ impl HardwareGovernor {
         // We scale the margin based on total VRAM to prevent waste on H100s and starvation on 2GB cards.
         let total_gb = arbiter.total_vram_gb;
         let mut margin = match booster.mode_run {
-            crate::hardware::schema::booster::BoosterMode::Edge => 0.05f64.min(0.2 / total_gb),         // 📱 Max 5% or 200MB
-            crate::hardware::schema::booster::BoosterMode::Multitasking => 0.30f64.min(1.5 / total_gb), // 💻 Max 30% or 1.5GB
-            crate::hardware::schema::booster::BoosterMode::Balance => 0.15f64.min(2.0 / total_gb),      // ⚖️ Max 15% or 2GB
-            crate::hardware::schema::booster::BoosterMode::MaxBoost => 0.10f64.max(0.6 / total_gb),     // 🚀 Safe Aggressive: 600MB Margin (Zero Spill)
-            crate::hardware::schema::booster::BoosterMode::UltraMaxBoost => 0.01f64.max(0.25 / total_gb), // 🔥 Absolute Limit: 250MB Margin (Maximum Context, Risk of Spill)
+            crate::hardware::schema::booster::BoosterMode::Edge => 0.05f64.min(0.2 / total_gb), // 📱 Max 5% or 200MB
+            crate::hardware::schema::booster::BoosterMode::Multitasking => {
+                0.30f64.min(1.5 / total_gb)
+            } // 💻 Max 30% or 1.5GB
+            crate::hardware::schema::booster::BoosterMode::Balance => 0.15f64.min(2.0 / total_gb), // ⚖️ Max 15% or 2GB
+            crate::hardware::schema::booster::BoosterMode::MaxBoost => 0.10f64.max(0.6 / total_gb), // 🚀 Safe Aggressive: 600MB Margin (Zero Spill)
+            crate::hardware::schema::booster::BoosterMode::UltraMaxBoost => {
+                0.01f64.max(0.25 / total_gb)
+            } // 🔥 Absolute Limit: 250MB Margin (Maximum Context, Risk of Spill)
             crate::hardware::schema::booster::BoosterMode::HyperCluster => {
                 if total_gb < 40.0 {
                     println!("⚠️ [Arbiter] VRAM GUARD: HyperCluster rejected (<40GB). Falling back to UltraMaxBoost.");
@@ -182,10 +206,14 @@ impl HardwareGovernor {
                     0.15 // 🌌 Server (True Zero-ish)
                 }
             }
-        }; 
+        };
 
         // 🛡️ FLOOR SAFETY: Ensure OS always has breathing room.
-        let floor_gb = if matches!(booster.mode_run, crate::hardware::schema::booster::BoosterMode::UltraMaxBoost | crate::hardware::schema::booster::BoosterMode::HyperCluster) {
+        let floor_gb = if matches!(
+            booster.mode_run,
+            crate::hardware::schema::booster::BoosterMode::UltraMaxBoost
+                | crate::hardware::schema::booster::BoosterMode::HyperCluster
+        ) {
             0.25 // 250MB Absolute Minimum
         } else {
             0.60 // 600MB Standard Safety Floor
@@ -199,48 +227,68 @@ impl HardwareGovernor {
         // 🔥 'UltraMax' Override: Extreme utilization but still respects our new floor
         if booster.force_vram_reclaim == crate::hardware::schema::booster::FeatureState::On {
             let tight_margin = 0.005f64; // 0.5%
-            margin = tight_margin.max(floor_gb / total_gb); 
+            margin = tight_margin.max(floor_gb / total_gb);
         }
 
-        // We use static theoretical math for context negotiation. 
-        // Using live_vram_probe() here squashes the context window on subsequent prompts 
+        // We use static theoretical math for context negotiation.
+        // Using live_vram_probe() here squashes the context window on subsequent prompts
         // because the context is already allocated in VRAM, making live VRAM appear artificially low.
-        let other_allocations = arbiter.active_allocations.iter().filter(|(id, _)| {
-            !id.contains(&dna.model_identity) && id.as_str() != "llama" && id.as_str() != "onnx" && id.as_str() != "whisper"
-        }).map(|(_, gb)| gb).sum::<f64>();
+        let other_allocations = arbiter
+            .active_allocations
+            .iter()
+            .filter(|(id, _)| {
+                !id.contains(&dna.model_identity)
+                    && id.as_str() != "llama"
+                    && id.as_str() != "onnx"
+                    && id.as_str() != "whisper"
+            })
+            .map(|(_, gb)| gb)
+            .sum::<f64>();
         let available_gb = (total_gb * (1.0 - margin)) - other_allocations;
         let final_available_gb = (available_gb - (dna.weights_size_gb as f64)).max(0.0);
-        
+
         // 🧪 SOVEREIGN MATH: Calculate KV-Cache cost per 1024 tokens for THIS model
         let layers = dna.layer_count.unwrap_or(32) as f64;
-        let kv_heads = dna.attention_head_count_kv.or(dna.attention_head_count).unwrap_or(32) as f64;
-        
+        let kv_heads = dna
+            .attention_head_count_kv
+            .or(dna.attention_head_count)
+            .unwrap_or(32) as f64;
+
         // 🧬 DNA Interrogation: head_dim = hidden_size / heads (Architecture Truth)
-        let head_dim_calc = if let (Some(h), Some(c)) = (dna.hidden_size, dna.attention_head_count) {
+        let head_dim_calc = if let (Some(h), Some(c)) = (dna.hidden_size, dna.attention_head_count)
+        {
             (h / c) as f64
         } else {
             dna.attention_head_dim.unwrap_or(128) as f64
         };
-        
-        let head_dim = dna.attention_head_dim.map(|d| d as f64).unwrap_or(head_dim_calc);
-        
+
+        let head_dim = dna
+            .attention_head_dim
+            .map(|d| d as f64)
+            .unwrap_or(head_dim_calc);
+
         // 🚀 Conservative Math: Always assume FP16 for KV-cache unless confirmed by engine state.
         let bytes_per_element = 2.0; // FP16 standard (Safe)
 
         // GB per 1024 tokens
-        let gb_per_k = (1024.0 * layers * kv_heads * head_dim * bytes_per_element * 2.0) / (1024.0 * 1024.0 * 1024.0);
-        
+        let gb_per_k = (1024.0 * layers * kv_heads * head_dim * bytes_per_element * 2.0)
+            / (1024.0 * 1024.0 * 1024.0);
+
         // 🛑 DYNAMIC STABILITY CAP: No more static traps.
         // Rule: Never exceed what the model architecture supports (DNA Truth).
-        // If DNA is missing, we assume an infinite architecture limit (usize::MAX) 
+        // If DNA is missing, we assume an infinite architecture limit (usize::MAX)
         // and let the Physical VRAM Arbiter determine the safe ceiling.
         let arch_cap = dna.max_context_length.unwrap_or(usize::MAX);
-        
+
         // If CPU-only Mode (n_gpu_layers = 0), bypass GPU VRAM constraints entirely
         if booster.n_gpu_layers == 0 {
-            let cpu_ctx = if arch_cap == usize::MAX { 32000 } else { arch_cap };
+            let cpu_ctx = if arch_cap == usize::MAX {
+                32000
+            } else {
+                arch_cap
+            };
             println!("⚖️ [Arbiter] CPU-only Mode detected (n_gpu_layers = 0). Bypassing GPU VRAM constraints. Safe Context: {} tokens", cpu_ctx);
-            
+
             let mut registry = Self::load_process_registry();
             let pid_str = std::process::id().to_string();
             if let Some(info) = registry.get_mut(&pid_str) {
@@ -249,21 +297,26 @@ impl HardwareGovernor {
             }
             return cpu_ctx;
         }
-        
+
         // Starting point for negotiation should be the Architecture Truth
         let mut current_ctx = arch_cap;
-        
+
         // Expansion logic for high-power modes (Only if architecture allows)
-        if matches!(booster.mode_run, crate::hardware::schema::booster::BoosterMode::MaxBoost | crate::hardware::schema::booster::BoosterMode::UltraMaxBoost | crate::hardware::schema::booster::BoosterMode::HyperCluster) {
+        if matches!(
+            booster.mode_run,
+            crate::hardware::schema::booster::BoosterMode::MaxBoost
+                | crate::hardware::schema::booster::BoosterMode::UltraMaxBoost
+                | crate::hardware::schema::booster::BoosterMode::HyperCluster
+        ) {
             let possible_max = (final_available_gb / gb_per_k) * 1024.0;
             // Expand to physical VRAM limit, but never exceed architecture DNA
             current_ctx = current_ctx.max(possible_max as usize).min(arch_cap);
         }
-        
+
         // Final Safety Clamp: Strictly follow the model's Silicon-Genome
-        current_ctx = current_ctx.min(arch_cap); 
-        
-        // Note: We removed the static 8192 cap for <6GB cards because 
+        current_ctx = current_ctx.min(arch_cap);
+
+        // Note: We removed the static 8192 cap for <6GB cards because
         // the iterative loop below handles fitting tokens into physical available_gb dynamically.
 
         // Iterative step down if OOM risk detected
@@ -272,10 +325,10 @@ impl HardwareGovernor {
             if required_gb <= final_available_gb {
                 break;
             }
-            current_ctx -= 512; 
+            current_ctx -= 512;
         }
 
-        // Envelope Negotiation Log Hidden for clean UI    
+        // Envelope Negotiation Log Hidden for clean UI
         // Sync context size to cross-process registry
         let mut registry = Self::load_process_registry();
         let pid_str = std::process::id().to_string();
@@ -440,7 +493,7 @@ impl HardwareGovernor {
     /// If missing, it triggers an automatic "Self-Healing" recovery scan.
     pub fn load_binary_truth() -> anyhow::Result<SystemControl> {
         let path = Self::resolve_engine_path().join("system_control.bin");
-        
+
         if !path.exists() {
             return Err(anyhow::anyhow!("Binary truth missing"));
         }
@@ -448,10 +501,12 @@ impl HardwareGovernor {
         let bytes_raw = std::fs::read(&path)?;
         let mut bytes = rkyv::AlignedVec::with_capacity(bytes_raw.len());
         bytes.extend_from_slice(&bytes_raw);
-        
+
         // 🛡️ Ultimate Safety Guard: Catch rkyv panics (overflows/alignment)
         let result = std::panic::catch_unwind(|| {
-            if bytes.len() < 32 { return None; }
+            if bytes.len() < 32 {
+                return None;
+            }
             let archived = unsafe { rkyv::archived_root::<SystemControl>(&bytes) };
             archived.deserialize(&mut rkyv::Infallible).ok()
         });
@@ -471,7 +526,7 @@ impl HardwareGovernor {
         let base = Self::resolve_engine_path();
         let path = base.join("system_control.json");
         let bin_path = base.join("system_control.bin");
-        
+
         if !path.exists() {
             if !bin_path.exists() {
                 println!("🛠️ [Self-Healing] System Truth LOST. Initiating Full Recovery...");
@@ -505,7 +560,7 @@ impl HardwareGovernor {
         // ✍️ Atomic Write Protocol: Write to Temp -> Sync -> Rename
         let json_data = serde_json::to_string_pretty(control)?;
         std::fs::write(&temp_json, json_data)?;
-        
+
         let bytes = rkyv::to_bytes::<_, 65536>(control)
             .map_err(|e| anyhow::anyhow!("Binary Serialization Failed: {}", e))?;
         std::fs::write(&temp_bin, bytes.as_slice())?;
@@ -530,7 +585,7 @@ impl HardwareGovernor {
                 match serde_json::from_str::<BoosterControl>(&data) {
                     Ok(control) => {
                         // Always sync to binary truth to keep .bin updated in real-time when loaded
-                        let _ = Self::save_booster_settings(&control); 
+                        let _ = Self::save_booster_settings(&control);
                         return Ok(control);
                     }
                     Err(e) => {
@@ -547,7 +602,9 @@ impl HardwareGovernor {
                 bytes.extend_from_slice(&bytes_raw);
                 {
                     let result = std::panic::catch_unwind(|| {
-                        if bytes.len() < 32 { return None; }
+                        if bytes.len() < 32 {
+                            return None;
+                        }
                         let archived = unsafe { rkyv::archived_root::<BoosterControl>(&bytes) };
                         archived.deserialize(&mut rkyv::Infallible).ok()
                     });
@@ -567,7 +624,7 @@ impl HardwareGovernor {
     pub fn save_booster_settings(control: &BoosterControl) -> anyhow::Result<()> {
         let base = Self::resolve_engine_path();
         std::fs::create_dir_all(&base)?;
-        
+
         let json_path = base.join("system_booster.json");
         let bin_path = base.join("system_booster.bin");
 
@@ -602,7 +659,10 @@ impl RegistryGovernor {
     /// Resolves the local path for the master package registry.
     pub fn resolve_registry_path() -> (PathBuf, PathBuf) {
         let engine_dir = HardwareGovernor::resolve_engine_path();
-        (engine_dir.join("package.json"), engine_dir.join("package.bin"))
+        (
+            engine_dir.join("package.json"),
+            engine_dir.join("package.bin"),
+        )
     }
 
     /// 🏛️ Synchronizes the master registry from remote and seals it into binary truth.
@@ -610,7 +670,7 @@ impl RegistryGovernor {
         let (json_path, bin_path) = Self::resolve_registry_path();
         let temp_json = json_path.with_extension("json.tmp");
         let temp_bin = bin_path.with_extension("bin.tmp");
-        
+
         // ✍️ Atomic Registry Update
         let json_str = serde_json::to_string_pretty(&data)?;
         std::fs::write(&temp_json, json_str)?;
@@ -637,19 +697,30 @@ impl RegistryGovernor {
             return Ok(serde_json::from_slice(&bytes)?);
         }
 
-        Err(anyhow::anyhow!("Ecosystem Registry LOST. Requires Sovereign Handshake."))
+        Err(anyhow::anyhow!(
+            "Ecosystem Registry LOST. Requires Sovereign Handshake."
+        ))
     }
 
     /// 🧠 Resolve Best Backend: Maps real hardware truth to the best available registry backend.
-    pub fn resolve_backend(control: &crate::hardware::schema::profiles::SystemControl, _registry: &serde_json::Value) -> String {
+    pub fn resolve_backend(
+        control: &crate::hardware::schema::profiles::SystemControl,
+        _registry: &serde_json::Value,
+    ) -> String {
         let os = control.identity.os_target.to_lowercase();
         let _arch = control.identity.architecture.to_lowercase();
-        let gpu_vendor = control.silicon_truth.accelerators.gpus.first().map(|g| g.vendor.to_lowercase()).unwrap_or_default();
-        
+        let gpu_vendor = control
+            .silicon_truth
+            .accelerators
+            .gpus
+            .first()
+            .map(|g| g.vendor.to_lowercase())
+            .unwrap_or_default();
+
         // 🚀 Sovereign Routing Strategy:
         // Priority 1: Check if registry has a specific hardware match
         // Priority 2: Fallback to generic platform matching
-        
+
         if os == "macos" && gpu_vendor.contains("apple") {
             return "metal".to_string();
         }

@@ -1,11 +1,16 @@
-2026-06-21T04:21:32.596567Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] Engine Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\cluaize-engine.dll"
-2026-06-21T04:21:32.623019Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] cluaize-llama Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\cluaize-llama.dll"
-2026-06-21T04:21:32.624219Z  WARN cluaize::core::bootstrapper: ⚠️ [DevSync] cluaize-onnx Kernel Link Failed: The process cannot access the file because it is being used by another process. (os error 32).
-2026-06-21T04:21:32.624452Z  WARN cluaize::core::bootstrapper: ⚠️ [DevSync] Kernel source not found at: "C:\\Users\\Aryan\\my\\Cluaiz-workspace\\Cluaiz-Technologies\\cluaize\\target\\debug\\onnxruntime.dll"
-2026-06-21T04:21:32.625526Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] onnxruntime_providers_shared Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\onnxruntime_providers_shared.dll"
-2026-06-21T04:21:32.663880Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] onnxruntime_providers_cuda Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\onnxruntime_providers_cuda.dll"
-2026-06-21T04:21:32.665694Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] onnxruntime_providers_tensorrt Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\onnxruntime_providers_tensorrt.dll"
-2026-06-21T04:21:32.667147Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] onnxruntime_providers_nv_tensorrt_rtx Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\onnxruntime_providers_nv_tensorrt_rtx.dll"
-2026-06-21T04:21:32.668294Z  WARN cluaize::core::bootstrapper: ⚠️ [DevSync] CLI Executable Sync Failed (File might be in use): The process cannot access the file because it is being used by another process. (os error 32).
-2026-06-21T04:21:32.916305Z  INFO cluaize::core::bootstrapper: 🧠 [Cluaize] Igniting Neural Foundry (Permissions & Skills)...
-2026-06-21T04:21:32.924649Z  INFO cluaize::core::bootstrapper: 🛰️ [Cluaize] Synchronizing Neural Registry...
+2026-06-21T06:54:13.857912Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] Engine Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\cluaize-engine.dll"
+2026-06-21T06:54:13.902028Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] cluaize-llama Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\cluaize-llama.dll"
+2026-06-21T06:54:13.924851Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] cluaize-onnx Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\cluaize-onnx.dll"
+2026-06-21T06:54:13.925017Z  WARN cluaize::core::bootstrapper: ⚠️ [DevSync] Kernel source not found at: "C:\\Users\\Aryan\\my\\Cluaiz-workspace\\Cluaiz-Technologies\\cluaize\\target\\debug\\onnxruntime.dll"
+2026-06-21T06:54:13.927307Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] onnxruntime_providers_shared Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\onnxruntime_providers_shared.dll"
+2026-06-21T06:54:13.977201Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] onnxruntime_providers_cuda Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\onnxruntime_providers_cuda.dll"
+2026-06-21T06:54:13.979943Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] onnxruntime_providers_tensorrt Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\onnxruntime_providers_tensorrt.dll"
+2026-06-21T06:54:13.982069Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] onnxruntime_providers_nv_tensorrt_rtx Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\onnxruntime_providers_nv_tensorrt_rtx.dll"
+2026-06-21T06:54:14.044177Z  INFO cluaize::core::bootstrapper: 🚀 [DevSync] CLI Executable Synced: "C:\\Users\\Aryan\\.cluaize\\bin\\cluaize.exe"
+2026-06-21T06:54:14.482114Z  INFO cluaize::core::bootstrapper: 🧠 [Cluaize] Igniting Neural Foundry (Permissions & Skills)...
+2026-06-21T06:54:14.493235Z  INFO cluaize::core::bootstrapper: 🛰️ [Cluaize] Synchronizing Neural Registry...
+2026-06-21T06:54:14.893629Z  INFO system_booster::os_tuning: 🚀 [Bare Metal] Attempting to elevate process priority to high (Value: 128) for PID 35036
+2026-06-21T06:54:22.502903Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon Worker] Background queue active. Processing skills sequentially...
+2026-06-21T06:54:22.503695Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: frontend-dev
+2026-06-21T06:54:22.504792Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: minimax-music-gen
+2026-06-21T06:54:22.505678Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: test-small-skill

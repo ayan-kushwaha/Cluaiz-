@@ -55,11 +55,14 @@ impl HardwareOrchestrator {
     fn probe_brain() -> SovereignBrain {
         // Preserve existing brain toggle if possible, otherwise check Env Variable, default to "off"
         let mut ffi_val = "off".to_string();
-        
+
         let engine_path = crate::hardware::governor::HardwareGovernor::resolve_engine_path();
         // Prevent infinite auto-calibration loop by checking if files exist before loading
-        if engine_path.join("system_control.bin").exists() || engine_path.join("system_control.json").exists() {
-            if let Ok(existing) = crate::hardware::governor::HardwareGovernor::load_system_control() {
+        if engine_path.join("system_control.bin").exists()
+            || engine_path.join("system_control.json").exists()
+        {
+            if let Ok(existing) = crate::hardware::governor::HardwareGovernor::load_system_control()
+            {
                 ffi_val = existing.brain.cluaizd_connect_ffi.clone();
             }
         }
@@ -569,7 +572,8 @@ impl HardwareOrchestrator {
         let json_data = serde_json::to_string_pretty(control)?;
         std::fs::write(&json_path, json_data)?;
 
-        let bytes = rkyv::to_bytes::<_, 4096>(control).map_err(|e| anyhow::anyhow!("Binary Serialization Failed: {}", e))?;
+        let bytes = rkyv::to_bytes::<_, 4096>(control)
+            .map_err(|e| anyhow::anyhow!("Binary Serialization Failed: {}", e))?;
         std::fs::write(&bin_path, bytes.as_slice())?;
 
         // 🔒 Step 3: Sovereign Lockdown (Prevent Delete/Edit)
