@@ -39,6 +39,8 @@ pub fn stream_tokens(
             }
         }
 
+        let booster = cluaize_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
+
         let templater = cluaize_shared::prompting::templater::TemplateManager::default();
         let mut formatted_prompt = if is_pivot {
             // 🛑 ROOT FIX: If we interrupted mid-generation, the model might have been thinking.
@@ -46,18 +48,48 @@ pub fn stream_tokens(
             // We forcefully close the thought block before starting the new turn.
             format!("\n</think>\n{}", templater.format_turn(dna, &actual_prompt))
         } else {
-            templater.format(dna, &actual_prompt)
+            let mut prompt_with_constraint = actual_prompt.clone();
+            
+            // 🧠 Deep Truth: Dynamic Structural Constraints Injection
+            if booster.think_mode == cluaize_shared::hardware::schema::booster::FeatureState::On {
+                if booster.response_length == "long" {
+                    prompt_with_constraint.push_str("\n\n[SYSTEM CONSTRAINT: Think deeply and explore all possibilities. Provide a comprehensive reasoning step.]");
+                } else if booster.response_length == "short" {
+                    prompt_with_constraint.push_str("\n\n[SYSTEM CONSTRAINT: Keep reasoning/thinking steps brief and strictly to the point.]");
+                }
+            } else {
+                if booster.response_length == "long" {
+                    prompt_with_constraint.push_str("\n\n[SYSTEM CONSTRAINT: Provide a highly detailed, comprehensive, and exhaustive response.]");
+                } else if booster.response_length == "short" {
+                    prompt_with_constraint.push_str("\n\n[SYSTEM CONSTRAINT: Provide a highly concise and direct response without conversational filler.]");
+                }
+            }
+
+            if booster.enforce_json {
+                prompt_with_constraint.push_str("\n\n[SYSTEM CONSTRAINT: Output strictly in valid JSON format only. No markdown blocks.]");
+            }
+
+            templater.format(dna, &prompt_with_constraint)
         };
 
-        let booster = cluaize_shared::hardware::governor::HardwareGovernor::load_booster_settings().unwrap_or_default();
         let mut suppress_thinking = booster.think_mode == cluaize_shared::hardware::schema::booster::FeatureState::Off;
         
         if formatted_prompt.contains("CRITICAL INSTRUCTION") || (formatted_prompt.contains("<system>") && formatted_prompt.contains("\"skill\"")) {
             suppress_thinking = true;
         }
         
-        if !suppress_thinking && !formatted_prompt.contains("<think>") {
-            formatted_prompt.push_str("<think>\n");
+        let mut think_start_tag = String::new();
+        let mut think_end_tag = String::new();
+        if !dna.think_tag_schema.is_empty() && dna.think_tag_schema != "none" {
+            think_start_tag = dna.think_tag_schema.clone();
+            think_end_tag = dna.think_end_schema.clone();
+        }
+
+        let mut injected_think_tag = false;
+        // Only push dynamic think tag if the model supports it natively based on DNA, and it's not suppressed
+        if !suppress_thinking && dna.supports_thinking && !think_start_tag.is_empty() && !formatted_prompt.contains(&think_start_tag) {
+            formatted_prompt.push_str(&format!("{}\n", think_start_tag));
+            injected_think_tag = true;
         }
         
         let mut in_think_block = false;
@@ -142,6 +174,12 @@ pub fn stream_tokens(
         let mut next_token_id = llama_cpp::llama_sampler_sample(sampler_chain, llama.ctx_ptr, -1);
         let mut injected_tokens_queue: std::collections::VecDeque<i32> = std::collections::VecDeque::new();
 
+        if injected_think_tag {
+            if !callback(format!("{}\n", think_start_tag)) {
+                return Ok(());
+            }
+        }
+
         while n_gen < max_tokens as i32 {
             if llama.interrupt_signal.load(Ordering::SeqCst) || cluaize_shared::GLOBAL_CANCEL_SIGNAL.load(Ordering::SeqCst) {
                 break;
@@ -158,9 +196,9 @@ pub fn stream_tokens(
                 }
             }
 
-            if should_skip {
-                let force_str = "\n</think>\n\nAnswer:\n";
-                let c_force = CString::new(force_str).unwrap_or_default();
+            if should_skip && !think_end_tag.is_empty() {
+                let force_str = format!("\n{}\n\nAnswer:\n", think_end_tag);
+                let c_force = CString::new(force_str.clone()).unwrap_or_default();
                 let mut force_token_arr = [0i32; 64];
                 let n_force = llama_cpp::llama_tokenize(
                     vocab, c_force.as_ptr(), force_str.len() as i32,
@@ -224,17 +262,13 @@ pub fn stream_tokens(
                 
                 if !piece.is_empty() {
                     if suppress_thinking {
-                        for tag in &["<think>", "<thought>", "<|thought_start|>"] {
-                            if piece.contains(tag) {
-                                in_think_block = true;
-                                piece = piece.replace(tag, "");
-                            }
+                        if !think_start_tag.is_empty() && piece.contains(&think_start_tag) {
+                            in_think_block = true;
+                            piece = piece.replace(&think_start_tag, "");
                         }
-                        for tag in &["</think>", "</thought>", "<|thought_end|>", "<channel|>"] {
-                            if piece.contains(tag) {
-                                in_think_block = false;
-                                piece = piece.replace(tag, "");
-                            }
+                        if !think_end_tag.is_empty() && piece.contains(&think_end_tag) {
+                            in_think_block = false;
+                            piece = piece.replace(&think_end_tag, "");
                         }
                         
                         let mut stop_generation = false;
@@ -355,6 +389,20 @@ pub fn stream_tokens(
                     }
                     info!("🎯 [Logit Bias] Applied invisible guidance vectors (Δz) to {} tokens.", biases.len());
                 }
+
+                // 🧠 Deep Truth: Gentle EOS Biasing for Native "Short" Answers
+                if booster.response_length == "short" {
+                    // Encourage natural stopping after 30 tokens without hard-cutting
+                    if n_gen > 30 {
+                        let eos_id = llama_cpp::llama_vocab_eos(vocab);
+                        if eos_id >= 0 && (eos_id as usize) < n_vocab as usize {
+                            let mut logits_mut = std::slice::from_raw_parts_mut(logits_ptr, n_vocab as usize);
+                            // Bias grows progressively (0.15 per token), max cap at +5.0 (significant but natural nudge)
+                            let bias_strength = ((n_gen - 30) as f32 * 0.15).min(5.0); 
+                            logits_mut[eos_id as usize] += bias_strength;
+                        }
+                    }
+                }
             }
 
 
@@ -404,17 +452,13 @@ pub fn stream_tokens(
 
                         if !piece.is_empty() {
                             if suppress_thinking {
-                                for tag in &["<think>", "<thought>", "<|thought_start|>"] {
-                                    if piece.contains(tag) {
-                                        in_think_block = true;
-                                        piece = piece.replace(tag, "");
-                                    }
+                                if !think_start_tag.is_empty() && piece.contains(&think_start_tag) {
+                                    in_think_block = true;
+                                    piece = piece.replace(&think_start_tag, "");
                                 }
-                                for tag in &["</think>", "</thought>", "<|thought_end|>", "<channel|>"] {
-                                    if piece.contains(tag) {
-                                        in_think_block = false;
-                                        piece = piece.replace(tag, "");
-                                    }
+                                if !think_end_tag.is_empty() && piece.contains(&think_end_tag) {
+                                    in_think_block = false;
+                                    piece = piece.replace(&think_end_tag, "");
                                 }
                                 
                                 let mut stop_generation = false;

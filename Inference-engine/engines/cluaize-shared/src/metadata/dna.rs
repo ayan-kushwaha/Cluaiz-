@@ -1,6 +1,6 @@
 use crate::backend::signature::{BackendType, KernelSignature};
-use serde::{Deserialize, Serialize};
 use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tracing::info;
 
@@ -30,13 +30,22 @@ pub struct StructuralDNA {
     pub ram_headroom_gb: f32,
     pub requires_gpu: bool,
     pub weights_size_gb: f32,
-    
+
     #[serde(default)]
     pub weights_already_loaded: bool,
-    
+
     // 🎯 Active Inference State
     #[serde(default)]
     pub guidance_bias: Option<HashMap<i32, f32>>,
+    // 🧠 Deep Truth: Reasoning Capabilities
+    #[serde(default)]
+    pub supports_thinking: bool,
+    #[serde(default)]
+    pub think_tag_schema: String,
+    #[serde(default)]
+    pub think_end_schema: String,
+    #[serde(default)]
+    pub reliable_think_close: bool,
 }
 
 impl Default for StructuralDNA {
@@ -65,6 +74,10 @@ impl Default for StructuralDNA {
             weights_size_gb: 0.0,
             weights_already_loaded: false,
             guidance_bias: None,
+            supports_thinking: false,
+            think_tag_schema: String::new(),
+            think_end_schema: String::new(),
+            reliable_think_close: true,
         }
     }
 }
@@ -76,7 +89,8 @@ const DEFAULT_COMPRESSION: f32 = 4.0; // Q4 Standard
 
 impl StructuralDNA {
     pub fn load(path: &std::path::Path) -> Result<Self, String> {
-        let content = std::fs::read_to_string(path).map_err(|e| format!("Failed to read DNA: {e}"))?;
+        let content =
+            std::fs::read_to_string(path).map_err(|e| format!("Failed to read DNA: {e}"))?;
         serde_json::from_str(&content).map_err(|e| format!("DNA Syntax Error: {e}"))
     }
 
@@ -89,25 +103,37 @@ impl StructuralDNA {
 
     /// 🧬 Neural Discovery: Learns model behavior and cross-references with Hardware Truth.
     pub fn discover_from_path(&mut self, model_dir: &std::path::Path) -> anyhow::Result<()> {
-        println!("🧬 [DNA] Discovery Heartbeat: Investigating -> {:?}", model_dir);
+        println!(
+            "🧬 [DNA] Discovery Heartbeat: Investigating -> {:?}",
+            model_dir
+        );
         let mut arch_limit: Option<usize> = None;
         let mut sliding_window: Option<usize> = None;
 
         // 🛡️ 0. Hardware Awareness (The Physical Constraints)
         use crate::hardware::governor::HardwareGovernor;
-        
+
         let booster = HardwareGovernor::load_booster_settings().unwrap_or_default();
         let control = HardwareGovernor::load_system_control()?;
 
         // 🛡️ Truth Protocol: Prioritize Binary Silicon Truth
-        self.vram_headroom_gb = control.silicon_truth.accelerators.gpus.iter().map(|g| g.vram_total_gb).sum::<f64>() as f32;
+        self.vram_headroom_gb = control
+            .silicon_truth
+            .accelerators
+            .gpus
+            .iter()
+            .map(|g| g.vram_total_gb)
+            .sum::<f64>() as f32;
         self.ram_headroom_gb = control.silicon_truth.memory.available_capacity_gb as f32;
 
         // 🛡️ Manifest Validation: Check if model REQUIRES GPU
         let manifest_path = model_dir.join("model_manifest.json");
         if let Ok(content) = std::fs::read_to_string(&manifest_path) {
             if let Ok(json) = serde_json::from_str::<serde_json::Value>(&content) {
-                self.requires_gpu = json.get("requires_gpu").and_then(|v| v.as_bool()).unwrap_or(false);
+                self.requires_gpu = json
+                    .get("requires_gpu")
+                    .and_then(|v| v.as_bool())
+                    .unwrap_or(false);
             }
         }
 
@@ -116,62 +142,139 @@ impl StructuralDNA {
         }
 
         if self.vram_headroom_gb == 0.0 && self.ram_headroom_gb == 0.0 {
-            return Err(anyhow::anyhow!("❌ [DNA] Fatal: Hardware Truth Missing or Corrupted. Run 'cluaize calibrate'."));
+            return Err(anyhow::anyhow!(
+                "❌ [DNA] Fatal: Hardware Truth Missing or Corrupted. Run 'cluaize calibrate'."
+            ));
         }
 
-        // 1. Read config.json (THE GOLD TRUTH - Architecture limit)
-        let config_path = model_dir.join("config.json");
-        if let Ok(content) = std::fs::read_to_string(&config_path) {
-            if let Ok(json) = serde_json::from_str::<serde_json::Value>(&content) {
-                // Look at root or inside text_config
-                let text_config = json.get("text_config");
-                
-                if let Some(ctx) = json.get("max_position_embeddings")
-                    .or_else(|| text_config.and_then(|t| t.get("max_position_embeddings")))
-                    .and_then(|v| v.as_u64()) { arch_limit = Some(ctx as usize); }
-                
-                if let Some(sw) = json.get("sliding_window")
-                    .or_else(|| text_config.and_then(|t| t.get("sliding_window")))
-                    .and_then(|v| v.as_u64()) { sliding_window = Some(sw as usize); }
-                
-                // Architecture Consolidation (Zero-Null Enforcement)
-                let target = text_config.unwrap_or(&json);
-                self.layer_count = target.get("num_hidden_layers").and_then(|v| v.as_u64()).map(|v| v as usize);
-                self.attention_head_count = target.get("num_attention_heads").and_then(|v| v.as_u64()).map(|v| v as usize);
-                self.attention_head_count_kv = target.get("num_key_value_heads").and_then(|v| v.as_u64()).map(|v| v as usize);
-                self.hidden_size = target.get("hidden_size").and_then(|v| v.as_u64()).map(|v| v as usize);
-                self.intermediate_size = target.get("intermediate_size").and_then(|v| v.as_u64()).map(|v| v as usize);
-                self.model_identity = json.get("model_type").and_then(|v| v.as_str()).unwrap_or("unknown").to_string();
-
-                match self.model_identity.to_lowercase().as_str() {
-                    "gemma2" | "gemma" => {
-                        self.stop_sequences.push("<end_of_turn>".to_string());
-                        self.inference_params.insert("repetition_penalty".to_string(), "1.1".to_string());
-                    },
-                    "llama" => {
-                        self.stop_sequences.push("<|eot_id|>".to_string());
-                        self.inference_params.insert("repetition_penalty".to_string(), "1.1".to_string());
-                    },
-                    _ => {
-                        self.stop_sequences.push("<eos>".to_string());
-                        // 1-bit / Low-bit Stability Guard
-                        self.inference_params.insert("repetition_penalty".to_string(), "1.1".to_string());
-                        self.inference_params.insert("temperature".to_string(), "0.7".to_string());
+        // 1. Native GGUF Probe (The REAL Truth - No external JSONs needed)
+        let mut gguf_path = None;
+        if let Ok(entries) = std::fs::read_dir(model_dir) {
+            for entry in entries.flatten() {
+                if let Ok(file_type) = entry.file_type() {
+                    if file_type.is_file() {
+                        let p = entry.path();
+                        if p.extension().and_then(|e| e.to_str()) == Some("gguf") {
+                            gguf_path = Some(p);
+                            break;
+                        }
                     }
                 }
             }
         }
 
-        // 2. Read tokenizer_config.json... (Templates & EOS)
-        let t_config_path = model_dir.join("tokenizer_config.json");
-        if let Ok(content) = std::fs::read_to_string(&t_config_path) {
-            if let Ok(json) = serde_json::from_str::<serde_json::Value>(&content) {
-                if let Some(eos) = json.get("eos_token").and_then(|v| v.as_str()) {
-                    self.eos_token = Some(eos.to_string());
-                    if !self.stop_sequences.contains(&eos.to_string()) { self.stop_sequences.push(eos.to_string()); }
+        if let Some(path) = gguf_path {
+            if let Ok((metadata, _tensor_infos, _count)) = crate::utils::GGUFProber::probe(&path) {
+                if let Some(arch) = metadata.get("general.architecture") {
+                    self.model_identity = arch.clone();
+
+                    let ctx_key = format!("{}.context_length", arch);
+                    if let Some(ctx_str) = metadata.get(&ctx_key) {
+                        if let Ok(ctx) = ctx_str.parse::<usize>() {
+                            arch_limit = Some(ctx);
+                        }
+                    }
+
+                    if let Some(val) = metadata
+                        .get(&format!("{}.block_count", arch))
+                        .and_then(|v| v.parse::<usize>().ok())
+                    {
+                        self.layer_count = Some(val);
+                    }
+                    if let Some(val) = metadata
+                        .get(&format!("{}.attention.head_count", arch))
+                        .and_then(|v| v.parse::<usize>().ok())
+                    {
+                        self.attention_head_count = Some(val);
+                    }
+                    if let Some(val) = metadata
+                        .get(&format!("{}.attention.head_count_kv", arch))
+                        .and_then(|v| v.parse::<usize>().ok())
+                    {
+                        self.attention_head_count_kv = Some(val);
+                    }
+                    if let Some(val) = metadata
+                        .get(&format!("{}.feed_forward_length", arch))
+                        .and_then(|v| v.parse::<usize>().ok())
+                    {
+                        self.intermediate_size = Some(val);
+                    }
+                    if let Some(val) = metadata
+                        .get(&format!("{}.embedding_length", arch))
+                        .and_then(|v| v.parse::<usize>().ok())
+                    {
+                        self.hidden_size = Some(val);
+                    }
                 }
-                if let Some(template) = json.get("chat_template").and_then(|v| v.as_str()) { self.chat_template = Some(template.to_string()); }
+
+                // 2. Read tokenizer.chat_template to detect reasoning natively
+                if let Some(template) = metadata.get("tokenizer.chat_template") {
+                    self.chat_template = Some(template.clone());
+
+                    let template_lower = template.to_lowercase();
+                    let mut detected_start = None;
+                    let mut detected_end = None;
+
+                    let keywords = [
+                        "think",
+                        "thought",
+                        "reasoning",
+                        "reason",
+                        "brainstorm",
+                        "logic",
+                    ];
+                    for kw in keywords.iter() {
+                        let formats = [
+                            (format!("<{}>", kw), format!("</{}>", kw)),
+                            (format!("<|{}_start|>", kw), format!("<|{}_end|>", kw)),
+                            (format!("<|{}|>", kw), format!("</|{}|>", kw)),
+                            (format!("<|channel>{}", kw), format!("<channel|>")),
+                        ];
+
+                        for (start, end) in formats.iter() {
+                            if template_lower.contains(start) {
+                                detected_start = Some(start.clone());
+                                if template_lower.contains(end) {
+                                    detected_end = Some(end.clone());
+                                }
+                                break;
+                            }
+                        }
+                        if detected_start.is_some() {
+                            break;
+                        }
+                    }
+
+                    if let Some(start_tag) = detected_start {
+                        self.supports_thinking = true;
+                        self.think_tag_schema = start_tag.clone();
+                        
+                        if let Some(end_tag) = detected_end.clone() {
+                            self.think_end_schema = end_tag;
+                            self.reliable_think_close = true;
+                        } else {
+                            if start_tag.contains("_start") {
+                                self.think_end_schema = start_tag.replace("_start", "_end");
+                            } else if start_tag.contains("<|") {
+                                self.think_end_schema = start_tag.replace("<|", "</|");
+                            } else {
+                                self.think_end_schema = start_tag.replace("<", "</");
+                            }
+                            self.reliable_think_close = false;
+                        }
+                        
+                        println!("🧠 [DNA] Universal Native Truth: Reasoning Model Detected (Start: {}, End: {})", self.think_tag_schema, self.think_end_schema);
+                    }
+                }
+
+                // The engine's native backend (candle/llama.cpp) will automatically handle the EOS token ID
+                // extracted from the GGUF header (tokenizer.ggml.eos_token_id) during generation.
+                // Hardcoding architecture names here for string-based stop sequences defeats the Deep Truth native approach.
+            } else {
+                eprintln!("⚠️ [DNA] GGUF probe failed on: {:?}", path);
             }
+        } else {
+            eprintln!("⚠️ [DNA] No .gguf file found in model directory for probe.");
         }
 
         // 🛠️ DEEP TRUTH RESOLUTION
@@ -182,117 +285,155 @@ impl StructuralDNA {
         if let Ok(content) = std::fs::read_to_string(&dna_json_path) {
             if let Ok(json) = serde_json::from_str::<serde_json::Value>(&content) {
                 // Try root max_context_length first, then dynamic_attributes
-                let dna_ctx_val = json.get("max_context_length")
-                    .or_else(|| json.get("dynamic_attributes").and_then(|d| d.get("context_window")));
-                
+                let dna_ctx_val = json.get("max_context_length").or_else(|| {
+                    json.get("dynamic_attributes")
+                        .and_then(|d| d.get("context_window"))
+                });
+
                 if let Some(val) = dna_ctx_val {
                     let dna_ctx = if let Some(ctx_u) = val.as_u64() {
                         ctx_u as usize
                     } else if let Some(ctx_s) = val.as_str() {
                         Self::parse_context_string(ctx_s)
-                    } else { 0 };
+                    } else {
+                        0
+                    };
 
                     if dna_ctx > 0 {
                         if let Some(arch_ctx) = final_truth {
                             final_truth = Some(dna_ctx.min(arch_ctx));
-                        } else { final_truth = Some(dna_ctx); }
+                        } else {
+                            final_truth = Some(dna_ctx);
+                        }
                     }
                 }
             }
         }
 
-        if final_truth.is_none() { return Err(anyhow::anyhow!("❌ [DNA] Fatal: Corrupted Model Metadata.")); }
+        if final_truth.is_none() {
+            return Err(anyhow::anyhow!("❌ [DNA] Fatal: Corrupted Model Metadata."));
+        }
 
         let _ctx = final_truth.unwrap();
-        
+
         // 🧬 SOVEREIGN WEIGHT DISCOVERY
         let mut model_size_gb = 0.0;
         let abs_dir = std::fs::canonicalize(model_dir).unwrap_or(model_dir.to_path_buf());
-        println!("📂 [DNA] Investigating Weights in: {:?}", abs_dir);
-        
+
         if let Ok(entries) = std::fs::read_dir(&abs_dir) {
             for entry in entries.flatten() {
                 let path = entry.path();
-                let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
-                println!("  🔍 Found File: {}", name);
-                if let Some(ext) = path.extension().and_then(|s| s.to_str()).map(|s| s.to_lowercase()) {
+                if let Some(ext) = path
+                    .extension()
+                    .and_then(|s| s.to_str())
+                    .map(|s| s.to_lowercase())
+                {
                     if ext == "gguf" || ext == "bin" || ext == "safetensors" {
-                        model_size_gb += entry.metadata().map(|m| m.len()).unwrap_or(0) as f64 / 1024.0 / 1024.0 / 1024.0;
+                        model_size_gb += entry.metadata().map(|m| m.len()).unwrap_or(0) as f64
+                            / 1024.0
+                            / 1024.0
+                            / 1024.0;
                     }
                 }
             }
         }
         self.weights_size_gb = model_size_gb as f32;
-        println!("📊 [DNA] Weight Discovery Complete: {:.2}GB", self.weights_size_gb);
 
         // 🛡️ 3. Physical VRAM Arbiter (Sovereign Negotiation)
         // Delegate to Governor for real-time fitting.
         // We temporarily set max_context_length so the Governor can see the architecture cap.
         self.max_context_length = final_truth;
         let final_ctx = HardwareGovernor::negotiate_vram_envelope(&self);
-        
-        println!("⚖️ [DNA] Context Negotiation Complete: Safely allocated {} tokens based on silicon truth.", final_ctx);
 
         self.max_context_length = Some(final_ctx);
 
         // 📊 SOVEREIGN TELEMETRY: Synchronize with Governor Truth
-        self.dynamic_attributes.insert("context_window".to_string(), format!("{}k", final_ctx / 1024));
-        
+        self.dynamic_attributes.insert(
+            "context_window".to_string(),
+            format!("{}k", final_ctx / 1024),
+        );
+
         // 🚀 DYNAMIC QUOTA: Mode-aware allocation (No more 75% static wall)
         let gen_headroom = match booster.mode_run {
-            crate::hardware::schema::booster::BoosterMode::UltraMaxBoost | crate::hardware::schema::booster::BoosterMode::HyperCluster => 0.95, // 95% for Extreme modes
+            crate::hardware::schema::booster::BoosterMode::UltraMaxBoost
+            | crate::hardware::schema::booster::BoosterMode::HyperCluster => 0.95, // 95% for Extreme modes
             crate::hardware::schema::booster::BoosterMode::MaxBoost => 0.90, // 90%
-            _ => 0.80, // 80% Standard
+            _ => 0.80,                                                       // 80% Standard
         };
-        
-        let max_gen_tokens = (final_ctx as f64 * gen_headroom) as usize;
-        self.inference_params.insert("max_tokens".to_string(), max_gen_tokens.to_string());
-        self.inference_params.insert("context_length".to_string(), final_ctx.to_string());
 
-        info!("✅ [DNA] Governor Discovery Complete: Mode {:?} | Window {}k", 
-            booster.mode_run, final_ctx / 1024);
+        let max_gen_tokens = (final_ctx as f64 * gen_headroom) as usize;
+        self.inference_params
+            .insert("max_tokens".to_string(), max_gen_tokens.to_string());
+        self.inference_params
+            .insert("context_length".to_string(), final_ctx.to_string());
+
+        info!(
+            "✅ [DNA] Governor Discovery Complete: Mode {:?} | Window {}k",
+            booster.mode_run,
+            final_ctx / 1024
+        );
 
         Ok(())
     }
- 
+
     /// Truth Protocol: Synchronizes DNA fields with actual binary metadata.
     pub fn sync_with_metadata(
-        &mut self, 
+        &mut self,
         metadata: &HashMap<String, String>,
-        _tensor_infos: &HashMap<String, Vec<usize>>
+        _tensor_infos: &HashMap<String, Vec<usize>>,
     ) {
         // [SOVEREIGN CLEAN]: Switched to println for better editor compatibility
         println!("🧬 [DNA] Initiating Multi-Layer Truth Protocol...");
-        
+
         for (key, value) in metadata {
             if key.ends_with(".embedding_length") || key.ends_with(".hidden_size") {
-                if let Ok(v) = value.parse::<usize>() { self.hidden_size = Some(v); }
+                if let Ok(v) = value.parse::<usize>() {
+                    self.hidden_size = Some(v);
+                }
             } else if key.ends_with(".block_count") || key.ends_with(".layer_count") {
-                if let Ok(v) = value.parse::<usize>() { self.layer_count = Some(v); }
-            } else if key.ends_with(".attention.head_count") || key.ends_with(".num_attention_heads") {
-                if let Ok(v) = value.parse::<usize>() { self.attention_head_count = Some(v); }
-            } else if key.ends_with(".attention.head_count_kv") || key.ends_with(".num_key_value_heads") {
-                if let Ok(v) = value.parse::<usize>() { self.attention_head_count_kv = Some(v); }
+                if let Ok(v) = value.parse::<usize>() {
+                    self.layer_count = Some(v);
+                }
+            } else if key.ends_with(".attention.head_count")
+                || key.ends_with(".num_attention_heads")
+            {
+                if let Ok(v) = value.parse::<usize>() {
+                    self.attention_head_count = Some(v);
+                }
+            } else if key.ends_with(".attention.head_count_kv")
+                || key.ends_with(".num_key_value_heads")
+            {
+                if let Ok(v) = value.parse::<usize>() {
+                    self.attention_head_count_kv = Some(v);
+                }
             } else if key.ends_with(".feed_forward_length") || key.ends_with(".intermediate_size") {
-                if let Ok(v) = value.parse::<usize>() { self.intermediate_size = Some(v); }
+                if let Ok(v) = value.parse::<usize>() {
+                    self.intermediate_size = Some(v);
+                }
             } else if key.contains("context_length") || key.contains("max_position_embeddings") {
-                if let Ok(v) = value.parse::<usize>() { self.max_context_length = Some(v); }
+                if let Ok(v) = value.parse::<usize>() {
+                    self.max_context_length = Some(v);
+                }
             } else if key == "general.architecture" {
                 self.model_identity = value.clone();
             }
         }
     }
 
-
-
     /// 🛠️ Parser: Converts manifest context strings (e.g., "8k", "128k") to usize.
     pub fn parse_context_string(ctx_str: &str) -> usize {
         let normalized = ctx_str.to_lowercase();
         if normalized.ends_with('k') {
-            let num = normalized.trim_end_matches('k').parse::<usize>().unwrap_or(4);
+            let num = normalized
+                .trim_end_matches('k')
+                .parse::<usize>()
+                .unwrap_or(4);
             num * 1024
         } else if normalized.ends_with('m') {
-            let num = normalized.trim_end_matches('m').parse::<usize>().unwrap_or(1);
+            let num = normalized
+                .trim_end_matches('m')
+                .parse::<usize>()
+                .unwrap_or(1);
             num * 1024 * 1024
         } else {
             normalized.parse::<usize>().unwrap_or(4096)

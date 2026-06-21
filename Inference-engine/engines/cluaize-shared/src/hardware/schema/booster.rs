@@ -30,7 +30,16 @@ impl<T> Default for SmartState<T> {
 }
 
 #[derive(
-    Debug, Clone, Copy, Serialize, Deserialize, Archive, RkyvSerialize, RkyvDeserialize, PartialEq, Default,
+    Debug,
+    Clone,
+    Copy,
+    Serialize,
+    Deserialize,
+    Archive,
+    RkyvSerialize,
+    RkyvDeserialize,
+    PartialEq,
+    Default,
 )]
 #[archive(check_bytes)]
 pub enum FeatureState {
@@ -47,7 +56,7 @@ impl FeatureState {
 }
 
 #[derive(
-    Debug, Clone, Serialize, Deserialize, Default, Archive, RkyvSerialize, RkyvDeserialize,
+    Debug, Clone, Serialize, Deserialize, Default, PartialEq, Archive, RkyvSerialize, RkyvDeserialize,
 )]
 #[archive(check_bytes)]
 pub struct DFlashConfig {
@@ -58,7 +67,15 @@ pub struct DFlashConfig {
 }
 
 #[derive(
-    Debug, Clone, Serialize, Deserialize, Archive, RkyvSerialize, RkyvDeserialize, PartialEq, Default,
+    Debug,
+    Clone,
+    Serialize,
+    Deserialize,
+    Archive,
+    RkyvSerialize,
+    RkyvDeserialize,
+    PartialEq,
+    Default,
 )]
 #[archive(check_bytes)]
 pub enum KvCacheQuantization {
@@ -74,7 +91,15 @@ pub enum KvCacheQuantization {
 }
 
 #[derive(
-    Debug, Clone, Serialize, Deserialize, Archive, RkyvSerialize, RkyvDeserialize, PartialEq, Default,
+    Debug,
+    Clone,
+    Serialize,
+    Deserialize,
+    Archive,
+    RkyvSerialize,
+    RkyvDeserialize,
+    PartialEq,
+    Default,
 )]
 #[archive(check_bytes)]
 pub enum ContextShiftingMode {
@@ -94,28 +119,34 @@ pub enum ContextShiftingMode {
 }
 
 #[derive(
-    Debug, Clone, Serialize, Deserialize, Archive, RkyvSerialize, RkyvDeserialize, PartialEq, Default,
+    Debug,
+    Clone,
+    Serialize,
+    Deserialize,
+    Archive,
+    RkyvSerialize,
+    RkyvDeserialize,
+    PartialEq,
+    Default,
 )]
 #[archive(check_bytes)]
 pub enum BoosterMode {
     #[serde(rename = "edge")]
-    Edge,           // 📱 Mobile/NPU/Pi (Extreme pruning)
+    Edge, // 📱 Mobile/NPU/Pi (Extreme pruning)
     #[default]
     #[serde(rename = "multitasking")]
-    Multitasking,   // 💻 Standard Laptop (Respects OS/Apps)
+    Multitasking, // 💻 Standard Laptop (Respects OS/Apps)
     #[serde(rename = "balance")]
-    Balance,        // ⚖️ Standard Performance
+    Balance, // ⚖️ Standard Performance
     #[serde(rename = "max_boost")]
-    MaxBoost,       // 🚀 AI Priority (Workstation)
+    MaxBoost, // 🚀 AI Priority (Workstation)
     #[serde(rename = "ultra_max_boost")]
-    UltraMaxBoost,  // 🔥 Reclaims everything (Formerly Landlord)
+    UltraMaxBoost, // 🔥 Reclaims everything (Formerly Landlord)
     #[serde(rename = "hyper_cluster")]
-    HyperCluster,   // 🌌 Server/H100 Cluster (Zero-margin orchestration)
+    HyperCluster, // 🌌 Server/H100 Cluster (Zero-margin orchestration)
 }
 
-#[derive(
-    Debug, Clone, Serialize, Deserialize, Archive, RkyvSerialize, RkyvDeserialize,
-)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Archive, RkyvSerialize, RkyvDeserialize)]
 #[archive(check_bytes)]
 pub struct BoosterControl {
     pub mode_run: BoosterMode,
@@ -132,9 +163,11 @@ pub struct BoosterControl {
     #[serde(default)]
     pub think_mode: FeatureState,
     #[serde(default)]
-    pub force_memory_lock: FeatureState, // OS VirtualLock / mlock
+    pub response_length: String, // "auto", "short", "long"
     #[serde(default)]
-    pub moe_vram_routing: FeatureState, // MoE Expert Offload Dynamic Splitting
+    pub enforce_json: bool, // Strict Grammar Masking trigger
+    #[serde(default)]
+    pub force_memory_lock: FeatureState, // OS VirtualLock / mlock
 }
 
 fn default_n_gpu_layers() -> i32 {
@@ -174,13 +207,7 @@ impl BoosterControl {
             }
         }
 
-        // 3. Universal MoE & Memory Lock Trigger (CTO Hack)
-        if signature.has_experts {
-            if self.moe_vram_routing == FeatureState::Auto {
-                self.moe_vram_routing = FeatureState::On;
-                println!("🧠 [Arbiter] MoE Architecture detected. Auto-enabling Expert VRAM Routing.");
-            }
-        }
+        // 3. Universal Memory Lock Trigger
 
         if vram_available <= 6.0 && self.force_memory_lock == FeatureState::Auto {
             self.force_memory_lock = FeatureState::On;
@@ -203,8 +230,9 @@ impl Default for BoosterControl {
             force_vram_reclaim: FeatureState::Off,
             n_gpu_layers: -1,
             think_mode: FeatureState::Auto,
+            response_length: "auto".to_string(),
+            enforce_json: false,
             force_memory_lock: FeatureState::Off,
-            moe_vram_routing: FeatureState::Off,
         }
     }
 }
@@ -216,9 +244,9 @@ pub struct CluaizeBoosterContext {
     pub turbo_quant: bool,
     pub flash_attention: bool,
     // Provide integer-based flags for C++ FFI compatibility
-    pub speculative_decoding_mode: u8, // 0 = Off, 1 = On, 2 = Auto
+    pub speculative_decoding_mode: u8,  // 0 = Off, 1 = On, 2 = Auto
     pub kv_cache_quantization_mode: u8, // 0 = Auto/Kv16, 1 = Kv8, 2 = Kv4
-    pub context_shifting_mode: u8, // 0 = Off, 1 = Small, 2 = Balanced, 3 = Boost, 4 = Ultra
+    pub context_shifting_mode: u8,      // 0 = Off, 1 = Small, 2 = Balanced, 3 = Boost, 4 = Ultra
     pub n_gpu_layers: i32,
     pub force_memory_lock: bool,
     pub max_context_length: u32,

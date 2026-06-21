@@ -320,6 +320,9 @@ impl AppState {
         let live_pulse = ::cluaize_shared::hardware::telemetry::get_pulse();
         let is_client_mode = std::net::TcpStream::connect("127.0.0.1:8000").is_ok();
 
+        let schema = engines::neural_foundry::security::permission_schema::PermissionSchema::load();
+        let mut _active_model_id = schema.chat_models.text.clone();
+
         Self {
             os_state,
             username: "Cluaize".to_string(),
@@ -349,7 +352,7 @@ impl AppState {
             download_start_time: None,
             Core_engine: CoreEngine::new(),
             _purpose: String::new(),
-            _active_model_id: None,
+            _active_model_id,
             _chat_history: Vec::new(),
             _chat_input: String::new(),
             _chat_scroll: 0,

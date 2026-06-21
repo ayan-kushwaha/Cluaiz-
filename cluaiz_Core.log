@@ -1,23 +1,11 @@
-2026-06-18T14:20:21.247425Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] Engine Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\cluaize-engine.dll"
-2026-06-18T14:20:21.283728Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] cluaize-llama Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\cluaize-llama.dll"
-2026-06-18T14:20:21.303973Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] cluaize-onnx Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\cluaize-onnx.dll"
-2026-06-18T14:20:21.304100Z  WARN cluaize::core::bootstrapper: ⚠️ [DevSync] Kernel source not found at: "C:\\Users\\Aryan\\my\\Cluaiz-workspace\\Cluaiz-Technologies\\cluaize\\target\\release\\onnxruntime.dll"
-2026-06-18T14:20:21.306715Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] onnxruntime_providers_shared Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\onnxruntime_providers_shared.dll"
-2026-06-18T14:20:21.378294Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] onnxruntime_providers_cuda Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\onnxruntime_providers_cuda.dll"
-2026-06-18T14:20:21.381164Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] onnxruntime_providers_tensorrt Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\onnxruntime_providers_tensorrt.dll"
-2026-06-18T14:20:21.384097Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] onnxruntime_providers_nv_tensorrt_rtx Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\onnxruntime_providers_nv_tensorrt_rtx.dll"
-2026-06-18T14:20:21.388622Z  WARN cluaize::core::bootstrapper: ⚠️ [DevSync] CLI Executable Sync Failed (File might be in use): The process cannot access the file because it is being used by another process. (os error 32).
-2026-06-18T14:20:21.825467Z  INFO cluaize::core::bootstrapper: 🧠 [Cluaize] Igniting Neural Foundry (Permissions & Skills)...
-2026-06-18T14:20:21.838711Z  INFO cluaize::core::bootstrapper: 🛰️ [Cluaize] Synchronizing Neural Registry...
-2026-06-18T14:20:23.992183Z  WARN cluaize::core::bootstrapper: ⚠️ [Bootstrapper] Platform 'win-x64' not found in Engine Registry, but local engine exists. Skipping download.
-2026-06-18T14:20:25.014124Z  INFO system_booster::os_tuning: 🚀 [Bare Metal] Attempting to elevate process priority to high (Value: 128) for PID 35628
-2026-06-18T14:20:25.018061Z  INFO cluaize_api: 🔧 Initializing Cluaize Engine...
-2026-06-18T14:20:25.032561Z  INFO system_booster::os_tuning: 🚀 [Bare Metal] Attempting to elevate process priority to high (Value: 128) for PID 35628
-2026-06-18T14:20:25.150121Z  INFO dispatcher: ✅ [Dispatcher] ONNX Kernel Dynamically Linked.
-2026-06-18T14:20:25.154227Z  INFO cluaize_api: 🌐 Cluaize Gateway listening on 0.0.0.0:8000
-2026-06-18T14:20:25.154256Z  INFO cluaize_api: 🚀 Spawning Native FFI Named Pipe Listener...
-2026-06-18T14:20:29.845710Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon Worker] Background queue active. Processing skills sequentially...
-2026-06-18T14:20:29.846531Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: frontend-dev
-2026-06-18T14:20:29.847478Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: minimax-music-gen
-2026-06-18T14:20:29.848283Z  INFO engines::neural_foundry::registry::compiler_daemon: 🛠️ [Compiler Daemon] Processing Dual-Cache for skill: test-small-skill
-2026-06-18T14:20:36.627127Z  INFO cluaize_api: 🛑 Cluaize Gateway cleanly shut down.
+2026-06-21T04:21:32.596567Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] Engine Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\cluaize-engine.dll"
+2026-06-21T04:21:32.623019Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] cluaize-llama Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\cluaize-llama.dll"
+2026-06-21T04:21:32.624219Z  WARN cluaize::core::bootstrapper: ⚠️ [DevSync] cluaize-onnx Kernel Link Failed: The process cannot access the file because it is being used by another process. (os error 32).
+2026-06-21T04:21:32.624452Z  WARN cluaize::core::bootstrapper: ⚠️ [DevSync] Kernel source not found at: "C:\\Users\\Aryan\\my\\Cluaiz-workspace\\Cluaiz-Technologies\\cluaize\\target\\debug\\onnxruntime.dll"
+2026-06-21T04:21:32.625526Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] onnxruntime_providers_shared Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\onnxruntime_providers_shared.dll"
+2026-06-21T04:21:32.663880Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] onnxruntime_providers_cuda Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\onnxruntime_providers_cuda.dll"
+2026-06-21T04:21:32.665694Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] onnxruntime_providers_tensorrt Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\onnxruntime_providers_tensorrt.dll"
+2026-06-21T04:21:32.667147Z  INFO cluaize::core::bootstrapper: 🧬 [DevSync] onnxruntime_providers_nv_tensorrt_rtx Kernel Linked: "C:\\Users\\Aryan\\.cluaize\\engine\\interfaces\\kernels\\onnxruntime_providers_nv_tensorrt_rtx.dll"
+2026-06-21T04:21:32.668294Z  WARN cluaize::core::bootstrapper: ⚠️ [DevSync] CLI Executable Sync Failed (File might be in use): The process cannot access the file because it is being used by another process. (os error 32).
+2026-06-21T04:21:32.916305Z  INFO cluaize::core::bootstrapper: 🧠 [Cluaize] Igniting Neural Foundry (Permissions & Skills)...
+2026-06-21T04:21:32.924649Z  INFO cluaize::core::bootstrapper: 🛰️ [Cluaize] Synchronizing Neural Registry...

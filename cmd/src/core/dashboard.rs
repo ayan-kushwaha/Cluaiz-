@@ -55,8 +55,13 @@ impl DashboardEngine {
  
         // 🚀 CLUAIZE AUTO-BOOT: Activate the latest engine silently only if no model is loaded
         let is_engine_loaded = state.Core_engine.is_loaded.load(std::sync::atomic::Ordering::SeqCst);
-        if state._active_model_id.is_none() && !is_engine_loaded {
-            let auto_boot_name = state.sorted_models.iter().filter(|m| m.is_cached).next().map(|m| m.manifest.name.clone());
+        if !is_engine_loaded {
+            let auto_boot_name = if let Some(ref active_id) = state._active_model_id {
+                state.sorted_models.iter().find(|m| m.manifest.id == *active_id).map(|m| m.manifest.name.clone())
+            } else {
+                state.sorted_models.iter().filter(|m| m.is_cached).next().map(|m| m.manifest.name.clone())
+            };
+            
             if let Some(name) = auto_boot_name {
                 println!("\n  {} Auto-Booting Neural Kernel: {}...", "🚀".magenta(), name.bold());
                 let _ = Self::handle_model_switch(state, tx, rx, "", Some(&name));
@@ -66,6 +71,7 @@ impl DashboardEngine {
         println!();
 
         let mut last_booster_modified = std::fs::metadata(dirs::home_dir().unwrap_or_default().join(".cluaize").join("engine").join("system_booster.json")).and_then(|m| m.modified()).ok();
+        let mut last_booster_state = cluaize_shared::hardware::governor::HardwareGovernor::load_booster_settings().ok();
 
         // Track global think state across pivots
         let global_think_state = Arc::new(AtomicBool::new(false));
@@ -216,7 +222,16 @@ impl DashboardEngine {
                                 let mut needs_reload = false;
                                 if let Some(last) = last_booster_modified {
                                     if modified > last {
-                                        needs_reload = true;
+                                        if let Ok(current_booster) = cluaize_shared::hardware::governor::HardwareGovernor::load_booster_settings() {
+                                            if let Some(ref prev_booster) = last_booster_state {
+                                                if current_booster != *prev_booster {
+                                                    needs_reload = true;
+                                                }
+                                            } else {
+                                                needs_reload = true; // No previous state, force reload
+                                            }
+                                            last_booster_state = Some(current_booster);
+                                        }
                                     }
                                 }
                                 last_booster_modified = Some(modified);
@@ -286,7 +301,17 @@ impl DashboardEngine {
                             let active_model = state._active_model_id.clone().unwrap_or_default().to_lowercase();
                             let is_reasoning_model = active_model.contains("deepseek") || active_model.contains("r1") || active_model.contains("reason") || active_model.contains("bonsai") || active_model.contains("think");
 
-                            let prompt_starts_in_think = formatted_prompt.contains("<think>") && !formatted_prompt.contains("</think>");
+                            // Deep Truth: Dynamic tag resolution
+                            let mut think_start_tag = String::new();
+                            let mut think_end_tag = String::new();
+                            if let Some(dna) = lock.get_active_dna() {
+                                if !dna.think_tag_schema.is_empty() && dna.think_tag_schema != "none" {
+                                    think_start_tag = dna.think_tag_schema.clone();
+                                    think_end_tag = dna.think_end_schema.clone();
+                                }
+                            }
+
+                            let prompt_starts_in_think = !think_start_tag.is_empty() && formatted_prompt.contains(&think_start_tag) && (think_end_tag.is_empty() || !formatted_prompt.contains(&think_end_tag));
                             let is_pivot = formatted_prompt.starts_with("[PIVOT_CONTINUE]");
 
                             let mut first_token = true;
@@ -369,25 +394,21 @@ impl DashboardEngine {
                                         let mut just_finished_thinking = false;
 
                                         // ALWAYS check for </think> to hide it and cleanly exit think mode
-                                        for tag in &["</think>", "</thought>", "<|thought_end|>", "<channel|>"] {
-                                            if accumulated.ends_with(tag) || token.contains(tag) {
-                                                in_think_cb.store(false, Ordering::SeqCst);
-                                                global_think_cb.store(false, Ordering::SeqCst);
-                                                display_token = display_token.replace(tag, "");
-                                                just_finished_thinking = true;
-                                            }
+                                        if !think_end_tag.is_empty() && (accumulated.ends_with(&think_end_tag) || token.contains(&think_end_tag)) {
+                                            in_think_cb.store(false, Ordering::SeqCst);
+                                            global_think_cb.store(false, Ordering::SeqCst);
+                                            display_token = display_token.replace(&think_end_tag, "");
+                                            just_finished_thinking = true;
                                         }
 
                                         // ALWAYS check for <think> to turn ON think mode dynamically
-                                        for tag in &["<think>", "<thought>", "<|thought_start|>"] {
-                                            if accumulated.ends_with(tag) || token.contains(tag) {
-                                                if !in_think_cb.load(Ordering::SeqCst) {
-                                                    in_think_cb.store(true, Ordering::SeqCst);
-                                                    global_think_cb.store(true, Ordering::SeqCst);
-                                                    print!("\r\n\x1B[90m> \x1B[3m");
-                                                }
-                                                display_token = display_token.replace(tag, "");
+                                        if !think_start_tag.is_empty() && (accumulated.ends_with(&think_start_tag) || token.contains(&think_start_tag)) {
+                                            if !in_think_cb.load(Ordering::SeqCst) {
+                                                in_think_cb.store(true, Ordering::SeqCst);
+                                                global_think_cb.store(true, Ordering::SeqCst);
+                                                print!("\r\n\x1B[90m> \x1B[3m");
                                             }
+                                            display_token = display_token.replace(&think_start_tag, "");
                                         }
 
                                         if just_finished_thinking {
@@ -544,7 +565,7 @@ impl DashboardEngine {
                             .with_attr(Attributes::BOLD),
                     );
                 let options = vec!["Model List", "Settings", "Help", "Quit"];
-                let ans = Select::new("Main Menu:", options)
+                let ans = Select::new("Main Menu:", options).with_help_message("")
                     .with_render_config(config)
                     .prompt()?;
 
@@ -614,7 +635,7 @@ impl DashboardEngine {
                     "⚡ Engine Modes".to_string(),
                     "🚀 System Booster".to_string(),
                 ];
-                let master_ans = match Select::new("Action:", master_options)
+                let master_ans = match Select::new("Action:", master_options).with_help_message("")
                     .with_render_config(config.clone())
                     .prompt() {
                     Ok(ans) => ans,
@@ -635,7 +656,7 @@ impl DashboardEngine {
                         "🧠 Think Mode (Deep Reasoning)".to_string(),
                         "🚀 Boot Mode (Auto-Start Engine)".to_string(),
                     ];
-                    let mode_ans = match Select::new("Select Mode:", modes)
+                    let mode_ans = match Select::new("Select Mode:", modes).with_help_message("")
                         .with_render_config(config.clone())
                         .prompt() {
                         Ok(ans) => ans,
@@ -692,10 +713,13 @@ impl DashboardEngine {
                             format!("Context Shifting (Current: {:?})", booster.context_shifting),
                             format!("Force VRAM Reclaim (Current: {:?})", booster.force_vram_reclaim),
                             format!("KV Cache Quantization (Current: {:?})", booster.kv_cache_quantization),
+                            format!("Think Mode (Current: {:?})", booster.think_mode),
+                            format!("Response Length (Current: {})", booster.response_length),
+                            format!("Force Memory Lock (Current: {:?})", booster.force_memory_lock),
                         ];
                         options.push("🔙 Back to Menu".to_string());
                         
-                        let target_ans = match Select::new("Configure Setting:", options)
+                        let target_ans = match Select::new("Configure Setting:", options).with_help_message("")
                             .with_render_config(config.clone())
                             .prompt() {
                             Ok(ans) => ans,
@@ -721,7 +745,7 @@ impl DashboardEngine {
                                 "CPU Only".to_string(),
                                 "Custom Layers".to_string(),
                             ];
-                            let selected_device = match Select::new("Select Compute Device:", device_options)
+                            let selected_device = match Select::new("Select Compute Device:", device_options).with_help_message("")
                                 .with_render_config(config.clone())
                                 .prompt() {
                                 Ok(ans) => ans,
@@ -770,6 +794,56 @@ impl DashboardEngine {
                             continue;
                         }
 
+                        // Special sub-menus for modes
+                        if key_part.as_str() == "Neural Mode" {
+                            let mut modes = vec![
+                                "edge".to_string(), 
+                                "multitasking".to_string(), 
+                                "balance".to_string(), 
+                                "max_boost".to_string(), 
+                                "ultra_max_boost".to_string()
+                            ];
+
+                            // 🌌 VRAM GUARD: Only show HyperCluster if VRAM >= 40GB
+                            let total_vram = {
+                                let pulse_lock = state.live_pulse.pulse.read().unwrap();
+                                pulse_lock.vram_total_gb
+                            };
+                            if total_vram >= 40.0 {
+                                modes.push("hyper_cluster".to_string());
+                            }
+
+                            let selected_mode = match Select::new("Select Neural Mode:", modes).with_help_message("")
+                                .with_render_config(config.clone())
+                                .prompt() {
+                                Ok(ans) => ans,
+                                Err(_) => {
+                                    print!("\x1B[1A\x1B[2K\r");
+                                    stdout().flush()?;
+                                    continue;
+                                }
+                            };
+                            print!("\x1B[1A\x1B[2K\r");
+                            stdout().flush()?;
+
+                            booster.mode_run = match selected_mode.as_str() {
+                                "edge" => cluaize_shared::hardware::schema::booster::BoosterMode::Edge,
+                                "multitasking" => cluaize_shared::hardware::schema::booster::BoosterMode::Multitasking,
+                                "balance" => cluaize_shared::hardware::schema::booster::BoosterMode::Balance,
+                                "max_boost" => cluaize_shared::hardware::schema::booster::BoosterMode::MaxBoost,
+                                "ultra_max_boost" => cluaize_shared::hardware::schema::booster::BoosterMode::UltraMaxBoost,
+                                "hyper_cluster" => cluaize_shared::hardware::schema::booster::BoosterMode::HyperCluster,
+                                _ => cluaize_shared::hardware::schema::booster::BoosterMode::Balance,
+                            };
+
+                            if let Ok(_) = cluaize_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster) {
+                                println!("  {} System Booster updated: Neural Mode = {}", "✅".green(), selected_mode.bold());
+                            } else {
+                                println!("  {} Failed to save system booster settings.", "❌".red());
+                            }
+                            continue;
+                        }
+
                         // Special sub-menus for context shifting & reclaim
                         if key_part.as_str() == "Context Shifting" {
                             let shift_modes = vec![
@@ -780,7 +854,7 @@ impl DashboardEngine {
                                 "Extreme".to_string(),
                                 "Auto".to_string(),
                             ];
-                            let selected_shift = match Select::new("Select Context Shifting:", shift_modes)
+                            let selected_shift = match Select::new("Select Context Shifting:", shift_modes).with_help_message("")
                                 .with_render_config(config.clone())
                                 .prompt() {
                                 Ok(ans) => ans,
@@ -817,7 +891,7 @@ impl DashboardEngine {
                                 "4-bit (75% VRAM Saving / High Compression)".to_string(),
                                 "Auto (Dynamic Quantization)".to_string(),
                             ];
-                            let selected_kv = match Select::new("Select KV Cache Quantization:", kv_options)
+                            let selected_kv = match Select::new("Select KV Cache Quantization:", kv_options).with_help_message("")
                                 .with_render_config(config.clone())
                                 .prompt() {
                                 Ok(ans) => ans,
@@ -845,9 +919,39 @@ impl DashboardEngine {
                             continue;
                         }
 
+                        // Special sub-menu for Response Length
+                        if key_part.as_str() == "Response Length" {
+                            let length_modes = vec![
+                                "Long".to_string(),
+                                "Short".to_string(),
+                                "Auto".to_string(),
+                            ];
+                            let selected_len = match Select::new("Select Response Length:", length_modes).with_help_message("")
+                                .with_render_config(config.clone())
+                                .prompt() {
+                                Ok(ans) => ans,
+                                Err(_) => {
+                                    print!("\x1B[1A\x1B[2K\r");
+                                    stdout().flush()?;
+                                    continue;
+                                }
+                            };
+                            print!("\x1B[1A\x1B[2K\r");
+                            stdout().flush()?;
+
+                            booster.response_length = selected_len.to_lowercase();
+
+                            if let Ok(_) = cluaize_shared::hardware::governor::HardwareGovernor::save_booster_settings(&booster) {
+                                println!("  {} System Booster updated: Response Length = {}", "✅".green(), selected_len.bold());
+                            } else {
+                                println!("  {} Failed to save system booster settings.", "❌".red());
+                            }
+                            continue;
+                        }
+
                         let values = vec!["On".to_string(), "Off".to_string(), "Auto".to_string()];
                         
-                        let val_ans = match Select::new(&format!("Set {}:", key_part), values)
+                        let val_ans = match Select::new(&format!("Set {}:", key_part), values).with_help_message("")
                             .with_render_config(config.clone())
                             .prompt() {
                             Ok(ans) => ans,
@@ -867,45 +971,11 @@ impl DashboardEngine {
                         };
 
                         match key_part.as_str() {
-                            "Neural Mode" => {
-                                let mut modes = vec![
-                                    "edge".to_string(), 
-                                    "multitasking".to_string(), 
-                                    "balance".to_string(), 
-                                    "max_boost".to_string(), 
-                                    "ultra_max_boost".to_string()
-                                ];
-
-                                // 🌌 VRAM GUARD: Only show HyperCluster if VRAM >= 40GB
-                                let total_vram = {
-                                    let pulse_lock = state.live_pulse.pulse.read().unwrap();
-                                    pulse_lock.vram_total_gb
-                                };
-                                if total_vram >= 40.0 {
-                                    modes.push("hyper_cluster".to_string());
-                                }
-
-                                let selected_mode = match Select::new("Select Neural Mode:", modes)
-                                    .with_render_config(config.clone())
-                                    .prompt() {
-                                    Ok(ans) => ans,
-                                    Err(_) => continue,
-                                };
-                                booster.mode_run = match selected_mode.as_str() {
-                                    "edge" => cluaize_shared::hardware::schema::booster::BoosterMode::Edge,
-                                    "multitasking" => cluaize_shared::hardware::schema::booster::BoosterMode::Multitasking,
-                                    "balance" => cluaize_shared::hardware::schema::booster::BoosterMode::Balance,
-                                    "max_boost" => cluaize_shared::hardware::schema::booster::BoosterMode::MaxBoost,
-                                    "ultra_max_boost" => cluaize_shared::hardware::schema::booster::BoosterMode::UltraMaxBoost,
-                                    "hyper_cluster" => cluaize_shared::hardware::schema::booster::BoosterMode::HyperCluster,
-                                    _ => cluaize_shared::hardware::schema::booster::BoosterMode::Balance,
-                                };
-                            },
                             "Turbo Quant" => booster.turbo_quant = feature_state,
                             "Flash Attention" => booster.flash_attention = feature_state,
                             "Speculative Decoding" => booster.speculative_decoding = feature_state,
                             "Auto Round" => booster.auto_round = feature_state,
-                            "DFlash (FlashKDA)" => {
+                            "DFlash" => {
                                 booster.dflash = match val_ans.as_str() {
                                     "On" => cluaize_shared::hardware::schema::booster::SmartState::Static("On".to_string()),
                                     "Off" => cluaize_shared::hardware::schema::booster::SmartState::Static("Off".to_string()),
@@ -913,6 +983,8 @@ impl DashboardEngine {
                                 };
                             },
                             "Force VRAM Reclaim" => booster.force_vram_reclaim = feature_state,
+                            "Think Mode" => booster.think_mode = feature_state,
+                            "Force Memory Lock" => booster.force_memory_lock = feature_state,
                             _ => {}
                         }
                         
@@ -949,7 +1021,7 @@ impl DashboardEngine {
                     0
                 };
 
-                let selection = match Select::new("Switch to model:", options)
+                let selection = match Select::new("Switch to model:", options).with_help_message("")
                     .with_render_config(config.clone())
                     .with_starting_cursor(starting_index)
                     .prompt() {
@@ -971,7 +1043,8 @@ impl DashboardEngine {
         let downloaded: Vec<_> = state.sorted_models.iter().filter(|m| m.is_cached).collect();
 
         if let Some(model) = downloaded.iter().find(|m| m.manifest.name == ans) {
-            if state._active_model_id.as_ref() == Some(&model.manifest.id) {
+            let is_engine_loaded = state.Core_engine.is_loaded.load(std::sync::atomic::Ordering::SeqCst);
+            if state._active_model_id.as_ref() == Some(&model.manifest.id) && is_engine_loaded {
                 println!(
                     "  {} {} is already active.",
                     "ℹ️".blue(),

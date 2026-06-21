@@ -199,7 +199,8 @@ async fn handle_client(mut pipe: NamedPipeServer, state: Arc<AppState>) {
                                 }
 
                                 // Safety: always ensure the currently-active model appears in its list
-                                if let Some(ref t) = perms.chat_models.text {
+                                let active_text_id = perms.chat_models.text.clone();
+                                if let Some(ref t) = active_text_id {
                                     if !t.is_empty() && !available_chat_models.contains(t) {
                                         available_chat_models.push(t.clone());
                                     }
@@ -210,7 +211,15 @@ async fn handle_client(mut pipe: NamedPipeServer, state: Arc<AppState>) {
                                     }
                                 }
 
-                                
+                                // Fetch manifests for the currently active models so frontend can do deep combined validation
+                                let active_chat_manifest = active_text_id.and_then(|id| roster.iter().find(|m| m.id == id).cloned());
+                                let active_vector_manifest = perms.vector_models.text.clone().and_then(|id| roster.iter().find(|m| m.id == id).cloned());
+
+                                let vram_gb: f64 = control.silicon_truth.accelerators.gpus.iter().map(|g| g.vram_total_gb).sum();
+                                let ram_gb = control.silicon_truth.memory.total_capacity_gb;
+                                let gpu_name = control.silicon_truth.accelerators.gpus.first()
+                                    .map(|g| g.model.clone()).unwrap_or_default();
+
                                 let response = serde_json::json!({
                                     "permissions": {
                                         "wasm_firewall": perms.wasm_firewall,
@@ -227,7 +236,16 @@ async fn handle_client(mut pipe: NamedPipeServer, state: Arc<AppState>) {
                                         "available_devices": ["auto", "gpu", "cpu"]
                                     },
                                     "booster": booster,
-                                    "brainMode": brain_mode
+                                    "brainMode": brain_mode,
+                                    "active_chat_model": active_chat_manifest,
+                                    "active_vector_model": active_vector_manifest,
+                                    "hardware": {
+                                        "vram_gb": vram_gb,
+                                        "ram_gb": ram_gb,
+                                        "gpu_name": gpu_name.trim(),
+                                        "cpu_cores": control.silicon_truth.cpu.physical_cores,
+                                        "has_gpu": !control.silicon_truth.accelerators.gpus.is_empty()
+                                    }
                                 });
                                 
                                 let _ = pipe.write_all(response.to_string().as_bytes()).await;
@@ -276,6 +294,54 @@ async fn handle_client(mut pipe: NamedPipeServer, state: Arc<AppState>) {
                                 }
                                 continue;
                             }
+                            "RESET_BOOSTER" => {
+                                tracing::info!("🔄 [IPC] Resetting Booster to hardware-optimal defaults...");
+                                let control = cluaize_shared::hardware::governor::HardwareGovernor::load_system_control().unwrap_or_default();
+                                let vram_gb: f64 = control.silicon_truth.accelerators.gpus.iter().map(|g| g.vram_total_gb).sum();
+                                let ram_gb = control.silicon_truth.memory.total_capacity_gb;
+                                let has_gpu = !control.silicon_truth.accelerators.gpus.is_empty();
+
+                                use cluaize_shared::hardware::schema::booster::*;
+
+                                // Determine optimal n_gpu_layers based on VRAM
+                                let optimal_gpu_layers: i32 = if !has_gpu { 0 } else { -1 }; // -1 = auto
+
+                                // Determine optimal mode based on total resources
+                                let optimal_mode = if vram_gb >= 24.0 {
+                                    BoosterMode::MaxBoost
+                                } else if vram_gb >= 8.0 {
+                                    BoosterMode::Balance
+                                } else if vram_gb >= 2.0 {
+                                    BoosterMode::Multitasking
+                                } else {
+                                    BoosterMode::Edge
+                                };
+
+                                // Speculative decoding only safe with 8GB+ VRAM
+                                let optimal_spec = if vram_gb >= 8.0 { FeatureState::Auto } else { FeatureState::Off };
+
+                                let optimal_booster = BoosterControl {
+                                    mode_run: optimal_mode,
+                                    turbo_quant: FeatureState::Auto,
+                                    flash_attention: if has_gpu { FeatureState::On } else { FeatureState::Auto },
+                                    speculative_decoding: optimal_spec,
+                                    auto_round: FeatureState::Auto,
+                                    dflash: SmartState::Static("Auto".into()),
+                                    kv_cache_quantization: if vram_gb < 4.0 { KvCacheQuantization::Kv8 } else { KvCacheQuantization::Auto },
+                                    context_shifting: ContextShiftingMode::Auto,
+                                    force_vram_reclaim: FeatureState::Off,
+                                    n_gpu_layers: optimal_gpu_layers,
+                                    think_mode: FeatureState::Auto,
+                                    response_length: "auto".to_string(),
+                                    enforce_json: false,
+                                    force_memory_lock: if ram_gb < 8.0 { FeatureState::On } else { FeatureState::Off },
+                                };
+
+                                let _ = cluaize_shared::hardware::governor::HardwareGovernor::save_booster_settings(&optimal_booster);
+                                let response = serde_json::json!({"status": "success", "booster": optimal_booster});
+                                let _ = pipe.write_all(response.to_string().as_bytes()).await;
+                                continue;
+                            }
 
                             "SET_HARDWARE" => {
                                 tracing::info!("🚀 [IPC] Received SET_HARDWARE: {:?}", json_cmd);
@@ -306,17 +372,65 @@ async fn handle_client(mut pipe: NamedPipeServer, state: Arc<AppState>) {
                     // Dispatch natural language inference via Master Router
                     match state.dispatcher.dispatch_stream(command, false).await {
                         EngineResponse::TokenStream(mut rx) => {
-                            while let Some(token) = rx.recv().await {
-                                if pipe.write_all(token.as_bytes()).await.is_err() {
+                            let mut in_think_block = false;
+
+                            // 🧠 Dynamic Tag Resolution for active model
+                            let mut start_tag = "<think>".to_string();
+                            let mut end_tag = "</think>".to_string();
+                            
+                            let perms = engines::neural_foundry::security::permission_schema::PermissionSchema::load();
+                            let roster = engines::models::registry::CoreRoster::load_roster();
+                            if let Some(id) = perms.chat_models.text {
+                                if let Some(model) = roster.iter().find(|m| m.id == id) {
+                                    if let Some(path) = &model.local_path {
+                                        if let Ok(dna) = cluaize_shared::metadata::dna::StructuralDNA::load(std::path::Path::new(path)) {
+                                            if !dna.think_tag_schema.is_empty() && dna.think_tag_schema != "none" {
+                                                start_tag = dna.think_tag_schema.clone();
+                                                end_tag = dna.think_end_schema.clone();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            while let Some(mut token) = rx.recv().await {
+                                if token.trim() == "[DONE]" {
+                                    let json = serde_json::json!({"type": "done", "done": true});
+                                    let _ = pipe.write_all(format!("{}\n", json).as_bytes()).await;
+                                    break;
+                                }
+
+                                if token.contains(&start_tag) {
+                                    in_think_block = true;
+                                    token = token.replace(&start_tag, "");
+                                    token = token.trim_start_matches('\n').to_string();
+                                }
+                                if token.contains(&end_tag) {
+                                    in_think_block = false;
+                                    token = token.replace(&end_tag, "");
+                                    token = token.trim_start_matches('\n').to_string();
+                                }
+
+                                if token.is_empty() { continue; }
+
+                                let json = if in_think_block {
+                                    serde_json::json!({"type": "token", "thinking": token, "done": false})
+                                } else {
+                                    serde_json::json!({"type": "token", "content": token, "done": false})
+                                };
+
+                                if pipe.write_all(format!("{}\n", json).as_bytes()).await.is_err() {
                                     break;
                                 }
                             }
                         }
                         EngineResponse::FinalResult(res) => {
-                            let _ = pipe.write_all(res.as_bytes()).await;
+                            let json = serde_json::json!({"type": "done", "content": res, "done": true});
+                            let _ = pipe.write_all(format!("{}\n", json).as_bytes()).await;
                         }
                         EngineResponse::Error(err) => {
-                            let _ = pipe.write_all(format!("ERROR: {}", err).as_bytes()).await;
+                            let json = serde_json::json!({"type": "error", "error": err, "done": true});
+                            let _ = pipe.write_all(format!("{}\n", json).as_bytes()).await;
                         }
                     }
                 }

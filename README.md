@@ -452,11 +452,11 @@ Set-AuthenticodeSignature -FilePath ".\cluaize.exe" -Certificate $cert
 
 ## Star History
 
-<a href="https://www.star-history.com/?repos=Cluaize%2Fcluaize&type=date&legend=top-left">
+<a href="https://www.star-history.com/?repos=Cluaiz%2Fcluaize&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Cluaize/cluaize&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Cluaize/cluaize&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Cluaize/cluaize&type=date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Cluaiz/cluaize&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Cluaiz/cluaize&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Cluaiz/cluaize&type=date&legend=top-left" />
  </picture>
 </a>
 

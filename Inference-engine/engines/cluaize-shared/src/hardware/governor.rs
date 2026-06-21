@@ -156,7 +156,6 @@ impl HardwareGovernor {
         path.push(".cluaize");
         path.push("engine");
         path.push("system_booster.json");
-        println!("🔍 [Arbiter] Loading Booster from: {:?}", path);
 
         // 🔍 LIVE SILICON PROBE: We don't trust cached values for safety-critical negotiation.
         if let Ok(control) = Self::load_system_control() {
@@ -201,30 +200,16 @@ impl HardwareGovernor {
         if booster.force_vram_reclaim == crate::hardware::schema::booster::FeatureState::On {
             let tight_margin = 0.005f64; // 0.5%
             margin = tight_margin.max(floor_gb / total_gb); 
-            println!("🔥 [Arbiter] ULTRAMAX RECLAIM: Forcing ultra-tight {}MB VRAM margin.", (margin * total_gb * 1024.0) as usize);
         }
 
-        // 🛡️ DYNAMIC HEADROOM & LIVE SOVEREIGN PROBE
-        // If weights are already loaded, we don't trust static math. We poll the raw silicon for TRUE free VRAM!
-        let weights_already_loaded = dna.weights_already_loaded || arbiter.active_allocations.keys().any(|k| k.contains(&dna.model_identity));
-        let final_available_gb = if weights_already_loaded {
-            let live_free = crate::hardware::system_control::HardwareOrchestrator::live_vram_probe();
-            if live_free > 0.0 {
-                let margin_gb = margin * total_gb;
-                println!("🔍 [Arbiter] Live VRAM Probe: {:.2}GB Physically Free. Reserving {:.2}GB Margin.", live_free, margin_gb);
-                (live_free - margin_gb).max(0.0)
-            } else {
-                // Fallback math if NVML fails (AMD/Intel)
-                let other_allocations = arbiter.active_allocations.iter().filter(|(id, _)| !id.contains(&dna.model_identity)).map(|(_, gb)| gb).sum::<f64>();
-                let available_gb = (total_gb * (1.0 - margin)) - other_allocations;
-                available_gb.max(0.0)
-            }
-        } else {
-            // First pass (Pre-load): Calculate theoretically
-            let other_allocations = arbiter.active_allocations.iter().filter(|(id, _)| !id.contains(&dna.model_identity)).map(|(_, gb)| gb).sum::<f64>();
-            let available_gb = (total_gb * (1.0 - margin)) - other_allocations;
-            (available_gb - (dna.weights_size_gb as f64)).max(0.0)
-        };
+        // We use static theoretical math for context negotiation. 
+        // Using live_vram_probe() here squashes the context window on subsequent prompts 
+        // because the context is already allocated in VRAM, making live VRAM appear artificially low.
+        let other_allocations = arbiter.active_allocations.iter().filter(|(id, _)| {
+            !id.contains(&dna.model_identity) && id.as_str() != "llama" && id.as_str() != "onnx" && id.as_str() != "whisper"
+        }).map(|(_, gb)| gb).sum::<f64>();
+        let available_gb = (total_gb * (1.0 - margin)) - other_allocations;
+        let final_available_gb = (available_gb - (dna.weights_size_gb as f64)).max(0.0);
         
         // 🧪 SOVEREIGN MATH: Calculate KV-Cache cost per 1024 tokens for THIS model
         let layers = dna.layer_count.unwrap_or(32) as f64;
@@ -290,9 +275,7 @@ impl HardwareGovernor {
             current_ctx -= 512; 
         }
 
-        println!("⚖️ [Arbiter] Envelope Negotiated: Mode={:?}, Available: {:.2}GB, Margin: {:.1}MB -> Safe Context: {} tokens", 
-            booster.mode_run, final_available_gb, margin * total_gb * 1024.0, current_ctx);
-            
+        // Envelope Negotiation Log Hidden for clean UI    
         // Sync context size to cross-process registry
         let mut registry = Self::load_process_registry();
         let pid_str = std::process::id().to_string();
@@ -462,7 +445,9 @@ impl HardwareGovernor {
             return Err(anyhow::anyhow!("Binary truth missing"));
         }
 
-        let bytes = std::fs::read(&path)?;
+        let bytes_raw = std::fs::read(&path)?;
+        let mut bytes = rkyv::AlignedVec::with_capacity(bytes_raw.len());
+        bytes.extend_from_slice(&bytes_raw);
         
         // 🛡️ Ultimate Safety Guard: Catch rkyv panics (overflows/alignment)
         let result = std::panic::catch_unwind(|| {
@@ -539,47 +524,40 @@ impl HardwareGovernor {
         let bin_path = base.join("system_booster.bin");
         let json_path = base.join("system_booster.json");
 
-        let mut use_json = false;
-        if json_path.exists() && bin_path.exists() {
-            if let (Ok(json_meta), Ok(bin_meta)) = (std::fs::metadata(&json_path), std::fs::metadata(&bin_path)) {
-                if let (Ok(json_time), Ok(bin_time)) = (json_meta.modified(), bin_meta.modified()) {
-                    if json_time > bin_time {
-                        use_json = true;
+        // 🛡️ Priority 1: JSON (User Editable Truth)
+        if json_path.exists() {
+            if let Ok(data) = std::fs::read_to_string(&json_path) {
+                match serde_json::from_str::<BoosterControl>(&data) {
+                    Ok(control) => {
+                        // Always sync to binary truth to keep .bin updated in real-time when loaded
+                        let _ = Self::save_booster_settings(&control); 
+                        return Ok(control);
+                    }
+                    Err(e) => {
+                        eprintln!("❌ [Arbiter] Failed to parse system_booster.json: {}. Falling back to binary.", e);
                     }
                 }
             }
         }
 
-        // 🚀 Priority 1: Binary Truth (Panic-Safe Rkyv)
-        if bin_path.exists() && !use_json {
-            if let Ok(bytes) = std::fs::read(&bin_path) {
-                let result = std::panic::catch_unwind(|| {
-                    if bytes.len() < 32 { return None; }
-                    let archived = unsafe { rkyv::archived_root::<BoosterControl>(&bytes) };
-                    archived.deserialize(&mut rkyv::Infallible).ok()
-                });
+        // 🚀 Priority 2: Binary Truth (Panic-Safe Rkyv Fallback)
+        if bin_path.exists() {
+            if let Ok(bytes_raw) = std::fs::read(&bin_path) {
+                let mut bytes = rkyv::AlignedVec::with_capacity(bytes_raw.len());
+                bytes.extend_from_slice(&bytes_raw);
+                {
+                    let result = std::panic::catch_unwind(|| {
+                        if bytes.len() < 32 { return None; }
+                        let archived = unsafe { rkyv::archived_root::<BoosterControl>(&bytes) };
+                        archived.deserialize(&mut rkyv::Infallible).ok()
+                    });
 
-                if let Ok(Some(control)) = result {
-                    return Ok(control);
+                    if let Ok(Some(control)) = result {
+                        return Ok(control);
+                    }
                 }
                 // If panic or error, wipe it
                 let _ = std::fs::remove_file(&bin_path);
-            }
-        }
-
-        // 🛡️ Priority 2: JSON Backup
-        if json_path.exists() {
-            let data = std::fs::read_to_string(&json_path)?;
-            println!("🔍 [Arbiter] Raw Booster JSON: {}", data);
-            match serde_json::from_str::<BoosterControl>(&data) {
-                Ok(control) => {
-                    // Self-Heal: Sync binary if JSON was manual-edited
-                    let _ = Self::save_booster_settings(&control); 
-                    return Ok(control);
-                }
-                Err(e) => {
-                    eprintln!("❌ [Arbiter] Failed to parse system_booster.json: {}", e);
-                }
             }
         }
 

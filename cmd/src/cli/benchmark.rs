@@ -304,10 +304,21 @@ async fn run_single_model_isolated(model_name: &str, runs: usize) {
         if let Ok(dna_content) = fs::read_to_string(&dna_path) {
             if let Ok(parsed_dna) = serde_json::from_str::<StructuralDNA>(&dna_content) {
                 dna = parsed_dna;
+            } else {
+                dna.model_identity = model_name.to_string();
+                let _ = dna.discover_from_path(&model_folder);
             }
         }
     } else {
         dna.model_identity = model_name.to_string();
+        let _ = dna.discover_from_path(&model_folder);
+    }
+
+    let mut think_start_tag = String::new();
+    let mut think_end_tag = String::new();
+    if !dna.think_tag_schema.is_empty() && dna.think_tag_schema != "none" {
+        think_start_tag = dna.think_tag_schema.clone();
+        think_end_tag = dna.think_end_schema.clone();
     }
 
     // Allow HardwareGovernor to negotiate context length dynamically based on VRAM
@@ -481,7 +492,7 @@ async fn run_single_model_isolated(model_name: &str, runs: usize) {
             prompt_report_md.push_str(&format!("- **Time**: {:.2} s\n\n", best_time));
             prompt_report_md.push_str(&format!(
                 "**Output:**\n{}\n\n",
-                format_model_output(&best_run_output)
+                format_model_output(&best_run_output, &think_start_tag, &think_end_tag)
             ));
         }
 
@@ -500,11 +511,15 @@ async fn run_single_model_isolated(model_name: &str, runs: usize) {
     }
 }
 
-fn format_model_output(raw: &str) -> String {
+fn format_model_output(raw: &str, think_start_tag: &str, think_end_tag: &str) -> String {
+    if think_start_tag.is_empty() {
+        return raw.trim().to_string();
+    }
+
     let mut result = String::new();
     let mut current_idx = 0;
     
-    while let Some(start) = raw[current_idx..].find("<think>") {
+    while let Some(start) = raw[current_idx..].find(think_start_tag) {
         let absolute_start = current_idx + start;
         
         // Add anything before <think>
@@ -516,22 +531,33 @@ fn format_model_output(raw: &str) -> String {
             }
         }
         
-        let search_start = absolute_start + 7;
-        if let Some(end) = raw[search_start..].find("</think>") {
-            let absolute_end = search_start + end;
-            let think_content = &raw[search_start..absolute_end].trim();
-            
-            result.push_str("> **🧠 Thinking Process:**\n");
-            for line in think_content.lines() {
-                result.push_str(&format!("> {}\n", line));
+        let search_start = absolute_start + think_start_tag.len();
+        if !think_end_tag.is_empty() {
+            if let Some(end) = raw[search_start..].find(think_end_tag) {
+                let absolute_end = search_start + end;
+                let think_content = &raw[search_start..absolute_end].trim();
+                
+                result.push_str("> **🧠 Thinking Process:**\n");
+                for line in think_content.lines() {
+                    result.push_str(&format!("> {}\n", line));
+                }
+                result.push_str("\n\n");
+                
+                current_idx = absolute_end + think_end_tag.len();
+            } else {
+                // Missing closing tag, treat rest of string as thinking
+                let think_content = &raw[search_start..].trim();
+                result.push_str("> **🧠 Thinking Process (Incomplete):**\n");
+                for line in think_content.lines() {
+                    result.push_str(&format!("> {}\n", line));
+                }
+                result.push_str("\n\n");
+                current_idx = raw.len();
+                break;
             }
-            result.push_str("\n\n");
-            
-            current_idx = absolute_end + 8;
         } else {
-            // Missing closing tag, treat rest of string as thinking
             let think_content = &raw[search_start..].trim();
-            result.push_str("> **🧠 Thinking Process (Incomplete):**\n");
+            result.push_str("> **🧠 Thinking Process (No End Tag):**\n");
             for line in think_content.lines() {
                 result.push_str(&format!("> {}\n", line));
             }

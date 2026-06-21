@@ -85,6 +85,7 @@ impl HardwareOrchestrator {
         Ok(Box::new(SovereignEngine {
             manager: Arc::new(Mutex::new(manager)),
             engine_ptr,
+            engine_id: engine_type.to_string(),
         }))
     }
 
@@ -97,6 +98,7 @@ impl HardwareOrchestrator {
 pub struct SovereignEngine {
     manager: Arc<Mutex<EngineManager>>,
     engine_ptr: *mut std::ffi::c_void,
+    engine_id: String,
 }
 
 unsafe impl Send for SovereignEngine {}
@@ -107,6 +109,7 @@ impl Drop for SovereignEngine {
         if let Ok(manager) = self.manager.lock() {
             let _ = manager.free_instance(self.engine_ptr);
         }
+        let _ = cluaize_shared::hardware::governor::HardwareGovernor::release_vram(&self.engine_id);
     }
 }
 
