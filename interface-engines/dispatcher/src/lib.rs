@@ -1,8 +1,39 @@
 use anyhow::{Result, anyhow};
 use cluaize_shared::backend::signature::{KernelSignature, GlobalFeatureRegistry, BackendType};
 use system_booster::BoosterControl;
+use std::path::PathBuf;
 
 use tokio::sync::mpsc;
+
+fn resolve_active_model_path() -> Option<PathBuf> {
+    let hub_path = cluaize_shared::hardware::governor::HardwareGovernor::resolve_hub_path();
+    let perm_path = hub_path.join("engine").join("Permission.json");
+    let perm_str = std::fs::read_to_string(perm_path).ok()?;
+    let perm_json: serde_json::Value = serde_json::from_str(&perm_str).ok()?;
+    let active_id = perm_json
+        .get("chat_models")?
+        .get("text")?
+        .as_str()?
+        .replace(':', "-");
+    
+    // Scan models root for this model_id directory
+    let models_root = hub_path.join("models");
+    let categories = ["chat", "embedding", "vision", "audio", "code"];
+    for category in &categories {
+        let model_dir = models_root.join(category).join(&active_id);
+        if model_dir.is_dir() {
+            if let Ok(entries) = std::fs::read_dir(&model_dir) {
+                for entry in entries.flatten() {
+                    let p = entry.path();
+                    if p.extension().and_then(|e| e.to_str()) == Some("gguf") {
+                        return Some(p);
+                    }
+                }
+            }
+        }
+    }
+    None
+}
 
 pub enum EngineResponse {
     TokenStream(mpsc::Receiver<String>),
@@ -10,12 +41,17 @@ pub enum EngineResponse {
     Error(String),
 }
 
+#[derive(Clone)]
+pub struct SafeEnginePtr(pub *mut std::ffi::c_void);
+unsafe impl Send for SafeEnginePtr {}
+unsafe impl Sync for SafeEnginePtr {}
+
 /// 🚦 NeuralDispatcher (The Master Router)
 /// The core router that owns hardware logic and dispatches prompts across Native IPC and HTTP.
 pub struct NeuralDispatcher {
     pub booster_state: BoosterControl,
     pub current_signature: KernelSignature,
-    // Future additions: TensorTransducer, NeuralFoundry instances
+    pub cached_engine: std::sync::Arc<tokio::sync::Mutex<Option<(PathBuf, SafeEnginePtr, std::sync::Arc<libloading::Library>)>>>,
 }
 
 impl NeuralDispatcher {
@@ -23,6 +59,7 @@ impl NeuralDispatcher {
         Self {
             booster_state,
             current_signature: signature,
+            cached_engine: std::sync::Arc::new(tokio::sync::Mutex::new(None)),
         }
     }
 
@@ -40,73 +77,119 @@ impl NeuralDispatcher {
 
         match backend {
             BackendType::RuntimeB | BackendType::RuntimeC | BackendType::RuntimeA => {
-                tokio::task::spawn_blocking(move || {
-                    let target_os = std::env::consts::OS;
-                    let ext = match target_os {
-                        "windows" => "dll",
-                        "macos" => "dylib",
-                        _ => "so",
+                let cached_engine_lock = self.cached_engine.clone();
+                tokio::spawn(async move {
+                    let active_path = resolve_active_model_path();
+                    let model_path = if let Some(ref path) = active_path {
+                        path.clone()
+                    } else {
+                        PathBuf::from("default")
                     };
-                    let prefix = if target_os == "windows" { "" } else { "lib" };
-                    let binary_name = format!("{}cluaize_llama.{}", prefix, ext);
+
+                    let mut engine_lock = cached_engine_lock.lock().await;
                     
-                    let mut binary_path = cluaize_shared::HardwareGovernor::resolve_interface_path()
-                        .join("kernels")
-                        .join(&binary_name);
-                        
-                    if !binary_path.exists() {
-                        let cargo_name = binary_name.replace("-", "_");
-                        binary_path = std::path::PathBuf::from(format!("target/release/{}", cargo_name));
-                        if !binary_path.exists() {
-                            binary_path = std::path::PathBuf::from(format!("target/debug/{}", cargo_name));
+                    // Check if we need to load a new model
+                    let mut load_new = true;
+                    if let Some((ref cached_path, ref safe_ptr, ref lib)) = *engine_lock {
+                        if cached_path == &model_path && !safe_ptr.0.is_null() {
+                            load_new = false;
                         }
                     }
 
-                    tracing::info!("🔗 [Dispatcher] Attempting native FFI to {:?}", binary_path);
-
-                    unsafe {
-                        #[cfg(windows)]
-                        let lib: libloading::Library = {
-                            let flags = 0x00000008; 
-                            libloading::os::windows::Library::load_with_flags(&binary_path, flags).expect("Llama DLL missing").into()
-                        };
-
-                        #[cfg(not(windows))]
-                        let lib = libloading::Library::new(&binary_path).expect("Llama SO/Dylib missing");
-
-                        let instantiate_fn: libloading::Symbol<unsafe extern "C" fn(*const std::os::raw::c_char, *const std::ffi::c_void) -> *mut std::ffi::c_void> = 
-                            lib.get(b"cluaize_kernel_instantiate").expect("cluaize_kernel_instantiate missing");
-                        
-                        let model_path = "default".to_string();
-                        
-                        let c_path = std::ffi::CString::new(model_path).unwrap();
-                        let engine_ptr = instantiate_fn(c_path.as_ptr() as *const std::os::raw::c_char, std::ptr::null());
-                        
-                        if !engine_ptr.is_null() {
-                            let gen_stream_fn: libloading::Symbol<unsafe extern "C" fn(*mut std::ffi::c_void, *const std::os::raw::c_char, usize, extern "C" fn(*const std::os::raw::c_char, *mut std::ffi::c_void) -> bool, *mut std::ffi::c_void) -> i32> = 
-                                lib.get(b"cluaize_kernel_generate_stream").expect("cluaize_kernel_generate_stream missing");
-
-                            let c_prompt = std::ffi::CString::new(prompt_clone).unwrap();
-
-                            extern "C" fn callback(token_ptr: *const std::os::raw::c_char, user_data: *mut std::ffi::c_void) -> bool {
-                                let tx = unsafe { &*(user_data as *const tokio::sync::mpsc::Sender<String>) };
-                                let token = unsafe { std::ffi::CStr::from_ptr(token_ptr) }.to_string_lossy().into_owned();
-                                tx.blocking_send(token).is_ok()
+                    if load_new {
+                        // Free previous engine if it existed
+                        if let Some((_, safe_ptr, ref lib)) = engine_lock.take() {
+                            unsafe {
+                                if let Ok(free_fn) = lib.get::<unsafe extern "C" fn(*mut std::ffi::c_void)>(b"cluaize_kernel_free") {
+                                    tracing::info!("🗑️ [Dispatcher] Freeing previous model instance");
+                                    free_fn(safe_ptr.0);
+                                }
                             }
-
-                            let tx_ptr = &tx as *const _ as *mut std::ffi::c_void;
-                            // 4096 default context for now, dynamic based on booster in the kernel
-                            gen_stream_fn(
-                                engine_ptr,
-                                c_prompt.as_ptr(),
-                                4096,
-                                callback,
-                                tx_ptr,
-                            );
-
-                            let free_fn: libloading::Symbol<unsafe extern "C" fn(*mut std::ffi::c_void)> = lib.get(b"cluaize_kernel_free").expect("cluaize_kernel_free missing");
-                            free_fn(engine_ptr);
                         }
+
+                        // Resolve path and load DLL
+                        let target_os = std::env::consts::OS;
+                        let ext = match target_os {
+                            "windows" => "dll",
+                            "macos" => "dylib",
+                            _ => "so",
+                        };
+                        let prefix = if target_os == "windows" { "" } else { "lib" };
+                        let binary_name = format!("{}cluaize-llama.{}", prefix, ext);
+                        
+                        let mut binary_path = cluaize_shared::HardwareGovernor::resolve_interface_path()
+                            .join("kernels")
+                            .join(&binary_name);
+                            
+                        if !binary_path.exists() {
+                            let cargo_name = binary_name.replace("-", "_");
+                            binary_path = std::path::PathBuf::from(format!("target/release/{}", cargo_name));
+                            if !binary_path.exists() {
+                                binary_path = std::path::PathBuf::from(format!("target/debug/{}", cargo_name));
+                            }
+                        }
+
+                        tracing::info!("🔗 [Dispatcher] Loading dynamic library {:?}", binary_path);
+
+                        let mut successfully_loaded = false;
+                        unsafe {
+                            #[cfg(windows)]
+                            let lib = {
+                                let flags = 0x00000008; 
+                                libloading::os::windows::Library::load_with_flags(&binary_path, flags).ok().map(libloading::Library::from)
+                            };
+
+                            #[cfg(not(windows))]
+                            let lib = libloading::Library::new(&binary_path).ok();
+
+                            if let Some(library) = lib {
+                                let library_arc = std::sync::Arc::new(library);
+                                
+                                if let Ok(instantiate_fn) = library_arc.get::<unsafe extern "C" fn(*const std::os::raw::c_char, *const std::ffi::c_void) -> *mut std::ffi::c_void>(b"cluaize_kernel_instantiate") {
+                                    let c_path = std::ffi::CString::new(model_path.to_string_lossy().to_string()).unwrap();
+                                    tracing::info!("🔗 [Dispatcher] Instantiating kernel with model path: {:?}", model_path);
+                                    let engine_ptr = instantiate_fn(c_path.as_ptr() as *const std::os::raw::c_char, std::ptr::null());
+                                    
+                                    if !engine_ptr.is_null() {
+                                        *engine_lock = Some((model_path.clone(), SafeEnginePtr(engine_ptr), library_arc));
+                                        successfully_loaded = true;
+                                    }
+                                }
+                            }
+                        }
+                        if !successfully_loaded {
+                            tracing::error!("❌ [Dispatcher] Failed to load or instantiate LLM engine.");
+                        }
+                    }
+
+                    // Run generation on the cached/loaded engine
+                    let mut generated = false;
+                    if let Some((_, ref safe_ptr, ref lib)) = *engine_lock {
+                        unsafe {
+                            if let Ok(gen_stream_fn) = lib.get::<unsafe extern "C" fn(*mut std::ffi::c_void, *const std::os::raw::c_char, usize, extern "C" fn(*const std::os::raw::c_char, *mut std::ffi::c_void) -> bool, *mut std::ffi::c_void)>(b"cluaize_kernel_generate_stream") {
+                                let c_prompt = std::ffi::CString::new(prompt_clone).unwrap();
+
+                                extern "C" fn callback(token_ptr: *const std::os::raw::c_char, user_data: *mut std::ffi::c_void) -> bool {
+                                    let tx = unsafe { &*(user_data as *const tokio::sync::mpsc::Sender<String>) };
+                                    let token = unsafe { std::ffi::CStr::from_ptr(token_ptr) }.to_string_lossy().into_owned();
+                                    tx.blocking_send(token).is_ok()
+                                }
+
+                                let tx_ptr = &tx as *const _ as *mut std::ffi::c_void;
+                                gen_stream_fn(
+                                    safe_ptr.0,
+                                    c_prompt.as_ptr(),
+                                    4096,
+                                    callback,
+                                    tx_ptr,
+                                );
+                                generated = true;
+                            }
+                        }
+                    }
+
+                    if !generated {
+                        let _ = tx.blocking_send("Error: FFI Kernel not active.".to_string());
                     }
 
                     let _ = tx.blocking_send("\n[DONE]\n".to_string());
@@ -146,7 +229,7 @@ pub struct EmbeddingDispatcher {
 unsafe impl Send for EmbeddingDispatcher {}
 unsafe impl Sync for EmbeddingDispatcher {}
 
-impl EmbeddingDispatcher {
+               impl EmbeddingDispatcher {
     pub fn new() -> Result<Self> {
         let target_os = std::env::consts::OS;
         let ext = match target_os {

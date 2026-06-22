@@ -88,10 +88,19 @@ impl Bootstrapper {
         if !engine_path.exists() || local_version != manifest_version {
             println!("  {} [Cluaize] Provisioning Core Engine ({})...", "⚙️".yellow(), manifest_version);
             let manifest_url = engine_info["manifest_url"].as_str().ok_or_else(|| eyre!("Engine Manifest URL missing."))?;
-            let engine_manifest: serde_json::Value = client.get(manifest_url).send().await?.json().await?;
             
-            Self::download_engine_with_manifest(&engine_path, &engine_manifest).await?;
-            std::fs::write(&engine_marker, manifest_version)?;
+            match async {
+                let engine_manifest: serde_json::Value = client.get(manifest_url).send().await?.json().await?;
+                Self::download_engine_with_manifest(&engine_path, &engine_manifest).await?;
+                std::fs::write(&engine_marker, manifest_version)?;
+                Ok::<(), color_eyre::Report>(())
+            }.await {
+                Ok(_) => {},
+                Err(e) if engine_path.exists() => {
+                    println!("  {} [Cluaiz] Provisioning failed ({}). Using cached engine.", "⚠️".yellow(), e);
+                }
+                Err(e) => return Err(e),
+            }
         }
 
         // 🎯 4. Kernel & Stack Sync
@@ -146,25 +155,35 @@ impl Bootstrapper {
             println!("  {} [Cluaize] Synchronizing Neural Kernel ({})...", "📦".magenta(), manifest_version);
             let client = reqwest::Client::builder().user_agent("Cluaize-Bootstrapper/0.1.0").build()?;
             let manifest_url = kernel_info["manifest_url"].as_str().ok_or_else(|| eyre!("Kernel Manifest URL missing."))?;
-            let manifest: serde_json::Value = client.get(manifest_url).send().await?.json().await?;
-
-            let mut spec_key = platform.to_string();
-            if platform == "win-x64" || platform == "linux-x64" {
-                let isa_features = control_data["silicon_truth"]["cpu"]["isa_features"].as_array();
-                let has_avx512 = isa_features.map(|feats| feats.iter().any(|f| f.as_str() == Some("AVX-512"))).unwrap_or(false);
-                spec_key = if has_avx512 { format!("{}-avx512", platform) } else { format!("{}-avx2", platform) };
-            }
-
-            let url_option = manifest["kernels"][&spec_key].as_str().or_else(|| manifest["kernels"][platform].as_str());
             
-            if let Some(url) = url_option {
-                Self::download_asset(url, &kernel_path).await?;
-            } else if kernel_path.exists() {
-                tracing::warn!("⚠️ [Bootstrapper] Kernel key '{}' not found in registry, but local kernel exists. Skipping.", spec_key);
-            } else {
-                return Err(eyre!("Kernel key '{}' not found and no local kernel found.", spec_key));
+            match async {
+                let manifest: serde_json::Value = client.get(manifest_url).send().await?.json().await?;
+
+                let mut spec_key = platform.to_string();
+                if platform == "win-x64" || platform == "linux-x64" {
+                    let isa_features = control_data["silicon_truth"]["cpu"]["isa_features"].as_array();
+                    let has_avx512 = isa_features.map(|feats| feats.iter().any(|f| f.as_str() == Some("AVX-512"))).unwrap_or(false);
+                    spec_key = if has_avx512 { format!("{}-avx512", platform) } else { format!("{}-avx2", platform) };
+                }
+
+                let url_option = manifest["kernels"][&spec_key].as_str().or_else(|| manifest["kernels"][platform].as_str());
+                
+                if let Some(url) = url_option {
+                    Self::download_asset(url, &kernel_path).await?;
+                } else if kernel_path.exists() {
+                    tracing::warn!("⚠️ [Bootstrapper] Kernel key '{}' not found in registry, but local kernel exists. Skipping.", spec_key);
+                } else {
+                    return Err(eyre!("Kernel key '{}' not found and no local kernel found.", spec_key));
+                }
+                std::fs::write(&kernel_marker, manifest_version)?;
+                Ok::<(), color_eyre::Report>(())
+            }.await {
+                Ok(_) => {},
+                Err(e) if kernel_path.exists() => {
+                    println!("  {} [Cluaiz] Kernel sync failed ({}). Using cached kernel.", "⚠️".yellow(), e);
+                }
+                Err(e) => return Err(e),
             }
-            std::fs::write(&kernel_marker, manifest_version)?;
         }
 
         if has_nvidia {
@@ -206,23 +225,46 @@ impl Bootstrapper {
         }
         
         if let Some(root) = project_root {
-            // Determine if we are running from debug or release folder
-            let is_release = !cfg!(debug_assertions);
-            let target_dir = root.join("target").join(if is_release { "release" } else { "debug" });
             let ext = if cfg!(windows) { "dll" } else if cfg!(target_os = "macos") { "dylib" } else { "so" };
+            let release_dir = root.join("target").join("release");
+            let debug_dir = root.join("target").join("debug");
+
+            let copy_with_rename = |src: &std::path::Path, dest: &std::path::Path| -> std::io::Result<u64> {
+                if !src.exists() {
+                    return Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Source not found"));
+                }
+                let mut res = std::fs::copy(src, dest);
+                if let Err(ref e) = res {
+                    #[cfg(windows)]
+                    if e.kind() == std::io::ErrorKind::PermissionDenied || e.raw_os_error() == Some(32) {
+                        let rand_val: u32 = rand::random();
+                        let temp_dest = dest.with_extension(format!("{}.old", rand_val));
+                        if std::fs::rename(dest, &temp_dest).is_ok() {
+                            res = std::fs::copy(src, dest);
+                            let _ = std::fs::remove_file(&temp_dest);
+                        }
+                    }
+                }
+                res
+            };
 
             // 1. Engine Sync (engines.dll -> cluaize-engine.dll)
-            let engine_src = target_dir.join(format!("engines.{}", ext));
+            let mut engine_src = release_dir.join(format!("engines.{}", ext));
+            let mut is_release = true;
+            if !engine_src.exists() {
+                engine_src = debug_dir.join(format!("engines.{}", ext));
+                is_release = false;
+            }
             let engine_dest = hub_path.join("engine").join(format!("cluaize-engine.{}", ext));
             
             if engine_src.exists() {
                 let _ = std::fs::create_dir_all(engine_dest.parent().unwrap());
-                if let Err(e) = std::fs::copy(&engine_src, &engine_dest) {
+                if let Err(e) = copy_with_rename(&engine_src, &engine_dest) {
                     tracing::warn!("⚠️ [DevSync] Engine Link Failed: {}. (File might be locked by another process)", e);
                 } else {
                     let marker = if is_release { "prod-release" } else { "dev-release" };
                     let _ = std::fs::write(hub_path.join("engine").join("cluaize-engine.ready"), marker);
-                    tracing::info!("🧬 [DevSync] Engine Linked: {:?}", engine_dest);
+                    tracing::info!("🧬 [DevSync] Engine Linked (release={}): {:?}", is_release, engine_dest);
                 }
             }
 
@@ -240,20 +282,25 @@ impl Bootstrapper {
             let interface_path = cluaize_shared::HardwareGovernor::resolve_interface_path();
 
             for (src_name, dest_name) in kernels_to_sync {
-                let kernel_src = target_dir.join(format!("{}.{}", src_name, ext));
+                let mut kernel_src = release_dir.join(format!("{}.{}", src_name, ext));
+                let mut is_kernel_release = true;
+                if !kernel_src.exists() {
+                    kernel_src = debug_dir.join(format!("{}.{}", src_name, ext));
+                    is_kernel_release = false;
+                }
                 let kernel_dest = interface_path.join("kernels").join(format!("{}.{}", dest_name, ext));
                 
                 if kernel_src.exists() {
                     let _ = std::fs::create_dir_all(kernel_dest.parent().unwrap());
                     
-                    if let Err(e) = std::fs::copy(&kernel_src, &kernel_dest) {
+                    if let Err(e) = copy_with_rename(&kernel_src, &kernel_dest) {
                         tracing::warn!("⚠️ [DevSync] {} Kernel Link Failed: {}.", dest_name, e);
                     } else {
                         // Create a ready marker
                         let marker_name = format!("{}.ready", dest_name.replace("cluaize-", ""));
-                        let marker = if is_release { "prod-release" } else { "dev-release" };
+                        let marker = if is_kernel_release { "prod-release" } else { "dev-release" };
                         let _ = std::fs::write(interface_path.join("kernels").join(marker_name), marker);
-                        tracing::info!("🧬 [DevSync] {} Kernel Linked: {:?}", dest_name, kernel_dest);
+                        tracing::info!("🧬 [DevSync] {} Kernel Linked (release={}): {:?}", dest_name, is_kernel_release, kernel_dest);
                     }
                 } else {
                     tracing::warn!("⚠️ [DevSync] Kernel source not found at: {:?}", kernel_src);
@@ -262,12 +309,15 @@ impl Bootstrapper {
 
             // 3. CLI Executable Sync (cluaize.exe -> bin/cluaize.exe)
             let exe_name = if cfg!(windows) { "cluaize.exe" } else { "cluaize" };
-            let exe_src = target_dir.join(exe_name);
+            let mut exe_src = release_dir.join(exe_name);
+            if !exe_src.exists() {
+                exe_src = debug_dir.join(exe_name);
+            }
             let bin_dir = cluaize_shared::HardwareGovernor::resolve_bin_gateway();
             let exe_dest = bin_dir.join(exe_name);
             
             if exe_src.exists() {
-                if let Err(e) = std::fs::copy(&exe_src, &exe_dest) {
+                if let Err(e) = copy_with_rename(&exe_src, &exe_dest) {
                     tracing::warn!("⚠️ [DevSync] CLI Executable Sync Failed (File might be in use): {}.", e);
                 } else {
                     tracing::info!("🚀 [DevSync] CLI Executable Synced: {:?}", exe_dest);

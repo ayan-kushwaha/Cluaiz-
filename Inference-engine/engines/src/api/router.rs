@@ -109,7 +109,7 @@ pub struct CoreRouter {
     pub active_dna: Option<cluaize_shared::StructuralDNA>,
     pub active_model_path: Option<PathBuf>,
     pub foundry: crate::neural_foundry::CoreFoundry,
-    pub onnx_engine: Option<cluaize_onnx::engine::OnnxEngine>,
+
     /// The routing decision taken on the last call to generate_stream.
     /// None if generate_stream has not been called yet.
     pub last_route_decision: Option<RouteDecision>,
@@ -126,6 +126,19 @@ impl Default for CoreRouter {
 
 static COMPILATION_LOCKS: std::sync::LazyLock<std::sync::RwLock<std::collections::HashSet<PathBuf>>> = std::sync::LazyLock::new(|| std::sync::RwLock::new(std::collections::HashSet::new()));
 
+struct CompilationGuard {
+    path: PathBuf,
+}
+
+impl Drop for CompilationGuard {
+    fn drop(&mut self) {
+        if let Ok(mut locks) = COMPILATION_LOCKS.write() {
+            locks.remove(&self.path);
+            println!("🔓 [Arbiter] Compilation lock released for: {:?}", self.path);
+        }
+    }
+}
+
 impl CoreRouter {
     pub fn new() -> Self {
         Self { 
@@ -133,7 +146,7 @@ impl CoreRouter {
             foundry: crate::neural_foundry::CoreFoundry::new(),
             active_dna: None,
             active_model_path: None,
-            onnx_engine: None,
+
             last_route_decision: None,
             hardware_n_ctx: 2048,
         }
@@ -198,69 +211,6 @@ impl CoreRouter {
         let skills_dir = dirs::home_dir().unwrap_or_default().join(".cluaize").join("skills");
         foundry.initialize(&skills_dir.to_string_lossy());
 
-        // Load ONNX Engine for Semantic Routing
-        let mut onnx_engine = None;
-        let schema = crate::neural_foundry::security::permission_schema::PermissionSchema::load();
-        if let Some(active_model_id) = schema.get_active_embedding_model() {
-            let roster = crate::models::registry::CoreRoster::load_roster();
-            if let Some(manifest) = roster.iter().find(|m| m.id == active_model_id) {
-                if let Some(local_path) = &manifest.local_path {
-                    let model_dir = std::path::Path::new(local_path);
-                    let model_file = model_dir.join("model.onnx");
-                    let tokenizer_file = model_dir.join("tokenizer.json");
-                    if model_file.exists() && tokenizer_file.exists() {
-                        if let Ok(mut engine) = cluaize_onnx::engine::OnnxEngine::new() {
-                            if engine.load_text_model(&model_file.to_string_lossy(), &tokenizer_file.to_string_lossy()).is_ok() {
-                                // Compile missing or mismatched semantic vectors
-                                if let Ok(mut skill_router) = cluaize_shared::skills::router::GLOBAL_SKILL_ROUTER.write() {
-                                    let _ = skill_router.boot_index();
-                                    let safe_filename = active_model_id.replace(":", "-");
-                                    let mut new_vectors = Vec::new();
-                                    for (id, skill_manifest) in &skill_router.loaded_manifests {
-                                        let home_dir = dirs::home_dir().unwrap_or_default();
-                                        let skill_path = home_dir.join(".cluaize").join("skills").join(&skill_manifest.name);
-                                        let cache_dir = skill_path.join(".cache");
-                                        let emb_path = cache_dir.join(format!("{}.emb.bin", safe_filename));
-                                        let norm_skill_path = cluaize_shared::skills::router::normalize_path(&skill_path);
-                                        let has_vector = skill_router.skill_vectors.contains_key(&norm_skill_path);
-
-                                        if !has_vector || !emb_path.exists() {
-                                            println!("⏳ [Sovereign-Ops] Vector Mismatch. Generating semantic vector for skill: {}", skill_manifest.name);
-                                            let mut combined_vec = Vec::new();
-                                            if skill_manifest.triggers.semantic.is_empty() {
-                                                if let Ok(vec) = engine.gen_embedding(&skill_manifest.name) {
-                                                    combined_vec.extend_from_slice(&vec);
-                                                }
-                                            } else {
-                                                for trigger in &skill_manifest.triggers.semantic {
-                                                    if let Ok(vec) = engine.gen_embedding(trigger) {
-                                                        combined_vec.extend_from_slice(&vec);
-                                                    }
-                                                }
-                                            }
-
-                                            if !combined_vec.is_empty() {
-                                                let _ = std::fs::create_dir_all(&cache_dir);
-                                                let data_bytes = unsafe { std::slice::from_raw_parts(combined_vec.as_ptr() as *const f32 as *const u8, combined_vec.len() * 4) };
-                                                if let Ok(_) = std::fs::write(&emb_path, data_bytes) {
-                                                    new_vectors.push((norm_skill_path, combined_vec));
-                                                }
-                                            }
-                                        }
-                                    }
-                                    for (p, v) in new_vectors {
-                                        skill_router.skill_vectors.insert(p, v);
-                                    }
-                                }
-
-                                onnx_engine = Some(engine);
-                                println!("🧬 [CoreRouter] Internal Semantic Embedding Engine Online.");
-                            }
-                        }
-                    }
-                }
-            }
-        }
 
         // Capture the hardware-negotiated context BEFORE active_dna can be overridden by tests.
         let hardware_n_ctx = dna.max_context_length.unwrap_or(2048) as usize;
@@ -270,10 +220,61 @@ impl CoreRouter {
             foundry,
             active_dna: Some(dna),
             active_model_path: Some(path),
-            onnx_engine,
+
             last_route_decision: None,
             hardware_n_ctx,
         })
+    }
+
+    pub fn ensure_skills_indexed(&self) {
+        let schema = crate::neural_foundry::security::permission_schema::PermissionSchema::load();
+        if schema.get_active_embedding_model().is_none() {
+            return;
+        }
+
+        if let Ok(mut skill_router) = cluaize_shared::skills::router::GLOBAL_SKILL_ROUTER.write() {
+            let _ = skill_router.boot_index();
+            let mut new_vectors = Vec::new();
+            let safe_filename = schema.get_active_embedding_model().unwrap_or_default().replace(":", "-");
+
+            for (id, skill_manifest) in &skill_router.loaded_manifests {
+                let home_dir = dirs::home_dir().unwrap_or_default();
+                let skill_path = home_dir.join(".cluaize").join("skills").join(&skill_manifest.name);
+                let cache_dir = skill_path.join(".cache");
+                let emb_path = cache_dir.join(format!("{}.emb.bin", safe_filename));
+                let norm_skill_path = cluaize_shared::skills::router::normalize_path(&skill_path);
+                let has_vector = skill_router.skill_vectors.contains_key(&norm_skill_path);
+
+                if !has_vector || !emb_path.exists() {
+                    println!("⏳ [Sovereign-Ops] Vector Mismatch. Generating semantic vector for skill: {}", skill_manifest.name);
+                    let mut combined_vec = Vec::new();
+                    
+                    if skill_manifest.triggers.semantic.is_empty() {
+                        if let Some(vec) = crate::memory::embedding_generator::EmbeddingGenerator::generate_full_vector(&skill_manifest.name) {
+                            combined_vec.extend_from_slice(&vec);
+                        }
+                    } else {
+                        for trigger in &skill_manifest.triggers.semantic {
+                            if let Some(vec) = crate::memory::embedding_generator::EmbeddingGenerator::generate_full_vector(trigger) {
+                                combined_vec.extend_from_slice(&vec);
+                            }
+                        }
+                    }
+
+                    if !combined_vec.is_empty() {
+                        let _ = std::fs::create_dir_all(&cache_dir);
+                        let data_bytes = unsafe { std::slice::from_raw_parts(combined_vec.as_ptr() as *const f32 as *const u8, combined_vec.len() * 4) };
+                        if let Ok(_) = std::fs::write(&emb_path, data_bytes) {
+                            new_vectors.push((norm_skill_path, combined_vec));
+                        }
+                    }
+                }
+            }
+            
+            for (p, v) in new_vectors {
+                skill_router.skill_vectors.insert(p, v);
+            }
+        }
     }
 
     pub fn get_active_dna(&self) -> Option<&cluaize_shared::StructuralDNA> {
@@ -293,6 +294,9 @@ impl CoreRouter {
     ) -> Result<(), String> {
 
         let rt = tokio::runtime::Handle::current();
+
+        // 🚀 Ensure skill embeddings exist
+        self.ensure_skills_indexed();
 
         // 🚀 SLIDING WINDOW SEMANTIC SEARCH & ROUTING
         let mut matched_skill_ids = Vec::new();
@@ -322,28 +326,27 @@ impl CoreRouter {
         
         // 2. Sliding Window Semantic Match (ONNX vector similarity)
         if matched_skill_ids.is_empty() {
-             if let Some(engine) = self.onnx_engine.as_mut() {
-                 if let Ok(full_vec) = engine.gen_embedding(prompt) {
-                     if let Ok(router) = cluaize_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
-                         // Try full prompt vector first
-                         if let Some(path) = router.check_semantic_trigger(&full_vec, 0.70) {
-                             if let Some(name) = path.file_name() {
-                                 matched_skill_ids.push(name.to_string_lossy().to_string());
-                             }
-                         } else {
-                             // Multi-size sliding window search: try window sizes 2, 3, 4
-                             let words: Vec<&str> = prompt.split_whitespace().collect();
-                             'window_search: for window_size in [2, 3, 4] {
-                                 if words.len() >= window_size {
-                                     for i in 0..=words.len() - window_size {
-                                         let chunk = words[i..i + window_size].join(" ");
-                                         if let Ok(chunk_vec) = engine.gen_embedding(&chunk) {
-                                             if let Some(path) = router.check_semantic_trigger(&chunk_vec, 0.70) {
-                                                 if let Some(name) = path.file_name() {
-                                                     matched_skill_ids.push(name.to_string_lossy().to_string());
-                                                 }
-                                                 break 'window_search;
+             // Since we use the global EmbeddingGenerator, we don't need a local onnx_engine
+             if let Some(full_vec) = crate::memory::embedding_generator::EmbeddingGenerator::generate_full_vector(prompt) {
+                 if let Ok(router) = cluaize_shared::skills::router::GLOBAL_SKILL_ROUTER.read() {
+                     // Try full prompt vector first
+                     if let Some(path) = router.check_semantic_trigger(&full_vec, 0.70) {
+                         if let Some(name) = path.file_name() {
+                             matched_skill_ids.push(name.to_string_lossy().to_string());
+                         }
+                     } else {
+                         // Multi-size sliding window search: try window sizes 2, 3, 4
+                         let words: Vec<&str> = prompt.split_whitespace().collect();
+                         'window_search: for window_size in [2, 3, 4] {
+                             if words.len() >= window_size {
+                                 for i in 0..=words.len() - window_size {
+                                     let chunk = words[i..i + window_size].join(" ");
+                                     if let Some(chunk_vec) = crate::memory::embedding_generator::EmbeddingGenerator::generate_full_vector(&chunk) {
+                                         if let Some(path) = router.check_semantic_trigger(&chunk_vec, 0.70) {
+                                             if let Some(name) = path.file_name() {
+                                                 matched_skill_ids.push(name.to_string_lossy().to_string());
                                              }
+                                             break 'window_search;
                                          }
                                      }
                                  }
@@ -386,6 +389,17 @@ impl CoreRouter {
                 }
             }
 
+            // Check if this cache path is already compilation locked
+            let is_compiling = {
+                let locks = COMPILATION_LOCKS.read().unwrap();
+                locks.contains(&cache_path)
+            };
+
+            if is_compiling {
+                println!("⏳ [Arbiter] Cache compilation for {} is already in progress. Skipping duplicate Agentic Pause.", cache_path.display());
+                continue;
+            }
+
             if skill_tokens_est > available_ctx {
                 println!("⏳ [Agentic Pause] Low Context Window detected ({} available). Spawning isolated hardware slot for {} tokens...", available_ctx, skill_tokens_est);
                 
@@ -403,7 +417,14 @@ impl CoreRouter {
                     let skill_content_clone = skill_content.clone();
                     let expanded_ctx = (skill_tokens_est + 256) as usize; // Exact tailored slot
                     
+                    // Acquire compilation lock
+                    {
+                        let mut locks = COMPILATION_LOCKS.write().unwrap();
+                        locks.insert(cache_path.clone());
+                    }
+                    
                     let background_success = rt.block_on(async move {
+                        let _guard = CompilationGuard { path: cache_path_clone.clone() };
                         use cluaize_shared::{CluaizeContext, StructuralDNA, UnifiedBackend, CluaizeInference};
                         let mut temp_dna = StructuralDNA::default();
                         temp_dna.max_context_length = Some(expanded_ctx);
@@ -482,7 +503,14 @@ impl CoreRouter {
                     let skill_content_clone = skill_content.clone();
                     let expanded_ctx = (skill_tokens_est + 256) as usize;
                     
+                    // Acquire compilation lock
+                    {
+                        let mut locks = COMPILATION_LOCKS.write().unwrap();
+                        locks.insert(cache_path.clone());
+                    }
+                    
                     rt.spawn(async move {
+                        let _guard = CompilationGuard { path: cache_path_clone.clone() };
                         use cluaize_shared::{CluaizeContext, StructuralDNA, UnifiedBackend, CluaizeInference};
                         let mut temp_dna = StructuralDNA::default();
                         temp_dna.max_context_length = Some(expanded_ctx);

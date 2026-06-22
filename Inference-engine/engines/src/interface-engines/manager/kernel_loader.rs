@@ -84,9 +84,7 @@ impl KernelLoader {
         };
         dev_path.push("target");
 
-        #[cfg(debug_assertions)]
-        let profiles = ["debug", "release"];
-        #[cfg(not(debug_assertions))]
+        // Always prefer release profile for maximum performance, even in debug builds
         let profiles = ["release", "debug"];
 
         for profile in &profiles {

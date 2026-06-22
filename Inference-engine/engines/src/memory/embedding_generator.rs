@@ -66,4 +66,24 @@ impl EmbeddingGenerator {
         }
         vector
     }
+
+    /// Generates a full float vector from text for semantic routing.
+    pub fn generate_full_vector(text: &str) -> Option<Vec<f32>> {
+        let mut lock = match GLOBAL_EMBEDDING_ENGINE.lock() {
+            Ok(l) => l,
+            Err(_) => return None,
+        };
+
+        if lock.is_none() {
+            if let Some(engine) = Self::init_engine() {
+                *lock = Some(engine);
+            }
+        }
+
+        if let Some(engine) = &*lock {
+            engine.gen_embedding(text).ok()
+        } else {
+            None
+        }
+    }
 }

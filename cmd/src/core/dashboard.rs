@@ -76,25 +76,7 @@ impl DashboardEngine {
         // Track global think state across pivots
         let global_think_state = Arc::new(AtomicBool::new(false));
 
-        let mut prompt_embedding_engine: Option<cluaize_onnx::engine::OnnxEngine> = None;
         let schema = engines::neural_foundry::security::permission_schema::PermissionSchema::load();
-        if let Some(text_model_id) = schema.vector_models.text {
-                let roster = engines::models::registry::CoreRoster::load_roster();
-                if let Some(manifest) = roster.iter().find(|m| m.id == text_model_id) {
-                    if let Some(local_path) = &manifest.local_path {
-                        let model_dir = std::path::Path::new(local_path);
-                        let model_file = model_dir.join("model.onnx");
-                        let tokenizer_file = model_dir.join("tokenizer.json");
-                        if model_file.exists() && tokenizer_file.exists() {
-                            if let Ok(mut engine) = cluaize_onnx::engine::OnnxEngine::new() {
-                                if engine.load_text_model(&model_file.to_string_lossy(), &tokenizer_file.to_string_lossy()).is_ok() {
-                                    prompt_embedding_engine = Some(engine);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
 
         loop {
             

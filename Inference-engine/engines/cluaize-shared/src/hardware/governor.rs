@@ -561,7 +561,7 @@ impl HardwareGovernor {
         let json_data = serde_json::to_string_pretty(control)?;
         std::fs::write(&temp_json, json_data)?;
 
-        let bytes = rkyv::to_bytes::<_, 65536>(control)
+        let bytes = rkyv::to_bytes::<_, 4096>(control)
             .map_err(|e| anyhow::anyhow!("Binary Serialization Failed: {}", e))?;
         std::fs::write(&temp_bin, bytes.as_slice())?;
 
@@ -634,7 +634,7 @@ impl HardwareGovernor {
         let json_data = serde_json::to_string_pretty(control)?;
         std::fs::write(&json_path, json_data)?;
 
-        let bytes = rkyv::to_bytes::<_, 65536>(control)
+        let bytes = rkyv::to_bytes::<_, 1024>(control)
             .map_err(|e| anyhow::anyhow!("Binary Serialization Failed: {}", e))?;
         std::fs::write(&bin_path, bytes.as_slice())?;
 

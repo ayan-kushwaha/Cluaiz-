@@ -528,7 +528,7 @@ pub extern "C" fn cluaize_kernel_instantiate(
                 2 => "Auto".to_string(),
                 _ => "Auto".to_string(),
             };
-            engine.booster.use_mmap = false;
+            engine.booster.use_mmap = true;
             
             if booster_ctx.max_context_length > 0 {
                 engine.context.dna.max_context_length = Some(booster_ctx.max_context_length as usize);
