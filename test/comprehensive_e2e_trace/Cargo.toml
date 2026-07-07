@@ -1,5 +1,9 @@
+# BSL 1.1 — Cluaiz Technologies
+#
+# Cargo.toml for comprehensive_e2e_trace test crate
+
 [package]
-name = "ai_search_e2e_test"
+name = "comprehensive_e2e_trace"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -11,11 +15,4 @@ serde_json = "1.0.150"
 tokio = { version = "1.52.3", features = ["full"] }
 futures-util = "0.3.30"
 cluaiz-search = { path = "../../../cluaiz-hub/extensions/cluaiz-search" }
-
-[[bin]]
-name = "real_routing_test"
-path = "src/real_routing_test.rs"
-
-[[bin]]
-name = "single_pass_e2e"
-path = "src/single_pass_e2e.rs"
+serde_yaml = "0.9.34+deprecated"
